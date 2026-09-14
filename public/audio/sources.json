@@ -17,9 +17,9 @@
     {
       "name": "recognizer-flight",
       "file": "recognizer-flight.wav",
-      "start": 124.05,
-      "source_duration": 1.8,
-      "duration": 1.68,
+      "start": 124,
+      "source_duration": 2,
+      "duration": 1.88,
       "loop": true,
       "channels": 2,
       "filters": "highpass=f=45,lowpass=f=6500",
@@ -45,6 +45,17 @@
       "loop": false,
       "channels": 2,
       "filters": "highpass=f=65,lowpass=f=12000",
+      "loop_crossfade_seconds": 0
+    },
+    {
+      "name": "recognizer-explosion",
+      "file": "recognizer-explosion.wav",
+      "start": 186,
+      "source_duration": 1,
+      "duration": 1.0,
+      "loop": false,
+      "channels": 2,
+      "filters": "highpass=f=45,lowpass=f=12000",
       "loop_crossfade_seconds": 0
     },
     {

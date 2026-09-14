@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {wallIntersection} from '../levels/maze.js';
+import {createBlast} from './blast.js';
 
 // Seconds and meters/second²; keep ground-tank destruction at its existing pace.
 const BREAKUP_MOTION={
@@ -105,26 +106,34 @@ export class Breakups {
     mesh.add(seams);
    }
   }
+  const blastBias=new THREE.Vector3(Math.random()-.5,0,Math.random()-.5).multiplyScalar(.45);
   const pieces=groups.map((group,index)=>{
    const fragmented=parts[index]===hitPart;
    // Intact Recognizer sections blast away from the craft's center instead of
    // all travelling to the same side of an off-center bullet impact.
    const origin=!fragmented&&motion===BREAKUP_MOTION.recognizer?craft.root.position:impact;
    const direction=group.position.clone().sub(origin).normalize();
+   if(motion===BREAKUP_MOTION.recognizer)direction.add(blastBias).normalize();
    const impulse=(fragmented?5+Math.random()*11:2+Math.random()*4)*motion.impulseScale;
    // Faster outward separation without kicking debris twice as high.
    direction.y/=motion.impulseScale;
-   return {group,part:parts[index],fragmented,velocity:direction.multiplyScalar(impulse).add(new THREE.Vector3(event.vx||0,(event.vy||0)+motion.lift+Math.random()*motion.liftVariation,-(event.vs||0))),
-    spin:new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar((fragmented?3:.8)*motion.spinScale),delay:Math.random()*motion.delay};
+   const spin=new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar((fragmented?3:.8)*motion.spinScale);
+   // Long, intact sections tip end-over-end; small shards spin more freely.
+   if(!fragmented&&motion===BREAKUP_MOTION.recognizer)spin.y*=.2;
+   const delay=motion===BREAKUP_MOTION.recognizer&&!fragmented?.03+Math.random()*.12:Math.random()*motion.delay;
+   return {group,part:parts[index],fragmented,velocity:direction.multiplyScalar(impulse).add(new THREE.Vector3(event.vx||0,(event.vy||0)+motion.lift+Math.random()*motion.liftVariation,-(event.vs||0))),spin,delay};
   });
   const flash=new THREE.Mesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshBasicMaterial({color:new THREE.Color(5,4.4,1.7),transparent:true,depthWrite:false}));
   flash.position.copy(impact);this.scene.add(flash);
-  this.bursts.push({pieces,materials,flash,hitPart,motion,subject:event.subject||'recognizer',age:0,life:motion.life+Math.random()*motion.lifeVariation});
+  const optical=motion===BREAKUP_MOTION.recognizer?createBlast(impact):null;
+  if(optical)this.scene.add(optical.mesh,optical.sparks);
+  this.bursts.push({pieces,materials,flash,optical,hitPart,motion,subject:event.subject||'recognizer',age:0,life:motion.life+Math.random()*motion.lifeVariation});
  }
  update(dt){
   for(const burst of [...this.bursts]){
    burst.age+=dt;
-   const flash=Math.max(0,1-burst.age/burst.motion.flash);burst.flash.visible=flash>0;
+   const flash=Math.max(0,1-burst.age/burst.motion.flash);burst.flash.visible=!burst.optical&&flash>0;
+   burst.optical?.update(burst.age);
    burst.flash.scale.setScalar(1+(1-flash)*5);burst.flash.material.opacity=flash;
    for(const piece of burst.pieces){
     if(burst.age<piece.delay)continue;
@@ -145,6 +154,7 @@ export class Breakups {
   for(const {group} of burst.pieces){group.traverse(o=>o.geometry?.dispose());this.scene.remove(group);}
   for(const material of burst.materials)material.dispose();
   this.scene.remove(burst.flash);burst.flash.geometry.dispose();burst.flash.material.dispose();
+  if(burst.optical){this.scene.remove(burst.optical.mesh,burst.optical.sparks);burst.optical.dispose();}
   this.bursts=this.bursts.filter(b=>b!==burst);
  }
  clear(){for(const burst of [...this.bursts])this.remove(burst);}

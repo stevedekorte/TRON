@@ -396,3 +396,7 @@ Recognizer destruction now separates pieces outward twice as fast, with a shorte
 Recognizer blast-force follow-up: outward impulse is now 2.5 times the preceding version, with faster tumbling. Whole sections scatter outward from the craft center while struck fragments scatter from the impact point, helping the pieces diverge. Vertical impulse and faster gravity remain as before.
 
 Gunner zoom now cycles 1× / 2× / 4× / 8× with O. The fourth level uses a 9-degree vertical field of view; aiming sensitivity automatically follows the field of view.
+
+### Film-inspired Recognizer destruction — September 14
+
+Studied frames from 1:46–1:50 of the supplied Clu scene. Recognizer destruction now uses a brief randomized serrated yellow-white flash, expanding thin double yellow rings, a red after-flash and short-lived orange sparks. The effects stay at the impact in world space, face the camera and respect depth occlusion. Intact sections detach after small randomized delays and tip end-over-end; fragments scatter immediately with varied fracture seeds, spins and an asymmetric blast bias. Only the hit section is fragmented. Strong outward force and faster debris gravity are preserved. The flight loop now uses exactly 2:04–2:06 and destruction uses the stereo 3:06–3:07 excerpt with positional playback.

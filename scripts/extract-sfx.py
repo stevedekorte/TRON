@@ -4,7 +4,8 @@ import subprocess, wave, array, math, json, pathlib, tempfile, hashlib
 source=pathlib.Path('docs/references/videos/1982 tron clu scene.mp4')
 out=pathlib.Path('public/audio');out.mkdir(exist_ok=True)
 # Times are in the local 187.48-second file, not the earlier YouTube metadata.
-cuts=[('tank-drive',10.75,.7,True,65,650),('recognizer-flight',124.05,1.8,True,45,6500),('recognizer-approach',126.2,2.2,True,45,6500),('cannon',121.38,.38,False,65,12000)]
+cuts=[('tank-drive',10.75,.7,True,65,650),('recognizer-flight',124,2,True,45,6500),('recognizer-approach',126.2,2.2,True,45,6500),('cannon',121.38,.38,False,65,12000)]
+cuts += [('recognizer-explosion',186,1,False,45,12000)]
 cuts += [(f'terminal-key-{i+1}',start,.060,False,150,6500) for i,start in enumerate([.885,1.395,.995,1.585])]
 manifest={'source':str(source),'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'origin':'User-supplied TRON (1982) film scene; mixed soundtrack, not isolated production stems','samples':[]}
 for name,start,duration,loop,hp,lp in cuts:

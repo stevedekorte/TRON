@@ -12,10 +12,10 @@ try{
  async function destroy(){
   await page.evaluate(()=>{
    const recognizers=window.__tron.state.recognizers.map((e,i)=>({...e,x:-1800,s:-1720,y:80,yaw:0,vx:0,vs:0,vy:0,formation:null,state:i?'destroyed':'wander',health:1,attack:null,fold:0,memory:null,canSee:false}));
-   window.__tron.place({x:-1800,s:-1800,yaw:0,turretYaw:0,speed:0,crushed:false,recognizers,projectiles:[{x:-1800,s:-1720,y:80,vx:0,vs:0,vy:0,life:1}]});
+   window.__tron.place({x:-1800,s:-1800,yaw:0,turretYaw:0,speed:0,gunner:true,gunnerZoom:0,aimPitch:.76,crushed:false,recognizers,projectiles:[{x:-1800,s:-1720,y:80,vx:0,vs:0,vy:0,life:1}]});
   });
   await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__tron.state.breakups.length===1);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(180);
   return page.evaluate(()=>window.__tron.state.breakups[0]);
  }
  const first=await destroy();assert.ok(first.pieces.length>=13&&first.pieces.length<=18);

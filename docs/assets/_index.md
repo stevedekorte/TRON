@@ -78,7 +78,7 @@ The user supplied `docs/references/videos/1982 tron clu scene.mp4` (187.48 s, 44
 | Runtime sample | Local video in/out | Processing |
 | --- | --- | --- |
 | tank-drive.wav | 10.75–11.45 s | 65 Hz high-pass, 650 Hz low-pass, −18 dB notch at 330 Hz (Q=4), 120 ms loop crossfade |
-| recognizer-flight.wav | 124.05–125.85 s | 45 Hz high-pass, 6.5 kHz low-pass, 120 ms loop crossfade |
+| recognizer-flight.wav | 124–126 s | 45 Hz high-pass, 6.5 kHz low-pass, 120 ms loop crossfade |
 | recognizer-approach.wav | 126.20–128.40 s | Same filters/crossfade; mixed into pursuit and attack |
 | cannon.wav | 121.38–121.76 s | 65 Hz high-pass, 12 kHz low-pass, 3 ms attack/70 ms release fades |
 
@@ -108,3 +108,7 @@ Terminal keys now use four stereo excerpts from the first two seconds of the sup
 
 
 September 14: eight ground enemies reuse arabinowitz's supplied tank GLB, normalized geometry, surface materials and cannon sample. Each clone has independent turret/recoil transforms and red insignia. Source assets are unchanged; no additional models were downloaded.
+
+### September 14 Recognizer sound revisions
+
+Re-cut `recognizer-flight.wav` from exactly 2:04–2:06 of the local `1982 tron clu scene.mp4`; stereo PCM with the existing 120 ms loop join (1.88-second playback). Added `recognizer-explosion.wav` from 3:06–3:07, a one-second stereo effect with short edge fades, 45 Hz high-pass and 12 kHz low-pass. Recognizer destruction plays it through two world-space HRTF emitters; tank destruction retains its existing sound. Both excerpts are available on `/audio.html`. These remain mixed film soundtrack excerpts, not isolated sound-effect stems.
