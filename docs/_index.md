@@ -10,6 +10,7 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 <a class="card" href="assets/index.html"><h3>Assets</h3><p>Models, sounds, dependencies and source credits.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="models/index.html"><h3>Models</h3><p>Imported tank and Recognizer files, scales and material adapters.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="references/index.html"><h3>References</h3><p>Film stills and visual targets for the maze and vehicles.</p><span class="arrow">View &rarr;</span></a>
+<a class="card" href="sounds/index.html"><h3>Sound library</h3><p>Listen to sound candidates, compare current effects, and browse future resources.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="validation/index.html"><h3>Validation</h3><p>Browser checks, measured results and remaining review.</p><span class="arrow">View &rarr;</span></a>
 </div>
 
@@ -404,3 +405,5 @@ Studied frames from 1:46–1:50 of the supplied Clu scene. Recognizer destructio
 Clu muzzle flash now follows the supplied still and frames around 1:51: a broad cyan-white scalloped starburst with a blue halo, contracting and fading within 0.17 seconds. It follows the posed barrel in chase/aerial views; gunner mode shows a reduced burst just ahead of the sight. Shot-dependent shape variation, pause freezing and normal depth testing are preserved. Recognizer explosion audio was corrected to 1:47.84–1:48.69 and rebuilt from the supplied M4A with its 47.89 ms offset accounted for.
 
 Gunner view now hides Clu’s muzzle flash entirely; external views retain the cyan burst. Prepared balanced and stronger cleanup candidates for the user-supplied short Recognizer explosion edit, accessible on `/audio.html`; these are audition candidates, not a replacement for the active game sample.
+
+Added a sound resource shelf with 25 entries and 17 local audio players, including four Syna-Max recreations retained for future use. Six stock-effect IDs were checked against publisher catalogs; their association with film scenes remains a community-source lead pending audition. Saved Serafine Sci-Fi I/II metadata exports (420 and 1,028 rows) with source links. This does not change runtime sounds or require an account/purchase.

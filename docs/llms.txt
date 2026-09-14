@@ -14,6 +14,10 @@
 
 - [References](/references/): Visual direction and source images
 
+## Sound library
+
+- [Sound library](/sounds/): 1982 TRON sounds, experiments and future resources
+
 ## Validation
 
 - [Validation](/validation/): Browser checks, performance, and remaining work
