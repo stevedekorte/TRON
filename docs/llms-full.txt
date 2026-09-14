@@ -416,6 +416,8 @@ Studied frames from 1:46–1:50 of the supplied Clu scene. Recognizer destructio
 
 Clu muzzle flash now follows the supplied still and frames around 1:51: a broad cyan-white scalloped starburst with a blue halo, contracting and fading within 0.17 seconds. It follows the posed barrel in chase/aerial views; gunner mode shows a reduced burst just ahead of the sight. Shot-dependent shape variation, pause freezing and normal depth testing are preserved. Recognizer explosion audio was corrected to 1:47.84–1:48.69 and rebuilt from the supplied M4A with its 47.89 ms offset accounted for.
 
+Gunner view now hides Clu’s muzzle flash entirely; external views retain the cyan burst. Prepared balanced and stronger cleanup candidates for the user-supplied short Recognizer explosion edit, accessible on `/audio.html`; these are audition candidates, not a replacement for the active game sample.
+
 
 ---
 
@@ -538,6 +540,8 @@ September 14: eight ground enemies reuse arabinowitz's supplied tank GLB, normal
 Re-cut `recognizer-flight.wav` from exactly 2:04–2:06 of the local `1982 tron clu scene.mp4`; stereo PCM with the existing 120 ms loop join (1.88-second playback). Added `recognizer-explosion.wav` from 3:06–3:07, a one-second stereo effect with short edge fades, 45 Hz high-pass and 12 kHz low-pass. Recognizer destruction plays it through two world-space HRTF emitters; tank destruction retains its existing sound. Both excerpts are available on `/audio.html`. These remain mixed film soundtrack excerpts, not isolated sound-effect stems.
 
 Correction: the 3:06–3:07 selection contained terminal typing. `recognizer-explosion.wav` now uses video time 1:47.84–1:48.69 (0.85 seconds), aligned with the visible explosion before the cockpit cut. Recognizer excerpts are now extracted from the user-supplied M4A. Full decoded PCM comparison found that M4A equals the video audio after trimming its first 2112 frames (47.89 ms); the extraction script compensates for this offset and records source/seek per sample. The game and audition page request version 2 of the explosion to bypass the previous cached audio.
+
+The supplied `Recognizer Explosion.m4a` edit matches video time 113.207 seconds (normalized waveform correlation 0.997). `scripts/clean-recognizer-explosion.py` uses surrounding soundtrack context and shared-stereo harmonic/percussive masks to suppress sustained tonal ridges. It generates original/balanced/strong audition WAVs under `public/audio/studies` and a provenance manifest. Requires NumPy/SciPy (installed only in a temporary environment). This is approximate suppression: overlapping cannon/explosion energy cannot be reliably separated by this method, and stronger masking loses transient detail. Listening comparison is pending.
 
 
 ---
@@ -1038,3 +1042,5 @@ Fourth gunner zoom: all six focused gunner simulation tests and Chrome `--gunner
 Film effects/audio: `node tests/recognizer-audio.mjs` passed in headless Chrome on macOS: stereo WAV decoding, 1.88-second loop / one-second explosion, audible rendered output, left/right positional energy and one-shot source cleanup. The first attempt was interrupted by a development-server reload; the rerun passed. Direct listening remains for user review. `npm run test:browser -- --breakup` passed after adding optical effects and staged section release, including single-section fragmentation, pause and geometry cleanup. Inspected `recognizer-breakup-early.png` against extracted film frames: double yellow rings and sparks render around the separating sections in gunner view.
 
 Muzzle/audio correction: `node tests/muzzle-flash.mjs` passed in Chrome: chase/gunner rendering, paused timing, actual firing and expiry, without console errors. Inspected both muzzle captures against the supplied still and extracted 1:51 frames. `node tests/recognizer-audio.mjs` passed for the final M4A-derived samples: 0.85-second stereo explosion, audible offline rendering, positional balance and cleanup. Direct auditory confirmation remains with the user. PCM comparison verified the M4A/video alignment exactly after 2112 audio frames.
+
+Gunner flash correction: `node tests/muzzle-flash.mjs` passed in Chrome with hidden gunner flash, visible external flash, pause freezing and expiry. Cleanup candidates were generated with finite, unclipped stereo PCM and matching durations; waveform alignment was verified against the full scene. Audio quality/source isolation needs user listening review.
