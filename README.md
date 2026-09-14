@@ -25,7 +25,7 @@ Open <http://127.0.0.1:5173>. Enter completes the typing terminal; Enter again s
 | C (hold) | Rear view |
 | V | Toggle aerial view |
 | P | Toggle stabilized first-person gunner view |
-| O | Cycle gunner zoom: 1× / 2× / 4× |
+| O | Cycle gunner zoom: 1× / 2× / 4× / 8× |
 | I / J / K / L | Gunner aim: up / left / down / right; slower when zoomed |
 | Scroll wheel / two-finger scroll | Zoom aerial view (also while paused) |
 | Tab | Toggle maze survey; does not reveal aircraft knowledge |

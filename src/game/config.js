@@ -1,5 +1,5 @@
 export const CLU_WEAPON=Object.freeze({speed:165,lifetime:5,assistRange:740});
-export const GUNNER=Object.freeze({fovs:[63,35,18],pitchRate:.8,aimResponse:14,aimBrakeResponse:22,minPitch:-.45,maxPitch:1.2});
+export const GUNNER=Object.freeze({fovs:[63,35,18,9],pitchRate:.8,aimResponse:14,aimBrakeResponse:22,minPitch:-.45,maxPitch:1.2});
 // September 14: 30% larger than the previous half-scale Recognizers.
 export const RECOGNIZER_SCALE = .65;
 export const TURBO=Object.freeze({duration:10,rechargeSeconds:60,speedMultiplier:2.5,reverseRatio:.75});

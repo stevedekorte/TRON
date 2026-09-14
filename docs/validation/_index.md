@@ -326,3 +326,5 @@ Final sizing/weapon checks: all 55 simulation tests passed, plus the strengthene
 Recognizer breakup pacing: `npm run test:browser -- --breakup` passed in headless Chrome on macOS. Verified one fragmented section and five intact detached sections, randomized outcomes, falling debris, pause freezing, and geometry cleanup. Inspected the early and four-second falling captures; debris has reached the floor by the latter capture.
 
 Stronger blast follow-up: the Chrome `--breakup` check passed again; inspected the falling-debris capture for broader scattering. Anatomical fragmentation, pause and resource cleanup checks remain passing.
+
+Fourth gunner zoom: all six focused gunner simulation tests and Chrome `--gunner` passed, covering reduced yaw/pitch sensitivity at all four levels and O cycling through the 8× label back to 1×.

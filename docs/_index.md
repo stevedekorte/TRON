@@ -394,3 +394,5 @@ Recognizers are 30% larger than the previous half-scale version (model scale 0.6
 Recognizer destruction now separates pieces outward twice as fast, with a shorter 0.1-second flash and faster tumbling. Debris gravity is 14.7 m/s² with less upward lift; the effect lasts 5–6 seconds with a one-second fade. Only the struck anatomical section fragments; other sections detach whole. Ground-tank breakup timing is preserved.
 
 Recognizer blast-force follow-up: outward impulse is now 2.5 times the preceding version, with faster tumbling. Whole sections scatter outward from the craft center while struck fragments scatter from the impact point, helping the pieces diverge. Vertical impulse and faster gravity remain as before.
+
+Gunner zoom now cycles 1× / 2× / 4× / 8× with O. The fourth level uses a 9-degree vertical field of view; aiming sensitivity automatically follows the field of view.
