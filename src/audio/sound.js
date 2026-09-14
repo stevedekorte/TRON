@@ -2,7 +2,7 @@ import {CARRIER} from '../game/carrier.js';
 import musicUrl from "../../docs/assets/music/Tron/03 We've Got Company.mp3?url";
 import { RECOGNIZER_STARTS, lineOfSight } from '../levels/maze.js';
 import {stereoEmitter,doppler} from './spatial.js';
-const files=['tank-drive','recognizer-flight','recognizer-approach','cannon','carrier-rumble'];
+const files=['tank-drive','recognizer-flight','recognizer-approach','recognizer-explosion','cannon','carrier-rumble'];
 const keyFiles=Array.from({length:4},(_,i)=>'terminal-key-'+(i+1));
 // Film-derived stereo samples; synthesis remains available when a file fails.
 export class Sound {
@@ -60,7 +60,7 @@ export class Sound {
   async loadSamples() {
     await Promise.all([...files,...keyFiles].map(async name=>{
       try {
-        const response=await fetch('/audio/'+name+'.wav'+(name==='tank-drive'?'?v=3':name==='cannon'||name.startsWith('terminal-key-')?'?v=2':''));if(!response.ok)throw new Error('HTTP '+response.status);
+        const response=await fetch('/audio/'+name+'.wav'+(name==='tank-drive'?'?v=3':name==='cannon'||name==='recognizer-flight'||name.startsWith('terminal-key-')?'?v=2':''));if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.context.decodeAudioData(bytes);if(this.disposed)return;
         (name.startsWith('terminal-key-')?this.keySamples:this.samples)[name]=buffer;
@@ -144,6 +144,15 @@ export class Sound {
   effect(type,event) {
     if(!this.context)return;
     const c=this.context,now=c.currentTime,gain=c.createGain();
+    if(type==='destroyed'&&event&&!['tank','enemyTank'].includes(event.subject)&&this.samples['recognizer-explosion']){
+      const emitter=stereoEmitter(c,this.master,35);
+      emitter.gain.gain.value=1;
+      emitter.position(event.x,event.y,-event.s,event.yaw||0);
+      gain.gain.value=.9;gain.connect(emitter.input);
+      const s=this.source(this.samples['recognizer-explosion'],gain);
+      s.onended=()=>{s.disconnect();gain.disconnect();emitter.input.disconnect();emitter.panners.forEach(p=>p.disconnect());emitter.gain.disconnect();this.sources.delete(s);};
+      return;
+    }
     if(type==='enemyShot'){
       const p=c.createPanner();p.panningModel='HRTF';p.distanceModel='inverse';p.refDistance=20;p.maxDistance=12000;p.rolloffFactor=1.2;
       p.positionX.value=event.x;p.positionY.value=event.y;p.positionZ.value=-event.s;gain.connect(p);p.connect(this.master);

@@ -328,3 +328,5 @@ Recognizer breakup pacing: `npm run test:browser -- --breakup` passed in headles
 Stronger blast follow-up: the Chrome `--breakup` check passed again; inspected the falling-debris capture for broader scattering. Anatomical fragmentation, pause and resource cleanup checks remain passing.
 
 Fourth gunner zoom: all six focused gunner simulation tests and Chrome `--gunner` passed, covering reduced yaw/pitch sensitivity at all four levels and O cycling through the 8× label back to 1×.
+
+Film effects/audio: `node tests/recognizer-audio.mjs` passed in headless Chrome on macOS: stereo WAV decoding, 1.88-second loop / one-second explosion, audible rendered output, left/right positional energy and one-shot source cleanup. The first attempt was interrupted by a development-server reload; the rerun passed. Direct listening remains for user review. `npm run test:browser -- --breakup` passed after adding optical effects and staged section release, including single-section fragmentation, pause and geometry cleanup. Inspected `recognizer-breakup-early.png` against extracted film frames: double yellow rings and sparks render around the separating sections in gunner view.

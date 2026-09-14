@@ -200,6 +200,7 @@ export class View {
     this.bloom.strength = config.bloom; this.bloom.enabled = !this.lowQuality;
     this.film.enabled = !this.lowQuality; this.film.uniforms.time.value = this.elapsed;
     this.searchlights.update(run.recognizers,run.time,this.camera,mode==='paused'?0:dt,!preview);
+    for(const burst of this.breakups.bursts)burst.optical?.mesh.quaternion.copy(this.camera.quaternion);
     this.renderer.info.reset(); this.composer.render(dt);
   }
 
