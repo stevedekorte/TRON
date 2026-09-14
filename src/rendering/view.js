@@ -3,6 +3,7 @@ import {ESCORT} from '../simulation/ground-tanks.js';
 import {Searchlights} from './searchlights.js';
 import {updateCarrier} from './carrier.js';
 import {Breakups} from './breakup.js';
+import {createMuzzleFlash} from './muzzle-flash.js';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -31,6 +32,7 @@ export class View {
     this.world = createWorld(this.scene);
     this.carrier=carrier;if(carrier)this.scene.add(carrier);
     this.tank = tank; this.scene.add(this.tank.root);
+    this.muzzleFlash=createMuzzleFlash();this.scene.add(this.muzzleFlash);
     this.enemyTanks=Array.from({length:ESCORT.count},()=>{const craft=cloneEnemyTank(tank);this.scene.add(craft.root);return craft;});
     this.recognizers = RECOGNIZER_STARTS.map(() => { const craft=createRecognizer(recognizer); craft.root.scale.setScalar(RECOGNIZER_SCALE); this.scene.add(craft.root); return craft; });
     recognizer.traverse(o => o.material?.dispose());
@@ -94,8 +96,7 @@ export class View {
     this.tank.turret.rotation.y = previous.turretYaw + angleDelta(previous.turretYaw, run.turretYaw) * alpha;
     this.tank.barrel.rotation.x = 0;
     this.tank.barrel.position.z = run.recoil * 0.35;
-    this.tank.flash.visible = run.recoil > 0.75 && ['running','entering'].includes(mode);
-    this.tank.flash.scale.setScalar(0.6 + run.recoil);
+    this.tank.flash.visible = false;
     this.tank.tracks.forEach((t, i) => { t.material = this.tank.tracks[0].material; t.visible = (Math.floor(run.s * 3) + i) % 3 !== 0; });
 
     this.world.floor.position.set(x,-.06,-s);
@@ -200,6 +201,21 @@ export class View {
     this.bloom.strength = config.bloom; this.bloom.enabled = !this.lowQuality;
     this.film.enabled = !this.lowQuality; this.film.uniforms.time.value = this.elapsed;
     this.searchlights.update(run.recognizers,run.time,this.camera,mode==='paused'?0:dt,!preview);
+    const muzzleAge=(1-run.recoil)/4;
+    this.muzzleFlash.visible=!run.crushed&&!preview&&muzzleAge<.17;
+    if(this.muzzleFlash.visible){
+      this.muzzleFlash.material.uniforms.age.value=muzzleAge;
+      this.muzzleFlash.material.uniforms.seed.value=run.shots*2.399;
+      this.tank.root.updateMatrixWorld(true);
+      this.tank.flash.getWorldPosition(this.muzzleFlash.position);
+      this.muzzleFlash.quaternion.copy(this.camera.quaternion);
+      this.muzzleFlash.scale.setScalar(gunner?.28:1);
+      if(gunner){
+        // The gunner camera sits at the muzzle; put its flash just ahead of the sight.
+        this.camera.getWorldDirection(this.projected);
+        this.muzzleFlash.position.copy(this.camera.position).addScaledVector(this.projected,3);
+      }
+    }
     for(const burst of this.breakups.bursts)burst.optical?.mesh.quaternion.copy(this.camera.quaternion);
     this.renderer.info.reset(); this.composer.render(dt);
   }

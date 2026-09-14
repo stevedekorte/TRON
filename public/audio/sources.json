@@ -5,6 +5,8 @@
   "samples": [
     {
       "name": "tank-drive",
+      "source": "docs/references/videos/1982 tron clu scene.mp4",
+      "source_seek": 10.75,
       "file": "tank-drive.wav",
       "start": 10.75,
       "source_duration": 0.7,
@@ -16,6 +18,8 @@
     },
     {
       "name": "recognizer-flight",
+      "source": "docs/references/videos/1982 tron clu scene.m4a",
+      "source_seek": 123.95210884353742,
       "file": "recognizer-flight.wav",
       "start": 124,
       "source_duration": 2,
@@ -27,6 +31,8 @@
     },
     {
       "name": "recognizer-approach",
+      "source": "docs/references/videos/1982 tron clu scene.m4a",
+      "source_seek": 126.15210884353742,
       "file": "recognizer-approach.wav",
       "start": 126.2,
       "source_duration": 2.2,
@@ -38,6 +44,8 @@
     },
     {
       "name": "cannon",
+      "source": "docs/references/videos/1982 tron clu scene.mp4",
+      "source_seek": 121.38,
       "file": "cannon.wav",
       "start": 121.38,
       "source_duration": 0.38,
@@ -49,10 +57,12 @@
     },
     {
       "name": "recognizer-explosion",
+      "source": "docs/references/videos/1982 tron clu scene.m4a",
+      "source_seek": 107.79210884353742,
       "file": "recognizer-explosion.wav",
-      "start": 186,
-      "source_duration": 1,
-      "duration": 1.0,
+      "start": 107.84,
+      "source_duration": 0.85,
+      "duration": 0.85,
       "loop": false,
       "channels": 2,
       "filters": "highpass=f=45,lowpass=f=12000",
@@ -60,6 +70,8 @@
     },
     {
       "name": "terminal-key-1",
+      "source": "docs/references/videos/1982 tron clu scene.mp4",
+      "source_seek": 0.885,
       "file": "terminal-key-1.wav",
       "start": 0.885,
       "source_duration": 0.06,
@@ -71,6 +83,8 @@
     },
     {
       "name": "terminal-key-2",
+      "source": "docs/references/videos/1982 tron clu scene.mp4",
+      "source_seek": 1.395,
       "file": "terminal-key-2.wav",
       "start": 1.395,
       "source_duration": 0.06,
@@ -82,6 +96,8 @@
     },
     {
       "name": "terminal-key-3",
+      "source": "docs/references/videos/1982 tron clu scene.mp4",
+      "source_seek": 0.995,
       "file": "terminal-key-3.wav",
       "start": 0.995,
       "source_duration": 0.06,
@@ -93,6 +109,8 @@
     },
     {
       "name": "terminal-key-4",
+      "source": "docs/references/videos/1982 tron clu scene.mp4",
+      "source_seek": 1.585,
       "file": "terminal-key-4.wav",
       "start": 1.585,
       "source_duration": 0.06,

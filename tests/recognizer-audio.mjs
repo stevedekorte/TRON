@@ -19,7 +19,7 @@ try{
   return {metadata,started,remaining:sound.sources.size,rms};
  });
  assert.equal(result.metadata['recognizer-flight'].duration,1.88);
- assert.equal(result.metadata['recognizer-explosion'].duration,1);
+ assert.equal(result.metadata['recognizer-explosion'].duration,.85);
  for(const m of Object.values(result.metadata))assert.equal(m.channels,2);
  assert.equal(result.started,1);assert.equal(result.remaining,0);
  assert.ok(result.rms[0]>.001);assert.ok(result.rms[0]>result.rms[1]*1.1);
