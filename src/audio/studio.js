@@ -8,7 +8,7 @@ $('play').onclick=async()=>{
  const c=context=new AudioContext(),master=c.createGain();master.gain.value=Number($('volume').value);master.connect(c.destination);
  await c.resume();
  try{
-  const response=await fetch('/audio/recognizer-flight.wav?v=2');if(!response.ok)throw new Error('Sample unavailable');
+  const response=await fetch(import.meta.env.BASE_URL+'audio/recognizer-flight.wav?v=2');if(!response.ok)throw new Error('Sample unavailable');
   const buffer=await c.decodeAudioData(await response.arrayBuffer());if(current!==version)return;
   emitter=stereoEmitter(c,master);emitter.gain.gain.value=.8;
   filter=c.createBiquadFilter();filter.type='lowpass';filter.connect(emitter.input);

@@ -61,7 +61,7 @@ export class Sound {
   async loadSamples() {
     await Promise.all([...files,...keyFiles].map(async name=>{
       try {
-        const response=await fetch('/audio/'+name+'.wav'+(name==='tank-drive'?'?v=3':name==='cannon'||name==='recognizer-flight'||name==='recognizer-explosion'||name.startsWith('terminal-key-')?'?v=2':''));if(!response.ok)throw new Error('HTTP '+response.status);
+        const response=await fetch(import.meta.env.BASE_URL+'audio/'+name+'.wav'+(name==='tank-drive'?'?v=3':name==='cannon'||name==='recognizer-flight'||name==='recognizer-explosion'||name.startsWith('terminal-key-')?'?v=2':''));if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.context.decodeAudioData(bytes);if(this.disposed)return;
         (name.startsWith('terminal-key-')?this.keySamples:this.samples)[name]=buffer;

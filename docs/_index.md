@@ -409,3 +409,5 @@ Gunner view now hides Clu’s muzzle flash entirely; external views retain the c
 Added a sound resource shelf with 25 entries and 17 local audio players, including four Syna-Max recreations retained for future use. Six stock-effect IDs were checked against publisher catalogs; their association with film scenes remains a community-source lead pending audition. Saved Serafine Sci-Fi I/II metadata exports (420 and 1,028 rows) with source links. This does not change runtime sounds or require an account/purchase.
 
 Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impact: electrical snap, low body and brief inharmonic metallic ring. Each impact is positioned at the bullet strike with small pitch variation. Hit events identify target type and fatality so the armor sound is omitted on destruction. Runtime synthesis and the audition WAV share `src/audio/recognizer-hit.js`; regenerate the WAV with `node scripts/generate-hit-sfx.mjs`.
+
+- [x] Support static deployment under `/fun/TRON/` with relative build and audio paths; verify the production build in Chrome.
