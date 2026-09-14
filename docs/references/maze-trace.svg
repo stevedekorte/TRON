@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941"><image href="images/Maze%20Blue%20Print.png" width="1672" height="941"/><g fill="#ffe588" fill-opacity=".07" stroke="#ffe588" stroke-width="2" stroke-linejoin="round"><polygon points="253,154 337,92 337,36 579,36 579,84 425,84 425,154"><title>Wall 1</title></polygon>
+<polygon points="471,111 641,111 641,155 471,155"><title>Wall 2</title></polygon>
+<polygon points="611,0 725,0 725,87 903,87 903,155 853,155 853,116 675,116 675,46 611,46"><title>Wall 3</title></polygon>
+<polygon points="768,0 819,0 819,36 1110,36 1110,67 1019,67 1019,114 1294,114 1342,155 959,155 959,67 768,67"><title>Wall 4</title></polygon>
+<polygon points="884,0 1218,0 1218,52 1494,52 1596,154 1388,154 1388,90 1153,90 1153,11 884,11"><title>Wall 5</title></polygon>
+<polygon points="154,297 210,297 305,202 394,295 439,295 439,321 154,321"><title>Wall 6</title></polygon>
+<polygon points="392,211 687,211 687,266 539,266 539,344 798,344 827,382 827,465 1141,465 1141,538 1041,538 1041,494 762,494 762,375 465,375 465,277 392,277"><title>Wall 7</title></polygon>
+<polygon points="734,210 1005,210 1005,308 1121,308 1121,368 952,368 952,265 734,265"><title>Wall 8</title></polygon>
+<polygon points="1044,210 1409,210 1559,354 1559,392 1470,392 1470,448 1418,448 1418,313 1382,277 1044,277"><title>Wall 9</title></polygon>
+<polygon points="151,422 258,346 423,346 423,396 714,396 714,523 969,523 969,667 734,667 674,605 502,605 502,576 855,576 934,657 934,551 500,551 488,526 615,526 615,426 378,426 378,379 334,379 334,422"><title>Wall 10</title></polygon>
+<polygon points="273,457 574,457 574,499 401,499 348,552"><title>Wall 11</title></polygon>
+<polygon points="157,692 413,530 490,621 650,621 650,692"><title>Wall 12</title></polygon>
+<polygon points="588,289 909,289 909,394 1277,394 1277,555 1439,555 1439,684 1357,684 1357,590 1101,590 1101,624 1228,624 1321,696 1173,696 1173,669 1043,669 1043,557 1191,557 1191,445 860,445 860,321 588,321"><title>Wall 13</title></polygon>
+<polygon points="1173,311 1377,311 1377,477 1540,477 1540,664 1489,664 1489,520 1321,520 1321,374 1173,374"><title>Wall 14</title></polygon>
+<polygon points="281,726 439,726 439,774 344,774 344,814 665,814 665,941 604,941 604,850 281,850"><title>Wall 15</title></polygon>
+<polygon points="255,875 538,875 538,941 486,941 486,915 255,915"><title>Wall 16</title></polygon>
+<polygon points="495,760 911,760 965,833 774,833 774,915 702,915 702,794 495,794"><title>Wall 17</title></polygon>
+<polygon points="649,723 1162,723 1162,811 1470,811 1563,913 1327,913 1327,834 1070,834 1070,743 649,743"><title>Wall 18</title></polygon>
+<polygon points="1247,723 1316,723 1316,759 1574,759 1574,793 1247,793"><title>Wall 19</title></polygon>
+<polygon points="828,858 1262,858 1262,941 1195,941 1195,904 828,904"><title>Wall 20</title></polygon></g></svg>
