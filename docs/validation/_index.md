@@ -338,3 +338,7 @@ Gunner flash correction: `node tests/muzzle-flash.mjs` passed in Chrome with hid
 Sound library: `node tests/sound-library.mjs` passed in headless Chrome on macOS. Checks cover unique catalog IDs, existence of local media/catalogs, downloaded-preview SHA-256 hashes, documentation card navigation, 17 rendered players, all four downloaded previews loading valid durations, and successful playback. Inspected the library screenshot. Listening/film-match judgments remain for audition; commercial catalogs contain metadata only.
 
 Recognizer armor audio: all 56 simulation tests pass, including target/fatality event tagging. The extended `node tests/recognizer-audio.mjs` check passed for audible spatial impact output, source cleanup and suppression on fatal hits. The audio harness disables Vite HMR to prevent dependency-optimization reloads interrupting offline rendering. Subjective sound review remains available through the audition page.
+
+## Production subdirectory deployment — September 14
+
+`npm run build` and `node tests/production-path.mjs` passed against a static production build mounted at `/fun/TRON/`: game starts, all three vehicle models and game audio load, and the sound study plays without HTTP or JavaScript errors. Vite uses a relative base and runtime audio resolves below the game path. The website workflow builds the pinned private submodule with a read-only deploy key and publishes its dist output.

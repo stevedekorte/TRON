@@ -95,3 +95,7 @@ Visual comparison studio: http://127.0.0.1:5173/reference.html (development serv
 Default traced layout: http://127.0.0.1:5173/?maze=blueprint. The blueprint now loads by default; use /?maze=authored for the original. Compare with the supplied blueprint at /reference.html?maze=blueprint&shot=blueprint; editable pixel outlines live in src/levels/blueprint-outlines.js.
 
 Sound audition: http://127.0.0.1:5173/audio.html. Headphones are useful for the Recognizer flyby. Rebuild extracted samples with `python3 scripts/extract-sfx.py`; source credits and timecodes are in docs/assets/_index.md.
+
+### Website deployment
+
+The dekorte.com Pages workflow checks out the pinned `fun/TRON` revision using its `TRON_DEPLOY_KEY` secret (a read-only deploy key for this repository), runs `npm ci` and `npm run build`, then publishes `dist` at `/fun/TRON/`. Push TRON changes, update the website submodule pointer, and push the website to deploy. The Vite relative base supports both root hosting and subdirectory hosting. `tests/production-path.mjs` checks a static build at that path; set `TRON_URL` to test the live site.
