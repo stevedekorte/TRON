@@ -2,6 +2,7 @@ import {CARRIER} from '../game/carrier.js';
 import musicUrl from "../../docs/assets/music/Tron/03 We've Got Company.mp3?url";
 import { RECOGNIZER_STARTS, lineOfSight } from '../levels/maze.js';
 import {stereoEmitter,doppler} from './spatial.js';
+import {RECOGNIZER_HIT,recognizerHitSamples} from './recognizer-hit.js';
 const files=['tank-drive','recognizer-flight','recognizer-approach','recognizer-explosion','cannon','carrier-rumble'];
 const keyFiles=Array.from({length:4},(_,i)=>'terminal-key-'+(i+1));
 // Film-derived stereo samples; synthesis remains available when a file fails.
@@ -144,6 +145,20 @@ export class Sound {
   effect(type,event) {
     if(!this.context)return;
     const c=this.context,now=c.currentTime,gain=c.createGain();
+    if(type==='hit'&&event?.subject==='recognizer'){
+      if(event.fatal)return;
+      if(!this.recognizerHitBuffer){
+        const channels=recognizerHitSamples(c.sampleRate);
+        this.recognizerHitBuffer=c.createBuffer(2,channels[0].length,c.sampleRate);
+        channels.forEach((a,i)=>this.recognizerHitBuffer.copyToChannel(a,i));
+      }
+      const emitter=stereoEmitter(c,this.master,35);emitter.gain.gain.value=1;
+      emitter.position(event.x,event.y,-event.s,0);gain.gain.value=RECOGNIZER_HIT.gain;gain.connect(emitter.input);
+      const s=this.source(this.recognizerHitBuffer,gain);
+      s.playbackRate.value=RECOGNIZER_HIT.minRate+Math.random()*(RECOGNIZER_HIT.maxRate-RECOGNIZER_HIT.minRate);
+      s.onended=()=>{s.disconnect();gain.disconnect();emitter.input.disconnect();emitter.panners.forEach(p=>p.disconnect());emitter.gain.disconnect();this.sources.delete(s);};
+      return;
+    }
     if(type==='destroyed'&&event&&!['tank','enemyTank'].includes(event.subject)&&this.samples['recognizer-explosion']){
       const emitter=stereoEmitter(c,this.master,35);
       emitter.gain.gain.value=1;
