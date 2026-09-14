@@ -1,7 +1,7 @@
-import {clamp} from '../game/config.js';
+import {clamp,RECOGNIZER_SCALE} from '../game/config.js';
 
 // Horizontal flight: m/s² thrust, radians/s yaw, and inverse-seconds drag.
-export const FLIGHT=Object.freeze({acceleration:22,turnRate:.62,drag:.7,brakeDrag:2.4,avoidanceRadius:65});
+export const FLIGHT=Object.freeze({acceleration:22,turnRate:.62,drag:.7,brakeDrag:2.4,avoidanceRadius:130*RECOGNIZER_SCALE});
 export function advanceFlight(e,dt,thrust=0,braking=0) {
   const drag=FLIGHT.drag+clamp(braking,0,1)*FLIGHT.brakeDrag;
   const decay=Math.exp(-drag*dt),integral=(1-decay)/drag;

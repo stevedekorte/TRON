@@ -9,7 +9,7 @@ try{
  let state=await page.evaluate(()=>window.__tron.state);
  assert.ok(state.speed<20);assert.ok(Math.abs(state.yaw)>.02);assert.ok(Math.abs(state.turretYaw)>.1);
  await page.keyboard.up('KeyS');await page.keyboard.up('KeyD');await page.keyboard.up('KeyL');
- await page.keyboard.press('KeyF');await page.waitForFunction(()=>window.__tron.state.turretYaw===0);
+ const yawBeforeLevel=await page.evaluate(()=>window.__tron.state.turretYaw);await page.keyboard.press('KeyF');await page.waitForFunction(()=>window.__tron.state.aimPitch===0);assert.equal(await page.evaluate(()=>window.__tron.state.turretYaw),yawBeforeLevel);
  await page.keyboard.press('Space');await page.waitForFunction(()=>window.__tron.state.shots>0);
  assert.equal(await page.evaluate(()=>window.__tron.state.mode),'entering');
  await page.mouse.move(600,450);await page.mouse.down();await page.waitForFunction(()=>window.__tron.state.shots>1);await page.mouse.up();

@@ -1,6 +1,7 @@
-export const GUNNER=Object.freeze({fovs:[63,35,18],pitchRate:.8,minPitch:-.45,maxPitch:1.2});
-// User reference estimate: an upright Recognizer leg is about 30 ft (9 m).
-export const RECOGNIZER_SCALE = .5;
+export const CLU_WEAPON=Object.freeze({speed:165,lifetime:5,assistRange:740});
+export const GUNNER=Object.freeze({fovs:[63,35,18],pitchRate:.8,aimResponse:14,aimBrakeResponse:22,minPitch:-.45,maxPitch:1.2});
+// September 14: 30% larger than the previous half-scale Recognizers.
+export const RECOGNIZER_SCALE = .65;
 export const TURBO=Object.freeze({duration:10,rechargeSeconds:60,speedMultiplier:2.5,reverseRatio:.75});
 export const defaults = Object.freeze({
   acceleration: 11, braking: 22, maxSpeed: 22, reverseSpeed: 16.5,

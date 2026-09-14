@@ -16,6 +16,8 @@ let controlsFirstKey=null,idleReminderArmed=false;
 function noteControlKey(){if(controlsFirstKey===null)controlsFirstKey=run.time;else if(run.time-controlsFirstKey>=10)idleReminderArmed=true;}
 let openingTime=0,pausedFrom='running',startingThrottle=false;
 const openingDuration=5.5;
+const DEATH_TERMINAL={holdSeconds:1.1,fadeSeconds:1,message:'ILLEGAL CODE\nCLU PROGRAM DETACHED FROM SYSTEM'};
+let deathElapsed=0;
 let accumulator = 0, lastTime = 0, frameId, disposed = false, mouseFire = false,fireQueued=false;
 const keys = new Set(), cleanups = [], frameTimes = [];
 const fixedStep = 1 / 60;
@@ -35,6 +37,7 @@ function setMode(next) {
   document.body.classList.toggle('terminal', ['ready','entering'].includes(next));
   document.body.classList.toggle('entering', next === 'entering');
   document.body.classList.toggle('paused',next==='paused');
+  if(next==='running')document.body.classList.remove('detached');
   if (next === 'paused') $('paused').focus({preventScroll:true});
 }
 
@@ -45,7 +48,7 @@ async function start() {
   let audioReady;
   try{audioReady=sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));}catch(e){console.warn('Audio unavailable; continuing silently.',e.message);}
   if (disposed || mode === 'error') return;
-  controlsFirstKey=null;idleReminderArmed=false;
+  controlsFirstKey=null;idleReminderArmed=false;deathElapsed=0;$('death-fade').hidden=true;
   run = createRun();run.speed=config.maxSpeed;startPursuit(run);startingThrottle=true; previous = { ...run }; view.reset(); sound.reset();view.aerial=false;view.aerialZoom=1;openingTime=0;view.opening=opening?0:null;
   document.body.style.setProperty('--opening-fade','1');
   setMode(opening?'entering':'running');sound.startMusic();
@@ -89,7 +92,7 @@ listen(window, 'keydown', event => {
   if (['running','entering'].includes(mode) && ['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)) event.preventDefault();
   if (key === 'Tab' && mode === 'running') { event.preventDefault(); if (!event.repeat) showSurvey = !showSurvey; return; }
   if (event.repeat) return;
-  if(key==='KeyF'&&['running','entering'].includes(mode)){run.turretCentering=true;return;}
+  if(key==='KeyF'&&['running','entering'].includes(mode)){run.gunnerLeveling=true;return;}
   if (key === 'KeyH' && mode === 'running') { showInstruments = !showInstruments; return; }
   if (key === 'KeyV' && mode === 'running') { run.gunner=false;view.aerial = !view.aerial; view.freshCamera = true; return; }
   if (key === 'Enter' && mode === 'ready') { event.preventDefault(); terminal.done ? start() : terminal.finish(); return; }
@@ -150,6 +153,21 @@ function updateHud() {
   }
 }
 
+function updateDeathTerminal(dt){
+  const fade=$('death-fade');
+  if(!run.crushed){deathElapsed=0;fade.hidden=true;return;}
+  if(!['running','entering'].includes(mode))return;
+  deathElapsed+=dt;
+  const amount=Math.max(0,Math.min(1,(deathElapsed-DEATH_TERMINAL.holdSeconds)/DEATH_TERMINAL.fadeSeconds));
+  fade.hidden=amount===0;fade.style.opacity=String(amount);
+  if(amount<1)return;
+  view.opening=null;document.body.style.setProperty('--opening-fade','1');
+  $('terminal-text').textContent=DEATH_TERMINAL.message;
+  const copy=$('terminal-text').parentElement;copy.setAttribute('aria-label',DEATH_TERMINAL.message.replace('\n','. '));
+  document.body.classList.add('detached');setMode('ready');fade.hidden=true;
+  copy.animate([{opacity:0},{opacity:1}],{duration:view.reducedMotion?0:500});
+}
+
 function finishOpening(){const held=[...keys],firing=mouseFire,queued=fireQueued;view.opening=null;openingTime=openingDuration;setMode('running');for(const key of held)keys.add(key);mouseFire=firing;fireQueued=queued;}
 
 function frame(ms) {
@@ -178,6 +196,7 @@ function frame(ms) {
       for (const event of run.events.splice(0)) { view.event(event); sound.effect(event.type,event); }
     }
   }
+  if(view&&mode!=='error')updateDeathTerminal(dt);
   if (view && mode !== 'error') {
     view.render(run, previous, mode === 'running' ? accumulator / fixedStep : 1, dt, mode, keys.has('KeyC'));
     sound.update(run, view.camera, mode === 'running'||mode==='entering');

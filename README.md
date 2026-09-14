@@ -20,7 +20,7 @@ Open <http://127.0.0.1:5173>. Enter completes the typing terminal; Enter again s
 | S / Down | Brake, then reverse |
 | A/D / Left/Right | Steer, including turning in place |
 | J / L | Turn turret left / right |
-| F | Smoothly center turret; J/L interrupts |
+| F | Smoothly level gunner aim with the ground; I/K interrupts |
 | Space / left click | Fire; hold to repeat |
 | C (hold) | Rear view |
 | V | Toggle aerial view |

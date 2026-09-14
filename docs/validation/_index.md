@@ -316,3 +316,9 @@ The HTML supplies a black background immediately and loads the stylesheet throug
 Simulation coverage now includes stabilized gunner yaw, manual shot elevation, pitch limits, zoom-sensitive aiming, alert decay/renewal and cross-unit reports, and reverse turbo direction/caps/easing. Browser checks `--gunner`, `--cruise`, and `--searchlights` passed in Chrome. `test-results/gunner-sight.png` was visually compared with the supplied reticle image. Controls/startup checks also cover delayed CSS and initial hint timing.
 
 The final simulation suite passes all 52 tests. Gunner controls use J/L in both views, I/K for elevation, and O for zoom; Q/E rotation is disabled. Zoom sensitivity is tested against the field-of-view ratio.
+
+Gunner inertia follow-up: all 53 simulation tests pass, including acceleration, release/deceleration, direction reversal and clearing motion on mode exit. The gunner Chrome check passed with settled aiming before stabilization/projection assertions.
+
+`npm run test:browser -- --death-terminal` passed: a real fatal projectile triggers breakup, partial opacity during the fade, the exact two-line message with hidden game/HUD/cursor, and Return into a fresh run. The terminal capture is `test-results/death-terminal.png`.
+
+Final sizing/weapon checks: all 55 simulation tests passed, plus the strengthened scale-dependent separation check. `node tests/models.mjs` verified Recognizer height 19.5 m, feet at ground height zero, correct muzzle transforms, and folded poses without errors. The imported-model capture was inspected. F leveling and the five-second Clu projectile lifetime are covered by focused tests; the gunner Chrome check passed after those updates.

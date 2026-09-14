@@ -1,10 +1,10 @@
 import {retireTarget} from './target-memory.js';
 import {advanceFlight,FLIGHT} from './flight.js';
 import {freePosition, WALL_HEIGHT} from '../levels/maze.js';
-import {clamp} from '../game/config.js';
+import {clamp,RECOGNIZER_SCALE} from '../game/config.js';
 
-// Meters and seconds; origin is at the shoulder, 11 m above the soles.
-export const CRUSH=Object.freeze({foldSeconds:1.3,dropAcceleration:85,recoverSpeed:22,cooldown:7,clearance:10,triggerDistance:4,soleHeight:11,hitRadius:5.5});
+// Meters and seconds; model-local distances track the rendered scale.
+export const CRUSH=Object.freeze({foldSeconds:1.3,dropAcceleration:85,recoverSpeed:22,cooldown:7,clearance:20*RECOGNIZER_SCALE,triggerDistance:8*RECOGNIZER_SCALE,soleHeight:22*RECOGNIZER_SCALE,hitRadius:11*RECOGNIZER_SCALE});
 export function stompDuration(altitude){
   return CRUSH.foldSeconds+Math.sqrt(2*Math.max(0,altitude-CRUSH.soleHeight)/CRUSH.dropAcceleration);
 }
