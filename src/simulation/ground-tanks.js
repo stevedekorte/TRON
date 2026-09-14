@@ -6,7 +6,7 @@ import {formationTarget} from './formation.js';
 import {intercept} from './intercept.js';
 export const ESCORT={count:8,speed:32,turnRate:.8,turretRate:1.3,fireRange:340,fireInterval:1.8,spacing:38};
 export function escortSlot(index,time){return {x:CARRIER.startX+CARRIER.speed*time+(index%2?100:-100),s:CARRIER.s+(index-3.5)*ESCORT.spacing};}
-export function createGroundTanks(){return Array.from({length:ESCORT.count},(_,index)=>({...escortSlot(index,0),index,id:100+index,kind:'ground',y:3.8,yaw:-Math.PI/2,turretYaw:0,speed:CARRIER.speed,vx:CARRIER.speed,vs:0,vy:0,state:'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]}));}
+export function createGroundTanks(){return Array.from({length:ESCORT.count},(_,index)=>({...escortSlot(index,0),index,id:100+index,kind:'ground',alertUntil:0,y:3.8,yaw:-Math.PI/2,turretYaw:0,speed:CARRIER.speed,vx:CARRIER.speed,vs:0,vy:0,state:'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]}));}
 const clear=(a,b)=>wallIntersection({...a,y:2},{...b,y:2},config.tankRadius+.5)===null;
 // Local A*: all edges are swept against the same expanded walls as the hull.
 export function groundRoute(start,goal){

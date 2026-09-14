@@ -1,3 +1,5 @@
+if(process.argv.includes('--cruise')){await import('./cruise.mjs');process.exit(0);}
+if(process.argv.includes('--gunner')){await import('./gunner.mjs');process.exit(0);}
 if(process.argv.includes('--startup-ui')){await import('./startup-ui.mjs');process.exit(0);}
 if(process.argv.includes('--ground-tanks')){await import('./ground-tanks.mjs');process.exit(0);}
 if(process.argv.includes('--searchlights')){await import('./searchlights.mjs');process.exit(0);}
@@ -27,7 +29,7 @@ try {
   await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
   let state=await page.evaluate(()=>window.__tron.state);assert.equal(state.weaponVisual.source,'arabinowitz');assert.equal(state.recognizers.length,9);assert.equal(state.audioSources,9);
   assert.equal(await page.locator('#instruments').isVisible(),false);
-  await page.keyboard.down('KeyE');await page.waitForTimeout(600);await page.keyboard.up('KeyE');
+  await page.keyboard.down('KeyL');await page.waitForTimeout(600);await page.keyboard.up('KeyL');
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.yaw,SPAWN.yaw);assert.ok(state.turretYaw<-.5);assert.equal(state.weaponVisual.barrelPitch,0);
   await page.keyboard.press('KeyR');await page.waitForTimeout(100);
   const initial=await page.evaluate(()=>window.__tron.state.s);
@@ -77,5 +79,5 @@ try {
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.audioContexts,1);assert.equal(state.audioSources,9);assert.equal(state.recognizers.length,9);assert.ok(state.recognizers.every(e=>e.memory===null));
   await page.setViewportSize({width:960,height:640});await page.keyboard.press('KeyH');await page.waitForTimeout(200);await page.screenshot({path:'test-results/resized.png'});
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:await browser.version(),checks:'five agents/audio sources, Q/E level turret, entry and branch driving, pause freezes AI, aerial/survey, sighting memory, shooting, 10 resets, resize',resources:state.renderer,performance:await page.evaluate(()=>window.__tron.performance),errors},null,2));
+  console.log(JSON.stringify({browser:await browser.version(),checks:'five agents/audio sources, J/L level turret, entry and branch driving, pause freezes AI, aerial/survey, sighting memory, shooting, 10 resets, resize',resources:state.renderer,performance:await page.evaluate(()=>window.__tron.performance),errors},null,2));
 }finally{await browser.close();}

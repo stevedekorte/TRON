@@ -16,13 +16,17 @@ Open <http://127.0.0.1:5173>. Enter completes the typing terminal; Enter again s
 | Control | Action |
 | --- | --- |
 | W / Up | Accelerate |
+| Shift+W | Latch throttle; W cancels |
 | S / Down | Brake, then reverse |
 | A/D / Left/Right | Steer, including turning in place |
-| Q / E | Turn turret left / right |
-| F | Smoothly center turret; Q/E interrupts |
+| J / L | Turn turret left / right |
+| F | Smoothly center turret; J/L interrupts |
 | Space / left click | Fire; hold to repeat |
 | C (hold) | Rear view |
 | V | Toggle aerial view |
+| P | Toggle stabilized first-person gunner view |
+| O | Cycle gunner zoom: 1× / 2× / 4× |
+| I / J / K / L | Gunner aim: up / left / down / right; slower when zoomed |
 | Scroll wheel / two-finger scroll | Zoom aerial view (also while paused) |
 | Tab | Toggle maze survey; does not reveal aircraft knowledge |
 | H | Toggle instruments (hidden by default) |

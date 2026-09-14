@@ -2,18 +2,19 @@ import {createGroundTanks,updateGroundTanks} from './ground-tanks.js';
 import {intercept} from './intercept.js';
 import { TANK } from '../game/tank.js';
 import { nearbyWalls, insideWall, closestWallPoint, SPAWN, wallIntersection, lineOfSight } from '../levels/maze.js';
-import { config, TURBO, RECOGNIZER_SCALE, clamp, damp, angleDelta } from '../game/config.js';
+import { config, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, clamp, damp, angleDelta } from '../game/config.js';
 import { createRecognizers, updateRecognizers, perceive } from './recognizers.js';
 
 export function createRun() {
-  return {...SPAWN,turretYaw:0,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+  return {...SPAWN,cruiseThrottle:false,gunner:false,gunnerZoom:0,aimPitch:0,turretYaw:0,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
     enemyTanks:createGroundTanks(),health:3,crushed:false,cooldown:0,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(),radio:[]};
 }
 
-export function boostTank(run){
+export function boostTank(run,requestedDirection=1){
   if(run.crushed||run.turboCooldown>0)return false;
   run.turboRemaining=TURBO.duration;run.turboCooldown=TURBO.rechargeSeconds;
-  run.speed=Math.max(run.speed,config.maxSpeed*TURBO.speedMultiplier);
+  const direction=Math.abs(run.speed)>.5?Math.sign(run.speed):Math.sign(requestedDirection)||1;
+  run.speed=direction*config.maxSpeed*TURBO.speedMultiplier*(direction<0?TURBO.reverseRatio:1);
   return true;
 }
 
@@ -62,6 +63,7 @@ export function cannonPose(run) {
 
 export function cannonTarget(run) {
   const pose=cannonPose(run);
+  if(run.gunner)return {manual:true,lock:false,id:null,distance:160,x:pose.x-Math.sin(pose.yaw)*Math.cos(run.aimPitch)*160,s:pose.s+Math.cos(pose.yaw)*Math.cos(run.aimPitch)*160,y:pose.y+Math.sin(run.aimPitch)*160};
   let best=null;
   for(const e of [...run.recognizers,...run.enemyTanks]) {
     if(e.state==='destroyed')continue;
@@ -83,7 +85,7 @@ export function updateWeapons(run,input,dt) {
   if(input.fire&&run.cooldown<=0) {
     const target=cannonTarget(run),pose=cannonPose(run),{x,s,y,yaw}=pose;
     const distance=target.lock?Math.max(1,target.distance):160;
-    const dx=target.lock?target.x-x:-Math.sin(yaw)*distance,ds=target.lock?target.s-s:Math.cos(yaw)*distance;
+    const dx=(target.lock||target.manual)?target.x-x:-Math.sin(yaw)*distance,ds=(target.lock||target.manual)?target.s-s:Math.cos(yaw)*distance;
     const dy=target.y-y;
     const length=Math.hypot(dx,ds,dy);
     // A muzzle poking into a wall cannot fire through it.
@@ -125,29 +127,33 @@ export function updateWeapons(run,input,dt) {
 }
 
 export function step(run,input,dt) {
-  if(run.crushed){input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
+  if(run.crushed){run.cruiseThrottle=false;input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
   run.turboCooldown=run.turboCooldown<=dt+1e-8?0:run.turboCooldown-dt;
   run.time+=dt;run.impact=Math.max(0,run.impact-dt*2.5);
+  const hullYawBefore=run.yaw,aimScale=run.gunner?gunnerAimScale(run.gunnerZoom):1;
+  if(run.gunner)run.aimPitch=clamp(run.aimPitch+(input.aimPitch||0)*GUNNER.pitchRate*dt*aimScale,GUNNER.minPitch,GUNNER.maxPitch);
   const turretInput=clamp(input.turret||0,-1,1);
   if(turretInput)run.turretCentering=false;
   if(run.turretCentering){
     const angle=angleDelta(0,run.turretYaw);
     run.turretYaw=Math.sign(angle)*Math.max(0,Math.abs(angle)-config.turretSpeed*dt);
     if(run.turretYaw===0){run.turretYaw=0;run.turretCentering=false;}
-  }else run.turretYaw=angleDelta(0,run.turretYaw-turretInput*config.turretSpeed*dt);
+  }else run.turretYaw=angleDelta(0,run.turretYaw-turretInput*config.turretSpeed*dt*aimScale);
   const boosting=run.turboRemaining>0,previousSpeed=run.speed;
   const speedLimit=config.maxSpeed*(boosting?TURBO.speedMultiplier:1);
-  const throttle=input.throttle<0?input.throttle:(boosting?1:input.throttle||0);
+  const throttle=input.throttle||(boosting?(Math.sign(run.speed)||1):0);
   run.turboRemaining=run.turboRemaining<=dt+1e-8?0:run.turboRemaining-dt;
   if(throttle>0)run.speed+=(run.speed<0?config.braking:config.acceleration)*dt;
   else if(throttle<0)run.speed-=(run.speed>0?config.braking:config.acceleration*.6)*dt;
   else run.speed=Math.sign(run.speed)*Math.max(0,Math.abs(run.speed)-config.drag*dt);
   // Ease back to cruise speed at the end instead of snapping downward.
   const limit=boosting?speedLimit:Math.max(speedLimit,previousSpeed-config.braking*dt);
-  run.speed=clamp(run.speed,-config.reverseSpeed,limit);
+  const reverseLimit=boosting?speedLimit*TURBO.reverseRatio:Math.max(config.reverseSpeed,-previousSpeed-config.braking*dt);
+  run.speed=clamp(run.speed,-reverseLimit,limit);
   run.steer=damp(run.steer,input.steer||0,8,dt);
   const turnFactor=.65+.35*(1-Math.min(1,Math.abs(run.speed)/config.maxSpeed));
   run.yaw-=run.steer*config.steering*turnFactor*(run.speed<-.5?-1:1)*dt;
+  if(run.gunner)run.turretYaw=angleDelta(0,run.turretYaw-angleDelta(hullYawBefore,run.yaw));
   const beforeX=run.x,beforeS=run.s;
   if(moveTank(run,-Math.sin(run.yaw)*run.speed*dt,Math.cos(run.yaw)*run.speed*dt)) {
     const travel=Math.hypot(run.x-beforeX,run.s-beforeS);

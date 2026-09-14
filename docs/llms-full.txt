@@ -386,6 +386,15 @@ Clu and enemy tanks take three cannon hits; destruction uses the existing fragme
 The HTML supplies a black background immediately and loads the stylesheet through a render-blocking link. Content is hidden until styles apply, avoiding an unformatted text flash. Controls appear at game entry and remain until ten simulated seconds after the first gameplay key press; the Return used to start does not count. Later keyboard activity re-enables the idle reminder. Pausing freezes the countdown, and resetting starts it over. `npm run test:browser -- --startup-ui` passed with deliberately delayed CSS, initial controls visibility, timed fade and subsequent idle reminder checks.
 
 
+### Gunner view, driving and alertness — September 14
+
+P toggles a first-person sight patterned after `Tank POV cross hairs.png`. O cycles approximately 1×/2×/4× fields of view. I/J/K/L aim vertically and horizontally; J/L rotate the turret in both views; Q/E no longer rotate it. Hull rotation is compensated to hold the sight's world heading. Gunner shots follow the manual sight without automatic target lead/height assistance; the third-person weapon keeps its existing assistance. The visible barrel stays level. Aiming rates scale with the tangent of the zoom field of view for consistent screen-space motion.
+
+Shift+W latches forward throttle until W is pressed again; S overrides it while held. The latch survives pause and clears on reset/destruction. Turbo follows the current motion direction (or requested reverse from rest). Normal reverse caps at 16.5 m/s versus 22 m/s forward; boosted reverse caps at 41.25 m/s versus 55 m/s forward. Both ease back to normal speeds after boosting.
+
+Recognizer alertness is independent of movement state. Actual sightings and fresh radio reports raise an alert until three minutes after the original observation time. Relays do not refresh the timestamp. Searchlights require an alert, no direct visual contact, and no position report newer than 1.5 seconds. They operate while wandering/searching/investigating, fade over the final 30 seconds of alertness, and shut off immediately on reacquisition or confirmed Clu destruction. Routine unalerted patrols no longer scan.
+
+
 ---
 
 <!-- Page: assets -->
@@ -978,3 +987,10 @@ The existing 38 simulation tests and eight ground-tank tests pass. New coverage 
 ### Startup presentation — September 14
 
 The HTML supplies a black background immediately and loads the stylesheet through a render-blocking link. Content is hidden until styles apply, avoiding an unformatted text flash. Controls appear at game entry and remain until ten simulated seconds after the first gameplay key press; the Return used to start does not count. Later keyboard activity re-enables the idle reminder. Pausing freezes the countdown, and resetting starts it over. `npm run test:browser -- --startup-ui` passed with deliberately delayed CSS, initial controls visibility, timed fade and subsequent idle reminder checks.
+
+
+### September 14 follow-up checks
+
+Simulation coverage now includes stabilized gunner yaw, manual shot elevation, pitch limits, zoom-sensitive aiming, alert decay/renewal and cross-unit reports, and reverse turbo direction/caps/easing. Browser checks `--gunner`, `--cruise`, and `--searchlights` passed in Chrome. `test-results/gunner-sight.png` was visually compared with the supplied reticle image. Controls/startup checks also cover delayed CSS and initial hint timing.
+
+The final simulation suite passes all 52 tests. Gunner controls use J/L in both views, I/K for elevation, and O for zoom; Q/E rotation is disabled. Zoom sensitivity is tested against the field-of-view ratio.

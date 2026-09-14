@@ -1,3 +1,4 @@
+import {cannonPose} from '../simulation/run.js';
 import {ESCORT} from '../simulation/ground-tanks.js';
 import {Searchlights} from './searchlights.js';
 import {updateCarrier} from './carrier.js';
@@ -10,7 +11,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createWorld } from './world.js';
 import { createRecognizer,cloneEnemyTank } from './models.js';
-import { config, RECOGNIZER_SCALE, angleDelta } from '../game/config.js';
+import { config, GUNNER, RECOGNIZER_SCALE, angleDelta } from '../game/config.js';
 import { RECOGNIZER_STARTS, wallIntersection, lineOfSight } from '../levels/maze.js';
 
 export class View {
@@ -82,13 +83,13 @@ export class View {
 
   render(run, previous, alpha, dt, mode, rear = false) {
     this.elapsed += dt;
-    const preview = mode === 'ready';
+    const preview = mode === 'ready',gunner=run.gunner&&!run.crushed&&!preview&&this.opening==null;
     if(this.carrier){this.carrier.visible=!preview;updateCarrier(this.carrier,run.time);}
     const x = previous.x + (run.x - previous.x) * alpha;
     const s = previous.s + (run.s - previous.s) * alpha;
     const yaw = previous.yaw + angleDelta(previous.yaw, run.yaw) * alpha;
     this.tank.root.position.set(x, 0, -s);
-    this.tank.root.visible=!run.crushed;this.tank.root.scale.y=1;
+    this.tank.root.visible=!run.crushed&&!gunner;this.tank.root.scale.y=1;
     this.tank.root.rotation.set(0, yaw, 0);
     this.tank.turret.rotation.y = previous.turretYaw + angleDelta(previous.turretYaw, run.turretYaw) * alpha;
     this.tank.barrel.rotation.x = 0;
@@ -184,8 +185,16 @@ export class View {
       this.camera.lookAt(this.look.x,this.camera.position.y+Math.tan(pitch)*length,this.look.z);
     } else this.camera.lookAt(this.look);
     this.freshCamera = false;
+    if(gunner){
+      const pose=cannonPose({x,s,yaw,turretYaw:this.tank.turret.rotation.y});
+      const pitch=(previous.aimPitch??run.aimPitch)+(run.aimPitch-(previous.aimPitch??run.aimPitch))*alpha;
+      const obstruction=wallIntersection({x,s,y:pose.y},pose,.2);
+      if(obstruction!==null){const t=Math.max(0,obstruction-.02);pose.x=x+(pose.x-x)*t;pose.s=s+(pose.s-s)*t;}
+      this.camera.position.set(pose.x,pose.y,-pose.s);
+      this.camera.lookAt(pose.x-Math.sin(pose.yaw)*Math.cos(pitch)*100,pose.y+Math.sin(pitch)*100,-pose.s-Math.cos(pose.yaw)*Math.cos(pitch)*100);
+    }
     this.camera.far=12000;
-    this.camera.fov = this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov); this.camera.updateProjectionMatrix();
+    this.camera.fov = gunner?GUNNER.fovs[run.gunnerZoom]:this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov); this.camera.updateProjectionMatrix();
     this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):(this.aerial ? .06 : 1)));
     this.world.aerialView.value=this.opening!=null?1-this.opening:(this.aerial&&!this.referenceCamera?1:0);
     this.bloom.strength = config.bloom; this.bloom.enabled = !this.lowQuality;

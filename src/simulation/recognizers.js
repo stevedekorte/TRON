@@ -1,3 +1,4 @@
+import {raiseAlert} from './alertness.js';
 import {formationTarget} from './formation.js';
 import {retireTarget} from './target-memory.js';
 import {advanceFlight,FLIGHT} from './flight.js';
@@ -9,7 +10,7 @@ export const SENSORS = Object.freeze({range:MAZE_LENGTH,fov:Math.PI*.82,interval
 function random(e) {e.seed=(Math.imul(e.seed,1664525)+1013904223)>>>0;return e.seed/4294967296;}
 export function createRecognizers() {
   return RECOGNIZER_STARTS.map((p,id)=>({...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:-Math.atan2(-p.x,-p.s),
-    state:'wander',health:3,hit:0,vx:0,vs:0,vy:0,seed:1982+id*199,
+    alertUntil:0,state:'wander',health:3,hit:0,vx:0,vs:0,vy:0,seed:1982+id*199,
     targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0}));
 }
 export function canSeeClu(e,clu) {
@@ -23,7 +24,7 @@ export function canSeeClu(e,clu) {
 function remember(e,sighting,now) {
   if(e.targetGone)return;
   if(now-sighting.seenAt>SENSORS.memorySeconds||e.memory&&e.memory.seenAt>=sighting.seenAt)return;
-  e.memory={...sighting};e.goal=null;e.goalUntil=0;e.searchIndex=0;
+  raiseAlert(e,sighting.seenAt);e.memory={...sighting};e.goal=null;e.goalUntil=0;e.searchIndex=0;
 }
 // This is the only function allowed to inspect the live tank state.
 export function perceive(e,clu,now) {
