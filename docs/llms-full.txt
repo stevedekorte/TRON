@@ -23,6 +23,7 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 <a class="card" href="assets/index.html"><h3>Assets</h3><p>Models, sounds, dependencies and source credits.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="models/index.html"><h3>Models</h3><p>Imported tank and Recognizer files, scales and material adapters.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="references/index.html"><h3>References</h3><p>Film stills and visual targets for the maze and vehicles.</p><span class="arrow">View &rarr;</span></a>
+<a class="card" href="sounds/index.html"><h3>Sound library</h3><p>Listen to sound candidates, compare current effects, and browse future resources.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="validation/index.html"><h3>Validation</h3><p>Browser checks, measured results and remaining review.</p><span class="arrow">View &rarr;</span></a>
 </div>
 
@@ -418,6 +419,8 @@ Clu muzzle flash now follows the supplied still and frames around 1:51: a broad 
 
 Gunner view now hides Clu’s muzzle flash entirely; external views retain the cyan burst. Prepared balanced and stronger cleanup candidates for the user-supplied short Recognizer explosion edit, accessible on `/audio.html`; these are audition candidates, not a replacement for the active game sample.
 
+Added a sound resource shelf with 25 entries and 17 local audio players, including four Syna-Max recreations retained for future use. Six stock-effect IDs were checked against publisher catalogs; their association with film scenes remains a community-source lead pending audition. Saved Serafine Sci-Fi I/II metadata exports (420 and 1,028 rows) with source links. This does not change runtime sounds or require an account/purchase.
+
 
 ---
 
@@ -542,6 +545,10 @@ Re-cut `recognizer-flight.wav` from exactly 2:04–2:06 of the local `1982 tron 
 Correction: the 3:06–3:07 selection contained terminal typing. `recognizer-explosion.wav` now uses video time 1:47.84–1:48.69 (0.85 seconds), aligned with the visible explosion before the cockpit cut. Recognizer excerpts are now extracted from the user-supplied M4A. Full decoded PCM comparison found that M4A equals the video audio after trimming its first 2112 frames (47.89 ms); the extraction script compensates for this offset and records source/seek per sample. The game and audition page request version 2 of the explosion to bypass the previous cached audio.
 
 The supplied `Recognizer Explosion.m4a` edit matches video time 113.207 seconds (normalized waveform correlation 0.997). `scripts/clean-recognizer-explosion.py` uses surrounding soundtrack context and shared-stereo harmonic/percussive masks to suppress sustained tonal ridges. It generates original/balanced/strong audition WAVs under `public/audio/studies` and a provenance manifest. Requires NumPy/SciPy (installed only in a temporary environment). This is approximate suppression: overlapping cannon/explosion energy cannot be reliably separated by this method, and stronger masking loses transient detail. Listening comparison is pending.
+
+## Sound resource library
+
+[Open the sound library](../sounds/index.html) for downloaded Syna-Max recreation previews, existing film edits, cleanup candidates, verified stock-effect catalog IDs and vendor metadata exports. The shelf preserves inactive resources, author/source links and licensing notes for this personal-use project. `docs/sounds/catalog.json` is the editable inventory; `scripts/build-sound-library.mjs` regenerates its page during the docs build. Public MP3 previews are clearly distinguished from original downloads and unacquired commercial-library audio.
 
 
 ---
@@ -701,6 +708,334 @@ Runtime approximation: only small red lamp meshes pulse, about one second per cy
 ### Recognizer spotlight stills
 
 User-supplied `images/Recognizer Spotlight/IMG_3514.jpeg` through `IMG_3520.jpeg` show a crown-mounted white/cyan core and diffuse blue-violet halo. IMG_3520 provides the clearest close-up of the front projector. The first procedural rendering uses these colors and soft boundaries. Sweep timing and search behavior are inferred; no video was available to measure them.
+
+
+---
+
+<!-- Page: sounds -->
+Source: /sounds/
+
+---
+title: Sound library
+subtitle: 1982 TRON sounds, experiments and future resources
+---
+
+Reviewed 2026-09-14. Personal-use resource shelf; retain attribution and source history; candidates are not automatically installed in gameplay.
+
+[Game sound study](../../audio.html) · [Machine-readable catalog](catalog.json)
+
+Start with the Syna-Max Recognizer and derezz recreations. Four public HQ MP3 previews are saved locally; full original downloads use the creator’s Freesound pages. The shelf also retains current game sounds, cleanup experiments, six stock-effect leads, and two complete vendor metadata catalogs. Auditory comparison is pending; file verification is not a claim of film fidelity.
+
+## Recreations
+
+### Recognizer — Syna-Max
+
+**Local HQ MP3 preview; original download requires Freesound login** · Aircraft propulsion
+
+Synthesized recreation of the 1982 Recognizer; creator describes 3xOSC plus flanging. Strong candidate for a clean flight loop.
+
+<audio controls preload="none" aria-label="Recognizer — Syna-Max" src="previews/syna-max-69757.mp3"></audio>
+
+[Open audio file](previews/syna-max-69757.mp3)
+
+[Source](https://freesound.org/people/Syna-Max/sounds/69757/) · Syna-Max · [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+
+91.95 seconds · 2 channels · 2.55 MB · HQ MP3 preview, not the original master.
+
+### Derezz — Syna-Max
+
+**Local HQ MP3 preview; original download requires Freesound login** · Destruction
+
+Recreated 1982 derezz effects; audition individual events as alternatives to mixed-film explosions.
+
+<audio controls preload="none" aria-label="Derezz — Syna-Max" src="previews/syna-max-69966.mp3"></audio>
+
+[Open audio file](previews/syna-max-69966.mp3)
+
+[Source](https://freesound.org/people/Syna-Max/sounds/69966/) · Syna-Max · [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+
+20.61 seconds · 2 channels · 0.24 MB · HQ MP3 preview, not the original master.
+
+### Lightcycle — Syna-Max
+
+**Local HQ MP3 preview; original download requires Freesound login** · Future vehicles
+
+Recreated original-film lightcycle; retained for possible later vehicle experiments.
+
+<audio controls preload="none" aria-label="Lightcycle — Syna-Max" src="previews/syna-max-69764.mp3"></audio>
+
+[Open audio file](previews/syna-max-69764.mp3)
+
+[Source](https://freesound.org/people/Syna-Max/sounds/69764/) · Syna-Max · [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+
+48.82 seconds · 2 channels · 1.03 MB · HQ MP3 preview, not the original master.
+
+### Synth ambience — Syna-Max
+
+**Local HQ MP3 preview; original download requires Freesound login** · Environment / carrier interior
+
+Original futuristic ambience in the same pack; not claimed to be a specific movie stem.
+
+<audio controls preload="none" aria-label="Synth ambience — Syna-Max" src="previews/syna-max-69967.mp3"></audio>
+
+[Open audio file](previews/syna-max-69967.mp3)
+
+[Source](https://freesound.org/people/Syna-Max/sounds/69967/) · Syna-Max · [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+
+27.19 seconds · 2 channels · 0.68 MB · HQ MP3 preview, not the original master.
+
+## Current game sounds
+
+### Tank Drive
+
+**Active** · Vehicle / combat
+
+Video time 10.750s; 0.580s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Tank Drive" src="../../audio/tank-drive.wav"></audio>
+
+[Open audio file](../../audio/tank-drive.wav)
+
+[Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Recognizer Flight
+
+**Active** · Vehicle / combat
+
+Video time 124.000s; 1.880s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Recognizer Flight" src="../../audio/recognizer-flight.wav"></audio>
+
+[Open audio file](../../audio/recognizer-flight.wav)
+
+[Source](../references/videos/1982 tron clu scene.m4a) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Recognizer Approach
+
+**Active** · Vehicle / combat
+
+Video time 126.200s; 2.080s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Recognizer Approach" src="../../audio/recognizer-approach.wav"></audio>
+
+[Open audio file](../../audio/recognizer-approach.wav)
+
+[Source](../references/videos/1982 tron clu scene.m4a) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Cannon
+
+**Active** · Vehicle / combat
+
+Video time 121.380s; 0.380s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Cannon" src="../../audio/cannon.wav"></audio>
+
+[Open audio file](../../audio/cannon.wav)
+
+[Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Recognizer Explosion
+
+**Active** · Vehicle / combat
+
+Video time 107.840s; 0.850s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Recognizer Explosion" src="../../audio/recognizer-explosion.wav"></audio>
+
+[Open audio file](../../audio/recognizer-explosion.wav)
+
+[Source](../references/videos/1982 tron clu scene.m4a) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Terminal Key 1
+
+**Active** · Terminal UI
+
+Video time 0.885s; 0.060s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Terminal Key 1" src="../../audio/terminal-key-1.wav"></audio>
+
+[Open audio file](../../audio/terminal-key-1.wav)
+
+[Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Terminal Key 2
+
+**Active** · Terminal UI
+
+Video time 1.395s; 0.060s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Terminal Key 2" src="../../audio/terminal-key-2.wav"></audio>
+
+[Open audio file](../../audio/terminal-key-2.wav)
+
+[Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Terminal Key 3
+
+**Active** · Terminal UI
+
+Video time 0.995s; 0.060s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Terminal Key 3" src="../../audio/terminal-key-3.wav"></audio>
+
+[Open audio file](../../audio/terminal-key-3.wav)
+
+[Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Terminal Key 4
+
+**Active** · Terminal UI
+
+Video time 1.585s; 0.060s prepared audio. Mixed film soundtrack; may include score or other effects.
+
+<audio controls preload="none" aria-label="Terminal Key 4" src="../../audio/terminal-key-4.wav"></audio>
+
+[Open audio file](../../audio/terminal-key-4.wav)
+
+[Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+### Carrier rumble
+
+**Active** · Carrier presence
+
+Carrier and solar sailer video, 116.2–120.2 seconds; filtered and looped to 3.6 seconds.
+
+<audio controls preload="none" aria-label="Carrier rumble" src="../../audio/carrier-rumble.wav"></audio>
+
+[Open audio file](../../audio/carrier-rumble.wav)
+
+[Source](../references/videos/carrier%20and%20solar%20sailer.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+
+## Experiments
+
+### Explosion cleanup — original
+
+**Audition only** · Destruction
+
+Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; stronger processing also removes explosion texture. Overlapping cannon may remain.
+
+<audio controls preload="none" aria-label="Explosion cleanup — original" src="../../audio/studies/recognizer-explosion-original.wav"></audio>
+
+[Open audio file](../../audio/studies/recognizer-explosion-original.wav)
+
+[Source](../references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
+
+### Explosion cleanup — balanced
+
+**Audition only** · Destruction
+
+Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; stronger processing also removes explosion texture. Overlapping cannon may remain.
+
+<audio controls preload="none" aria-label="Explosion cleanup — balanced" src="../../audio/studies/recognizer-explosion-balanced.wav"></audio>
+
+[Open audio file](../../audio/studies/recognizer-explosion-balanced.wav)
+
+[Source](../references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
+
+### Explosion cleanup — strong
+
+**Audition only** · Destruction
+
+Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; stronger processing also removes explosion texture. Overlapping cannon may remain.
+
+<audio controls preload="none" aria-label="Explosion cleanup — strong" src="../../audio/studies/recognizer-explosion-strong.wav"></audio>
+
+[Open audio file](../../audio/studies/recognizer-explosion-strong.wav)
+
+[Source](../references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
+
+## Stock-library leads
+
+### Heavy Caliber Lazer — synth piano
+
+**Catalog verified; film match unconfirmed; audio not acquired** · Tank cannon
+
+Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.
+
+[Source](https://portal.sound-ideas.com/Files/SpecificationFile/Cartoon_Trax_Sound_Effects.pdf) · The Hollywood Edge / Sound Ideas · Commercial library; no purchase made
+
+[Community film-match lead](https://soundeffects.fandom.com/wiki/Tron_(1982))
+
+### Heavy Caliber Lazer — echo variant
+
+**Catalog verified; film match unconfirmed; audio not acquired** · Distant cannon
+
+Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.
+
+[Source](https://portal.sound-ideas.com/Files/SpecificationFile/Cartoon_Trax_Sound_Effects.pdf) · The Hollywood Edge / Sound Ideas · Commercial library; no purchase made
+
+[Community film-match lead](https://soundeffects.fandom.com/wiki/Tron_(1982))
+
+### Heavy Caliber Lazer — scratchy variant
+
+**Catalog verified; film match unconfirmed; audio not acquired** · Cannon impact
+
+Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.
+
+[Source](https://portal.sound-ideas.com/Files/SpecificationFile/Cartoon_Trax_Sound_Effects.pdf) · The Hollywood Edge / Sound Ideas · Commercial library; no purchase made
+
+[Community film-match lead](https://soundeffects.fandom.com/wiki/Tron_(1982))
+
+### Laser Blast Short
+
+**Catalog verified; film match unconfirmed; audio not acquired** · Weapon accents
+
+Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.
+
+[Source](https://portal.sound-ideas.com/Files/SpecificationFile/Cartoon_Trax_Sound_Effects.pdf) · The Hollywood Edge / Sound Ideas · Commercial library; no purchase made
+
+[Community film-match lead](https://soundeffects.fandom.com/wiki/Tron_(1982))
+
+### Synth Energy Zaps 1 — tonal delay
+
+**Catalog verified; film match unconfirmed; audio not acquired** · Recognizer power-up
+
+Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.
+
+[Source](https://portal.sound-ideas.com/Files/SpecificationFile/Premiere_Edition_Vol._1_Sound_Effects_Library.pdf) · The Hollywood Edge / Sound Ideas · Commercial library; no purchase made
+
+[Community film-match lead](https://soundeffects.fandom.com/wiki/Tron_(1982))
+
+### Descending multipitched synth laser
+
+**Catalog verified; film match unconfirmed; audio not acquired** · Derezz / laser
+
+Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.
+
+[Source](https://portal.sound-ideas.com/Files/SpecificationFile/Premiere_Edition_Vol._1_Sound_Effects_Library.pdf) · The Hollywood Edge / Sound Ideas · Commercial library; no purchase made
+
+[Community film-match lead](https://soundeffects.fandom.com/wiki/Tron_(1982))
+
+## Library resources
+
+### Serafine Sci-Fi I
+
+**Catalog saved; full audio not acquired** · Future ambience, machinery, weapons and transitions
+
+General Frank Serafine collection, not a verified original TRON stems release. Product variants were marked sold out when checked. Local CSV is metadata only.
+
+[Source](https://sound-ideas.com/products/sci-fi-i-sound-effects-library-by-serafine) · Frank Serafine / Sound Ideas · Commercial library; no purchase made
+
+[Local catalog: 420 rows](catalogs/serafine-scifi-i.csv) · [Publisher CSV](https://portal.sound-ideas.com/CSVexport/product=476) · [Publisher audition page](https://soundideas.sourceaudio.com/album/3304227)
+
+### Serafine Sci-Fi II
+
+**Catalog saved; full audio not acquired** · Future ambience, machinery, weapons and transitions
+
+General Frank Serafine collection, not a verified original TRON stems release. Product variants were marked sold out when checked. Local CSV is metadata only.
+
+[Source](https://sound-ideas.com/products/sci-fi-ii-sound-effects-library-by-serafine) · Frank Serafine / Sound Ideas · Commercial library; no purchase made
+
+[Local catalog: 1028 rows](catalogs/serafine-scifi-ii.csv) · [Publisher CSV](https://portal.sound-ideas.com/CSVexport/product=477) · [Publisher audition page](https://soundideas.sourceaudio.com/album/3304306)
+
+## Next auditions
+
+1. Compare the Syna-Max Recognizer against the current film-derived flight loop.
+2. Pick useful events from the derezz recording and compare with the supplied explosion edit.
+3. Check CRT059908–10 and PE205401 against the film before treating them as matches.
+4. Keep lightcycle and synth ambience available for later vehicle/environment experiments.
+
+The Serafine collections provide further design material, but no exact Recognizer or tank stem has been verified there. No new library audio is loaded by the game.
 
 
 ---
@@ -1044,3 +1379,5 @@ Film effects/audio: `node tests/recognizer-audio.mjs` passed in headless Chrome 
 Muzzle/audio correction: `node tests/muzzle-flash.mjs` passed in Chrome: chase/gunner rendering, paused timing, actual firing and expiry, without console errors. Inspected both muzzle captures against the supplied still and extracted 1:51 frames. `node tests/recognizer-audio.mjs` passed for the final M4A-derived samples: 0.85-second stereo explosion, audible offline rendering, positional balance and cleanup. Direct auditory confirmation remains with the user. PCM comparison verified the M4A/video alignment exactly after 2112 audio frames.
 
 Gunner flash correction: `node tests/muzzle-flash.mjs` passed in Chrome with hidden gunner flash, visible external flash, pause freezing and expiry. Cleanup candidates were generated with finite, unclipped stereo PCM and matching durations; waveform alignment was verified against the full scene. Audio quality/source isolation needs user listening review.
+
+Sound library: `node tests/sound-library.mjs` passed in headless Chrome on macOS. Checks cover unique catalog IDs, existence of local media/catalogs, downloaded-preview SHA-256 hashes, documentation card navigation, 17 rendered players, all four downloaded previews loading valid durations, and successful playback. Inspected the library screenshot. Listening/film-match judgments remain for audition; commercial catalogs contain metadata only.

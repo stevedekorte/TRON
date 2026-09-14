@@ -1,0 +1,413 @@
+{
+  "reviewed": "2026-09-14",
+  "purpose": "Personal-use resource shelf; retain attribution and source history; candidates are not automatically installed in gameplay.",
+  "items": [
+    {
+      "id": "freesound-69757",
+      "title": "Recognizer \u2014 Syna-Max",
+      "group": "Recreations",
+      "status": "Local HQ MP3 preview; original download requires Freesound login",
+      "use": "Aircraft propulsion",
+      "notes": "Synthesized recreation of the 1982 Recognizer; creator describes 3xOSC plus flanging. Strong candidate for a clean flight loop.",
+      "author": "Syna-Max",
+      "source": "https://freesound.org/people/Syna-Max/sounds/69757/",
+      "license": "CC BY-NC 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "download_url": "https://cdn.freesound.org/previews/69/69757_111920-hq.mp3",
+      "playback": "previews/syna-max-69757.mp3",
+      "disk": "docs/sounds/previews/syna-max-69757.mp3",
+      "sha256": "3a16db543847b6dbdf9b7a841aa81b56b0d1571686cb5143021d3b8c42e07cf5",
+      "bytes": 2672054,
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "sample_rate": "44100",
+            "channels": 2,
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "91.951020"
+        }
+      }
+    },
+    {
+      "id": "freesound-69966",
+      "title": "Derezz \u2014 Syna-Max",
+      "group": "Recreations",
+      "status": "Local HQ MP3 preview; original download requires Freesound login",
+      "use": "Destruction",
+      "notes": "Recreated 1982 derezz effects; audition individual events as alternatives to mixed-film explosions.",
+      "author": "Syna-Max",
+      "source": "https://freesound.org/people/Syna-Max/sounds/69966/",
+      "license": "CC BY-NC 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "download_url": "https://cdn.freesound.org/previews/69/69966_111920-hq.mp3",
+      "playback": "previews/syna-max-69966.mp3",
+      "disk": "docs/sounds/previews/syna-max-69966.mp3",
+      "sha256": "a75bc5899f40dbcf1b2157cfba6c4d1c9cf44c9073d8d14abab3e9e370514ade",
+      "bytes": 247839,
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "sample_rate": "44100",
+            "channels": 2,
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "20.610612"
+        }
+      }
+    },
+    {
+      "id": "freesound-69764",
+      "title": "Lightcycle \u2014 Syna-Max",
+      "group": "Recreations",
+      "status": "Local HQ MP3 preview; original download requires Freesound login",
+      "use": "Future vehicles",
+      "notes": "Recreated original-film lightcycle; retained for possible later vehicle experiments.",
+      "author": "Syna-Max",
+      "source": "https://freesound.org/people/Syna-Max/sounds/69764/",
+      "license": "CC BY-NC 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "download_url": "https://cdn.freesound.org/previews/69/69764_111920-hq.mp3",
+      "playback": "previews/syna-max-69764.mp3",
+      "disk": "docs/sounds/previews/syna-max-69764.mp3",
+      "sha256": "5832f0cfe1f85e20186df5f652b49a8cca7fd6dc208c068ac9c3f7f6eea1ed07",
+      "bytes": 1081702,
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "sample_rate": "44100",
+            "channels": 2,
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "48.822857"
+        }
+      }
+    },
+    {
+      "id": "freesound-69967",
+      "title": "Synth ambience \u2014 Syna-Max",
+      "group": "Recreations",
+      "status": "Local HQ MP3 preview; original download requires Freesound login",
+      "use": "Environment / carrier interior",
+      "notes": "Original futuristic ambience in the same pack; not claimed to be a specific movie stem.",
+      "author": "Syna-Max",
+      "source": "https://freesound.org/people/Syna-Max/sounds/69967/",
+      "license": "CC BY-NC 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "download_url": "https://cdn.freesound.org/previews/69/69967_111920-hq.mp3",
+      "playback": "previews/syna-max-69967.mp3",
+      "disk": "docs/sounds/previews/syna-max-69967.mp3",
+      "sha256": "39b46079e78c16b44488ce7f2ab0b0e9ab42a01c07c23f8555b680fec5f5266c",
+      "bytes": 717101,
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "sample_rate": "44100",
+            "channels": 2,
+            "side_data_list": [
+              {}
+            ]
+          }
+        ],
+        "format": {
+          "duration": "27.193469"
+        }
+      }
+    },
+    {
+      "id": "tank-drive",
+      "title": "Tank Drive",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Vehicle / combat",
+      "notes": "Video time 10.750s; 0.580s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.mp4",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/tank-drive.wav",
+      "disk": "public/audio/tank-drive.wav"
+    },
+    {
+      "id": "recognizer-flight",
+      "title": "Recognizer Flight",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Vehicle / combat",
+      "notes": "Video time 124.000s; 1.880s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.m4a",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/recognizer-flight.wav",
+      "disk": "public/audio/recognizer-flight.wav"
+    },
+    {
+      "id": "recognizer-approach",
+      "title": "Recognizer Approach",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Vehicle / combat",
+      "notes": "Video time 126.200s; 2.080s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.m4a",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/recognizer-approach.wav",
+      "disk": "public/audio/recognizer-approach.wav"
+    },
+    {
+      "id": "cannon",
+      "title": "Cannon",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Vehicle / combat",
+      "notes": "Video time 121.380s; 0.380s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.mp4",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/cannon.wav",
+      "disk": "public/audio/cannon.wav"
+    },
+    {
+      "id": "recognizer-explosion",
+      "title": "Recognizer Explosion",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Vehicle / combat",
+      "notes": "Video time 107.840s; 0.850s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.m4a",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/recognizer-explosion.wav",
+      "disk": "public/audio/recognizer-explosion.wav"
+    },
+    {
+      "id": "terminal-key-1",
+      "title": "Terminal Key 1",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Terminal UI",
+      "notes": "Video time 0.885s; 0.060s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.mp4",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/terminal-key-1.wav",
+      "disk": "public/audio/terminal-key-1.wav"
+    },
+    {
+      "id": "terminal-key-2",
+      "title": "Terminal Key 2",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Terminal UI",
+      "notes": "Video time 1.395s; 0.060s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.mp4",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/terminal-key-2.wav",
+      "disk": "public/audio/terminal-key-2.wav"
+    },
+    {
+      "id": "terminal-key-3",
+      "title": "Terminal Key 3",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Terminal UI",
+      "notes": "Video time 0.995s; 0.060s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.mp4",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/terminal-key-3.wav",
+      "disk": "public/audio/terminal-key-3.wav"
+    },
+    {
+      "id": "terminal-key-4",
+      "title": "Terminal Key 4",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Terminal UI",
+      "notes": "Video time 1.585s; 0.060s prepared audio. Mixed film soundtrack; may include score or other effects.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/1982 tron clu scene.mp4",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/terminal-key-4.wav",
+      "disk": "public/audio/terminal-key-4.wav"
+    },
+    {
+      "id": "carrier-rumble",
+      "title": "Carrier rumble",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Carrier presence",
+      "notes": "Carrier and solar sailer video, 116.2\u2013120.2 seconds; filtered and looped to 3.6 seconds.",
+      "author": "TRON (1982) film soundtrack; local edit",
+      "source": "../references/videos/carrier%20and%20solar%20sailer.mp4",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/carrier-rumble.wav",
+      "disk": "public/audio/carrier-rumble.wav"
+    },
+    {
+      "id": "cleanup-original",
+      "title": "Explosion cleanup \u2014 original",
+      "group": "Experiments",
+      "status": "Audition only",
+      "use": "Destruction",
+      "notes": "Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; stronger processing also removes explosion texture. Overlapping cannon may remain.",
+      "author": "Film soundtrack; project processing",
+      "source": "../references/sounds/Recognizer%20Explosion.m4a",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/studies/recognizer-explosion-original.wav",
+      "disk": "public/audio/studies/recognizer-explosion-original.wav"
+    },
+    {
+      "id": "cleanup-balanced",
+      "title": "Explosion cleanup \u2014 balanced",
+      "group": "Experiments",
+      "status": "Audition only",
+      "use": "Destruction",
+      "notes": "Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; stronger processing also removes explosion texture. Overlapping cannon may remain.",
+      "author": "Film soundtrack; project processing",
+      "source": "../references/sounds/Recognizer%20Explosion.m4a",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/studies/recognizer-explosion-balanced.wav",
+      "disk": "public/audio/studies/recognizer-explosion-balanced.wav"
+    },
+    {
+      "id": "cleanup-strong",
+      "title": "Explosion cleanup \u2014 strong",
+      "group": "Experiments",
+      "status": "Audition only",
+      "use": "Destruction",
+      "notes": "Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; stronger processing also removes explosion texture. Overlapping cannon may remain.",
+      "author": "Film soundtrack; project processing",
+      "source": "../references/sounds/Recognizer%20Explosion.m4a",
+      "license": "User-supplied film reference; personal project",
+      "playback": "../../audio/studies/recognizer-explosion-strong.wav",
+      "disk": "public/audio/studies/recognizer-explosion-strong.wav"
+    },
+    {
+      "id": "CRT059908",
+      "title": "Heavy Caliber Lazer \u2014 synth piano",
+      "group": "Stock-library leads",
+      "status": "Catalog verified; film match unconfirmed; audio not acquired",
+      "use": "Tank cannon",
+      "notes": "Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.",
+      "author": "The Hollywood Edge / Sound Ideas",
+      "source": "https://portal.sound-ideas.com/Files/SpecificationFile/Cartoon_Trax_Sound_Effects.pdf",
+      "film_reference": "https://soundeffects.fandom.com/wiki/Tron_(1982)",
+      "license": "Commercial library; no purchase made"
+    },
+    {
+      "id": "CRT059909",
+      "title": "Heavy Caliber Lazer \u2014 echo variant",
+      "group": "Stock-library leads",
+      "status": "Catalog verified; film match unconfirmed; audio not acquired",
+      "use": "Distant cannon",
+      "notes": "Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.",
+      "author": "The Hollywood Edge / Sound Ideas",
+      "source": "https://portal.sound-ideas.com/Files/SpecificationFile/Cartoon_Trax_Sound_Effects.pdf",
+      "film_reference": "https://soundeffects.fandom.com/wiki/Tron_(1982)",
+      "license": "Commercial library; no purchase made"
+    },
+    {
+      "id": "CRT059910",
+      "title": "Heavy Caliber Lazer \u2014 scratchy variant",
+      "group": "Stock-library leads",
+      "status": "Catalog verified; film match unconfirmed; audio not acquired",
+      "use": "Cannon impact",
+      "notes": "Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.",
+      "author": "The Hollywood Edge / Sound Ideas",
+      "source": "https://portal.sound-ideas.com/Files/SpecificationFile/Cartoon_Trax_Sound_Effects.pdf",
+      "film_reference": "https://soundeffects.fandom.com/wiki/Tron_(1982)",
+      "license": "Commercial library; no purchase made"
+    },
+    {
+      "id": "CRT050606",
+      "title": "Laser Blast Short",
+      "group": "Stock-library leads",
+      "status": "Catalog verified; film match unconfirmed; audio not acquired",
+      "use": "Weapon accents",
+      "notes": "Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.",
+      "author": "The Hollywood Edge / Sound Ideas",
+      "source": "https://portal.sound-ideas.com/Files/SpecificationFile/Cartoon_Trax_Sound_Effects.pdf",
+      "film_reference": "https://soundeffects.fandom.com/wiki/Tron_(1982)",
+      "license": "Commercial library; no purchase made"
+    },
+    {
+      "id": "PE205401",
+      "title": "Synth Energy Zaps 1 \u2014 tonal delay",
+      "group": "Stock-library leads",
+      "status": "Catalog verified; film match unconfirmed; audio not acquired",
+      "use": "Recognizer power-up",
+      "notes": "Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.",
+      "author": "The Hollywood Edge / Sound Ideas",
+      "source": "https://portal.sound-ideas.com/Files/SpecificationFile/Premiere_Edition_Vol._1_Sound_Effects_Library.pdf",
+      "film_reference": "https://soundeffects.fandom.com/wiki/Tron_(1982)",
+      "license": "Commercial library; no purchase made"
+    },
+    {
+      "id": "PE208101",
+      "title": "Descending multipitched synth laser",
+      "group": "Stock-library leads",
+      "status": "Catalog verified; film match unconfirmed; audio not acquired",
+      "use": "Derezz / laser",
+      "notes": "Publisher catalog verifies the effect ID. A community film-effects index associates it with TRON (1982); exact scene/match still needs listening comparison.",
+      "author": "The Hollywood Edge / Sound Ideas",
+      "source": "https://portal.sound-ideas.com/Files/SpecificationFile/Premiere_Edition_Vol._1_Sound_Effects_Library.pdf",
+      "film_reference": "https://soundeffects.fandom.com/wiki/Tron_(1982)",
+      "license": "Commercial library; no purchase made"
+    },
+    {
+      "id": "serafine-i",
+      "title": "Serafine Sci-Fi I",
+      "group": "Library resources",
+      "status": "Catalog saved; full audio not acquired",
+      "use": "Future ambience, machinery, weapons and transitions",
+      "notes": "General Frank Serafine collection, not a verified original TRON stems release. Product variants were marked sold out when checked. Local CSV is metadata only.",
+      "author": "Frank Serafine / Sound Ideas",
+      "source": "https://sound-ideas.com/products/sci-fi-i-sound-effects-library-by-serafine",
+      "audition": "https://soundideas.sourceaudio.com/album/3304227",
+      "catalog": "catalogs/serafine-scifi-i.csv",
+      "license": "Commercial library; no purchase made",
+      "catalog_rows": 420,
+      "catalog_source": "https://portal.sound-ideas.com/CSVexport/product=476"
+    },
+    {
+      "id": "serafine-ii",
+      "title": "Serafine Sci-Fi II",
+      "group": "Library resources",
+      "status": "Catalog saved; full audio not acquired",
+      "use": "Future ambience, machinery, weapons and transitions",
+      "notes": "General Frank Serafine collection, not a verified original TRON stems release. Product variants were marked sold out when checked. Local CSV is metadata only.",
+      "author": "Frank Serafine / Sound Ideas",
+      "source": "https://sound-ideas.com/products/sci-fi-ii-sound-effects-library-by-serafine",
+      "audition": "https://soundideas.sourceaudio.com/album/3304306",
+      "catalog": "catalogs/serafine-scifi-ii.csv",
+      "license": "Commercial library; no purchase made",
+      "catalog_rows": 1028,
+      "catalog_source": "https://portal.sound-ideas.com/CSVexport/product=477"
+    }
+  ]
+}
