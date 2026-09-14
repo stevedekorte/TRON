@@ -25,7 +25,7 @@
 CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="true"></span></h1>
         <div id="terminal-actions" hidden>
           <button id="start" class="terminal-start" disabled><span>INITIALIZING</span><span aria-hidden="true"> [ENTER]</span></button>
-          <p class="terminal-controls">W A S D / ARROWS : DRIVE<br>J / L : TURN TURRET &nbsp; F : CENTER<br>SPACE / CLICK : FIRE CANNON<br>C : REAR VIEW &nbsp; V : AERIAL VIEW<br>TAB : MAP &nbsp; H : INSTRUMENTS &nbsp; ESC : PAUSE</p>
+          <p class="terminal-controls">W A S D / ARROWS : DRIVE<br>J / L : TURN TURRET &nbsp; F : LEVEL<br>SPACE / CLICK : FIRE CANNON<br>C : REAR VIEW &nbsp; V : AERIAL VIEW<br>TAB : MAP &nbsp; H : INSTRUMENTS &nbsp; ESC : PAUSE</p>
           <p class="terminal-objective">EXPLORE THE MAZE. THERE IS NO ASSIGNED OBJECTIVE.</p>
           <a class="terminal-notes" href="/docs/index.html" target="_blank" rel="noopener">PROJECT NOTES</a>
         </div>
@@ -35,6 +35,7 @@ CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="
     <section id="error" class="result" hidden><div class="eyebrow">CONNECTION FAILED</div><h2>UNABLE TO ENTER.</h2><p id="error-message"></p><button class="primary" onclick="location.reload()">RELOAD</button></section>
   </main>
 
+  <div id="death-fade" hidden aria-hidden="true"></div>
   <div id="gunner-sight" hidden aria-hidden="true">
     <svg viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet">
       <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter">
@@ -48,7 +49,7 @@ CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="
   </div>
   <div id="hud" hidden>
     <div id="turbo" class="turbo-indicator"><span>T / TURBO</span><small id="turbo-status">READY</small><div class="turbo-meter"><i id="turbo-fill"></i></div></div>
-    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F / CENTER</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>C / REAR</span><span>V / AERIAL</span><span>P / GUNNER</span><span>O / ZOOM</span><span>IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>TAB / MAP</span><span>H / INSTRUMENTS</span><span>M / SOUND</span><span>R / RESET</span><span>ESC / PAUSE</span></div>
+    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F / LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>C / REAR</span><span>V / AERIAL</span><span>P / GUNNER</span><span>O / ZOOM</span><span>IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>TAB / MAP</span><span>H / INSTRUMENTS</span><span>M / SOUND</span><span>R / RESET</span><span>ESC / PAUSE</span></div>
     <div id="instruments" class="sim-instruments" hidden><span><strong id="speed">0</strong> KM/H</span><span id="coordinates"></span><span id="orientation"></span><span id="weapon-status"></span></div>
     <div id="survey" class="sim-survey" hidden><span>MAZE SURVEY / CLU POSITION</span><canvas id="map" width="500" height="500" aria-label="Maze layout and Clu position"></canvas><small>TAB TO CLOSE</small></div>
   </div>

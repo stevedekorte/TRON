@@ -1,3 +1,4 @@
+import {RECOGNIZER_SCALE} from '../game/config.js';
 import {ALERT,searchlightStrength} from '../simulation/alertness.js';
 import * as THREE from 'three';
 import {wallIntersection} from '../levels/maze.js';
@@ -14,7 +15,7 @@ export function beamPose(e,time){
  const yaw=e.yaw+THREE.MathUtils.clamp(bearing,-.55,.55)+Math.sin(time*Math.PI*2/SEARCHLIGHT.sweepPeriod+e.id*1.9)*SEARCHLIGHT.sweepAngle;
  const distance=goal?Math.hypot(goal.x-e.x,goal.s-e.s):180;
  const pitch=-THREE.MathUtils.clamp(Math.atan2(e.y,Math.max(60,distance)),.18,.8);
- const origin=new THREE.Vector3(e.x-Math.sin(e.yaw)*1.5,e.y+3.5,-e.s-Math.cos(e.yaw)*1.5);
+ const origin=new THREE.Vector3(e.x-Math.sin(e.yaw)*3*RECOGNIZER_SCALE,e.y+7*RECOGNIZER_SCALE,-e.s-Math.cos(e.yaw)*3*RECOGNIZER_SCALE);
  const direction=new THREE.Vector3(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
  return {origin,direction,strength};
 }

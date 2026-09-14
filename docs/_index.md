@@ -380,3 +380,13 @@ P toggles a first-person sight patterned after `Tank POV cross hairs.png`. O cyc
 Shift+W latches forward throttle until W is pressed again; S overrides it while held. The latch survives pause and clears on reset/destruction. Turbo follows the current motion direction (or requested reverse from rest). Normal reverse caps at 16.5 m/s versus 22 m/s forward; boosted reverse caps at 41.25 m/s versus 55 m/s forward. Both ease back to normal speeds after boosting.
 
 Recognizer alertness is independent of movement state. Actual sightings and fresh radio reports raise an alert until three minutes after the original observation time. Relays do not refresh the timestamp. Searchlights require an alert, no direct visual contact, and no position report newer than 1.5 seconds. They operate while wandering/searching/investigating, fade over the final 30 seconds of alertness, and shut off immediately on reacquisition or confirmed Clu destruction. Routine unalerted patrols no longer scan.
+
+Gunner yaw and pitch now ease toward the requested aiming rate, reaching approximately 95% speed in 0.21 seconds and shedding 95% of motion in 0.14 seconds after release. Hull compensation remains immediate; zoom scales both axes consistently. Centering clears yaw inertia, and leaving gunner mode clears both rates.
+
+On Clu destruction, the breakup remains visible for 1.1 seconds, followed by a one-second fade to the terminal. The terminal displays “ILLEGAL CODE” and “CLU PROGRAM DETACHED FROM SYSTEM” with the supplied film still’s layout, no cursor, and a half-second text reveal. Return starts a fresh run; pause freezes the in-progress transition. This supersedes the earlier requirement to leave the wreck view running indefinitely.
+
+F now levels aim elevation smoothly to the ground plane while preserving turret azimuth, replacing the former forward-yaw centering shortcut. Manual I/K input interrupts leveling.
+
+Clu rounds now last five seconds at 165 m/s (825 m maximum travel). Chase-view acquisition extends to 740 m with a matching five-second intercept horizon. Enemy ammunition retains its prior range.
+
+Recognizers are 30% larger than the previous half-scale version (model scale 0.65). Hit volumes, separation, avoidance, crush footprint/sole height, flight clearance and searchlight mounting offsets follow that scale.

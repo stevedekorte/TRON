@@ -148,7 +148,7 @@ export function updateRecognizers(run,dt) {
   }
   for(const e of active.filter(e=>e.kind!=='ground')){navigate(e,now,dt,active);resolveCrush(run,e);}
   // Physical clearance backs up steering avoidance when several observers converge.
-  // The 17.5 m shoulder fits within a 24 m horizontal separation envelope.
+  // Shoulder width and physical spacing grow together with model scale.
   const separation=48*RECOGNIZER_SCALE;
   for(let pass=0;pass<8;pass++)for(let i=0;i<active.length;i++)for(let j=i+1;j<active.length;j++) {
     const a=active[i],b=active[j];if(a.kind==='ground'||b.kind==='ground')continue;const dx=a.x-b.x,ds=a.s-b.s,d=Math.hypot(dx,ds);

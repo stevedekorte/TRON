@@ -9,6 +9,8 @@ try {
   const result=await page.evaluate(async()=>{
     const T=await import('/node_modules/three/build/three.module.js');
     const {createTank,loadRecognizer,createRecognizer}=await import('/src/rendering/models.js');
+    const {RECOGNIZER_SCALE}=await import('/src/game/config.js');
+    const {CRUSH}=await import('/src/simulation/crush.js');
     const {cannonPose}=await import('/src/simulation/run.js');
     const tank=await createTank(), template=await loadRecognizer();
     const craft=createRecognizer(template), other=createRecognizer(template);
@@ -21,7 +23,7 @@ try {
       errors.push(visual.distanceTo(new T.Vector3(sim.x,sim.y,-sim.s)));
     }
     tank.root.position.set(-5,0,0);tank.root.rotation.y=.15;tank.turret.rotation.y=.25;
-    scene.add(tank.root);craft.root.scale.setScalar(.5);craft.root.position.set(10,11,-8);scene.add(craft.root);
+    scene.add(tank.root);craft.root.scale.setScalar(RECOGNIZER_SCALE);craft.root.position.set(10,CRUSH.soleHeight,-8);scene.add(craft.root);
     const b=new T.Box3().setFromObject(craft.root);
     scene.add(new T.HemisphereLight(0xaac8ff,0x251829,2));
     const light=new T.DirectionalLight(0xc4d9ff,2.4);light.position.set(-35,70,35);scene.add(light);
@@ -31,10 +33,10 @@ try {
     const camera=new T.PerspectiveCamera(48,1400/900,.1,500);camera.position.set(-22,15,-32);camera.lookAt(1,5,-3);
     renderer.render(scene,camera);
     window.inspection={craft,renderer,scene,camera};
-    return {muzzleError:Math.max(...errors),height:b.max.y-b.min.y,width:b.max.x-b.min.x,independentMaterials:craft.material!==other.material,meshes:tank.root.children.length,source:tank.source};
+    return {muzzleError:Math.max(...errors),feetY:b.min.y,height:b.max.y-b.min.y,width:b.max.x-b.min.x,independentMaterials:craft.material!==other.material,meshes:tank.root.children.length,source:tank.source};
   });
-  assert.ok(result.muzzleError<1e-10);assert.ok(Math.abs(result.height-15)<1e-5);
-  assert.ok(result.independentMaterials);assert.equal(result.source,'arabinowitz');
+  assert.ok(result.muzzleError<1e-10);assert.ok(Math.abs(result.height-19.5)<1e-5);
+  assert.ok(Math.abs(result.feetY)<.001);assert.ok(result.independentMaterials);assert.equal(result.source,'arabinowitz');
   await page.screenshot({path:'test-results/imported-models.png'});
   for(const fold of [.5,1]) {
     await page.evaluate(f=>{const {craft,renderer,scene,camera}=window.inspection;craft.pose(f);renderer.render(scene,camera);},fold);

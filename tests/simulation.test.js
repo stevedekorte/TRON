@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { createRun, step, moveTank, cannonTarget, cannonPose, updateWeapons, startPursuit, boostTank } from '../src/simulation/run.js';
 import { GRID, SIZE, CELL, HALF, OPEN_CELLS, SPAWN, cellCenter, gridToWorld, worldToGrid, freePosition, lineOfSight, wallIntersection, WALLS } from '../src/levels/maze.js';
 import { createRecognizers, perceive, canSeeClu, updateRecognizers, predict, SENSORS } from '../src/simulation/recognizers.js';
-import { config } from '../src/game/config.js';
+import { config,RECOGNIZER_SCALE } from '../src/game/config.js';
 const tick=(r,input={},seconds=1)=>{for(let i=0;i<Math.round(seconds*60);i++)step(r,input,1/60);};
 
 test('maze is connected with branches, cycles, dead ends and four exterior openings',()=>{
@@ -113,7 +113,7 @@ test('converging aircraft retain physical clearance at the reduced model scale',
   r.recognizers.forEach((e,i)=>Object.assign(e,{x:-1850+i*.1,s:-1700,y:73,yaw:0}));
   tick(r,{},20);
   for(let i=0;i<r.recognizers.length;i++)for(let j=i+1;j<r.recognizers.length;j++) {
-    const a=r.recognizers[i],b=r.recognizers[j];assert.ok(Math.hypot(a.x-b.x,a.s-b.s)>=23.9);
+    const a=r.recognizers[i],b=r.recognizers[j];assert.ok(Math.hypot(a.x-b.x,a.s-b.s)>=48*RECOGNIZER_SCALE-.1);
   }
 });
 
