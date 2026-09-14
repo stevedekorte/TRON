@@ -406,6 +406,8 @@ Recognizers are 30% larger than the previous half-scale version (model scale 0.6
 
 Recognizer destruction now separates pieces outward twice as fast, with a shorter 0.1-second flash and faster tumbling. Debris gravity is 14.7 m/s² with less upward lift; the effect lasts 5–6 seconds with a one-second fade. Only the struck anatomical section fragments; other sections detach whole. Ground-tank breakup timing is preserved.
 
+Recognizer blast-force follow-up: outward impulse is now 2.5 times the preceding version, with faster tumbling. Whole sections scatter outward from the craft center while struck fragments scatter from the impact point, helping the pieces diverge. Vertical impulse and faster gravity remain as before.
+
 
 ---
 
@@ -1014,3 +1016,5 @@ Gunner inertia follow-up: all 53 simulation tests pass, including acceleration, 
 Final sizing/weapon checks: all 55 simulation tests passed, plus the strengthened scale-dependent separation check. `node tests/models.mjs` verified Recognizer height 19.5 m, feet at ground height zero, correct muzzle transforms, and folded poses without errors. The imported-model capture was inspected. F leveling and the five-second Clu projectile lifetime are covered by focused tests; the gunner Chrome check passed after those updates.
 
 Recognizer breakup pacing: `npm run test:browser -- --breakup` passed in headless Chrome on macOS. Verified one fragmented section and five intact detached sections, randomized outcomes, falling debris, pause freezing, and geometry cleanup. Inspected the early and four-second falling captures; debris has reached the floor by the latter capture.
+
+Stronger blast follow-up: the Chrome `--breakup` check passed again; inspected the falling-debris capture for broader scattering. Anatomical fragmentation, pause and resource cleanup checks remain passing.
