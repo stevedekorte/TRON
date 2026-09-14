@@ -3,7 +3,7 @@ import {wallIntersection} from '../levels/maze.js';
 
 // Seconds and meters/second²; keep ground-tank destruction at its existing pace.
 const BREAKUP_MOTION={
- recognizer:{impulseScale:2,spinScale:1.6,lift:1,liftVariation:2,delay:.04,flash:.1,gravity:14.7,life:5,lifeVariation:1,fade:1},
+ recognizer:{impulseScale:5,spinScale:2.2,lift:1,liftVariation:2,delay:.04,flash:.1,gravity:14.7,life:5,lifeVariation:1,fade:1},
  tank:{impulseScale:1,spinScale:1,lift:3,liftVariation:5,delay:.12,flash:.22,gravity:9.81,life:10,lifeVariation:2,fade:2},
 };
 
@@ -107,7 +107,10 @@ export class Breakups {
   }
   const pieces=groups.map((group,index)=>{
    const fragmented=parts[index]===hitPart;
-   const direction=group.position.clone().sub(impact).normalize();
+   // Intact Recognizer sections blast away from the craft's center instead of
+   // all travelling to the same side of an off-center bullet impact.
+   const origin=!fragmented&&motion===BREAKUP_MOTION.recognizer?craft.root.position:impact;
+   const direction=group.position.clone().sub(origin).normalize();
    const impulse=(fragmented?5+Math.random()*11:2+Math.random()*4)*motion.impulseScale;
    // Faster outward separation without kicking debris twice as high.
    direction.y/=motion.impulseScale;
