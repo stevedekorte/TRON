@@ -1,11 +1,18 @@
 import * as THREE from 'three';
 import {wallIntersection} from '../levels/maze.js';
 
+// Seconds and meters/second²; keep ground-tank destruction at its existing pace.
+const BREAKUP_MOTION={
+ recognizer:{impulseScale:2,spinScale:1.6,lift:1,liftVariation:2,delay:.04,flash:.1,gravity:14.7,life:5,lifeVariation:1,fade:1},
+ tank:{impulseScale:1,spinScale:1,lift:3,liftVariation:5,delay:.12,flash:.22,gravity:9.81,life:10,lifeVariation:2,fade:2},
+};
+
 // Fragment the struck anatomical section; detach the other sections whole.
 // Preserve posed surfaces and trim, with fresh impulses and fracture seeds.
 export class Breakups {
  constructor(scene){this.scene=scene;this.bursts=[];}
  spawn(craft,event){
+  const motion=BREAKUP_MOTION[['tank','enemyTank'].includes(event.subject)?'tank':'recognizer'];
   if(this.bursts.length>=5)this.remove(this.bursts[0]);
   craft.root.position.set(event.x,event.y,-event.s);craft.root.rotation.y=event.yaw;
   craft.pose?.(event.fold);craft.root.updateMatrixWorld(true);
@@ -101,30 +108,32 @@ export class Breakups {
   const pieces=groups.map((group,index)=>{
    const fragmented=parts[index]===hitPart;
    const direction=group.position.clone().sub(impact).normalize();
-   const impulse=fragmented?5+Math.random()*11:2+Math.random()*4;
-   return {group,part:parts[index],fragmented,velocity:direction.multiplyScalar(impulse).add(new THREE.Vector3(event.vx||0,(event.vy||0)+3+Math.random()*5,-(event.vs||0))),
-    spin:new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar(fragmented?3:.8),delay:Math.random()*.12};
+   const impulse=(fragmented?5+Math.random()*11:2+Math.random()*4)*motion.impulseScale;
+   // Faster outward separation without kicking debris twice as high.
+   direction.y/=motion.impulseScale;
+   return {group,part:parts[index],fragmented,velocity:direction.multiplyScalar(impulse).add(new THREE.Vector3(event.vx||0,(event.vy||0)+motion.lift+Math.random()*motion.liftVariation,-(event.vs||0))),
+    spin:new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar((fragmented?3:.8)*motion.spinScale),delay:Math.random()*motion.delay};
   });
   const flash=new THREE.Mesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshBasicMaterial({color:new THREE.Color(5,4.4,1.7),transparent:true,depthWrite:false}));
   flash.position.copy(impact);this.scene.add(flash);
-  this.bursts.push({pieces,materials,flash,hitPart,subject:event.subject||'recognizer',age:0,life:10+Math.random()*2});
+  this.bursts.push({pieces,materials,flash,hitPart,motion,subject:event.subject||'recognizer',age:0,life:motion.life+Math.random()*motion.lifeVariation});
  }
  update(dt){
   for(const burst of [...this.bursts]){
    burst.age+=dt;
-   const flash=Math.max(0,1-burst.age/.22);burst.flash.visible=flash>0;
+   const flash=Math.max(0,1-burst.age/burst.motion.flash);burst.flash.visible=flash>0;
    burst.flash.scale.setScalar(1+(1-flash)*5);burst.flash.material.opacity=flash;
    for(const piece of burst.pieces){
     if(burst.age<piece.delay)continue;
     const p=piece.group.position,old=p.clone();
-    piece.velocity.y-=9.81*dt;piece.velocity.multiplyScalar(Math.exp(-.12*dt));
+    piece.velocity.y-=burst.motion.gravity*dt;piece.velocity.multiplyScalar(Math.exp(-.12*dt));
     p.addScaledVector(piece.velocity,dt);
     const hit=wallIntersection({x:old.x,y:old.y,s:-old.z},{x:p.x,y:p.y,s:-p.z});
     if(hit!==null){p.copy(old);piece.velocity.multiplyScalar(-.2);piece.spin.multiplyScalar(.5);}
     if(p.y<.5){p.y=.5;piece.velocity.y=Math.abs(piece.velocity.y)*.2;piece.velocity.x*=.8;piece.velocity.z*=.8;piece.spin.multiplyScalar(.8);}
     piece.group.rotation.x+=piece.spin.x*dt;piece.group.rotation.y+=piece.spin.y*dt;piece.group.rotation.z+=piece.spin.z*dt;
    }
-   const opacity=Math.min(1,(burst.life-burst.age)/2);
+   const opacity=Math.min(1,(burst.life-burst.age)/burst.motion.fade);
    for(const material of burst.materials)material.opacity=Math.max(0,opacity);
    if(burst.age>=burst.life)this.remove(burst);
   }
