@@ -1,0 +1,76 @@
+import {CARRIER} from '../game/carrier.js';
+import {clamp,angleDelta,config} from '../game/config.js';
+import {freePosition,wallIntersection} from '../levels/maze.js';
+import {SENSORS,predict} from './recognizers.js';
+import {formationTarget} from './formation.js';
+import {intercept} from './intercept.js';
+export const ESCORT={count:8,speed:32,turnRate:.8,turretRate:1.3,fireRange:340,fireInterval:1.8,spacing:38};
+export function escortSlot(index,time){return {x:CARRIER.startX+CARRIER.speed*time+(index%2?100:-100),s:CARRIER.s+(index-3.5)*ESCORT.spacing};}
+export function createGroundTanks(){return Array.from({length:ESCORT.count},(_,index)=>({...escortSlot(index,0),index,id:100+index,kind:'ground',y:3.8,yaw:-Math.PI/2,turretYaw:0,speed:CARRIER.speed,vx:CARRIER.speed,vs:0,vy:0,state:'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]}));}
+const clear=(a,b)=>wallIntersection({...a,y:2},{...b,y:2},config.tankRadius+.5)===null;
+// Local A*: all edges are swept against the same expanded walls as the hull.
+export function groundRoute(start,goal){
+ if(!freePosition(goal.x,goal.s,config.tankRadius+.5))return [];
+ if(clear(start,goal))return [goal];
+ const cell=12,open=[{x:start.x,s:start.s,g:0,key:'0,0',ix:0,is:0}],seen=new Map([['0,0',0]]);
+ for(let iteration=0;open.length&&iteration<2500;iteration++){
+  open.sort((a,b)=>(b.g+Math.hypot(b.x-goal.x,b.s-goal.s))-(a.g+Math.hypot(a.x-goal.x,a.s-goal.s)));
+  const n=open.pop();
+  if(Math.hypot(n.x-goal.x,n.s-goal.s)<24&&clear(n,goal)){const path=[goal];for(let p=n;p.parent;p=p.parent)path.unshift({x:p.x,s:p.s});return path;}
+  for(let dx=-1;dx<=1;dx++)for(let ds=-1;ds<=1;ds++){
+   if(!dx&&!ds)continue;const ix=n.ix+dx,is=n.is+ds,key=ix+','+is,g=n.g+cell*Math.hypot(dx,ds);
+   if(g>Math.hypot(goal.x-start.x,goal.s-start.s)+500||g>=(seen.get(key)??Infinity))continue;
+   const p={x:start.x+ix*cell,s:start.s+is*cell};if(!clear(n,p))continue;
+   seen.set(key,g);open.push({...p,ix,is,key,g,parent:n});
+  }
+ }
+ return [];
+}
+export function updateGroundTanks(run,dt,moveTank,cannonPose){
+ const active=run.enemyTanks.filter(e=>e.state!=='destroyed');
+ for(const e of active){
+  e.cooldown=Math.max(0,e.cooldown-dt);e.recoil=Math.max(0,e.recoil-dt*4);e.hit=Math.max(0,e.hit-dt*4);
+  if(e.memory&&run.time-e.memory.seenAt>SENSORS.memorySeconds){e.memory=null;e.canSee=false;e.goal=null;}
+  let goal=escortSlot(e.index,run.time+1);
+  if(e.memory){
+   e.state=e.canSee?'pursue':'investigate';goal=predict(e.memory,run.time+1);
+   if(!e.canSee&&Math.hypot(e.x-goal.x,e.s-goal.s)<25){e.state='search';const phase=Math.floor((run.time-e.memory.seenAt)/5)+e.index;goal={x:goal.x+Math.cos(phase*2.4)*60,s:goal.s+Math.sin(phase*2.4)*60};}
+   const formation=formationTarget(e,active,goal,SENSORS.radioRange,{neighborRange:180,laneSpacing:ESCORT.spacing,trailingDistance:18});
+   if(formation&&freePosition(formation.x,formation.s,config.tankRadius+1)&&clear(e,formation))goal=formation;
+   e.leader=formation?.leader??e.id;
+  }else{e.state='escort';e.leader=null;}
+  e.goal=goal;
+  if(run.time>=e.nextRoute){e.path=groundRoute(e,goal);e.nextRoute=run.time+2;}
+  while(e.path.length&&Math.hypot(e.x-e.path[0].x,e.s-e.path[0].s)<6)e.path.shift();
+  const destination=clear(e,goal)?goal:e.path[0];
+  let targetSpeed=0;
+  if(destination){
+   const dx=destination.x-e.x,ds=destination.s-e.s,desired=-Math.atan2(dx,ds);
+   e.yaw+=clamp(angleDelta(e.yaw,desired),-ESCORT.turnRate*dt,ESCORT.turnRate*dt);
+   targetSpeed=Math.min(ESCORT.speed,Math.hypot(dx,ds)*.8)*Math.max(0,Math.cos(angleDelta(e.yaw,desired)))**4;
+   if(e.canSee&&Math.hypot(e.x-e.memory.x,e.s-e.memory.s)<100)targetSpeed=0;
+   if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<12&&(-Math.sin(e.yaw)*(o.x-e.x)+Math.cos(e.yaw)*(o.s-e.s))>0))targetSpeed=0;
+  }
+  e.speed+=clamp(targetSpeed-e.speed,-18*dt,8*dt);
+  const x=e.x,s=e.s;moveTank(e,-Math.sin(e.yaw)*e.speed*dt,Math.cos(e.yaw)*e.speed*dt);if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<config.tankRadius*2)||!run.crushed&&Math.hypot(run.x-e.x,run.s-e.s)<config.tankRadius*2){e.x=x;e.s=s;e.speed=0;}
+  e.vx=(e.x-x)/dt;e.vs=(e.s-s)/dt;
+  if(Math.hypot(e.vx,e.vs)<e.speed*.1)e.speed=0;
+  let aim=null;
+  if(e.memory){const target=predict(e.memory,run.time);aim=intercept(cannonPose(e),{...target,y:2.3},{x:e.memory.vx,s:e.memory.vs,y:0});}
+  const muzzle=cannonPose(e);
+  const desired=aim?-Math.atan2(aim.x-muzzle.x,aim.s-muzzle.s):e.yaw;
+  const relative=angleDelta(e.yaw,desired);e.turretYaw+=clamp(angleDelta(e.turretYaw,relative),-ESCORT.turretRate*dt,ESCORT.turretRate*dt);
+  const pose=cannonPose(e);
+  if(!aim||!e.canSee||run.time-e.memory.seenAt>.3||e.cooldown>0||Math.hypot(aim.x-e.x,aim.s-e.s)>ESCORT.fireRange)continue;
+  const bearing=-Math.atan2(aim.x-pose.x,aim.s-pose.s);
+  if(Math.abs(angleDelta(pose.yaw,bearing))>.035||!clearShot(e,pose,aim,active))continue;
+  const dx=aim.x-pose.x,ds=aim.s-pose.s,dy=aim.y-pose.y,length=Math.hypot(dx,ds,dy);
+  run.projectiles.push({...pose,vx:dx/length*165,vs:ds/length*165,vy:dy/length*165,life:2.5,faction:'enemy',owner:e.id});
+  e.cooldown=ESCORT.fireInterval+e.index*.04;e.recoil=1;run.events.push({type:'enemyShot',x:pose.x,y:pose.y,s:pose.s});
+ }
+}
+function clearShot(e,pose,aim,others){
+ if(wallIntersection({x:e.x,s:e.s,y:pose.y},pose)!==null||wallIntersection(pose,aim)!==null)return false;
+ const dx=aim.x-pose.x,ds=aim.s-pose.s,length=dx*dx+ds*ds;
+ return !others.some(o=>{if(o===e)return false;const t=clamp(((o.x-pose.x)*dx+(o.s-pose.s)*ds)/length,0,1);return Math.hypot(o.x-pose.x-dx*t,o.s-pose.s-ds*t)<5;});
+}

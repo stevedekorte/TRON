@@ -1,0 +1,24 @@
+{
+  "name": "tron-canyon-run",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build && npm run docs && node scripts/copy-docs.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test tests/simulation.test.js tests/blueprint.test.js tests/ground-tanks.test.js",
+    "test:browser": "node tests/browser.mjs",
+    "docs": "node scripts/trace-blueprint.mjs && node docs/colvmn/static-gen.js docs"
+  },
+  "dependencies": {
+    "three": "^0.186.0",
+    "vite": "^8.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}

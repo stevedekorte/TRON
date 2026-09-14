@@ -1,0 +1,11 @@
+{
+  "source": "docs/references/videos/carrier and solar sailer.mp4",
+  "sha256": "e266efafcf58d8c5cc66ec14ed3a107c285793994130f32f7f095f8396e6c297",
+  "start": 116.2,
+  "end": 120.2,
+  "filters": "highpass=f=35,lowpass=f=900",
+  "crossfade_seconds": 0.4,
+  "duration": 3.6,
+  "channels": 2,
+  "note": "Mixed film soundtrack, not an isolated carrier stem. Auditory approval pending."
+}

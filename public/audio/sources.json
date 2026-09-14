@@ -1,0 +1,95 @@
+{
+  "source": "docs/references/videos/1982 tron clu scene.mp4",
+  "source_sha256": "60e6ac8278993af2901c982550aac8560e8c0a666fb3d3de2c5fcdb111ff0902",
+  "origin": "User-supplied TRON (1982) film scene; mixed soundtrack, not isolated production stems",
+  "samples": [
+    {
+      "name": "tank-drive",
+      "file": "tank-drive.wav",
+      "start": 10.75,
+      "source_duration": 0.7,
+      "duration": 0.58,
+      "loop": true,
+      "channels": 2,
+      "filters": "highpass=f=65,lowpass=f=650,equalizer=f=330:t=q:w=4:g=-18",
+      "loop_crossfade_seconds": 0.12
+    },
+    {
+      "name": "recognizer-flight",
+      "file": "recognizer-flight.wav",
+      "start": 124.05,
+      "source_duration": 1.8,
+      "duration": 1.68,
+      "loop": true,
+      "channels": 2,
+      "filters": "highpass=f=45,lowpass=f=6500",
+      "loop_crossfade_seconds": 0.12
+    },
+    {
+      "name": "recognizer-approach",
+      "file": "recognizer-approach.wav",
+      "start": 126.2,
+      "source_duration": 2.2,
+      "duration": 2.08,
+      "loop": true,
+      "channels": 2,
+      "filters": "highpass=f=45,lowpass=f=6500",
+      "loop_crossfade_seconds": 0.12
+    },
+    {
+      "name": "cannon",
+      "file": "cannon.wav",
+      "start": 121.38,
+      "source_duration": 0.38,
+      "duration": 0.38,
+      "loop": false,
+      "channels": 2,
+      "filters": "highpass=f=65,lowpass=f=12000",
+      "loop_crossfade_seconds": 0
+    },
+    {
+      "name": "terminal-key-1",
+      "file": "terminal-key-1.wav",
+      "start": 0.885,
+      "source_duration": 0.06,
+      "duration": 0.06,
+      "loop": false,
+      "channels": 2,
+      "filters": "highpass=f=150,lowpass=f=6500",
+      "loop_crossfade_seconds": 0
+    },
+    {
+      "name": "terminal-key-2",
+      "file": "terminal-key-2.wav",
+      "start": 1.395,
+      "source_duration": 0.06,
+      "duration": 0.06,
+      "loop": false,
+      "channels": 2,
+      "filters": "highpass=f=150,lowpass=f=6500",
+      "loop_crossfade_seconds": 0
+    },
+    {
+      "name": "terminal-key-3",
+      "file": "terminal-key-3.wav",
+      "start": 0.995,
+      "source_duration": 0.06,
+      "duration": 0.06,
+      "loop": false,
+      "channels": 2,
+      "filters": "highpass=f=150,lowpass=f=6500",
+      "loop_crossfade_seconds": 0
+    },
+    {
+      "name": "terminal-key-4",
+      "file": "terminal-key-4.wav",
+      "start": 1.585,
+      "source_duration": 0.06,
+      "duration": 0.06,
+      "loop": false,
+      "channels": 2,
+      "filters": "highpass=f=150,lowpass=f=6500",
+      "loop_crossfade_seconds": 0
+    }
+  ]
+}

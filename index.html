@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080c16">
+  <meta name="description" content="A tank. A canyon. Something enormous overhead. An open-ended maze simulation inspired by TRON, 1982.">
+  <title>Space Paranoids</title>
+  <style>html,body{margin:0;background:#000;color:#9eb6ce}body{visibility:hidden}</style>
+  <link rel="stylesheet" href="/src/ui/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23f17a59' d='M3 5h26v5H19v18h-6V10H3z'/%3E%3C/svg%3E">
+</head>
+<body class="terminal">
+  <canvas id="game" aria-label="Three-dimensional tank chase"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="masthead">
+    <a class="brand" href="/" aria-label="Space Paranoids home">SPACE<span>PARANOIDS</span></a>
+    <div class="header-right"><span class="edition">ENCOM SYSTEMS <b>/</b> 1982</span><button id="sound" class="text-button" aria-label="Mute sound">SOUND ON</button><button id="pause" class="text-button" hidden>PAUSE <kbd>ESC</kbd></button></div>
+  </header>
+
+  <main id="overlay" class="overlay">
+    <section class="intro" id="intro">
+      <div class="terminal-content">
+        <h1 class="terminal-copy complete" aria-label="Request access to Clu program. Code 6 password to memory 0222."><span id="terminal-text" aria-hidden="true">REQUEST ACCESS TO CLU PROGRAM
+CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="true"></span></h1>
+        <div id="terminal-actions" hidden>
+          <button id="start" class="terminal-start" disabled><span>INITIALIZING</span><span aria-hidden="true"> [ENTER]</span></button>
+          <p class="terminal-controls">W A S D / ARROWS : DRIVE<br>Q / E : TURN TURRET &nbsp; F : CENTER<br>SPACE / CLICK : FIRE CANNON<br>C : REAR VIEW &nbsp; V : AERIAL VIEW<br>TAB : MAP &nbsp; H : INSTRUMENTS &nbsp; ESC : PAUSE</p>
+          <p class="terminal-objective">EXPLORE THE MAZE. THERE IS NO ASSIGNED OBJECTIVE.</p>
+          <a class="terminal-notes" href="/docs/index.html" target="_blank" rel="noopener">PROJECT NOTES</a>
+        </div>
+      </div>
+    </section>
+    <section id="paused" class="standby" role="status" tabindex="-1" hidden>STAND BY <span>ANY KEY TO RESUME</span></section>
+    <section id="error" class="result" hidden><div class="eyebrow">CONNECTION FAILED</div><h2>UNABLE TO ENTER.</h2><p id="error-message"></p><button class="primary" onclick="location.reload()">RELOAD</button></section>
+  </main>
+
+  <div id="hud" hidden>
+    <div id="turbo" class="turbo-indicator"><span>T / TURBO</span><small id="turbo-status">READY</small><div class="turbo-meter"><i id="turbo-fill"></i></div></div>
+    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE</span><span>QE / TURRET</span><span>F / CENTER</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>C / REAR</span><span>V / AERIAL</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>TAB / MAP</span><span>H / INSTRUMENTS</span><span>M / SOUND</span><span>R / RESET</span><span>ESC / PAUSE</span></div>
+    <div id="instruments" class="sim-instruments" hidden><span><strong id="speed">0</strong> KM/H</span><span id="coordinates"></span><span id="orientation"></span><span id="weapon-status"></span></div>
+    <div id="survey" class="sim-survey" hidden><span>MAZE SURVEY / CLU POSITION</span><canvas id="map" width="500" height="500" aria-label="Maze layout and Clu position"></canvas><small>TAB TO CLOSE</small></div>
+  </div>
+  <footer id="footer"><span>A DIGITAL FRONTIER STUDY</span><a href="/docs/index.html" target="_blank" rel="noopener">PROJECT NOTES ↗</a><span>DESKTOP / KEYBOARD + MOUSE</span></footer>
+  <aside id="tuning" hidden><h3>Development tuning</h3><pre id="perception"></pre><div id="sliders"></div><button id="reset-tuning">Reset defaults</button><button id="export-tuning">Copy settings</button></aside>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# TRON
+
+> Open-ended maze simulation and historical M0/M1 plans
+
+## Assets
+
+- [Assets](/assets/): Model, sound, and dependency inventory
+
+## Models
+
+- [Models](/models/): Imported vehicle sources and runtime adapters
+
+## References
+
+- [References](/references/): Visual direction and source images
+
+## Validation
+
+- [Validation](/validation/): Browser checks, performance, and remaining work
+

@@ -1,0 +1,47 @@
+@font-face{font-family:FilmTerminal;src:url('/fonts/VT323-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+body.terminal{background:#020204}
+body.terminal .masthead,body.terminal #footer,body.terminal #game{visibility:hidden}
+body.terminal .overlay{background:#020204;padding:0;display:block}
+body.terminal .grain{opacity:.035}
+.terminal .intro{position:absolute;inset:0;max-width:none;padding:0;overflow:hidden}
+.terminal-grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.terminal-content{position:absolute;top:27.5%;left:20.4%;width:75%;font-family:FilmTerminal,monospace;color:#159ddd;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566}
+.terminal .terminal-copy{font:400 clamp(17px,2.8vw,56px)/1.02 FilmTerminal,monospace;letter-spacing:.025em;margin:0;white-space:pre;min-height:1.9em;color:inherit;transform:rotate(.6deg);transform-origin:0 0}
+.terminal-cursor{display:inline-block;width:.48em;height:.78em;margin-left:.05em;vertical-align:-.04em;background:currentColor;box-shadow:0 0 5px #0a91db}
+.complete .terminal-cursor{animation:terminal-blink .85s steps(1) infinite}
+#terminal-actions{margin-top:clamp(32px,6vh,70px);animation:terminal-reveal .3s ease-out;color:#427d9f;text-shadow:0 0 6px #005b9540}
+.terminal-start{font:400 clamp(18px,1.7vw,28px)/1.3 FilmTerminal,monospace;color:#269bd0;background:none;border:0;padding:6px 0;text-align:left;cursor:pointer;letter-spacing:.04em;text-shadow:inherit}
+.terminal-start:hover,.terminal-start:focus-visible{color:#a6e2ff;outline:1px solid #427d9f;outline-offset:7px}
+.terminal-start span+span{font-size:.8em;opacity:.6}
+.terminal-controls,.terminal-objective{font:400 clamp(13px,1.2vw,20px)/1.4 FilmTerminal,monospace;letter-spacing:.06em;margin:20px 0 0}
+.terminal-objective{margin-top:16px}
+.terminal-notes{display:inline-block;font-size:15px;letter-spacing:.07em;color:#39617b;margin-top:25px;text-decoration:none}
+.terminal-notes:hover{color:#99d5f5}
+@keyframes terminal-blink{50%{opacity:0}}
+@keyframes terminal-reveal{from{opacity:0}to{opacity:1}}
+@media(max-width:700px){.terminal-content{left:7%;width:90%;top:28%}.terminal .terminal-copy{font-size:3.2vw}.terminal-controls,.terminal-objective{font-size:14px}.terminal-start{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.complete .terminal-cursor{animation:none}#terminal-actions{animation:none}}
+
+body.entering #game{visibility:visible}
+body.entering .overlay{background:rgba(2,2,4,var(--opening-fade,1));pointer-events:none}
+body.entering .terminal-content{opacity:var(--opening-fade,1)}
+body.entering #terminal-actions,body.entering .terminal-grid{visibility:hidden}
+
+/* The access terminal is intentionally text-only; Return enters the scene. */
+body.terminal #terminal-actions{display:none}
+
+body.entering .overlay *{pointer-events:none!important}
+
+/* CRT raster is confined to the access terminal and fades with its dissolve. */
+body.terminal .intro::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,
+    rgba(54,135,180,.018) 0,rgba(54,135,180,.018) 1px,
+    transparent 1px,transparent 3px,rgba(0,0,0,.32) 3px,rgba(0,0,0,.32) 4px);
+  opacity:1;
+}
+body.entering .intro::after{opacity:var(--opening-fade,1)}
+
+/* Fade the complete message in; the parent still controls the game dissolve. */
+.terminal-copy{animation:terminal-reveal .5s ease-out both}
+@media(prefers-reduced-motion:reduce){.terminal-copy{animation:none}}
