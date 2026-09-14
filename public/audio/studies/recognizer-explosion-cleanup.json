@@ -1,0 +1,23 @@
+{
+  "source": "docs/references/sounds/Recognizer Explosion.m4a",
+  "sha256": "a8dc6df682a44c14fe8f6e4bb9b52d9c31d7b625d936109b9bcbc07ce45534b6",
+  "matched_video_time": 113.207,
+  "correlation": 0.997,
+  "method": "Shared stereo harmonic/percussive soft mask; two suppression strengths; no isolated production stems",
+  "variants": [
+    {
+      "name": "balanced",
+      "duration": 0.3618140589569161,
+      "rms": 0.05505849438424244,
+      "mask_floor": 0.18,
+      "harmonic_strength": 1.6
+    },
+    {
+      "name": "strong",
+      "duration": 0.3618140589569161,
+      "rms": 0.02398902850630751,
+      "mask_floor": 0.055,
+      "harmonic_strength": 3.0
+    }
+  ]
+}

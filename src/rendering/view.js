@@ -202,19 +202,14 @@ export class View {
     this.film.enabled = !this.lowQuality; this.film.uniforms.time.value = this.elapsed;
     this.searchlights.update(run.recognizers,run.time,this.camera,mode==='paused'?0:dt,!preview);
     const muzzleAge=(1-run.recoil)/4;
-    this.muzzleFlash.visible=!run.crushed&&!preview&&muzzleAge<.17;
+    this.muzzleFlash.visible=!gunner&&!run.crushed&&!preview&&muzzleAge<.17;
     if(this.muzzleFlash.visible){
       this.muzzleFlash.material.uniforms.age.value=muzzleAge;
       this.muzzleFlash.material.uniforms.seed.value=run.shots*2.399;
       this.tank.root.updateMatrixWorld(true);
       this.tank.flash.getWorldPosition(this.muzzleFlash.position);
       this.muzzleFlash.quaternion.copy(this.camera.quaternion);
-      this.muzzleFlash.scale.setScalar(gunner?.28:1);
-      if(gunner){
-        // The gunner camera sits at the muzzle; put its flash just ahead of the sight.
-        this.camera.getWorldDirection(this.projected);
-        this.muzzleFlash.position.copy(this.camera.position).addScaledVector(this.projected,3);
-      }
+      this.muzzleFlash.scale.setScalar(1);
     }
     for(const burst of this.breakups.bursts)burst.optical?.mesh.quaternion.copy(this.camera.quaternion);
     this.renderer.info.reset(); this.composer.render(dt);
