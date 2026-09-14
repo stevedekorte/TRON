@@ -5,7 +5,7 @@ import { View } from './rendering/view.js';
 import { Sound } from './audio/sound.js';
 import { createRun, step, cannonTarget, startPursuit, boostTank } from './simulation/run.js';
 import { WALLS, HALF, BASIS, MAZE_KIND } from './levels/maze.js';
-import { config, defaults, TURBO } from './game/config.js';
+import { config, defaults, TURBO, GUNNER } from './game/config.js';
 
 const $ = id => document.getElementById(id);
 const sound = new Sound();
@@ -74,18 +74,24 @@ listen(window, 'keydown', event => {
     event.preventDefault();
     if(!event.repeat){
       resume();
-      if(['running','entering'].includes(mode)&&['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyQ','KeyE'].includes(event.code))keys.add(event.code);
+      if(event.code==='KeyW')run.cruiseThrottle=event.shiftKey;
+      if(['running','entering'].includes(mode)&&['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyI','KeyJ','KeyK','KeyL'].includes(event.code))keys.add(event.code);
     }
     return;
   }
   if (event.target instanceof HTMLInputElement) return;
   const key = event.code;
+  if(key==='KeyW'&&!event.repeat&&['running','entering'].includes(mode)){run.cruiseThrottle=event.shiftKey?true:false;if(!event.shiftKey)startingThrottle=false;}
+  if(!event.repeat&&['running','entering'].includes(mode)&&key==='KeyP'){
+    if(mode==='entering')finishOpening();run.gunner=!run.gunner;view.aerial=false;view.freshCamera=true;return;
+  }
+  if(!event.repeat&&['running','entering'].includes(mode)&&key==='KeyO'&&run.gunner){run.gunnerZoom=(run.gunnerZoom+1)%GUNNER.fovs.length;return;}
   if (['running','entering'].includes(mode) && ['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)) event.preventDefault();
   if (key === 'Tab' && mode === 'running') { event.preventDefault(); if (!event.repeat) showSurvey = !showSurvey; return; }
   if (event.repeat) return;
   if(key==='KeyF'&&['running','entering'].includes(mode)){run.turretCentering=true;return;}
   if (key === 'KeyH' && mode === 'running') { showInstruments = !showInstruments; return; }
-  if (key === 'KeyV' && mode === 'running') { view.aerial = !view.aerial; view.freshCamera = true; return; }
+  if (key === 'KeyV' && mode === 'running') { run.gunner=false;view.aerial = !view.aerial; view.freshCamera = true; return; }
   if (key === 'Enter' && mode === 'ready') { event.preventDefault(); terminal.done ? start() : terminal.finish(); return; }
   if(mode==='entering'&&key==='Enter'){event.preventDefault();finishOpening();return;}
   if (key === 'Escape') { ['running','entering'].includes(mode) ? pause() : resume(); return; }
@@ -93,7 +99,7 @@ listen(window, 'keydown', event => {
   if (key === 'KeyR' && !['loading','error'].includes(mode)) { start(); return; }
   if(key==='KeyT'){
     if(event.shiftKey&&import.meta.env.DEV){$('tuning').hidden=!$('tuning').hidden;return;}
-    if(['running','entering'].includes(mode))boostTank(run);
+    if(['running','entering'].includes(mode))boostTank(run,keys.has('KeyS')||keys.has('ArrowDown')?-1:1);
     return;
   }
   if (['running','entering'].includes(mode)){if(key==='Space')fireQueued=true;if(['KeyS','ArrowDown'].includes(key))startingThrottle=false;keys.add(key);}
@@ -122,12 +128,14 @@ function drawMap() {
 
 }
 function updateHud() {
+  $('gunner-sight').hidden=!run.gunner||run.crushed||!['running','paused'].includes(mode);
+  $('gunner-zoom').textContent=['1×','2×','4×'][run.gunnerZoom];
   $('instruments').hidden=!showInstruments;
   $('zoom-hint').hidden=!view.aerial;
   $('survey').hidden=!showSurvey;
   $('speed').textContent=Math.round(Math.abs(run.speed)*3.6);
   $('coordinates').textContent=`${Math.round(run.x)}, ${Math.round(run.s)}`;
-  $('weapon-status').textContent=run.crushed?'CLU DEREZZED — R TO RESET':run.cooldown>.15?'RECHARGING':cannonTarget(run).lock?'HEIGHT ASSIST':'CANNON READY';
+  $('weapon-status').textContent=run.crushed?'CLU DEREZZED — R TO RESET':run.cooldown>.15?'RECHARGING':run.gunner?'MANUAL AIM':cannonTarget(run).lock?'HEIGHT ASSIST':'CANNON READY';
   $('orientation').textContent=`TURRET ${Math.round(-run.turretYaw*180/Math.PI)}°`;
   const turbo=$('turbo'),boosting=run.turboRemaining>0,charging=run.turboCooldown>0;
   $('turbo-status').textContent=boosting?`BOOST ${Math.ceil(run.turboRemaining)}s`:charging?`RECHARGE ${Math.ceil(run.turboCooldown)}s`:'READY';
@@ -158,12 +166,13 @@ function frame(ms) {
     accumulator += dt;
     let steps = 0;
     while (accumulator >= fixedStep && steps++ < 6 && (mode === 'running'||mode==='entering')) {
-      previous = { x: run.x, s: run.s, yaw: run.yaw, turretYaw: run.turretYaw };
+      previous = { x: run.x, s: run.s, yaw: run.yaw, turretYaw: run.turretYaw,aimPitch:run.aimPitch };
       const input = {
-        throttle: Number(startingThrottle || keys.has('KeyW') || keys.has('ArrowUp')) - Number(keys.has('KeyS') || keys.has('ArrowDown')),
+        throttle: keys.has('KeyS')||keys.has('ArrowDown')?-1:Number(startingThrottle||run.cruiseThrottle||keys.has('KeyW')||keys.has('ArrowUp')),
         steer: Number(keys.has('KeyD') || keys.has('ArrowRight')) - Number(keys.has('KeyA') || keys.has('ArrowLeft')),
         fire: keys.has('Space') || mouseFire || fireQueued,
-        turret: Number(keys.has('KeyE')) - Number(keys.has('KeyQ')),
+        turret: Number(keys.has('KeyL')) - Number(keys.has('KeyJ')),
+        aimPitch:run.gunner?Number(keys.has('KeyI'))-Number(keys.has('KeyK')):0,
       };
       step(run, input, fixedStep);fireQueued=false; accumulator -= fixedStep;
       for (const event of run.events.splice(0)) { view.event(event); sound.effect(event.type,event); }

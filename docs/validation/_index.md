@@ -309,3 +309,10 @@ The existing 38 simulation tests and eight ground-tank tests pass. New coverage 
 ### Startup presentation — September 14
 
 The HTML supplies a black background immediately and loads the stylesheet through a render-blocking link. Content is hidden until styles apply, avoiding an unformatted text flash. Controls appear at game entry and remain until ten simulated seconds after the first gameplay key press; the Return used to start does not count. Later keyboard activity re-enables the idle reminder. Pausing freezes the countdown, and resetting starts it over. `npm run test:browser -- --startup-ui` passed with deliberately delayed CSS, initial controls visibility, timed fade and subsequent idle reminder checks.
+
+
+### September 14 follow-up checks
+
+Simulation coverage now includes stabilized gunner yaw, manual shot elevation, pitch limits, zoom-sensitive aiming, alert decay/renewal and cross-unit reports, and reverse turbo direction/caps/easing. Browser checks `--gunner`, `--cruise`, and `--searchlights` passed in Chrome. `test-results/gunner-sight.png` was visually compared with the supplied reticle image. Controls/startup checks also cover delayed CSS and initial hint timing.
+
+The final simulation suite passes all 52 tests. Gunner controls use J/L in both views, I/K for elevation, and O for zoom; Q/E rotation is disabled. Zoom sensitivity is tested against the field-of-view ratio.

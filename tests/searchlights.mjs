@@ -7,7 +7,7 @@ try{
  await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__tron.state.mode==='running');await page.keyboard.press('Escape');
  await page.evaluate(()=>{
   const r=window.__tron.state;
-  const recognizers=r.recognizers.map((e,i)=>({...e,x:-5050,s:-4850,y:77,yaw:0,state:i?'destroyed':'search',canSee:false,nextSense:Infinity,memory:{x:-5000,s:-4650,vx:0,vs:0,seenAt:r.time,source:0},goal:{x:-5000,s:-4650},goalUntil:r.time+15,attack:null,fold:0,vx:0,vs:0}));
+  const recognizers=r.recognizers.map((e,i)=>({...e,x:-5050,s:-4850,y:77,yaw:0,state:i?'destroyed':'search',canSee:false,alertUntil:r.time+180,nextSense:Infinity,memory:{x:-5000,s:-4650,vx:0,vs:0,seenAt:r.time-3,source:0},goal:{x:-5000,s:-4650},goalUntil:r.time+15,attack:null,fold:0,vx:0,vs:0}));
   window.__tron.place({x:-5000,s:-5000,speed:0,yaw:0,turretYaw:0,recognizers});
  });
  await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__tron.state.searchlights[0].strength>.8);

@@ -14,7 +14,7 @@ Subsequent corrections: the maze should be diagonal and shard-like rather than s
 2. **The 1982 shapes.** Broad blue slab tops, black channels, oblique edges and clipped ends. The supplied film stills guide the reconstruction; they do not expose a complete maze map, so unseen passages remain an authored approximation.
 3. **Independent observers.** Five Recognizers begin in pursuit outside the maze, with four additional patrols scattered within it. Each has its own motion, view direction, sighting memory and search decisions. Radio messages preserve the age and origin of an observation.
 4. **Information-limited pursuit.** Wall geometry occludes vision. Once hidden, Clu's unobserved movement must not influence navigation. Prediction follows the last observed velocity for a bounded time and stops at mapped walls; stale memories expire.
-5. **Direct vehicle control.** WASD/arrow movement, including turning in place; Q/E independent turret rotation. The barrel stays level and shots lead the observed three-dimensional velocity when a target is aligned and unobscured. Cannon fire remains available without a combat objective.
+5. **Direct vehicle control.** WASD/arrow movement, including turning in place; J/L independent turret rotation. The barrel stays level and shots lead the observed three-dimensional velocity when a target is aligned and unobscured. Cannon fire remains available without a combat objective.
 6. **Quiet presentation.** Minimal default interface, optional instruments/map/aerial view, spatial aircraft audio that becomes muffled behind slabs, and the film-inspired typing terminal.
 
 ## Current implementation and limits
