@@ -19,7 +19,10 @@ try{
  await page.keyboard.down('KeyK');await page.waitForTimeout(200);await page.keyboard.up('KeyK');
  await page.keyboard.press('KeyO');await page.waitForFunction(()=>__tron.state.gunnerZoom===1&&document.querySelector('#gunner-zoom').textContent==='2×');assert.equal(await page.locator('#gunner-zoom').textContent(),'2×');
  await page.screenshot({path:'test-results/gunner-sight.png'});
- await page.keyboard.press('KeyO');await page.keyboard.press('KeyO');assert.equal(await page.evaluate(()=>__tron.state.gunnerZoom),0);
+ await page.keyboard.press('KeyO');await page.keyboard.press('KeyO');
+ await page.waitForFunction(()=>__tron.state.gunnerZoom===3&&document.querySelector('#gunner-zoom').textContent==='8×');
+ await page.screenshot({path:'test-results/gunner-sight-8x.png'});
+ await page.keyboard.press('KeyO');assert.equal(await page.evaluate(()=>__tron.state.gunnerZoom),0);
  await page.waitForTimeout(600);await page.keyboard.press('Space');await page.waitForFunction(()=>__tron.state.projectiles.length>0);
  const projection=await page.evaluate(async()=>{const {cannonPose}=await import('/src/simulation/run.js');const r=__tron.state,p=cannonPose(r),pitch=r.aimPitch;return __tron.project({x:p.x-Math.sin(p.yaw)*Math.cos(pitch)*100,y:p.y+Math.sin(pitch)*100,s:p.s+Math.cos(p.yaw)*Math.cos(pitch)*100});});assert.ok(Math.abs(projection.x)<.01&&Math.abs(projection.y)<.01);
  await page.keyboard.press('KeyF');await page.waitForFunction(()=>__tron.state.aimPitch===0&&!__tron.state.gunnerLeveling);

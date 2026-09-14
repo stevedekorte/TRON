@@ -132,7 +132,7 @@ function drawMap() {
 }
 function updateHud() {
   $('gunner-sight').hidden=!run.gunner||run.crushed||!['running','paused'].includes(mode);
-  $('gunner-zoom').textContent=['1×','2×','4×'][run.gunnerZoom];
+  $('gunner-zoom').textContent=['1×','2×','4×','8×'][run.gunnerZoom];
   $('instruments').hidden=!showInstruments;
   $('zoom-hint').hidden=!view.aerial;
   $('survey').hidden=!showSurvey;
