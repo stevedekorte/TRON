@@ -322,3 +322,5 @@ Gunner inertia follow-up: all 53 simulation tests pass, including acceleration, 
 `npm run test:browser -- --death-terminal` passed: a real fatal projectile triggers breakup, partial opacity during the fade, the exact two-line message with hidden game/HUD/cursor, and Return into a fresh run. The terminal capture is `test-results/death-terminal.png`.
 
 Final sizing/weapon checks: all 55 simulation tests passed, plus the strengthened scale-dependent separation check. `node tests/models.mjs` verified Recognizer height 19.5 m, feet at ground height zero, correct muzzle transforms, and folded poses without errors. The imported-model capture was inspected. F leveling and the five-second Clu projectile lifetime are covered by focused tests; the gunner Chrome check passed after those updates.
+
+Recognizer breakup pacing: `npm run test:browser -- --breakup` passed in headless Chrome on macOS. Verified one fragmented section and five intact detached sections, randomized outcomes, falling debris, pause freezing, and geometry cleanup. Inspected the early and four-second falling captures; debris has reached the floor by the latter capture.

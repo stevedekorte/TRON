@@ -390,3 +390,5 @@ F now levels aim elevation smoothly to the ground plane while preserving turret 
 Clu rounds now last five seconds at 165 m/s (825 m maximum travel). Chase-view acquisition extends to 740 m with a matching five-second intercept horizon. Enemy ammunition retains its prior range.
 
 Recognizers are 30% larger than the previous half-scale version (model scale 0.65). Hit volumes, separation, avoidance, crush footprint/sole height, flight clearance and searchlight mounting offsets follow that scale.
+
+Recognizer destruction now separates pieces outward twice as fast, with a shorter 0.1-second flash and faster tumbling. Debris gravity is 14.7 m/s² with less upward lift; the effect lasts 5–6 seconds with a one-second fade. Only the struck anatomical section fragments; other sections detach whole. Ground-tank breakup timing is preserved.
