@@ -14,7 +14,7 @@ try{
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:5173/docs/index.html');await page.getByRole('link',{name:/Sound library Listen/}).click();
  await page.waitForFunction(()=>document.querySelector('h1')?.textContent==='Sound library');
- assert.equal(await page.locator('audio').count(),17);
+ assert.equal(await page.locator('audio').count(),catalog.items.filter(i=>i.playback).length);
  const loaded=await page.evaluate(async()=>{
   const players=[...document.querySelectorAll('audio')].slice(0,4);
   return Promise.all(players.map(a=>new Promise((resolve,reject)=>{
@@ -26,5 +26,5 @@ try{
  assert.ok(loaded.every(a=>a.duration>20&&Number.isFinite(a.duration)));
  await page.locator('audio').first().evaluate(a=>a.play());await page.waitForTimeout(100);assert.equal(await page.locator('audio').first().evaluate(a=>a.paused),false);await page.locator('audio').first().evaluate(a=>a.pause());
  await page.screenshot({path:'test-results/sound-library.png'});
- assert.deepEqual(errors,[]);console.log({resources:catalog.items.length,audioPlayers:17,downloadedPreviews:loaded.length});
+ assert.deepEqual(errors,[]);console.log({resources:catalog.items.length,audioPlayers:catalog.items.filter(i=>i.playback).length,downloadedPreviews:loaded.length});
 }finally{await browser.close();}

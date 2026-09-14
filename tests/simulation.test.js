@@ -353,3 +353,14 @@ test('additional patrols start scattered with no target; sight requires range an
  perceive(e,far,1);assert.equal(e.canSee,false);assert.equal(e.memory,null);
  assert.equal(canSeeClu({...e,y:SENSORS.range+3},{x:e.x,s:e.s}),false);
 });
+
+test('Recognizer hit events distinguish surviving armor impacts from fatal hits',()=>{
+ const r=createRun();r.x=-1800;r.s=-1800;r.enemyTanks=[];
+ r.recognizers=[{...r.recognizers[0],x:-1800,s:-1720,y:80,health:2,state:'wander',fold:0}];
+ for(const fatal of [false,true]){
+  r.events=[];r.projectiles=[{x:-1800,s:-1720,y:80,vx:0,vs:0,vy:0,life:1}];
+  updateWeapons(r,{},1/60);
+  const hit=r.events.find(e=>e.type==='hit');assert.equal(hit.subject,'recognizer');assert.equal(hit.fatal,fatal);
+  assert.equal(r.events.some(e=>e.type==='destroyed'),fatal);
+ }
+});

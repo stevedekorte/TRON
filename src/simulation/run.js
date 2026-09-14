@@ -101,7 +101,7 @@ export function updateWeapons(run,input,dt) {
       if(p.faction==='enemy'){
         if(run.enemyTanks.some(e=>e.id!==p.owner&&e.state!=='destroyed'&&Math.hypot(p.x-e.x,p.s-e.s)<3.5&&p.y<3.5)){p.life=0;continue;}
         if(!run.crushed&&Math.hypot(p.x-run.x,p.s-run.s)<3.5&&p.y<3.5){
-          p.life=0;run.health--;run.impact=1;run.events.push({type:'hit',x:p.x,y:p.y,s:p.s});
+          p.life=0;run.health--;run.impact=1;run.events.push({type:'hit',subject:'tank',fatal:run.health<=0,x:p.x,y:p.y,s:p.s});
           if(run.health<=0){const speed=run.speed;run.crushed=true;run.speed=0;run.events.push({type:'destroyed',subject:'tank',x:run.x,y:0,s:run.s,yaw:run.yaw,turretYaw:run.turretYaw,vx:-Math.sin(run.yaw)*speed,vs:Math.cos(run.yaw)*speed,hit:{x:p.x,y:p.y,z:-p.s}});}
         }
         continue;
@@ -115,7 +115,7 @@ export function updateWeapons(run,input,dt) {
         const legX=Math.abs(localX)+(e.fold||0)*13;
         const legs=legX>10&&legX<17&&localY>-22&&localY<=-4;
         if(e.kind==='ground'?(Math.hypot(p.x-e.x,p.s-e.s)<3.5&&p.y<3.5):Math.abs(localZ)<4.35&&(hull||crown||legs)) {
-          e.health--;e.hit=1;p.life=0;run.events.push({type:'hit',x:p.x,y:p.y,s:p.s});
+          e.health--;e.hit=1;p.life=0;run.events.push({type:'hit',subject:e.kind==='ground'?'enemyTank':'recognizer',fatal:e.health===0,x:p.x,y:p.y,s:p.s});
           if(e.health===0){e.state='destroyed';e.canSee=false;e.memory=null;run.kills++;run.events.push({type:'destroyed',subject:e.kind==='ground'?'enemyTank':undefined,turretYaw:e.turretYaw,id:e.id,x:e.x,y:e.kind==='ground'?0:e.y,s:e.s,yaw:e.yaw,fold:e.fold||0,vx:e.vx,vy:e.vy,vs:e.vs,hit:{x:p.x,y:p.y,z:-p.s}});}
           break;
         }
