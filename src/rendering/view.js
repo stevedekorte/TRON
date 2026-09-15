@@ -15,6 +15,8 @@ import { createRecognizer,cloneEnemyTank } from './models.js';
 import { config, GUNNER, RECOGNIZER_SCALE, angleDelta } from '../game/config.js';
 import { RECOGNIZER_STARTS, wallIntersection, lineOfSight } from '../levels/maze.js';
 
+const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
+
 export class View {
   constructor(canvas, tank, recognizer, carrier=null) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -196,6 +198,15 @@ export class View {
     }
     this.camera.far=12000;
     this.camera.fov = gunner?GUNNER.fovs[run.gunnerZoom]:this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov); this.camera.updateProjectionMatrix();
+    // Apply only to the final camera orientation: no drift in follow smoothing or aim.
+    // Simulation time freezes the vibration on pause; impact decays in ~0.4 seconds.
+    if(!preview&&!this.referenceCamera&&!this.reducedMotion){
+      const strength=run.impact**1.5*Math.tan(this.camera.fov*Math.PI/360)/Math.tan(config.fov*Math.PI/360);
+      const t=run.time;
+      this.camera.rotateX(strength*IMPACT_SHAKE.pitch*(Math.sin(t*83)+.35*Math.sin(t*139)));
+      this.camera.rotateY(strength*IMPACT_SHAKE.yaw*(Math.sin(t*109)+.3*Math.cos(t*173)));
+      this.camera.rotateZ(strength*IMPACT_SHAKE.roll*Math.sin(t*97));
+    }
     this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):(this.aerial ? .06 : 1)));
     this.world.aerialView.value=this.opening!=null?1-this.opening:(this.aerial&&!this.referenceCamera?1:0);
     this.bloom.strength = config.bloom; this.bloom.enabled = !this.lowQuality;

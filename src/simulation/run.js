@@ -173,7 +173,8 @@ export function step(run,input,dt) {
   const beforeX=run.x,beforeS=run.s;
   if(moveTank(run,-Math.sin(run.yaw)*run.speed*dt,Math.cos(run.yaw)*run.speed*dt)) {
     const travel=Math.hypot(run.x-beforeX,run.s-beforeS);
-    run.impact=Math.min(1,Math.max(0,Math.abs(run.speed)-travel/dt)/14);
+    const lostSpeed=Math.max(0,Math.abs(run.speed)-travel/dt);
+    if(lostSpeed>2)run.impact=Math.max(run.impact,Math.min(1,lostSpeed/14));
     // Preserve tangential travel; only stop drive speed when actually blocked.
     // This also allows immediate reverse instead of braking stored wall pressure.
     if(travel<Math.abs(run.speed)*dt*.05)run.speed=0;

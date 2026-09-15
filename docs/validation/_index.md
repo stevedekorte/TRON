@@ -342,3 +342,7 @@ Recognizer armor audio: all 56 simulation tests pass, including target/fatality 
 ## Production subdirectory deployment — September 14
 
 `npm run build` and `node tests/production-path.mjs` passed against a static production build mounted at `/fun/TRON/`: game starts, all three vehicle models and game audio load, and the sound study plays without HTTP or JavaScript errors. Vite uses a relative base and runtime audio resolves below the game path. The website workflow builds the pinned private submodule with a read-only deploy key and publishes its dist output.
+
+## Tank speed and impact feedback — September 14
+
+All 57 simulation tests passed, including enemy pursuit reaching normal Clu speed without inheriting turbo and escorts keeping pace with the carrier. `node tests/impact-shake.mjs` passed in Chrome: impact changes the rendered view, freezes on pause, leaves turret aim unchanged, and respects reduced motion. Collision feedback preserves a previous stronger hit, ignores low-speed wall pressure, and decays over approximately 0.4 seconds. Production build passed.
