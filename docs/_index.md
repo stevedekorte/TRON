@@ -411,3 +411,5 @@ Added a sound resource shelf with 25 entries and 17 local audio players, includi
 Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impact: electrical snap, low body and brief inharmonic metallic ring. Each impact is positioned at the bullet strike with small pitch variation. Hit events identify target type and fatality so the armor sound is omitted on destruction. Runtime synthesis and the audition WAV share `src/audio/recognizer-hit.js`; regenerate the WAV with `node scripts/generate-hit-sfx.mjs`.
 
 - [x] Support static deployment under `/fun/TRON/` with relative build and audio paths; verify the production build in Chrome.
+
+- [x] Match enemy tank top speed to Clu normal cruise (22 m/s), with turbo exclusive to Clu; carrier transit matches escort cruise. Add brief impact camera vibration for bullet hits and wall collisions, scaled by impact and gunner zoom.
