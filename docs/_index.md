@@ -413,3 +413,5 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 - [x] Support static deployment under `/fun/TRON/` with relative build and audio paths; verify the production build in Chrome.
 
 - [x] Match enemy tank top speed to Clu normal cruise (22 m/s), with turbo exclusive to Clu; carrier transit matches escort cruise. Add brief impact camera vibration for bullet hits and wall collisions, scaled by impact and gunner zoom.
+
+- [x] F now returns turret yaw forward and elevation level together, using manual aim rates, gunner acceleration and zoom sensitivity. Manual input overrides each axis independently.

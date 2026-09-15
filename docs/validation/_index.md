@@ -346,3 +346,7 @@ Recognizer armor audio: all 56 simulation tests pass, including target/fatality 
 ## Tank speed and impact feedback — September 14
 
 All 57 simulation tests passed, including enemy pursuit reaching normal Clu speed without inheriting turbo and escorts keeping pace with the carrier. `node tests/impact-shake.mjs` passed in Chrome: impact changes the rendered view, freezes on pause, leaves turret aim unchanged, and respects reduced motion. Collision feedback preserves a previous stronger hit, ignores low-speed wall pressure, and decays over approximately 0.4 seconds. Production build passed.
+
+## Forward-and-level turret return — September 14
+
+All 59 simulation tests and the gunner browser suite passed. F centers yaw and levels elevation, using the same movement rates and gunner acceleration as manual controls at all four zoom levels. Tests cover exact final alignment, short-path centering, turning hulls and manual override. Production build passed.

@@ -13,3 +13,26 @@ test('gunner aim accelerates, coasts to rest, and can reverse without snapping',
 test('leveling returns elevation to the ground plane without changing azimuth; manual elevation cancels',()=>{const r=fixture();r.aimPitch=.6;r.turretYaw=.8;r.gunnerLeveling=true;step(r,{},1/60);assert.ok(r.aimPitch>0&&r.aimPitch<.6);for(let i=0;i<100;i++)step(r,{},1/60);assert.equal(r.aimPitch,0);assert.equal(r.gunnerLeveling,false);assert.ok(Math.abs(r.turretYaw-.8)<1e-8);r.aimPitch=.4;r.gunnerLeveling=true;step(r,{aimPitch:1},1/60);assert.equal(r.gunnerLeveling,false);assert.ok(r.aimPitch>.4);});
 
 test('Clu rounds travel 825 meters and assisted fire reaches beyond the old range',()=>{const r=fixture();r.gunner=false;updateWeapons(r,{fire:true},0);assert.equal(r.projectiles[0].life,5);assert.equal(Math.hypot(r.projectiles[0].vx,r.projectiles[0].vs,r.projectiles[0].vy),165);const e={...createRun().recognizers[0],x:-5000,s:-4400,y:77,yaw:0,vx:0,vs:0,vy:0};r.recognizers=[e];r.projectiles=[];r.cooldown=0;assert.ok(cannonTarget(r).lock);for(let i=0;i<270;i++)updateWeapons(r,{fire:i===0},1/60);assert.equal(e.health,2);});
+
+test('forward-and-level return uses manual rates and acceleration at every zoom',()=>{
+ for(const gunner of [false,true])for(const gunnerZoom of [0,1,2,3]){
+  const auto=fixture();Object.assign(auto,{gunner,gunnerZoom,turretYaw:1.2,aimPitch:.7,turretCentering:true,gunnerLeveling:true});
+  const manual=structuredClone(auto);manual.turretCentering=false;manual.gunnerLeveling=false;
+  for(let i=0;i<12;i++){
+   step(auto,{},1/60);step(manual,{turret:1,aimPitch:-1},1/60);
+   assert.ok(Math.abs(auto.turretYaw-manual.turretYaw)<1e-10);
+   if(gunner)assert.ok(Math.abs(auto.aimPitch-manual.aimPitch)<1e-10);
+  }
+  for(let i=0;i<1800&&(auto.turretCentering||auto.gunnerLeveling);i++)step(auto,{},1/60);
+  assert.equal(auto.turretYaw,0);assert.equal(auto.aimPitch,0);
+  assert.equal(auto.turretCentering,false);assert.equal(auto.gunnerLeveling,false);
+ }
+});
+test('return centers relative to a turning hull and manual controls override each axis',()=>{
+ const r=fixture();Object.assign(r,{turretYaw:1,aimPitch:.3,turretCentering:true,gunnerLeveling:true});
+ for(let i=0;i<180&&r.turretCentering;i++)step(r,{steer:1},1/60);
+ assert.equal(r.turretYaw,0);assert.notEqual(r.yaw,0);
+ Object.assign(r,{turretYaw:1,aimPitch:.3,turretCentering:true,gunnerLeveling:true});
+ step(r,{turret:-1,aimPitch:1},1/60);
+ assert.equal(r.turretCentering,false);assert.equal(r.gunnerLeveling,false);
+});
