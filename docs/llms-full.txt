@@ -429,7 +429,7 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 
 - [x] F now returns turret yaw forward and elevation level together, using manual aim rates, gunner acceleration and zoom sensitivity. Manual input overrides each axis independently.
 
-- [x] Cannon banks one extra shot per second without firing, capped at three. Fresh Space/click presses may spend extras to bypass the 0.38-second recharge; held fire retains the normal cadence. Any shot resets partial reserve recharge. Instruments show banked extras.
+- [x] Cannon refills all three extra shots together after ten seconds without firing. Fresh Space/click presses may spend extras to bypass the 0.38-second recharge; held fire retains the normal cadence. Any shot restarts the full ten-second reserve recharge. Instruments show banked extras.
 
 
 ---
@@ -1421,3 +1421,7 @@ All 59 simulation tests and the gunner browser suite passed. F centers yaw and l
 ## Cannon shot reserve — September 14
 
 All 63 simulation tests and `node tests/cannon-reserve.mjs` passed. Coverage includes one-per-second recharge capped at three, four rapid shots from a full bank, normal cooldown after exhaustion, held-fire behavior, refill after resting, pause, reset and destruction. Real Space presses consumed reserves in Chrome; pausing prevented recharge. Production build passed.
+
+### Cannon reserve timing update
+
+Reserve recharge now requires ten uninterrupted seconds without firing and restores all three extras at once. Simulation tests cover the exact boundary, no partial refill, partially spent reserves, timer restart on firing, and destruction. All 63 simulation tests passed; production build passed.

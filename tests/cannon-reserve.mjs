@@ -17,6 +17,6 @@ try{
  assert.equal(await page.evaluate(()=>__tron.state.extraShots),0);
  await page.keyboard.press('Escape');const before=await page.evaluate(()=>__tron.state.extraShots);
  await page.waitForTimeout(1100);assert.equal(await page.evaluate(()=>__tron.state.extraShots),before);
- await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.extraShots>=1);
+ await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.extraShots===3);
  console.log('Space presses spend banked extras; held fire uses normal recharge; pausing stops refill.');
 }finally{await browser.close();}

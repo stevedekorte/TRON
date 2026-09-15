@@ -416,4 +416,4 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 
 - [x] F now returns turret yaw forward and elevation level together, using manual aim rates, gunner acceleration and zoom sensitivity. Manual input overrides each axis independently.
 
-- [x] Cannon banks one extra shot per second without firing, capped at three. Fresh Space/click presses may spend extras to bypass the 0.38-second recharge; held fire retains the normal cadence. Any shot resets partial reserve recharge. Instruments show banked extras.
+- [x] Cannon refills all three extra shots together after ten seconds without firing. Fresh Space/click presses may spend extras to bypass the 0.38-second recharge; held fire retains the normal cadence. Any shot restarts the full ten-second reserve recharge. Instruments show banked extras.
