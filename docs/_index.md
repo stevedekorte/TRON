@@ -415,3 +415,5 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 - [x] Match enemy tank top speed to Clu normal cruise (22 m/s), with turbo exclusive to Clu; carrier transit matches escort cruise. Add brief impact camera vibration for bullet hits and wall collisions, scaled by impact and gunner zoom.
 
 - [x] F now returns turret yaw forward and elevation level together, using manual aim rates, gunner acceleration and zoom sensitivity. Manual input overrides each axis independently.
+
+- [x] Cannon banks one extra shot per second without firing, capped at three. Fresh Space/click presses may spend extras to bypass the 0.38-second recharge; held fire retains the normal cadence. Any shot resets partial reserve recharge. Instruments show banked extras.

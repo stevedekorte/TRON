@@ -138,7 +138,7 @@ function updateHud() {
   $('survey').hidden=!showSurvey;
   $('speed').textContent=Math.round(Math.abs(run.speed)*3.6);
   $('coordinates').textContent=`${Math.round(run.x)}, ${Math.round(run.s)}`;
-  $('weapon-status').textContent=run.crushed?'CLU DEREZZED — R TO RESET':run.cooldown>.15?'RECHARGING':run.gunner?'MANUAL AIM':cannonTarget(run).lock?'HEIGHT ASSIST':'CANNON READY';
+  $('weapon-status').textContent=run.crushed?'CLU DEREZZED — R TO RESET':run.extraShots>0?`CANNON READY +${run.extraShots}`:run.cooldown>.15?'RECHARGING':run.gunner?'MANUAL AIM':cannonTarget(run).lock?'HEIGHT ASSIST':'CANNON READY';
   $('orientation').textContent=`TURRET ${Math.round(-run.turretYaw*180/Math.PI)}°`;
   const turbo=$('turbo'),boosting=run.turboRemaining>0,charging=run.turboCooldown>0;
   $('turbo-status').textContent=boosting?`BOOST ${Math.ceil(run.turboRemaining)}s`:charging?`RECHARGE ${Math.ceil(run.turboCooldown)}s`:'READY';
@@ -188,6 +188,7 @@ function frame(ms) {
       const input = {
         throttle: keys.has('KeyS')||keys.has('ArrowDown')?-1:Number(startingThrottle||run.cruiseThrottle||keys.has('KeyW')||keys.has('ArrowUp')),
         steer: Number(keys.has('KeyD') || keys.has('ArrowRight')) - Number(keys.has('KeyA') || keys.has('ArrowLeft')),
+        firePressed:fireQueued,
         fire: keys.has('Space') || mouseFire || fireQueued,
         turret: Number(keys.has('KeyL')) - Number(keys.has('KeyJ')),
         aimPitch:run.gunner?Number(keys.has('KeyI'))-Number(keys.has('KeyK')):0,

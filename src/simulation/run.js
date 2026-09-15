@@ -7,7 +7,7 @@ import { createRecognizers, updateRecognizers, perceive } from './recognizers.js
 
 export function createRun() {
   return {...SPAWN,cruiseThrottle:false,gunner:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    enemyTanks:createGroundTanks(),health:3,crushed:false,cooldown:0,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(),radio:[]};
+    enemyTanks:createGroundTanks(),health:3,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(),radio:[]};
 }
 
 export function boostTank(run,requestedDirection=1){
@@ -82,7 +82,21 @@ export function cannonTarget(run) {
 export function updateWeapons(run,input,dt) {
   for(const e of run.recognizers)e.hit=Math.max(0,e.hit-dt*4);
   run.cooldown=Math.max(0,run.cooldown-dt);run.recoil=Math.max(0,run.recoil-dt*4);
-  if(input.fire&&run.cooldown<=0) {
+  if(!run.crushed){
+    run.shotRest+=dt;
+    const earned=Math.floor((run.shotRest+1e-8)/CLU_WEAPON.extraShotInterval);
+    if(earned){
+      run.extraShots=Math.min(CLU_WEAPON.maxExtraShots,run.extraShots+earned);
+      run.shotRest=Math.max(0,run.shotRest-earned*CLU_WEAPON.extraShotInterval);
+    }
+  }
+  // Held fire keeps its normal cadence; fresh presses can spend stored shots.
+  const pressed=input.firePressed??(input.fire&&!run.fireWasDown);
+  run.fireWasDown=!!input.fire;
+  const spendExtra=run.cooldown>0&&pressed&&run.extraShots>0;
+  if(!run.crushed&&input.fire&&(run.cooldown<=0||spendExtra)) {
+    if(spendExtra)run.extraShots--;
+    run.shotRest=0;
     const target=cannonTarget(run),pose=cannonPose(run),{x,s,y,yaw}=pose;
     const distance=target.lock?Math.max(1,target.distance):160;
     const dx=(target.lock||target.manual)?target.x-x:-Math.sin(yaw)*distance,ds=(target.lock||target.manual)?target.s-s:Math.cos(yaw)*distance;
@@ -90,7 +104,7 @@ export function updateWeapons(run,input,dt) {
     const length=Math.hypot(dx,ds,dy);
     // A muzzle poking into a wall cannot fire through it.
     if(lineOfSight({x:run.x,s:run.s,y},pose))run.projectiles.push({x,s,y,vx:dx/length*CLU_WEAPON.speed,vs:ds/length*CLU_WEAPON.speed,vy:dy/length*CLU_WEAPON.speed,life:CLU_WEAPON.lifetime});
-    run.cooldown=.38;run.recoil=1;run.shots++;run.events.push({type:'shot'});
+    run.cooldown=CLU_WEAPON.recharge;run.recoil=1;run.shots++;run.events.push({type:'shot'});
   }
   for(const p of run.projectiles) {
     const steps=Math.max(1,Math.ceil(Math.hypot(p.vx,p.vs,p.vy)*dt/.8));
