@@ -350,3 +350,7 @@ All 57 simulation tests passed, including enemy pursuit reaching normal Clu spee
 ## Forward-and-level turret return — September 14
 
 All 59 simulation tests and the gunner browser suite passed. F centers yaw and levels elevation, using the same movement rates and gunner acceleration as manual controls at all four zoom levels. Tests cover exact final alignment, short-path centering, turning hulls and manual override. Production build passed.
+
+## Cannon shot reserve — September 14
+
+All 63 simulation tests and `node tests/cannon-reserve.mjs` passed. Coverage includes one-per-second recharge capped at three, four rapid shots from a full bank, normal cooldown after exhaustion, held-fire behavior, refill after resting, pause, reset and destruction. Real Space presses consumed reserves in Chrome; pausing prevented recharge. Production build passed.
