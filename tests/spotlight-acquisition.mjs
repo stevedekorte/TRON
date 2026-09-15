@@ -18,7 +18,7 @@ try{
   const r=__tron.state;
   __tron.place({x:-5000,s:-5000,yaw:0,speed:0,turretYaw:0,radio:[],
    enemyTanks:r.enemyTanks.map(e=>({...e,state:'destroyed'})),
-   recognizers:r.recognizers.map((e,i)=>({...e,x:-5000,s:-4800,y:77,yaw:Math.PI,vx:0,vs:0,vy:0,state:i?'destroyed':'search',canSee:false,memory:null,spotlight:null,alertUntil:r.time+180,nextSense:0,nextAttack:Infinity,attack:null,goal:{x:-4700,s:-4950},goalUntil:r.time+20}))});
+   recognizers:r.recognizers.map((e,i)=>({...e,x:-5000,s:-4500,y:77,yaw:Math.PI,vx:0,vs:0,vy:0,state:i?'destroyed':'search',canSee:false,memory:null,spotlight:null,alertUntil:r.time+180,nextSense:0,nextAttack:Infinity,attack:null,goal:{x:-4700,s:-4950},goalUntil:r.time+20}))});
  });
  await page.waitForFunction(()=>__tron.state.recognizers[0].spotlight?.phase==='acquire');
  const acquiring=await page.evaluate(()=>__tron.state);assert.equal(acquiring.recognizers[0].canSee,false);assert.equal(acquiring.radio.length,0);

@@ -9,10 +9,12 @@ const columns=32,rows=8;
 export function beamPose(e,time){
  const strength=searchlightStrength(e,time);
  if(strength<=0)return null;
- const {yaw,pitch}=e.spotlight||scanAngles(e,time),source=projectorOrigin(e);
+ const {yaw,pitch}=e.spotlight||e.scanBeam||scanAngles(e,time),source=projectorOrigin(e);
  const origin=new THREE.Vector3(source.x,source.y,-source.s);
  const direction=new THREE.Vector3(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
- return {origin,direction,strength};
+ const target=e.spotlight?.target;
+ const range=target?Math.min(SEARCHLIGHT.range,Math.hypot(target.x-source.x,target.s-source.s,2.8-source.y)+30):SEARCHLIGHT.scanRange;
+ return {origin,direction,strength,range};
 }
 export function clippedBeamEnd(origin,end){
  let t=wallIntersection({x:origin.x,y:origin.y,s:-origin.z},{x:end.x,y:end.y,s:-end.z})??1;
@@ -49,15 +51,15 @@ export class Searchlights {
    if(pose)beam.pose=pose;
    beam.mesh.visible=visible&&beam.strength>.005&&!!beam.pose&&enemies[i]?.state!=='destroyed';
    if(!beam.mesh.visible)return;
-   const {origin,direction}=beam.pose;
+   const {origin,direction,range}=beam.pose;
    const side=new THREE.Vector3().crossVectors(direction,camera.position.clone().sub(origin)).normalize();
    if(side.lengthSq()<.01)side.set(1,0,0);
    const position=beam.mesh.geometry.attributes.position;
-   let shortest=SEARCHLIGHT.range;
+   let shortest=range;
    for(let x=0;x<=columns;x++){
     const lateral=x/columns*2-1;
     const start=origin.clone().addScaledVector(side,lateral*1.0);
-    const end=clippedBeamEnd(start,origin.clone().addScaledVector(direction,SEARCHLIGHT.range).addScaledVector(side,lateral*SEARCHLIGHT.halfWidth));
+    const end=clippedBeamEnd(start,origin.clone().addScaledVector(direction,range).addScaledVector(side,lateral*SEARCHLIGHT.halfWidth));
     shortest=Math.min(shortest,start.distanceTo(end));
     for(let y=0;y<=rows;y++){
      const p=start.clone().lerp(end,y/rows);position.setXYZ(y*(columns+1)+x,p.x,p.y,p.z);
