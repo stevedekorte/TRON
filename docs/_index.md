@@ -417,3 +417,9 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 - [x] F now returns turret yaw forward and elevation level together, using manual aim rates, gunner acceleration and zoom sensitivity. Manual input overrides each axis independently.
 
 - [x] Cannon refills all three extra shots together after ten seconds without firing. Fresh Space/click presses may spend extras to bypass the 0.38-second recharge; held fire retains the normal cadence. Any shot restarts the full ten-second reserve recharge. Instruments show banked extras.
+
+## Patrol mix and spotlight confirmation — September 15
+
+- [x] Two initial Recognizer pursuers plus one maze patrol; three ground maze patrols in addition to the eight carrier escorts. Patrol tanks choose reachable routes through clear maze cells and retain the shared perception/radio rules.
+- [x] Searching Recognizers smoothly aim their projector at a candidate sighting while braking. No new target memory, pursuit, or radio report until the beam actually aligns within 260 m with unobstructed projector-to-Clu visibility.
+- [x] Confirmed beams track observed Clu for 1.5 seconds during pursuit, then fade over 0.8 seconds. Losing sight stops beam tracking of hidden movement. Pause freezes projector motion; destruction/reset clears acquisition.

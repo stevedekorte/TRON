@@ -28,7 +28,7 @@ try {
   await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173/?maze=authored');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
   await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.screenshot({path:'test-results/intro.png'});
   await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
-  let state=await page.evaluate(()=>window.__tron.state);assert.equal(state.weaponVisual.source,'arabinowitz');assert.equal(state.recognizers.length,9);assert.equal(state.audioSources,9);
+  let state=await page.evaluate(()=>window.__tron.state);assert.equal(state.weaponVisual.source,'arabinowitz');assert.equal(state.recognizers.length,3);assert.equal(state.audioSources,3);
   assert.equal(await page.locator('#instruments').isVisible(),false);
   await page.keyboard.down('KeyL');await page.waitForTimeout(600);await page.keyboard.up('KeyL');
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.yaw,SPAWN.yaw);assert.ok(state.turretYaw<-.5);assert.equal(state.weaponVisual.barrelPitch,0);
@@ -77,7 +77,7 @@ try {
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.kills,1);assert.equal(state.recognizers[0].state,'destroyed');assert.equal(state.mode,'running');
   await page.evaluate(()=>window.__tron.configure({enemySpeed:27}));
   for(let i=0;i<10;i++){await page.keyboard.press('KeyR');await page.waitForTimeout(70);}
-  state=await page.evaluate(()=>window.__tron.state);assert.equal(state.audioContexts,1);assert.equal(state.audioSources,9);assert.equal(state.recognizers.length,9);assert.ok(state.recognizers.every(e=>e.memory===null));
+  state=await page.evaluate(()=>window.__tron.state);assert.equal(state.audioContexts,1);assert.equal(state.audioSources,3);assert.equal(state.recognizers.length,3);assert.ok(state.recognizers.every(e=>e.memory===null));
   await page.setViewportSize({width:960,height:640});await page.keyboard.press('KeyH');await page.waitForTimeout(200);await page.screenshot({path:'test-results/resized.png'});
   assert.deepEqual(errors,[]);
   console.log(JSON.stringify({browser:await browser.version(),checks:'five agents/audio sources, J/L level turret, entry and branch driving, pause freezes AI, aerial/survey, sighting memory, shooting, 10 resets, resize',resources:state.renderer,performance:await page.evaluate(()=>window.__tron.performance),errors},null,2));

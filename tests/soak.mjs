@@ -28,7 +28,7 @@ try {
   const started=Date.now();let lastSample=0,previous=null;
   while(Date.now()-started<duration*1000) {
     const state=await page.evaluate(()=>window.__tron.state);
-    assert.equal(state.mode,'running');assert.equal(state.recognizers.length,5);
+    assert.equal(state.mode,'running');assert.equal(state.recognizers.length,3);
     assert.ok(freePosition(state.x,state.s,3.49),'tank stays outside all diagonal slabs');
     if(previous)distance+=Math.hypot(state.x-previous.x,state.s-previous.s);previous=state;
     let goal=waypoints[Math.min(index,waypoints.length-1)],d=Math.hypot(goal.x-state.x,goal.s-state.s);

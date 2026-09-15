@@ -85,9 +85,9 @@ test('walls block auto aim and a protruding muzzle cannot shoot through a wall',
 });
 
 test('independent agents persist, simulation has no timed outcome, reset is clean',()=>{
-  const r=createRun();for(const e of r.recognizers.slice(0,5))assert.ok(Math.abs(worldToGrid(e.x,e.s).u)>HALF||Math.abs(worldToGrid(e.x,e.s).v)>HALF);
+  const r=createRun();for(const e of r.recognizers.slice(0,2))assert.ok(Math.abs(worldToGrid(e.x,e.s).u)>HALF||Math.abs(worldToGrid(e.x,e.s).v)>HALF);
   const start=r.recognizers.map(e=>[e.x,e.s]);tick(r,{},100);
-  assert.equal(r.status,'running');assert.equal(r.recognizers.length,9);assert.ok(r.radio.length<40);
+  assert.equal(r.status,'running');assert.equal(r.recognizers.length,3);assert.ok(r.radio.length<40);
   assert.ok(r.recognizers.every((e,i)=>Math.hypot(e.x-start[i][0],e.s-start[i][1])>50));
   const fresh=createRun();assert.equal(fresh.radio.length,0);assert.ok(fresh.recognizers.every(e=>e.memory===null));assert.equal(fresh.turretYaw,0);
 });
@@ -284,15 +284,15 @@ test('a fired round hits a crossing Recognizer rather than its old position',()=
  for(let i=0;i<100;i++){e.x+=e.vx/60;updateWeapons(r,{},1/60);}
  assert.equal(e.health,2);
 });
-test('five opening pursuers advance without collapsing into a crowd',()=>{
+test('two opening pursuers advance without collapsing into a crowd',()=>{
  const r=createRun();r.speed=22;startPursuit(r);
- const initial=r.recognizers.slice(0,5).map(e=>({...e})),yaw=r.yaw;
+ const initial=r.recognizers.slice(0,2).map(e=>({...e})),yaw=r.yaw;
  tick(r,{throttle:1},20);
- for(let i=0;i<5;i++){
+ for(let i=0;i<2;i++){
   const e=r.recognizers[i],dx=e.x-initial[i].x,ds=e.s-initial[i].s;
   assert.ok(-Math.sin(yaw)*dx+Math.cos(yaw)*ds>400);assert.ok(Number.isFinite(e.x));
  }
- for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)assert.ok(Math.hypot(r.recognizers[i].x-r.recognizers[j].x,r.recognizers[i].s-r.recognizers[j].s)>23.9);
+ for(let i=0;i<2;i++)for(let j=i+1;j<2;j++)assert.ok(Math.hypot(r.recognizers[i].x-r.recognizers[j].x,r.recognizers[i].s-r.recognizers[j].s)>23.9);
 });
 
 test('turret centering takes the short route without turning the body; manual input cancels',()=>{
@@ -342,10 +342,10 @@ test('autonomous Recognizers intercept a tank moving at cruise speed',()=>{
 });
 
 test('additional patrols start scattered with no target; sight requires range and clearance',()=>{
- const r=createRun(),patrols=r.recognizers.slice(5);
- assert.equal(patrols.length,4);
+ const r=createRun(),patrols=r.recognizers.slice(2);
+ assert.equal(patrols.length,1);
  for(const e of patrols){assert.equal(e.state,'wander');assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.ok(e.y>54);}
- assert.deepEqual(createRun().recognizers.slice(5),patrols);
+ assert.deepEqual(createRun().recognizers.slice(2),patrols);
  for(let i=0;i<patrols.length;i++)for(let j=i+1;j<patrols.length;j++)assert.ok(Math.hypot(patrols[i].x-patrols[j].x,patrols[i].s-patrols[j].s)>=150);
  const e={...patrols[0],x:-10000,s:-10000,y:80,yaw:0,nextSense:0};
  assert.equal(canSeeClu(e,{x:e.x,s:e.s+SENSORS.range-10}),true);

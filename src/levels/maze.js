@@ -9,7 +9,8 @@ export const {CELL,SIZE,HALF,WALL_HEIGHT,BASIS,SPAWN,RECOGNIZER_STARTS:OPENING_S
 export const FLOOR_HALF=maze.FLOOR_HALF||[HALF,HALF];
 
 export const MAZE_LENGTH=Math.max(2*FLOOR_HALF[0]*Math.hypot(BASIS.a,BASIS.c),2*FLOOR_HALF[1]*Math.hypot(BASIS.b,BASIS.d));
-export const PATROL_COUNT=4;
+export const PURSUER_COUNT=2;
+export const PATROL_COUNT=1;
 // Seeded random placement is repeatable on restart for visual/behavior comparisons.
 const patrols=[];let patrolSeed=19820913;
 const candidates=[...OPEN_CELLS];
@@ -19,4 +20,4 @@ while(patrols.length<PATROL_COUNT&&candidates.length){
  if(patrols.some(other=>Math.hypot(other.x-p.x,other.s-p.s)<150))continue;
  patrols.push({x:p.x,s:p.s});
 }
-export const RECOGNIZER_STARTS=[...OPENING_STARTS,...patrols];
+export const RECOGNIZER_STARTS=[...OPENING_STARTS.slice(0,PURSUER_COUNT),...patrols];

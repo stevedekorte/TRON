@@ -1,21 +1,16 @@
-import {RECOGNIZER_SCALE} from '../game/config.js';
-import {ALERT,searchlightStrength} from '../simulation/alertness.js';
+import {SEARCHLIGHT,scanAngles,projectorOrigin} from '../simulation/spotlight.js';
+export {SEARCHLIGHT} from '../simulation/spotlight.js';
+import {searchlightStrength} from '../simulation/alertness.js';
 import * as THREE from 'three';
 import {wallIntersection} from '../levels/maze.js';
 
-export const SEARCHLIGHT={range:260,halfWidth:14,sweepPeriod:7,sweepAngle:.32};
 const columns=32,rows=8;
 // Presentation reads only each observer's goal/memory, never live Clu coordinates.
 export function beamPose(e,time){
  const strength=searchlightStrength(e,time);
  if(strength<=0)return null;
- const goal=e.goal||e.memory;
- const base=goal?-Math.atan2(goal.x-e.x,goal.s-e.s):e.yaw;
- const bearing=Math.atan2(Math.sin(base-e.yaw),Math.cos(base-e.yaw));
- const yaw=e.yaw+THREE.MathUtils.clamp(bearing,-.55,.55)+Math.sin(time*Math.PI*2/SEARCHLIGHT.sweepPeriod+e.id*1.9)*SEARCHLIGHT.sweepAngle;
- const distance=goal?Math.hypot(goal.x-e.x,goal.s-e.s):180;
- const pitch=-THREE.MathUtils.clamp(Math.atan2(e.y,Math.max(60,distance)),.18,.8);
- const origin=new THREE.Vector3(e.x-Math.sin(e.yaw)*3*RECOGNIZER_SCALE,e.y+7*RECOGNIZER_SCALE,-e.s-Math.cos(e.yaw)*3*RECOGNIZER_SCALE);
+ const {yaw,pitch}=e.spotlight||scanAngles(e,time),source=projectorOrigin(e);
+ const origin=new THREE.Vector3(source.x,source.y,-source.s);
  const direction=new THREE.Vector3(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
  return {origin,direction,strength};
 }
@@ -49,7 +44,7 @@ export class Searchlights {
  update(enemies,time,camera,dt,visible){
   this.beams.forEach((beam,i)=>{
    const pose=visible&&enemies[i]?beamPose(enemies[i],time):null;
-   if(enemies[i]?.canSee||enemies[i]?.targetGone||enemies[i]?.memory&&time-enemies[i].memory.seenAt<=ALERT.positionFreshness)beam.strength=0;
+   if(enemies[i]?.targetGone)beam.strength=0;
    beam.strength=THREE.MathUtils.lerp(beam.strength,pose?.strength||0,1-Math.exp(-dt*5));
    if(pose)beam.pose=pose;
    beam.mesh.visible=visible&&beam.strength>.005&&!!beam.pose&&enemies[i]?.state!=='destroyed';
