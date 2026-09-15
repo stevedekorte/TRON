@@ -354,3 +354,7 @@ All 59 simulation tests and the gunner browser suite passed. F centers yaw and l
 ## Cannon shot reserve — September 14
 
 All 63 simulation tests and `node tests/cannon-reserve.mjs` passed. Coverage includes one-per-second recharge capped at three, four rapid shots from a full bank, normal cooldown after exhaustion, held-fire behavior, refill after resting, pause, reset and destruction. Real Space presses consumed reserves in Chrome; pausing prevented recharge. Production build passed.
+
+### Cannon reserve timing update
+
+Reserve recharge now requires ten uninterrupted seconds without firing and restores all three extras at once. Simulation tests cover the exact boundary, no partial refill, partially spent reserves, timer restart on firing, and destruction. All 63 simulation tests passed; production build passed.

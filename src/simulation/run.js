@@ -83,12 +83,8 @@ export function updateWeapons(run,input,dt) {
   for(const e of run.recognizers)e.hit=Math.max(0,e.hit-dt*4);
   run.cooldown=Math.max(0,run.cooldown-dt);run.recoil=Math.max(0,run.recoil-dt*4);
   if(!run.crushed){
-    run.shotRest+=dt;
-    const earned=Math.floor((run.shotRest+1e-8)/CLU_WEAPON.extraShotInterval);
-    if(earned){
-      run.extraShots=Math.min(CLU_WEAPON.maxExtraShots,run.extraShots+earned);
-      run.shotRest=Math.max(0,run.shotRest-earned*CLU_WEAPON.extraShotInterval);
-    }
+    run.shotRest=Math.min(CLU_WEAPON.reserveRecharge,run.shotRest+dt);
+    if(run.shotRest+1e-8>=CLU_WEAPON.reserveRecharge)run.extraShots=CLU_WEAPON.maxExtraShots;
   }
   // Held fire keeps its normal cadence; fresh presses can spend stored shots.
   const pressed=input.firePressed??(input.fire&&!run.fireWasDown);
