@@ -133,28 +133,32 @@ export function step(run,input,dt) {
   const hullYawBefore=run.yaw,aimScale=run.gunner?gunnerAimScale(run.gunnerZoom):1;
   const turretInput=clamp(input.turret||0,-1,1),pitchInput=clamp(input.aimPitch||0,-1,1);
   if(pitchInput)run.gunnerLeveling=false;
-  if(run.gunnerLeveling){
-    run.gunnerPitchMotion=0;
-    run.aimPitch=Math.sign(run.aimPitch)*Math.max(0,Math.abs(run.aimPitch)-GUNNER.pitchRate*dt);
-    if(Math.abs(run.aimPitch)<1e-8){run.aimPitch=0;run.gunnerLeveling=false;}
-  }
-  let yawMotion=turretInput;
+  if(turretInput)run.turretCentering=false;
+  const centering=run.turretCentering,leveling=run.gunnerLeveling;
+  const yawBefore=angleDelta(0,run.turretYaw),pitchBefore=run.aimPitch;
+  const yawCommand=centering?Math.sign(yawBefore):turretInput;
+  const pitchCommand=leveling?-Math.sign(pitchBefore):pitchInput;
+  let yawMotion=yawCommand,pitchMotion=pitchCommand;
   if(run.gunner){
     const ease=(current,target)=>{const value=damp(current||0,target,target?GUNNER.aimResponse:GUNNER.aimBrakeResponse,dt);return !target&&Math.abs(value)<.0001?0:value;};
-    run.gunnerYawMotion=ease(run.gunnerYawMotion,turretInput);
-    run.gunnerPitchMotion=ease(run.gunnerPitchMotion,pitchInput);
-    yawMotion=run.gunnerYawMotion;
-    const pitch=run.aimPitch+run.gunnerPitchMotion*GUNNER.pitchRate*dt*aimScale;
-    run.aimPitch=clamp(pitch,GUNNER.minPitch,GUNNER.maxPitch);
-    if(pitch!==run.aimPitch)run.gunnerPitchMotion=0;
+    run.gunnerYawMotion=ease(run.gunnerYawMotion,yawCommand);
+    run.gunnerPitchMotion=ease(run.gunnerPitchMotion,pitchCommand);
+    yawMotion=run.gunnerYawMotion;pitchMotion=run.gunnerPitchMotion;
   }else{run.gunnerYawMotion=0;run.gunnerPitchMotion=0;}
-  if(turretInput)run.turretCentering=false;
-  if(run.turretCentering){
-    run.gunnerYawMotion=0;
-    const angle=angleDelta(0,run.turretYaw);
-    run.turretYaw=Math.sign(angle)*Math.max(0,Math.abs(angle)-config.turretSpeed*dt);
-    if(run.turretYaw===0){run.turretYaw=0;run.turretCentering=false;}
-  }else run.turretYaw=angleDelta(0,run.turretYaw-yawMotion*config.turretSpeed*dt*aimScale);
+  const yawStep=yawMotion*config.turretSpeed*dt*aimScale;
+  if(centering&&(yawBefore===0||yawBefore*yawStep>0&&Math.abs(yawStep)>=Math.abs(yawBefore))){
+    run.turretYaw=0;run.turretCentering=false;run.gunnerYawMotion=0;
+  }else run.turretYaw=angleDelta(0,yawBefore-yawStep);
+  if(run.gunner||leveling){
+    const pitchStep=pitchMotion*GUNNER.pitchRate*dt*aimScale;
+    if(leveling&&(pitchBefore===0||pitchBefore*pitchStep<0&&Math.abs(pitchStep)>=Math.abs(pitchBefore))){
+      run.aimPitch=0;run.gunnerLeveling=false;run.gunnerPitchMotion=0;
+    }else{
+      const pitch=pitchBefore+pitchStep;
+      run.aimPitch=clamp(pitch,GUNNER.minPitch,GUNNER.maxPitch);
+      if(pitch!==run.aimPitch)run.gunnerPitchMotion=0;
+    }
+  }
   const boosting=run.turboRemaining>0,previousSpeed=run.speed;
   const speedLimit=config.maxSpeed*(boosting?TURBO.speedMultiplier:1);
   const throttle=input.throttle||(boosting?(Math.sign(run.speed)||1):0);
@@ -169,7 +173,7 @@ export function step(run,input,dt) {
   run.steer=damp(run.steer,input.steer||0,8,dt);
   const turnFactor=.65+.35*(1-Math.min(1,Math.abs(run.speed)/config.maxSpeed));
   run.yaw-=run.steer*config.steering*turnFactor*(run.speed<-.5?-1:1)*dt;
-  if(run.gunner)run.turretYaw=angleDelta(0,run.turretYaw-angleDelta(hullYawBefore,run.yaw));
+  if(run.gunner&&!centering)run.turretYaw=angleDelta(0,run.turretYaw-angleDelta(hullYawBefore,run.yaw));
   const beforeX=run.x,beforeS=run.s;
   if(moveTank(run,-Math.sin(run.yaw)*run.speed*dt,Math.cos(run.yaw)*run.speed*dt)) {
     const travel=Math.hypot(run.x-beforeX,run.s-beforeS);

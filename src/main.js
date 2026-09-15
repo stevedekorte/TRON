@@ -92,7 +92,7 @@ listen(window, 'keydown', event => {
   if (['running','entering'].includes(mode) && ['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)) event.preventDefault();
   if (key === 'Tab' && mode === 'running') { event.preventDefault(); if (!event.repeat) showSurvey = !showSurvey; return; }
   if (event.repeat) return;
-  if(key==='KeyF'&&['running','entering'].includes(mode)){run.gunnerLeveling=true;return;}
+  if(key==='KeyF'&&['running','entering'].includes(mode)){run.gunnerLeveling=true;run.turretCentering=true;return;}
   if (key === 'KeyH' && mode === 'running') { showInstruments = !showInstruments; return; }
   if (key === 'KeyV' && mode === 'running') { run.gunner=false;view.aerial = !view.aerial; view.freshCamera = true; return; }
   if (key === 'Enter' && mode === 'ready') { event.preventDefault(); terminal.done ? start() : terminal.finish(); return; }
