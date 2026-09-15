@@ -17,13 +17,13 @@ try {
   await page.keyboard.press('Enter');
   await page.waitForFunction(()=>window.__tron.state.mode==='entering');
   const initial=await page.evaluate(()=>window.__tron.state);
-  assert.equal(initial.recognizers.filter(e=>e.state==='pursue').length,5);
+  assert.equal(initial.recognizers.filter(e=>e.state==='pursue').length,2);
   await page.waitForFunction(()=>window.__tron.state.opening>.03);
   const high=await page.evaluate(()=>window.__tron.state.camera.y);
   await page.waitForTimeout(650);
   await page.screenshot({path:'test-results/opening-fade.png'});
   const tracking=await page.evaluate(()=>window.__tron.state);
-  const pursuers=await page.evaluate(()=>window.__tron.state.recognizers.slice(0,5).map(e=>window.__tron.project({x:e.x,s:e.s,y:e.y})));
+  const pursuers=await page.evaluate(()=>window.__tron.state.recognizers.slice(0,2).map(e=>window.__tron.project({x:e.x,s:e.s,y:e.y})));
   for(const p of pursuers)assert.ok(Math.abs(p.x)<1&&Math.abs(p.y)<1&&p.z<1,JSON.stringify(p));
   const t=Math.max(0,Math.min(1,(tracking.opening-.15)/.85)),smooth=t*t*(3-2*t);
   assert.ok(Math.abs((tracking.camera.z+tracking.s)-(500+(19-500)*smooth))<1);

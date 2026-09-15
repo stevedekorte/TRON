@@ -6,7 +6,7 @@ try{
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');await page.keyboard.press('Escape');
- assert.equal(await page.evaluate(()=>__tron.state.enemyTanks.length),8);
+ assert.equal(await page.evaluate(()=>__tron.state.enemyTanks.length),11);
  await page.evaluate(()=>{const r=__tron.state,e=r.enemyTanks[3];__tron.place({x:e.x,s:e.s-160,yaw:0,turretYaw:0,speed:0,recognizers:r.recognizers.map(e=>({...e,state:'destroyed'}))});});
  await page.keyboard.press('Enter');await page.waitForTimeout(1600);await page.keyboard.press('Escape');
  await page.screenshot({path:'test-results/ground-escort.png'});
@@ -23,6 +23,6 @@ try{
  await page.keyboard.press('Enter');await page.keyboard.press('Space');await page.waitForFunction(()=>__tron.state.enemyTanks[0].state==='destroyed');await page.keyboard.press('Escape');
  assert.ok(await page.evaluate(()=>__tron.state.breakups.some(b=>b.subject==='enemyTank')));assert.equal(await page.evaluate(()=>__tron.state.enemyTankVisuals[0].visible),false);
  await page.screenshot({path:'test-results/enemy-tank-breakup.png'});
- await page.keyboard.press('Enter');await page.keyboard.press('r');await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.enemyTanks.filter(e=>e.state!=='destroyed').length),8);
- assert.deepEqual(errors,[]);console.log('Eight tanks render; turret/fire, Clu breakup, pause and reset pass without browser errors.');
+ await page.keyboard.press('Enter');await page.keyboard.press('r');await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.enemyTanks.filter(e=>e.state!=='destroyed').length),11);
+ assert.deepEqual(errors,[]);console.log('Eleven tanks render; turret/fire, Clu breakup, pause and reset pass without browser errors.');
 }finally{await browser.close();}

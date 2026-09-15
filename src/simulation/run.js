@@ -21,7 +21,7 @@ export function boostTank(run,requestedDirection=1){
 // Opening pursuit is a real initial sighting, not a scripted tracking target.
 export function startPursuit(run){
   const forward={x:-Math.sin(run.yaw),s:Math.cos(run.yaw)};
-  for(const [i,side,behind] of [[0,-200,290],[1,-55,310],[2,5,305],[3,85,300],[4,185,315]]){
+  for(const [i,side,behind] of [[0,-85,300],[1,85,310]]){
     const e=run.recognizers[i];
     Object.assign(e,{x:run.x-forward.x*behind+Math.cos(run.yaw)*side,
       s:run.s-forward.s*behind+Math.sin(run.yaw)*side,yaw:run.yaw,

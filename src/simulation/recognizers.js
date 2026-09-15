@@ -1,4 +1,5 @@
-import {raiseAlert} from './alertness.js';
+import {beginSpotlight,updateSpotlight,spotlightOnTarget,SEARCHLIGHT} from './spotlight.js';
+import {raiseAlert,searchlightStrength} from './alertness.js';
 import {formationTarget} from './formation.js';
 import {retireTarget} from './target-memory.js';
 import {advanceFlight,FLIGHT} from './flight.js';
@@ -31,8 +32,25 @@ export function perceive(e,clu,now) {
   if(e.targetGone)return;
   if(now<e.nextSense)return;
   if(clu.crushed&&canSeeClu(e,{x:clu.x,s:clu.s})){retireTarget(e);return;}
-  e.nextSense=now+SENSORS.interval;e.canSee=canSeeClu(e,clu);
-  if(e.canSee) remember(e,{x:clu.x,s:clu.s,vx:-Math.sin(clu.yaw)*clu.speed,vs:Math.cos(clu.yaw)*clu.speed,seenAt:now,source:e.id},now);
+  e.nextSense=now+SENSORS.interval;
+  const visible=canSeeClu(e,clu),searching=e.kind!=='ground'&&(e.spotlight?.phase==='acquire'||!e.spotlight&&searchlightStrength(e,now)>0);
+  const observation=visible?{x:clu.x,s:clu.s,vx:-Math.sin(clu.yaw)*clu.speed,vs:Math.cos(clu.yaw)*clu.speed,seenAt:now,source:e.id}:null;
+  e.canSee=false;
+  if(searching){
+    if(!visible){if(e.spotlight?.phase==='acquire'){e.spotlight.phase='fade';e.spotlight.fadeAt=now;e.spotlight.target=null;}return;}
+    if(e.spotlight?.phase!=='acquire')beginSpotlight(e,observation,now);
+    else e.spotlight.target=observation;
+    if(now-e.spotlight.started<SEARCHLIGHT.minimumAcquire||!spotlightOnTarget(e,clu))return;
+    e.spotlight.phase='track';e.spotlight.confirmedAt=now;
+  }
+  // A failed acquisition fading out still cannot turn an unlit glimpse into a fix.
+  if(e.spotlight?.phase==='fade'&&e.spotlight.confirmedAt==null)return;
+  e.canSee=visible;
+  if(visible){
+    if(e.spotlight)e.spotlight.target=observation;
+    remember(e,observation,now);
+  }else if(e.spotlight){e.spotlight.target=null;}
+
 }
 export function predict(memory,now) {
   let x=memory.x,s=memory.s;
@@ -61,6 +79,7 @@ function chooseSearch(e,now) {
 }
 // Navigation receives only the craft's own memory and the fixed map, never Clu.
 export function navigate(e,now,dt,others) {
+  if(e.spotlight?.phase==='acquire'){e.state='search';advanceFlight(e,dt,0,1);return;}
   if(advanceCrush(e,now,dt))return;
   beginCrush(e,now);if(e.attack){advanceCrush(e,now,dt);return;}
   if(e.memory&&now-e.memory.seenAt>SENSORS.memorySeconds){e.memory=null;e.goal=null;e.canSee=false;}
@@ -133,14 +152,14 @@ export function updateRecognizers(run,dt) {
     if(receiver){if(message.kind==='neutralized')retireTarget(receiver);else remember(receiver,message.sighting,now);}
   }
   run.radio=waiting;
-  for(const e of active)perceive(e,run,now);
+  for(const e of active){updateSpotlight(e,now,dt);perceive(e,run,now);}
   // Share confirmed destruction through the same delayed, range-limited radio.
   for(const e of active)if(e.targetGone&&!e.neutralizationSent){
     for(const other of active)if(other!==e&&!other.targetGone&&Math.hypot(other.x-e.x,other.s-e.s,other.y-e.y)<=SENSORS.radioRange)
       run.radio.push({kind:'neutralized',to:other.id,deliverAt:now+SENSORS.radioDelay});
     e.neutralizationSent=true;
   }
-  for(const e of active)if(e.memory&&e.memory.seenAt>e.lastBroadcast&&now>=e.nextRadio) {
+  for(const e of active)if((!e.spotlight||e.spotlight.confirmedAt!=null)&&e.memory&&e.memory.seenAt>e.lastBroadcast&&now>=e.nextRadio) {
     for(const other of active)if(other!==e&&Math.hypot(other.x-e.x,other.s-e.s,other.y-e.y)<=SENSORS.radioRange) {
       run.radio.push({to:other.id,deliverAt:now+SENSORS.radioDelay,sighting:{...e.memory}});
     }

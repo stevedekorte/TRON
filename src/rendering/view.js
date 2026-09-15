@@ -1,5 +1,5 @@
 import {cannonPose} from '../simulation/run.js';
-import {ESCORT} from '../simulation/ground-tanks.js';
+import {GROUND_TANK_COUNT} from '../simulation/ground-tanks.js';
 import {Searchlights} from './searchlights.js';
 import {updateCarrier} from './carrier.js';
 import {Breakups} from './breakup.js';
@@ -35,7 +35,7 @@ export class View {
     this.carrier=carrier;if(carrier)this.scene.add(carrier);
     this.tank = tank; this.scene.add(this.tank.root);
     this.muzzleFlash=createMuzzleFlash();this.scene.add(this.muzzleFlash);
-    this.enemyTanks=Array.from({length:ESCORT.count},()=>{const craft=cloneEnemyTank(tank);this.scene.add(craft.root);return craft;});
+    this.enemyTanks=Array.from({length:GROUND_TANK_COUNT},()=>{const craft=cloneEnemyTank(tank);this.scene.add(craft.root);return craft;});
     this.recognizers = RECOGNIZER_STARTS.map(() => { const craft=createRecognizer(recognizer); craft.root.scale.setScalar(RECOGNIZER_SCALE); this.scene.add(craft.root); return craft; });
     recognizer.traverse(o => o.material?.dispose());
     this.breakups=new Breakups(this.scene);

@@ -1,12 +1,37 @@
 import {CARRIER} from '../game/carrier.js';
 import {clamp,angleDelta,config} from '../game/config.js';
-import {freePosition,wallIntersection} from '../levels/maze.js';
+import {OPEN_CELLS,freePosition,wallIntersection} from '../levels/maze.js';
 import {SENSORS,predict} from './recognizers.js';
 import {formationTarget} from './formation.js';
 import {intercept} from './intercept.js';
 export const ESCORT={count:8,turnRate:.8,turretRate:1.3,fireRange:340,fireInterval:1.8,spacing:38};
+export const GROUND_PATROL={count:3};
+export const GROUND_TANK_COUNT=ESCORT.count+GROUND_PATROL.count;
+const patrolCells=OPEN_CELLS.filter(p=>freePosition(p.x,p.s,config.tankRadius+1)&&wallIntersection({...p,y:2},{...p,y:2},config.tankRadius+.5)===null);
 export function escortSlot(index,time){return {x:CARRIER.startX+CARRIER.speed*time+(index%2?100:-100),s:CARRIER.s+(index-3.5)*ESCORT.spacing};}
-export function createGroundTanks(){return Array.from({length:ESCORT.count},(_,index)=>({...escortSlot(index,0),index,id:100+index,kind:'ground',alertUntil:0,y:3.8,yaw:-Math.PI/2,turretYaw:0,speed:Math.min(CARRIER.speed,config.maxSpeed),vx:Math.min(CARRIER.speed,config.maxSpeed),vs:0,vy:0,state:'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]}));}
+export function createGroundTanks(){
+ const starts=[];
+ for(let i=0;i<GROUND_PATROL.count;i++){
+  const target=patrolCells[Math.floor((i+.5)*patrolCells.length/GROUND_PATROL.count)];
+  const p=patrolCells.find(p=>Math.hypot(p.x-target.x,p.s-target.s)<60&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30))||target;
+  starts.push(p);
+ }
+ return Array.from({length:GROUND_TANK_COUNT},(_,index)=>{
+  const patrol=index>=ESCORT.count,position=patrol?starts[index-ESCORT.count]:escortSlot(index,0),speed=patrol?0:Math.min(CARRIER.speed,config.maxSpeed);
+  return {...position,index,id:100+index,kind:'ground',role:patrol?'patrol':'escort',patrolSeed:1982+index,patrolGoal:null,alertUntil:0,y:3.8,yaw:-Math.PI/2,turretYaw:0,speed,vx:speed,vs:0,vy:0,state:patrol?'patrol':'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]};
+ });
+}
+function patrolGoal(e){
+ if(e.patrolGoal&&Math.hypot(e.x-e.patrolGoal.x,e.s-e.patrolGoal.s)>12)return e.patrolGoal;
+ for(let i=0;i<24;i++){
+  e.patrolSeed=(Math.imul(e.patrolSeed,1664525)+1013904223)>>>0;
+  const p=patrolCells[e.patrolSeed%patrolCells.length],distance=Math.hypot(p.x-e.x,p.s-e.s);
+  if(distance<30||distance>350)continue;
+  const path=groundRoute(e,p);
+  if(path.length){e.patrolGoal={x:p.x,s:p.s};e.path=path;e.nextRoute=0;return e.patrolGoal;}
+ }
+ return {x:e.x,s:e.s};
+}
 const clear=(a,b)=>wallIntersection({...a,y:2},{...b,y:2},config.tankRadius+.5)===null;
 // Local A*: all edges are swept against the same expanded walls as the hull.
 export function groundRoute(start,goal){
@@ -31,14 +56,14 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
  for(const e of active){
   e.cooldown=Math.max(0,e.cooldown-dt);e.recoil=Math.max(0,e.recoil-dt*4);e.hit=Math.max(0,e.hit-dt*4);
   if(e.memory&&run.time-e.memory.seenAt>SENSORS.memorySeconds){e.memory=null;e.canSee=false;e.goal=null;}
-  let goal=escortSlot(e.index,run.time+1);
+  let goal=e.role==='patrol'&&!e.memory?patrolGoal(e):escortSlot(e.index,run.time+1);
   if(e.memory){
    e.state=e.canSee?'pursue':'investigate';goal=predict(e.memory,run.time+1);
    if(!e.canSee&&Math.hypot(e.x-goal.x,e.s-goal.s)<25){e.state='search';const phase=Math.floor((run.time-e.memory.seenAt)/5)+e.index;goal={x:goal.x+Math.cos(phase*2.4)*60,s:goal.s+Math.sin(phase*2.4)*60};}
    const formation=formationTarget(e,active,goal,SENSORS.radioRange,{neighborRange:180,laneSpacing:ESCORT.spacing,trailingDistance:18});
    if(formation&&freePosition(formation.x,formation.s,config.tankRadius+1)&&clear(e,formation))goal=formation;
    e.leader=formation?.leader??e.id;
-  }else{e.state='escort';e.leader=null;}
+  }else{e.state=e.role==='patrol'?'patrol':'escort';e.leader=null;}
   e.goal=goal;
   if(run.time>=e.nextRoute){e.path=groundRoute(e,goal);e.nextRoute=run.time+2;}
   while(e.path.length&&Math.hypot(e.x-e.path[0].x,e.s-e.path[0].s)<6)e.path.shift();

@@ -358,3 +358,7 @@ All 63 simulation tests and `node tests/cannon-reserve.mjs` passed. Coverage inc
 ### Cannon reserve timing update
 
 Reserve recharge now requires ten uninterrupted seconds without firing and restores all three extras at once. Simulation tests cover the exact boundary, no partial refill, partially spent reserves, timer restart on firing, and destruction. All 63 simulation tests passed; production build passed.
+
+## Patrol mix and spotlight confirmation — September 15
+
+All 67 simulation tests passed: roster, ground patrol movement/clearance, delayed spotlight confirmation and radio, bounded angular motion, beam range and wall occlusion, failed acquisition, hidden-target behavior, tracking and fade. `node tests/spotlight-acquisition.mjs` passed in Chrome on the default blueprint: three aircraft/audio voices and eleven ground tank models, three moving maze patrols, acquisition before pursuit, visible tracking, paused beam state, fade and continued pursuit. Reviewed `test-results/spotlight-lock.png` showing the beam on Clu. Corrected a blueprint spawn that passed hull clearance but failed swept route clearance. Production build passed.
