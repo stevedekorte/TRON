@@ -434,8 +434,10 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 ## Patrol mix and spotlight confirmation — September 15
 
 - [x] Two initial Recognizer pursuers plus one maze patrol; three ground maze patrols in addition to the eight carrier escorts. Patrol tanks choose reachable routes through clear maze cells and retain the shared perception/radio rules.
-- [x] Searching Recognizers smoothly aim their projector at a candidate sighting while braking. No new target memory, pursuit, or radio report until the beam actually aligns within 260 m with unobstructed projector-to-Clu visibility.
+- [x] Searching Recognizers smoothly aim their projector at a candidate sighting while braking. No new target memory, pursuit, or radio report until the beam actually aligns within visual detection range with unobstructed projector-to-Clu visibility.
 - [x] Confirmed beams track observed Clu for 1.5 seconds during pursuit, then fade over 0.8 seconds. Losing sight stops beam tracking of hidden movement. Pause freezes projector motion; destruction/reset clears acquisition.
+
+- [x] Correct spotlight reach for distant visible targets: scanning retains a 260 m throw, acquisition/tracking extends to the observed target within sensor range. Projector yaw/pitch rates reduced to 0.5/0.4 rad/s, with an 11-second scan cycle and bounded motion across goal changes. Aim compensates for the age of the last visible sample.
 
 
 ---
@@ -1435,3 +1437,7 @@ Reserve recharge now requires ten uninterrupted seconds without firing and resto
 ## Patrol mix and spotlight confirmation — September 15
 
 All 67 simulation tests passed: roster, ground patrol movement/clearance, delayed spotlight confirmation and radio, bounded angular motion, beam range and wall occlusion, failed acquisition, hidden-target behavior, tracking and fade. `node tests/spotlight-acquisition.mjs` passed in Chrome on the default blueprint: three aircraft/audio voices and eleven ground tank models, three moving maze patrols, acquisition before pursuit, visible tracking, paused beam state, fade and continued pursuit. Reviewed `test-results/spotlight-lock.png` showing the beam on Clu. Corrected a blueprint spawn that passed hull clearance but failed swept route clearance. Production build passed.
+
+### Spotlight reach and scanning fix — September 15
+
+All 69 simulation tests passed. Added a 500 m target case verifying elevation above the scanning pitch, actual rendered beam reach and successful confirmation, plus bounded scanning after abrupt goal changes. Chrome acquisition/tracking/fade check passed at 500 m and the rendered capture was reviewed with the beam on Clu. Scanning still uses 260 m; target acquisition uses the sensor range so an observer cannot freeze forever trying to illuminate a visible tank beyond the old beam limit. Production build passed.
