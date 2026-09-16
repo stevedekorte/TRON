@@ -480,3 +480,5 @@ The chase camera now keeps an independent smoothed position while gunner mode or
 The carrier route is nearer to Clu: forward offset is halved and left offset reduced from 9,000 to 3,000 meters. Two tanks escort it below, and two Recognizers follow flanking airborne slots. Air escorts use normal sight/radio rules to leave formation for contact, returning when their memory expires. The two opening pursuers remain separate.
 
 Three maze tanks and one maze Recognizer receive fresh positions, headings and route seeds each game. Ground starts require wall clearance and mutual spacing. `createRun(seed)` reproduces a run for diagnostics; ordinary starts and resets generate a new seed. Stalled ground patrols choose a new destination after five seconds.
+
+Tank destruction now uses a dedicated 1.65-second layered electronic explosion for CLU and enemy tanks, replacing the generic noise burst. Three synthesized variants combine a low shock, electrical rupture and scattered metallic debris; playback is spatial and distance-attenuated. A sample is available in the sound library.

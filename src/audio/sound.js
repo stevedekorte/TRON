@@ -1,3 +1,4 @@
+import {TANK_EXPLOSION,tankExplosionSamples} from './tank-explosion.js';
 import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
 import {musicCategory,selectMusic,activelyPursued,closeRecognizer,MUSIC_CUES} from './music-selection.js';
 import {CARRIER} from '../game/carrier.js';
@@ -188,6 +189,22 @@ export class Sound {
       const s=this.source(this.recognizerHitBuffer,gain);
       s.playbackRate.value=RECOGNIZER_HIT.minRate+Math.random()*(RECOGNIZER_HIT.maxRate-RECOGNIZER_HIT.minRate);
       s.onended=()=>{s.disconnect();gain.disconnect();emitter.input.disconnect();emitter.panners.forEach(p=>p.disconnect());emitter.gain.disconnect();this.sources.delete(s);};
+      return;
+    }
+    if(type==='destroyed'&&['tank','enemyTank'].includes(event?.subject)){
+      this.tankExplosionBuffers??=[];
+      const variant=(this.lastTankExplosionVariant==null?Math.floor(Math.random()*TANK_EXPLOSION.variants):(this.lastTankExplosionVariant+1+Math.floor(Math.random()*(TANK_EXPLOSION.variants-1)))%TANK_EXPLOSION.variants);
+      this.lastTankExplosionVariant=variant;
+      if(!this.tankExplosionBuffers[variant]){
+        const channels=tankExplosionSamples(c.sampleRate,variant),buffer=c.createBuffer(2,channels[0].length,c.sampleRate);
+        channels.forEach((a,i)=>buffer.copyToChannel(a,i));this.tankExplosionBuffers[variant]=buffer;
+      }
+      const emitter=stereoEmitter(c,this.master,TANK_EXPLOSION.refDistance);emitter.gain.gain.value=1;
+      emitter.position(event.x,event.y??0,-event.s,event.yaw||0);
+      gain.gain.value=TANK_EXPLOSION.gain;gain.connect(emitter.input);
+      const source=this.source(this.tankExplosionBuffers[variant],gain);
+      source.playbackRate.value=TANK_EXPLOSION.minRate+Math.random()*(TANK_EXPLOSION.maxRate-TANK_EXPLOSION.minRate);
+      source.onended=()=>{source.disconnect();gain.disconnect();emitter.input.disconnect();emitter.panners.forEach(p=>p.disconnect());emitter.gain.disconnect();this.sources.delete(source);};
       return;
     }
     if(type==='destroyed'&&event&&!['tank','enemyTank'].includes(event.subject)&&this.samples['recognizer-explosion']){
