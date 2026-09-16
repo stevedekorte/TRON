@@ -1,3 +1,4 @@
+import {updateMouseAim,limitMouseStep} from './mouse-aim.js';
 import {stabilizeTurret} from './turret.js';
 import {createGroundTanks,updateGroundTanks,reactToGroundHit} from './ground-tanks.js';
 import {intercept} from './intercept.js';
@@ -7,7 +8,7 @@ import { config, CLU_WEAPON, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, cl
 import { createRecognizers, updateRecognizers, perceive } from './recognizers.js';
 
 export function createRun() {
-  return {...SPAWN,cruiseThrottle:false,gunner:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+  return {...SPAWN,cruiseThrottle:false,gunner:false,mouseAim:null,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
     enemyTanks:createGroundTanks(),health:3,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(),radio:[]};
 }
 
@@ -148,8 +149,9 @@ export function step(run,input,dt) {
   if(turretInput)run.turretCentering=false;
   const centering=run.turretCentering,leveling=run.gunnerLeveling;
   const yawBefore=angleDelta(0,run.turretYaw),pitchBefore=run.aimPitch;
-  const yawCommand=centering?Math.sign(yawBefore):turretInput;
-  const pitchCommand=leveling?-Math.sign(pitchBefore):pitchInput;
+  const mouseAim=updateMouseAim(run,input,aimScale);
+  const yawCommand=centering?Math.sign(yawBefore):mouseAim?.yaw??turretInput;
+  const pitchCommand=leveling?-Math.sign(pitchBefore):mouseAim?.pitch??pitchInput;
   let yawMotion=yawCommand,pitchMotion=pitchCommand;
   if(run.gunner){
     const ease=(current,target)=>{const value=damp(current||0,target,target?GUNNER.aimResponse:GUNNER.aimBrakeResponse,dt);return !target&&Math.abs(value)<.0001?0:value;};
@@ -157,7 +159,8 @@ export function step(run,input,dt) {
     run.gunnerPitchMotion=ease(run.gunnerPitchMotion,pitchCommand);
     yawMotion=run.gunnerYawMotion;pitchMotion=run.gunnerPitchMotion;
   }else{run.gunnerYawMotion=0;run.gunnerPitchMotion=0;}
-  const yawStep=yawMotion*config.turretSpeed*dt*aimScale;
+  let yawStep=yawMotion*config.turretSpeed*dt*aimScale;
+  if(mouseAim)yawStep=limitMouseStep(yawStep,mouseAim.yawError);
   const worldHeading=hullYawBefore+yawBefore;
   if(run.turretHeading==null||run.crushed)run.turretHeading=worldHeading;
   // Input steers from the actual sight, avoiding queued rotation when the motor saturates.
@@ -166,7 +169,8 @@ export function step(run,input,dt) {
     run.turretYaw=0;run.turretCentering=false;run.gunnerYawMotion=0;
   }else run.turretYaw=angleDelta(0,yawBefore-yawStep);
   if(run.gunner||leveling){
-    const pitchStep=pitchMotion*GUNNER.pitchRate*dt*aimScale;
+    let pitchStep=pitchMotion*GUNNER.pitchRate*dt*aimScale;
+    if(mouseAim)pitchStep=limitMouseStep(pitchStep,mouseAim.pitchError);
     if(leveling&&(pitchBefore===0||pitchBefore*pitchStep<0&&Math.abs(pitchStep)>=Math.abs(pitchBefore))){
       run.aimPitch=0;run.gunnerLeveling=false;run.gunnerPitchMotion=0;
     }else{

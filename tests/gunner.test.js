@@ -83,3 +83,23 @@ test('sudden external hull rotations cannot bypass the turret motor limit',()=>{
  for(let i=0;i<180;i++)step(r,{},1/60);
  assert.ok(Math.abs(angleDelta(.4,r.yaw+r.turretYaw))<1e-8);
 });
+
+test('mouse target leads the sight, converges, and respects motor and zoom limits',()=>{
+ for(let zoom=0;zoom<4;zoom++){
+  const r=fixture();r.gunnerZoom=zoom;
+  step(r,{mouseX:180,mouseY:-80},1/60);
+  const goal={...r.mouseAim};assert.ok(goal.yaw<r.turretYaw);assert.ok(goal.pitch>r.aimPitch);
+  for(let i=0;i<300;i++){
+   const yaw=r.turretYaw,pitch=r.aimPitch;
+   step(r,{},1/60);
+   assert.ok(Math.abs(angleDelta(yaw,r.turretYaw))<=1.2/60+1e-9);
+   assert.ok(Math.abs(r.aimPitch-pitch)<=GUNNER.pitchRate*gunnerAimScale(zoom)/60+1e-9);
+  }
+  assert.ok(Math.abs(angleDelta(goal.yaw,r.yaw+r.turretYaw))<1e-6);
+  assert.ok(Math.abs(goal.pitch-r.aimPitch)<1e-6);
+  step(r,{mouseX:900,steer:1},1/60);const before=r.turretYaw;r.yaw+=2;
+  step(r,{mouseX:900,steer:1},1/60);assert.ok(Math.abs(angleDelta(before,r.turretYaw))<=1.2/60+1e-9);
+  step(r,{turret:-1},1/60);assert.equal(r.mouseAim,null);
+  step(r,{mouseX:100},1/60);r.gunner=false;step(r,{},1/60);assert.equal(r.mouseAim,null);
+ }
+});

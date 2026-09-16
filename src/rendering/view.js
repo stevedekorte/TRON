@@ -219,6 +219,12 @@ export class View {
       this.camera.rotateY(strength*IMPACT_SHAKE.yaw*(Math.sin(t*109)+.3*Math.cos(t*173)));
       this.camera.rotateZ(strength*IMPACT_SHAKE.roll*Math.sin(t*97));
     }
+    this.mouseAimScreen=null;
+    if(gunner&&run.mouseAim){
+      const {yaw:aimYaw,pitch}=run.mouseAim;
+      this.camera.updateMatrixWorld();
+      this.mouseAimScreen=new THREE.Vector3(-Math.sin(aimYaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(aimYaw)*Math.cos(pitch)).multiplyScalar(1000).add(this.camera.position).project(this.camera);
+    }
     this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):THREE.MathUtils.lerp(1,.06,aerialMix)));
     this.world.aerialView.value=this.opening!=null?1-this.opening:(!this.referenceCamera?aerialMix:0);
     this.bloom.strength = config.bloom; this.bloom.enabled = !this.lowQuality;

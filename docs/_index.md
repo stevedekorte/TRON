@@ -434,3 +434,7 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 - [x] Fix blueprint patrol stalls at corners: steering and pathfinding share swept clearance, waypoint advancement cannot cut blocked corners, and a valid route survives a failed replacement search. Radio updates trigger replanning; sightings too close to a wall receive a nearby clear approach point. Unreachable patrol destinations are replaced.
 
 - [x] Stabilize Clu turret heading in every view and enemy turret heading during hull turns. Manual aim and stabilization share one yaw motor limit (Clu 1.2 rad/s; enemies 1.3 rad/s). Hull disturbances can cause temporary aim error, recovered at the capped rate; no instantaneous compensation. F remains an explicit hull-forward/level command.
+
+### Mouse gunner aiming — September 16
+
+P enters the gunner view and captures the mouse; clicking the view also captures it after resume. Relative mouse motion places a small target ring. The central sight and cannon catch up using the existing accelerated, zoom-scaled controls and shared turret motor limit. Left click fires; J/L and I/K override mouse targeting, F returns forward and level, and Escape releases the mouse and pauses. Mouse capture is optional: keyboard aiming remains available when the browser declines capture.
