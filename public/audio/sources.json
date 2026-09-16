@@ -6,15 +6,16 @@
     {
       "name": "tank-drive",
       "source": "docs/references/videos/1982 tron clu scene.mp4",
-      "source_seek": 10.75,
+      "source_seek": 10.99,
       "file": "tank-drive.wav",
-      "start": 10.75,
-      "source_duration": 0.7,
-      "duration": 0.58,
+      "start": 10.99,
+      "source_duration": 0.38,
+      "duration": 0.28,
       "loop": true,
       "channels": 2,
       "filters": "highpass=f=65,lowpass=f=650,equalizer=f=330:t=q:w=4:g=-18",
-      "loop_crossfade_seconds": 0.12
+      "loop_crossfade_seconds": 0.1,
+      "processing": "Shared stereo 70 ms RMS envelope leveling; steady interior cut; rebuild with scripts/smooth-tank-loop.py"
     },
     {
       "name": "recognizer-flight",

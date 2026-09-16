@@ -87,13 +87,13 @@ test('walls block auto aim and a protruding muzzle cannot shoot through a wall',
 test('independent agents persist, simulation has no timed outcome, reset is clean',()=>{
   const r=createRun();for(const e of r.recognizers.slice(0,2))assert.ok(Math.abs(worldToGrid(e.x,e.s).u)>HALF||Math.abs(worldToGrid(e.x,e.s).v)>HALF);
   const start=r.recognizers.map(e=>[e.x,e.s]);tick(r,{},100);
-  assert.equal(r.status,'running');assert.equal(r.recognizers.length,3);assert.ok(r.radio.length<40);
+  assert.equal(r.status,'running');assert.equal(r.recognizers.length,5);assert.ok(r.radio.length<40);
   assert.ok(r.recognizers.every((e,i)=>Math.hypot(e.x-start[i][0],e.s-start[i][1])>50));
   const fresh=createRun();assert.equal(fresh.radio.length,0);assert.ok(fresh.recognizers.every(e=>e.memory===null));assert.equal(fresh.turretYaw,0);
 });
 
 test('fixed simulation steps remain independent of rendering schedule',()=>{
-  function at(rate){const r=createRun();let acc=0;for(let f=0;f<rate*4;f++){acc+=1/rate;while(acc>=1/60-1e-10){step(r,{throttle:1},1/60);acc-=1/60;}}return r;}
+  function at(rate){const r=createRun(1982);let acc=0;for(let f=0;f<rate*4;f++){acc+=1/rate;while(acc>=1/60-1e-10){step(r,{throttle:1},1/60);acc-=1/60;}}return r;}
   assert.deepEqual(at(30),at(144));
 });
 
@@ -342,10 +342,10 @@ test('autonomous Recognizers intercept a tank moving at cruise speed',()=>{
 });
 
 test('additional patrols start scattered with no target; sight requires range and clearance',()=>{
- const r=createRun(),patrols=r.recognizers.slice(2);
+ const r=createRun(1982),patrols=r.recognizers.filter(e=>e.role==='patrol');
  assert.equal(patrols.length,1);
  for(const e of patrols){assert.equal(e.state,'wander');assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.ok(e.y>54);}
- assert.deepEqual(createRun().recognizers.slice(2),patrols);
+ assert.deepEqual(createRun(1982).recognizers.filter(e=>e.role==='patrol'),patrols);
  for(let i=0;i<patrols.length;i++)for(let j=i+1;j<patrols.length;j++)assert.ok(Math.hypot(patrols[i].x-patrols[j].x,patrols[i].s-patrols[j].s)>=150);
  const e={...patrols[0],x:-10000,s:-10000,y:80,yaw:0,nextSense:0};
  assert.equal(canSeeClu(e,{x:e.x,s:e.s+SENSORS.range-10}),true);

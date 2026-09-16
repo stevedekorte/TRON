@@ -1,3 +1,4 @@
+import {randomSeed,seededRandom} from '../game/random.js';
 import {updateMouseAim,accelerateMouseAim} from './mouse-aim.js';
 import {stabilizeTurret} from './turret.js';
 import {createGroundTanks,updateGroundTanks,reactToGroundHit} from './ground-tanks.js';
@@ -7,9 +8,10 @@ import { nearbyWalls, insideWall, closestWallPoint, SPAWN, wallIntersection, lin
 import { config, CLU_WEAPON, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, clamp, damp, angleDelta } from '../game/config.js';
 import { createRecognizers, updateRecognizers, perceive } from './recognizers.js';
 
-export function createRun() {
-  return {...SPAWN,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    enemyTanks:createGroundTanks(),health:3,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(),radio:[]};
+export function createRun(seed=randomSeed()) {
+  const random=seededRandom(seed);
+  return {...SPAWN,seed,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+    enemyTanks:createGroundTanks(random),health:3,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
 }
 
 export function boostTank(run,requestedDirection=1){

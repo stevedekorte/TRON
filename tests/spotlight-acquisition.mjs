@@ -5,11 +5,11 @@ try{
  const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron);
  const initial=await page.evaluate(()=>__tron.state);
- assert.equal(initial.recognizers.length,3);
- assert.equal(initial.enemyTanks.length,11);assert.equal(initial.enemyTankVisuals.length,11);
+ assert.equal(initial.recognizers.length,5);
+ assert.equal(initial.enemyTanks.length,5);assert.equal(initial.enemyTankVisuals.length,5);
  assert.equal(initial.enemyTanks.filter(e=>e.role==='patrol').length,3);
  await page.keyboard.press('Enter');await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
- await page.waitForFunction(()=>__tron.state.audioSources===3);
+ await page.waitForFunction(()=>__tron.state.audioSources===5);
  await page.keyboard.press('KeyW');
  await page.waitForTimeout(7000);
  const patrols=await page.evaluate(()=>__tron.state.enemyTanks.filter(e=>e.role==='patrol'));
@@ -32,5 +32,5 @@ try{
  await page.waitForFunction(()=>__tron.state.recognizers[0].spotlight?.phase==='fade');
  await page.waitForFunction(()=>!__tron.state.recognizers[0].spotlight&&!__tron.state.searchlights[0].visible);
  assert.equal(await page.evaluate(()=>__tron.state.recognizers[0].state),'pursue');
- assert.deepEqual(errors,[]);console.log('Blueprint patrols move; 3 Recognizers and 11 tanks render; beam acquires, tracks, pauses and fades before continued pursuit.');
+ assert.deepEqual(errors,[]);console.log('Blueprint patrols move; 5 Recognizers and 5 tanks render; beam acquires, tracks, pauses and fades before continued pursuit.');
 }finally{await browser.close();}

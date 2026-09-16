@@ -7,7 +7,7 @@ const {groundRoute}=await import('../src/simulation/ground-tanks.js');
 const {OPEN_CELLS,lineOfSight,wallIntersection}=await import('../src/levels/maze.js');
 const dt=1/60;
 test('all blueprint patrol tanks continue through corners for two minutes',()=>{
- const r=createRun();r.recognizers=[];r.enemyTanks=r.enemyTanks.filter(e=>e.role==='patrol');r.x=-9000;r.s=-9000;
+ const r=createRun(1982);r.recognizers=[];r.enemyTanks=r.enemyTanks.filter(e=>e.role==='patrol');r.x=-9000;r.s=-9000;
  let previous=r.enemyTanks.map(e=>({x:e.x,s:e.s}));
  for(let i=0;i<7200;i++){
   step(r,{},dt);
@@ -16,7 +16,7 @@ test('all blueprint patrol tanks continue through corners for two minutes',()=>{
  }
 });
 test('Recognizer radio sends a maze patrol around a wall without granting direct sight',()=>{
- const r=createRun(),air=r.recognizers[0];let tank,goal;
+ const r=createRun(1982),air=r.recognizers[0];let tank,goal;
  for(const candidate of r.enemyTanks.filter(e=>e.role==='patrol')){
   const point=OPEN_CELLS.find(p=>Math.hypot(p.x-candidate.x,p.s-candidate.s)>60&&Math.hypot(p.x-candidate.x,p.s-candidate.s)<280&&!lineOfSight({...candidate,y:2.8},{...p,y:2.8})&&groundRoute(candidate,p).length>1);
   if(point){tank=candidate;goal=point;break;}

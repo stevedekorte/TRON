@@ -46,3 +46,6 @@ for name,start,duration,loop,hp,lp in cuts:
   manifest['samples'].append({'name':name,'source':str(selected),'source_seek':selected_start,'file':dest.name,'start':start,'source_duration':duration,'duration':len(samples)/rate,'loop':loop,'channels':2,'filters':filters,'loop_crossfade_seconds':.12 if loop else 0})
 (out/'sources.json').write_text(json.dumps(manifest,indent=2)+'\n')
 print(json.dumps(manifest['samples'],indent=2))
+
+# Keep the dedicated steady engine treatment when rebuilding all samples.
+subprocess.run(["python3","scripts/smooth-tank-loop.py"],check=True)

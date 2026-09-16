@@ -1,8 +1,9 @@
+import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
 import {musicCategory,selectMusic,activelyPursued,closeRecognizer,MUSIC_CUES} from './music-selection.js';
 import {CARRIER} from '../game/carrier.js';
 import endMusicUrl from "../../docs/assets/music/Tron/02 Only Solutions.mp3?url";
 import musicUrl from "../../docs/assets/music/Tron/03 We've Got Company Clips/1 recognized 1.mp3?url";
-import { RECOGNIZER_STARTS, lineOfSight } from '../levels/maze.js';
+import { lineOfSight } from '../levels/maze.js';
 import {stereoEmitter,doppler} from './spatial.js';
 import {RECOGNIZER_HIT,recognizerHitSamples} from './recognizer-hit.js';
 const musicClips=Object.entries(import.meta.glob("../../docs/assets/music/Tron/03 We've Got Company Clips/*.mp3",{eager:true,query:'?url',import:'default'})).map(([path,url])=>({url,category:musicCategory(path)}));
@@ -66,7 +67,7 @@ export class Sound {
   async loadSamples() {
     await Promise.all([...files,...keyFiles].map(async name=>{
       try {
-        const response=await fetch(import.meta.env.BASE_URL+'audio/'+name+'.wav'+(name==='tank-drive'?'?v=3':name==='cannon'||name==='recognizer-flight'||name==='recognizer-explosion'||name.startsWith('terminal-key-')?'?v=2':''));if(!response.ok)throw new Error('HTTP '+response.status);
+        const response=await fetch(import.meta.env.BASE_URL+'audio/'+name+'.wav'+(name==='tank-drive'?'?v=4':name==='cannon'||name==='recognizer-flight'||name==='recognizer-explosion'||name.startsWith('terminal-key-')?'?v=2':''));if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.context.decodeAudioData(bytes);if(this.disposed)return;
         (name.startsWith('terminal-key-')?this.keySamples:this.samples)[name]=buffer;
