@@ -1,4 +1,5 @@
 import {CARRIER} from '../game/carrier.js';
+import endMusicUrl from "../../docs/assets/music/Tron/02 Only Solutions.mp3?url";
 import musicUrl from "../../docs/assets/music/Tron/03 We've Got Company.mp3?url";
 import { RECOGNIZER_STARTS, lineOfSight } from '../levels/maze.js';
 import {stereoEmitter,doppler} from './spatial.js';
@@ -35,7 +36,8 @@ export class Sound {
     this.outputMeter=c.createAnalyser();this.outputMeter.fftSize=512;
     this.master.connect(limiter);limiter.connect(this.outputMeter);this.outputMeter.connect(c.destination);
     this.music=new Audio(musicUrl);this.music.preload='auto';
-    this.musicGain=c.createGain();this.musicGain.gain.value=.55;this.musicGain.connect(this.master);
+    this.musicMaster=c.createGain();this.musicMaster.gain.value=0;this.musicMaster.connect(limiter);
+    this.musicGain=c.createGain();this.musicGain.gain.value=.55;this.musicGain.connect(this.musicMaster);
     this.musicSource=c.createMediaElementSource(this.music);this.musicSource.connect(this.musicGain);
     this.music.addEventListener('error',()=>{this.musicError='Music could not be loaded';});
     this.carrierEmitter=stereoEmitter(c,this.master,600);
@@ -82,6 +84,7 @@ export class Sound {
     if(!this.context)return;
     const c=this.context,now=c.currentTime;
     this.master.gain.setTargetAtTime(this.muted||!playing?0:this.volume,now,.04);
+    this.musicMaster.gain.setTargetAtTime(this.muted||(!playing&&this.musicMode!=='terminal')?0:this.volume,now,.04);
     const speed=Math.abs(run.speed),turn=Math.min(1,Math.abs(run.steer||0));
     if(this.engineSample)this.engineSample.playbackRate.setTargetAtTime(.8+speed*.018+turn*.07,now,.15);
     else this.engine.frequency.setTargetAtTime(33+speed*2.8+turn*5,now,.08);
@@ -198,8 +201,11 @@ export class Sound {
     if(progress>=1)gain.setValueAtTime(0,now);
     else gain.setTargetAtTime(level,now,.02);
   }
-  startMusic(){
+  startMusic(mode='gameplay'){
     if(!this.music)return;
+    const url=mode==='terminal'?endMusicUrl:musicUrl;
+    if(this.musicMode!==mode)this.music.src=url;
+    this.musicMode=mode;this.musicError=null;
     this.musicGain.gain.cancelScheduledValues(this.context.currentTime);
     this.musicGain.gain.setValueAtTime(.55,this.context.currentTime);
     this.music.currentTime=0;this.musicStarted=true;this.resumeMusic();
@@ -207,7 +213,7 @@ export class Sound {
   resumeMusic(){
     if(this.musicStarted&&!this.music.ended&&!this.disposed)this.music.play().catch(e=>{this.musicError=e.message;});
   }
-  reset(){this.music?.pause();if(this.music)this.music.currentTime=0;this.musicStarted=false;this.lastImpact=0;this.lastEar=null;this.wasPlaying=false;for(const s of this.sources)if(!s.loop)s.stop();}
-  silence(){this.music?.pause();if(this.context)this.master.gain.setTargetAtTime(0,this.context.currentTime,.02);}
-  dispose(){this.disposed=true;this.music?.pause();this.music?.removeAttribute('src');this.music?.load();this.musicSource?.disconnect();this.musicGain?.disconnect();this.context?.close();this.sources.clear();}
+  reset(){this.music?.pause();if(this.music)this.music.currentTime=0;this.musicStarted=false;this.musicMode=null;this.lastImpact=0;this.lastEar=null;this.wasPlaying=false;for(const s of this.sources)if(!s.loop)s.stop();}
+  silence(){this.music?.pause();if(this.context){this.master.gain.setTargetAtTime(0,this.context.currentTime,.02);this.musicMaster.gain.setTargetAtTime(0,this.context.currentTime,.02);}}
+  dispose(){this.disposed=true;this.music?.pause();this.music?.removeAttribute('src');this.music?.load();this.musicSource?.disconnect();this.musicGain?.disconnect();this.musicMaster?.disconnect();this.context?.close();this.sources.clear();}
 }
