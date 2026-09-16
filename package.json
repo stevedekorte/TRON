@@ -10,7 +10,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && npm run docs && node scripts/copy-docs.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/simulation.test.js tests/blueprint.test.js tests/ground-tanks.test.js tests/gunner.test.js tests/alertness.test.js tests/cannon-reserve.test.js tests/maze-patrol.test.js",
+    "test": "node --test tests/simulation.test.js tests/blueprint.test.js tests/ground-tanks.test.js tests/gunner.test.js tests/alertness.test.js tests/cannon-reserve.test.js tests/maze-patrol.test.js tests/mouse-raycast.test.js",
     "test:browser": "node tests/browser.mjs",
     "docs": "node scripts/trace-blueprint.mjs && node scripts/build-sound-library.mjs && node docs/colvmn/static-gen.js docs"
   },

@@ -19,16 +19,18 @@ const openingDuration=5.5;
 const DEATH_TERMINAL={holdSeconds:1.1,fadeSeconds:1,message:'ILLEGAL CODE\nCLU PROGRAM DETACHED FROM SYSTEM'};
 let deathElapsed=0;
 let accumulator = 0, lastTime = 0, frameId, disposed = false, mouseFire = false,fireQueued=false;
-let mouseTarget=null;
+let mouseTarget=null,mouseWasLocked=false;
 const keys = new Set(), cleanups = [], frameTimes = [];
 const fixedStep = 1 / 60;
 function listen(object, event, fn, options) { object.addEventListener(event, fn, options); cleanups.push(() => object.removeEventListener(event, fn, options)); }
 const timeLabel = t => `${String(Math.floor(t / 60)).padStart(2,'0')}:${String(Math.floor(t % 60)).padStart(2,'0')}`;
 
-function clearMouseAim(){mouseTarget=null;run.mouseAim=null;run.gunnerYawMotion=run.gunnerPitchMotion=0;run.turretHeading=run.yaw+run.turretYaw;}
+function clearMouseAim(){mouseTarget=null;if(view){view.mouseLook=null;view.mouseTarget=null;}run.mouseAim=null;run.gunnerYawMotion=run.gunnerPitchMotion=0;run.turretHeading=run.yaw+run.turretYaw;}
+function releaseMouse(){if(document.pointerLockElement===$('game'))document.exitPointerLock();}
+function captureMouse(){try{$('game').requestPointerLock()?.catch(()=>{});}catch{}}
 function setMode(next) {
   if(next==='paused'||next==='error')startingThrottle=false;
-  mode = next;if(next!=='running')clearMouseAim();idleTime=0; accumulator = 0; keys.clear(); mouseFire = false;fireQueued=false;
+  mode = next;if(next!=='running'){clearMouseAim();releaseMouse();}idleTime=0; accumulator = 0; keys.clear(); mouseFire = false;fireQueued=false;
   if (next !== 'running') sound.silence();
   $('overlay').hidden = next === 'running';
   $('intro').hidden = !['ready','entering'].includes(next); $('paused').hidden = next !== 'paused';
@@ -89,7 +91,7 @@ listen(window, 'keydown', event => {
   if(!event.repeat&&['KeyI','KeyJ','KeyK','KeyL'].includes(key)&&['running','entering'].includes(mode))clearMouseAim();
   if(key==='KeyW'&&!event.repeat&&['running','entering'].includes(mode)){run.cruiseThrottle=event.shiftKey?true:false;if(!event.shiftKey)startingThrottle=false;}
   if(!event.repeat&&['running','entering'].includes(mode)&&key==='KeyP'){
-    if(mode==='entering')finishOpening();run.gunner=!run.gunner;clearMouseAim();view.aerial=false;view.freshCamera=true;return;
+    if(mode==='entering')finishOpening();run.gunner=!run.gunner;clearMouseAim();if(!run.gunner)releaseMouse();view.aerial=false;view.freshCamera=true;return;
   }
   if(!event.repeat&&['running','entering'].includes(mode)&&key==='KeyO'&&run.gunner){run.gunnerZoom=(run.gunnerZoom+1)%GUNNER.fovs.length;return;}
   if (['running','entering'].includes(mode) && ['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)) event.preventDefault();
@@ -97,7 +99,7 @@ listen(window, 'keydown', event => {
   if (event.repeat) return;
   if(key==='KeyF'&&['running','entering'].includes(mode)){clearMouseAim();run.gunnerLeveling=true;run.turretCentering=true;run.turretLocked=true;return;}
   if (key === 'KeyH' && mode === 'running') { showInstruments = !showInstruments; return; }
-  if (key === 'KeyV' && mode === 'running') { run.gunner=false;clearMouseAim();view.aerial = !view.aerial; view.freshCamera = view.reducedMotion; return; }
+  if (key === 'KeyV' && mode === 'running') { run.gunner=false;clearMouseAim();releaseMouse();view.aerial = !view.aerial; view.freshCamera = view.reducedMotion; return; }
   if (key === 'Enter' && mode === 'ready') { event.preventDefault(); terminal.done ? start() : terminal.finish(); return; }
   if(mode==='entering'&&key==='Enter'){event.preventDefault();finishOpening();return;}
   if (key === 'Escape') { ['running','entering'].includes(mode) ? pause() : resume(); return; }
@@ -111,12 +113,17 @@ listen(window, 'keydown', event => {
   if (['running','entering'].includes(mode)){if(key==='Space')fireQueued=true;if(['KeyS','ArrowDown'].includes(key))startingThrottle=false;keys.add(key);}
 });
 listen(window, 'keyup', e => {idleTime=0;keys.delete(e.code);if(e.code==='KeyW')startingThrottle=false;});
-listen($('game'), 'pointerdown', e => {idleTime=0;if(['running','entering'].includes(mode)&&e.button===0){mouseFire=true;fireQueued=true;} });
-listen($('game'),'mousemove',event=>{
- if(mode!=='running'||!run.gunner||run.crushed)return;
- mouseTarget=view.mouseTargetAt(event.clientX,event.clientY);idleTime=0;
+listen($('game'), 'pointerdown', e => {idleTime=0;if(['running','entering'].includes(mode)&&e.button===0){if(run.gunner&&document.pointerLockElement!==$('game')){captureMouse();return;}mouseFire=true;fireQueued=true;} });
+listen(document,'mousemove',event=>{
+ if(mode!=='running'||!run.gunner||run.crushed||document.pointerLockElement!==$('game'))return;
+ if(!event.movementX&&!event.movementY)return;
+ view.moveMouseAim(event.movementX,event.movementY,run);idleTime=0;
 });
-listen($('game'),'mouseleave',()=>{if(run.gunner)clearMouseAim();mouseFire=false;});
+listen(document,'pointerlockchange',()=>{
+ const locked=document.pointerLockElement===$('game');
+ if(mouseWasLocked&&!locked){clearMouseAim();mouseFire=false;fireQueued=false;if(run.gunner&&!run.crushed&&mode==='running')pause();}
+ mouseWasLocked=locked;
+});
 listen($('game'),'wheel',event=>{
   if(!view?.aerial||!['running','paused'].includes(mode)||event.ctrlKey)return;
   event.preventDefault();idleTime=0;
@@ -140,7 +147,10 @@ function drawMap() {
 }
 function updateHud() {
   $('gunner-sight').hidden=!run.gunner||run.crushed||!['running','paused'].includes(mode);
-  $('game').classList.toggle('mouse-gunner',run.gunner&&!run.crushed&&mode==='running');
+  const point=view.gunScreen,scale=Math.min(innerWidth/1000,innerHeight/650);
+  $('gunner-crosshair').setAttribute('transform',point?`translate(${point.x*innerWidth/2/scale} ${-point.y*innerHeight/2/scale})`:'');
+  $('aim-dot').hidden=!view.mouseLook;
+  $('mouse-hint').textContent=document.pointerLockElement===$('game')?'':'CLICK / MOUSE AIM';
   $('gunner-zoom').textContent=['1×','2×','4×','8×'][run.gunnerZoom];
   $('instruments').hidden=!showInstruments;
   $('zoom-hint').hidden=!view.aerial;
@@ -198,7 +208,7 @@ function frame(ms) {
       const input = {
         throttle: keys.has('KeyS')||keys.has('ArrowDown')?-1:Number(startingThrottle||run.cruiseThrottle||keys.has('KeyW')||keys.has('ArrowUp')),
         steer: Number(keys.has('KeyD') || keys.has('ArrowRight')) - Number(keys.has('KeyA') || keys.has('ArrowLeft')),
-        mouseTarget,
+        mouseTarget:view.mouseLook?view.mouseTarget:mouseTarget,
         firePressed:fireQueued,
         fire: keys.has('Space') || mouseFire || fireQueued,
         turret: Number(keys.has('KeyL')) - Number(keys.has('KeyJ')),

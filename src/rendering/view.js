@@ -1,3 +1,4 @@
+import {updateMouseTarget} from './mouse-target.js';
 import {cannonPose} from '../simulation/run.js';
 import {GROUND_TANK_COUNT} from '../simulation/ground-tanks.js';
 import {Searchlights} from './searchlights.js';
@@ -12,18 +13,18 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createWorld } from './world.js';
 import { createRecognizer,cloneEnemyTank } from './models.js';
-import { config, GUNNER, RECOGNIZER_SCALE, angleDelta } from '../game/config.js';
+import { config, GUNNER, RECOGNIZER_SCALE, angleDelta, gunnerAimScale } from '../game/config.js';
 import { RECOGNIZER_STARTS, wallIntersection, lineOfSight } from '../levels/maze.js';
 
 const AERIAL_CAMERA=Object.freeze({transitionSeconds:1.2,height:600,distance:Math.hypot(180,320)});
 const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
 
 export class View {
-  mouseTargetAt(clientX,clientY){
-    // Pick the world direction under the desktop pointer at this mouse movement.
-    const rect=this.renderer.domElement.getBoundingClientRect();
-    const ray=new THREE.Vector3((clientX-rect.left)/rect.width*2-1,1-(clientY-rect.top)/rect.height*2,.5).unproject(this.camera).sub(this.camera.position).normalize();
-    return {yaw:Math.atan2(-ray.x,-ray.z),pitch:Math.asin(ray.y)};
+  moveMouseAim(dx,dy,run){
+    if(!this.mouseLook)this.mouseLook={yaw:run.yaw+run.turretYaw,pitch:run.aimPitch};
+    const sensitivity=.0025*gunnerAimScale(run.gunnerZoom);
+    this.mouseLook.yaw-=dx*sensitivity;
+    this.mouseLook.pitch=THREE.MathUtils.clamp(this.mouseLook.pitch-dy*sensitivity,GUNNER.minPitch,GUNNER.maxPitch);
   }
   constructor(canvas, tank, recognizer, carrier=null) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -212,7 +213,8 @@ export class View {
       const obstruction=wallIntersection({x,s,y:pose.y},pose,.2);
       if(obstruction!==null){const t=Math.max(0,obstruction-.02);pose.x=x+(pose.x-x)*t;pose.s=s+(pose.s-s)*t;}
       this.camera.position.set(pose.x,pose.y,-pose.s);
-      this.camera.lookAt(pose.x-Math.sin(pose.yaw)*Math.cos(pitch)*100,pose.y+Math.sin(pitch)*100,-pose.s-Math.cos(pose.yaw)*Math.cos(pitch)*100);
+      const aim=this.mouseLook||{yaw:pose.yaw,pitch};
+      this.camera.lookAt(pose.x-Math.sin(aim.yaw)*Math.cos(aim.pitch)*100,pose.y+Math.sin(aim.pitch)*100,-pose.s-Math.cos(aim.yaw)*Math.cos(aim.pitch)*100);
     }
     this.camera.far=12000;
     this.camera.fov = gunner?GUNNER.fovs[run.gunnerZoom]:this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov); this.camera.updateProjectionMatrix();
@@ -224,6 +226,13 @@ export class View {
       this.camera.rotateX(strength*IMPACT_SHAKE.pitch*(Math.sin(t*83)+.35*Math.sin(t*139)));
       this.camera.rotateY(strength*IMPACT_SHAKE.yaw*(Math.sin(t*109)+.3*Math.cos(t*173)));
       this.camera.rotateZ(strength*IMPACT_SHAKE.roll*Math.sin(t*97));
+    }
+    this.gunScreen=null;
+    if(gunner&&this.mouseLook){
+      this.camera.updateMatrixWorld();
+      const pose=cannonPose(run),d=new THREE.Vector3(-Math.sin(pose.yaw)*Math.cos(run.aimPitch),Math.sin(run.aimPitch),-Math.cos(pose.yaw)*Math.cos(run.aimPitch));
+      this.gunScreen=d.multiplyScalar(1000).add(this.camera.position).project(this.camera);
+      updateMouseTarget.call(this,run);
     }
     this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):THREE.MathUtils.lerp(1,.06,aerialMix)));
     this.world.aerialView.value=this.opening!=null?1-this.opening:(!this.referenceCamera?aerialMix:0);
