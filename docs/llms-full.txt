@@ -450,7 +450,7 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 
 ### Mouse gunner aiming — September 16
 
-P enters the gunner view and captures the mouse; clicking the view also captures it after resume. Relative mouse motion places a small target ring. The central sight and cannon catch up using the existing accelerated, zoom-scaled controls and shared turret motor limit. Left click fires; J/L and I/K override mouse targeting, F returns forward and level, and Escape releases the mouse and pauses. Mouse capture is optional: keyboard aiming remains available when the browser declines capture.
+P enters the gunner view without capturing the mouse. Point within the canvas to aim: the viewing direction holds steady while the actual crosshairs traverse toward the cursor using accelerated, zoom-scaled controls and the shared turret motor limit. Left click fires; J/L and I/K restore keyboard aiming. F centers and levels, then locks the turret to the hull until manual aiming input. Driving, firing, view changes and zoom do not release this lock. Elevation cannot go below parallel with the tank base (currently the simulation has yaw-only hull rotation). Escape pauses. The earlier pointer-lock/target-ring interface has been replaced.
 
 
 ---
@@ -1469,4 +1469,4 @@ All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual
 
 ### Mouse gunner verification — September 16
 
-`npm test`: 78 passing, including mouse-target convergence at all four zoom levels, yaw/pitch rate limits, hull disturbance, keyboard override and view exit. Chrome headless on isolated Vite port 5174: `tests/gunner.mjs` and `tests/mouse-aim.mjs` passed. The latter verifies real pointer-lock acquisition/release, relative movement delivered through the input listener, marker visibility, convergence, firing, F override, lock-loss pause, recapture and aerial exit. Human mouse sensitivity/feel remains for playtesting.
+`npm test`: 80 passing, including target convergence at all four zoom levels, yaw/pitch rate limits, hull disturbance, keyboard override, forward lock through hull turns, manual unlock, and the base-relative zero elevation limit. Chrome headless on isolated Vite port 5174: `tests/gunner.mjs` and revised `tests/mouse-aim.mjs` passed. Absolute browser mouse movement brings the rendered crosshair within 3 pixels of the cursor with no pointer capture. Browser checks also cover firing, F lock, mouse unlock, lower elevation limit, pause and view exit. Reviewed the off-center crosshair screenshot; mouse feel remains for human playtesting.

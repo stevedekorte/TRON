@@ -87,7 +87,7 @@ test('sudden external hull rotations cannot bypass the turret motor limit',()=>{
 test('mouse target leads the sight, converges, and respects motor and zoom limits',()=>{
  for(let zoom=0;zoom<4;zoom++){
   const r=fixture();r.gunnerZoom=zoom;
-  step(r,{mouseX:180,mouseY:-80},1/60);
+  step(r,{mouseTarget:{yaw:-.45*gunnerAimScale(zoom),pitch:.2*gunnerAimScale(zoom)}},1/60);
   const goal={...r.mouseAim};assert.ok(goal.yaw<r.turretYaw);assert.ok(goal.pitch>r.aimPitch);
   for(let i=0;i<300;i++){
    const yaw=r.turretYaw,pitch=r.aimPitch;
@@ -97,9 +97,26 @@ test('mouse target leads the sight, converges, and respects motor and zoom limit
   }
   assert.ok(Math.abs(angleDelta(goal.yaw,r.yaw+r.turretYaw))<1e-6);
   assert.ok(Math.abs(goal.pitch-r.aimPitch)<1e-6);
-  step(r,{mouseX:900,steer:1},1/60);const before=r.turretYaw;r.yaw+=2;
-  step(r,{mouseX:900,steer:1},1/60);assert.ok(Math.abs(angleDelta(before,r.turretYaw))<=1.2/60+1e-9);
+  step(r,{mouseTarget:{yaw:-1,pitch:.2},steer:1},1/60);const before=r.turretYaw;r.yaw+=2;
+  step(r,{mouseTarget:{yaw:-1,pitch:.2},steer:1},1/60);assert.ok(Math.abs(angleDelta(before,r.turretYaw))<=1.2/60+1e-9);
   step(r,{turret:-1},1/60);assert.equal(r.mouseAim,null);
-  step(r,{mouseX:100},1/60);r.gunner=false;step(r,{},1/60);assert.equal(r.mouseAim,null);
+  step(r,{mouseTarget:{yaw:-.2,pitch:.1}},1/60);r.gunner=false;step(r,{},1/60);assert.equal(r.mouseAim,null);
  }
+});
+
+
+test('forward lock follows hull indefinitely, releasing only on aiming input',()=>{
+ const r=fixture();Object.assign(r,{turretYaw:1,aimPitch:.5,turretCentering:true,gunnerLeveling:true,turretLocked:true});
+ for(let i=0;i<600;i++)step(r,{steer:1,throttle:1},1/60);
+ assert.equal(r.turretYaw,0);assert.equal(r.aimPitch,0);assert.equal(r.turretLocked,true);
+ r.yaw+=2;step(r,{fire:true},1/60);assert.equal(r.turretYaw,0);assert.equal(r.turretLocked,true);
+ r.steer=0;step(r,{turret:1},1/60);assert.equal(r.turretLocked,false);assert.ok(r.turretYaw<0);
+ r.turretLocked=true;step(r,{mouseTarget:{yaw:r.yaw+.4,pitch:.2}},1/60);assert.equal(r.turretLocked,false);
+});
+test('keyboard and mouse cannot aim below the tank base',()=>{
+ const r=fixture();r.aimPitch=.1;
+ for(let i=0;i<120;i++)step(r,{aimPitch:-1},1/60);
+ assert.equal(r.aimPitch,0);
+ for(let i=0;i<120;i++)step(r,{mouseTarget:{yaw:0,pitch:-.6}},1/60);
+ assert.equal(r.aimPitch,0);assert.equal(r.mouseAim.pitch,0);
 });
