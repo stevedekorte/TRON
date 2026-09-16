@@ -25,7 +25,7 @@ const fixedStep = 1 / 60;
 function listen(object, event, fn, options) { object.addEventListener(event, fn, options); cleanups.push(() => object.removeEventListener(event, fn, options)); }
 const timeLabel = t => `${String(Math.floor(t / 60)).padStart(2,'0')}:${String(Math.floor(t % 60)).padStart(2,'0')}`;
 
-function clearMouseAim(){mouseTarget=null;run.mouseAim=null;if(view)view.mouseCamera=null;run.gunnerYawMotion=run.gunnerPitchMotion=0;run.turretHeading=run.yaw+run.turretYaw;}
+function clearMouseAim(){mouseTarget=null;run.mouseAim=null;run.gunnerYawMotion=run.gunnerPitchMotion=0;run.turretHeading=run.yaw+run.turretYaw;}
 function setMode(next) {
   if(next==='paused'||next==='error')startingThrottle=false;
   mode = next;if(next!=='running')clearMouseAim();idleTime=0; accumulator = 0; keys.clear(); mouseFire = false;fireQueued=false;
@@ -140,9 +140,7 @@ function drawMap() {
 }
 function updateHud() {
   $('gunner-sight').hidden=!run.gunner||run.crushed||!['running','paused'].includes(mode);
-  const sight=$('gunner-crosshair'),point=view.aimScreen;
-  const sightScale=Math.min(innerWidth/1000,innerHeight/650);
-  sight.setAttribute('transform',point?`translate(${point.x*innerWidth/2/sightScale} ${-point.y*innerHeight/2/sightScale})`:'');
+  $('game').classList.toggle('mouse-gunner',run.gunner&&!run.crushed&&mode==='running');
   $('gunner-zoom').textContent=['1×','2×','4×','8×'][run.gunnerZoom];
   $('instruments').hidden=!showInstruments;
   $('zoom-hint').hidden=!view.aerial;
@@ -183,7 +181,7 @@ function finishOpening(){const held=[...keys],firing=mouseFire,queued=fireQueued
 
 function frame(ms) {
   if (disposed) return;
-  if(run.crushed&&view.mouseCamera)clearMouseAim();
+  if(run.crushed&&run.mouseAim)clearMouseAim();
   const dt = Math.min(0.1, (ms - (lastTime || ms)) / 1000); lastTime = ms;
   if(mode==='running')idleTime=keys.size||mouseFire?0:idleTime+dt;
   if(mode==='entering'){
