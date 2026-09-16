@@ -416,3 +416,7 @@ Gunner exit correction: Chrome transition check samples height and quaternion-de
 - `npm test`: 88 tests passed, including carrier air escort following/return after stale contact, seed reproduction, varying patrol positions, and two-minute blueprint patrol traversal.
 - `TRON_URL=http://127.0.0.1:5174 node tests/spotlight-acquisition.mjs`: Chrome passed; five Recognizers and five enemy tanks render, all three maze ground patrols move, aircraft audio sources exist, and spotlight acquisition/tracking/fade works without page errors.
 - Engine-loop inspection found a louder boundary region (40 ms mono RMS approximately 0.21–0.24 versus 0.12–0.18 in the interior). A dedicated rebuild takes the steadier interior, gently levels its shared stereo envelope and crossfades the boundary. New stereo WAV is 0.28 seconds, RMS 0.160, peak 0.613. Subjective listening approval remains with the user; no claim of an auditory check.
+
+### Engine transient correction
+
+User listening found the shorter 0.28-second version repeated the clink faster. That version is superseded. The replacement averages the original engine sample’s frequency spectrum and reconstructs a 5.944-second periodic signal with randomized phases, discarding source impact timing rather than repeating a trimmed waveform. RMS is 0.140, peak 0.657; the wraparound sample step is 0.00435 versus maximum ordinary step 0.02104. This is a spectrum-derived sound, not an isolated film stem; listening approval remains outstanding.
