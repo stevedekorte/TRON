@@ -74,7 +74,7 @@ test('turret rotates independently and acquired shots lead while unassisted shot
   r.turretYaw=0;r.recognizers=r.recognizers.slice(0,1);Object.assign(r.recognizers[0],{x:-1845,s:-1700,y:73,vx:0,vs:0});
   assert.equal(cannonTarget(r).lock,true);step(r,{fire:true},1/60);
   assert.ok(r.projectiles[0].vx>0);assert.ok(r.projectiles[0].vy>0);
-  r.turretYaw=.6;r.cooldown=0;r.projectiles=[];step(r,{fire:true},1/60);
+  r.turretYaw=.6;r.turretHeading=null;r.cooldown=0;r.projectiles=[];step(r,{fire:true},1/60);
   assert.equal(r.projectiles[0].vy,0);assert.ok(Math.abs(Math.atan2(-r.projectiles[0].vx,r.projectiles[0].vs)-.6)<1e-9);
 });
 

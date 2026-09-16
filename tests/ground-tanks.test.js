@@ -59,3 +59,14 @@ test('damage turns a maze patrol toward the incoming shot before visually acquir
  for(let i=0;i<600;i++)step(r,{},dt);
  assert.equal(e.canSee,true);assert.ok(r.events.some(e=>e.type==='enemyShot'));
 });
+
+test('idle enemy turrets hold world direction while their hulls turn, within their motor limit',()=>{
+ const r=encounter(),e=r.enemyTanks[0];Object.assign(e,escortSlot(e.index,0));e.yaw=0;e.turretYaw=.7;e.memory=null;e.nextSense=Infinity;
+ const move=(tank,dx,ds)=>{tank.x+=dx;tank.s+=ds;};const pose=tank=>({...tank,y:3,yaw:tank.yaw+tank.turretYaw});
+ for(let i=0;i<240;i++){
+  const before=e.turretYaw;r.time+=dt;updateGroundTanks(r,dt,move,pose);
+  const delta=Math.atan2(Math.sin(e.turretYaw-before),Math.cos(e.turretYaw-before));assert.ok(Math.abs(delta)<=1.3*dt+1e-9);
+  assert.ok(Math.abs(Math.atan2(Math.sin(e.yaw+e.turretYaw-.7),Math.cos(e.yaw+e.turretYaw-.7)))<1e-8);
+ }
+ assert.ok(Math.abs(e.yaw)>.2);
+});

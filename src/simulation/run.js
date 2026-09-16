@@ -1,3 +1,4 @@
+import {stabilizeTurret} from './turret.js';
 import {createGroundTanks,updateGroundTanks,reactToGroundHit} from './ground-tanks.js';
 import {intercept} from './intercept.js';
 import { TANK } from '../game/tank.js';
@@ -6,7 +7,7 @@ import { config, CLU_WEAPON, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, cl
 import { createRecognizers, updateRecognizers, perceive } from './recognizers.js';
 
 export function createRun() {
-  return {...SPAWN,cruiseThrottle:false,gunner:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+  return {...SPAWN,cruiseThrottle:false,gunner:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
     enemyTanks:createGroundTanks(),health:3,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(),radio:[]};
 }
 
@@ -157,6 +158,10 @@ export function step(run,input,dt) {
     yawMotion=run.gunnerYawMotion;pitchMotion=run.gunnerPitchMotion;
   }else{run.gunnerYawMotion=0;run.gunnerPitchMotion=0;}
   const yawStep=yawMotion*config.turretSpeed*dt*aimScale;
+  const worldHeading=hullYawBefore+yawBefore;
+  if(run.turretHeading==null||run.crushed)run.turretHeading=worldHeading;
+  // Input steers from the actual sight, avoiding queued rotation when the motor saturates.
+  if(!centering&&yawMotion!==0)run.turretHeading=worldHeading-yawStep;
   if(centering&&(yawBefore===0||yawBefore*yawStep>0&&Math.abs(yawStep)>=Math.abs(yawBefore))){
     run.turretYaw=0;run.turretCentering=false;run.gunnerYawMotion=0;
   }else run.turretYaw=angleDelta(0,yawBefore-yawStep);
@@ -184,7 +189,11 @@ export function step(run,input,dt) {
   run.steer=damp(run.steer,input.steer||0,8,dt);
   const turnFactor=.65+.35*(1-Math.min(1,Math.abs(run.speed)/config.maxSpeed));
   run.yaw-=run.steer*config.steering*turnFactor*(run.speed<-.5?-1:1)*dt;
-  if(run.gunner&&!centering)run.turretYaw=angleDelta(0,run.turretYaw-angleDelta(hullYawBefore,run.yaw));
+  if(centering)run.turretHeading=run.yaw+run.turretYaw;
+  else{
+    run.turretYaw=yawBefore;
+    stabilizeTurret(run,run.turretHeading,config.turretSpeed,dt);
+  }
   const beforeX=run.x,beforeS=run.s;
   if(moveTank(run,-Math.sin(run.yaw)*run.speed*dt,Math.cos(run.yaw)*run.speed*dt)) {
     const travel=Math.hypot(run.x-beforeX,run.s-beforeS);
