@@ -28,6 +28,7 @@ export function canSeeClu(e,clu) {
 function remember(e,sighting,now) {
   if(e.targetGone)return;
   if(now-sighting.seenAt>SENSORS.memorySeconds||e.memory&&e.memory.seenAt>=sighting.seenAt)return;
+  if(e.kind==='ground'&&(!e.memory||Math.hypot(sighting.x-e.memory.x,sighting.s-e.memory.s)>12))e.nextRoute=0;
   raiseAlert(e,sighting.seenAt);e.memory={...sighting};e.goal=null;e.goalUntil=0;e.searchIndex=0;
 }
 // This is the only function allowed to inspect the live tank state.

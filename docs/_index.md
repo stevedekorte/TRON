@@ -430,3 +430,5 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 
 - [x] V eases between driving and aerial views instead of resetting the camera. Aerial viewing direction follows turret azimuth; floor and fog blend with elevation. Wheel zoom and reduced-motion support remain available.
 - [x] Ground tanks detect unobstructed Clu within 45 m from any direction and use turret direction as well as hull direction for distant sight. Nonfatal bullet impacts trigger a five-second investigation toward the incoming shot; this clue never reveals the hidden shooter position or permits firing/radio without visual confirmation.
+
+- [x] Fix blueprint patrol stalls at corners: steering and pathfinding share swept clearance, waypoint advancement cannot cut blocked corners, and a valid route survives a failed replacement search. Radio updates trigger replanning; sightings too close to a wall receive a nearby clear approach point. Unreachable patrol destinations are replaced.

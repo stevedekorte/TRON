@@ -36,7 +36,17 @@ function patrolGoal(e){
 const clear=(a,b)=>wallIntersection({...a,y:2},{...b,y:2},config.tankRadius+.5)===null;
 // Local A*: all edges are swept against the same expanded walls as the hull.
 export function groundRoute(start,goal){
- if(!freePosition(goal.x,goal.s,config.tankRadius+.5))return [];
+ // A sighting can be closer to a wall than our route margin. Approach a nearby
+ // clear point rather than discarding the entire radio-directed route.
+ if(!clear(goal,goal)){
+  const candidates=[];
+  for(const radius of [4,8,16,24])for(let i=0;i<16;i++){
+   const p={x:goal.x+Math.cos(i*Math.PI/8)*radius,s:goal.s+Math.sin(i*Math.PI/8)*radius};
+   if(clear(p,p))candidates.push(p);
+  }
+  candidates.sort((a,b)=>Math.hypot(a.x-goal.x,a.s-goal.s)-Math.hypot(b.x-goal.x,b.s-goal.s)||Math.hypot(a.x-start.x,a.s-start.s)-Math.hypot(b.x-start.x,b.s-start.s));
+  if(!candidates.length)return [];goal=candidates[0];
+ }
  if(clear(start,goal))return [goal];
  const cell=12,open=[{x:start.x,s:start.s,g:0,key:'0,0',ix:0,is:0}],seen=new Map([['0,0',0]]);
  for(let iteration=0;open.length&&iteration<2500;iteration++){
@@ -81,19 +91,30 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   const reacting=!e.canSee&&run.time<(e.threatUntil||0);
   if(reacting){goal=e.threatGoal;e.state='investigate';}
   e.goal=goal;
-  if(run.time>=e.nextRoute){e.path=groundRoute(e,goal);e.nextRoute=run.time+2;}
-  while(e.path.length&&Math.hypot(e.x-e.path[0].x,e.s-e.path[0].s)<6)e.path.shift();
+  if(run.time>=e.nextRoute){
+   const route=groundRoute(e,goal);
+   // Keep a valid in-progress route if a shifted local grid cannot find its replacement.
+   if(route.length||!e.path.length||!clear(e,e.path[0]))e.path=route;
+   if(!e.path.length&&e.role==='patrol'&&!e.memory)e.patrolGoal=null;
+   e.nextRoute=run.time+2;
+  }
+  while(e.path.length&&Math.hypot(e.x-e.path[0].x,e.s-e.path[0].s)<6&&(!e.path[1]||clear(e,e.path[1])))e.path.shift();
   const destination=clear(e,goal)?goal:e.path[0];
   let targetSpeed=0;
   if(destination){
    const dx=destination.x-e.x,ds=destination.s-e.s,desired=reacting?e.threatYaw:-Math.atan2(dx,ds);
    e.yaw+=clamp(angleDelta(e.yaw,desired),-ESCORT.turnRate*dt,ESCORT.turnRate*dt);
    targetSpeed=Math.min(config.maxSpeed,Math.hypot(dx,ds)*.8)*Math.max(0,Math.cos(angleDelta(e.yaw,desired)))**4;
+   if(!clear(e,goal)&&Math.abs(angleDelta(e.yaw,desired))>.2)targetSpeed=0;
    if(e.canSee&&Math.hypot(e.x-e.memory.x,e.s-e.memory.s)<100)targetSpeed=0;
    if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<12&&(-Math.sin(e.yaw)*(o.x-e.x)+Math.cos(e.yaw)*(o.s-e.s))>0))targetSpeed=0;
   }
   e.speed+=clamp(targetSpeed-e.speed,-18*dt,8*dt);
-  const x=e.x,s=e.s;moveTank(e,-Math.sin(e.yaw)*e.speed*dt,Math.cos(e.yaw)*e.speed*dt);if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<config.tankRadius*2)||!run.crushed&&Math.hypot(run.x-e.x,run.s-e.s)<config.tankRadius*2){e.x=x;e.s=s;e.speed=0;}
+  const x=e.x,s=e.s,moveX=-Math.sin(e.yaw)*e.speed*dt,moveS=Math.cos(e.yaw)*e.speed*dt;
+  // Steering must obey the same swept margin as pathfinding, including while turning.
+  if(clear(e,{x:x+moveX,s:s+moveS}))moveTank(e,moveX,moveS);
+  else {e.speed=0;e.nextRoute=Math.min(e.nextRoute,run.time+.25);}
+  if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<config.tankRadius*2)||!run.crushed&&Math.hypot(run.x-e.x,run.s-e.s)<config.tankRadius*2){e.x=x;e.s=s;e.speed=0;}
   e.vx=(e.x-x)/dt;e.vs=(e.s-s)/dt;
   if(Math.hypot(e.vx,e.vs)<e.speed*.1)e.speed=0;
   let aim=null;

@@ -370,3 +370,7 @@ All 69 simulation tests passed. Added a 500 m target case verifying elevation ab
 ## Aerial transition and close patrol encounter — September 16
 
 All 71 simulation tests passed. Chrome checks `tests/aerial-transition.mjs`, `tests/aerial-zoom.mjs`, and `tests/maze-tank-awareness.mjs` passed against an isolated local Vite server: smooth V transitions both directions, turret-aligned aerial view, wheel zoom including pause, and an actual blueprint patrol detecting Clu behind it and landing a shot. Unit tests cover close rear detection and reaction to a nonfatal shot from beyond near-awareness range. Production build passed.
+
+## Patrol routing and radio response — September 16
+
+Reproduced a blueprint patrol stopping permanently near (138, -252) after its steering entered the pathfinding clearance margin. All 73 tests now pass, including a two-minute blueprint patrol run checking movement every 20 seconds and clearance every step. A radio-only test verifies a Recognizer can send an occluded target report to a nearby ground patrol, trigger a route around the wall and move the tank without granting direct sight or fire permission. The close-range blueprint encounter also passed in Chrome after the navigation change. Production build passed.
