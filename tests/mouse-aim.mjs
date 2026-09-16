@@ -13,7 +13,11 @@ try{
  assert.equal(await page.evaluate(()=>document.pointerLockElement),null);
  await page.waitForFunction(()=>Math.abs(__tron.state.turretYaw-__tron.state.mouseAim.yaw)<.001&&Math.abs(__tron.state.aimPitch-__tron.state.mouseAim.pitch)<.001);
  const center=await page.locator('#gunner-crosshair path').last().evaluate(el=>{const r=el.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};});
- assert.ok(Math.abs(center.x-1000)<3&&Math.abs(center.y-300)<3,JSON.stringify(center));
+ assert.ok(Math.abs(center.x-720)<3&&Math.abs(center.y-450)<3,JSON.stringify(center));
+ const projected=await page.evaluate(()=>{const r=__tron.state,t=r.mouseAim;return __tron.project({x:r.x-Math.sin(t.yaw)*Math.cos(t.pitch)*1000,y:Math.sin(t.pitch)*1000+3,s:r.s+Math.cos(t.yaw)*Math.cos(t.pitch)*1000});});
+ assert.ok(Math.abs(projected.x)<.02&&Math.abs(projected.y)<.02,JSON.stringify(projected));
+ const settled=await page.evaluate(()=>__tron.state.turretYaw);await page.waitForTimeout(300);assert.ok(Math.abs(await page.evaluate(()=>__tron.state.turretYaw)-settled)<.001);
+ assert.ok(await page.locator('#game').evaluate(el=>getComputedStyle(el).cursor.includes('data:image/svg')));
  await page.screenshot({path:'test-results/mouse-aim.png'});
  await page.mouse.down();await page.mouse.up();await page.waitForFunction(()=>__tron.state.shots>0);
  await page.keyboard.press('KeyF');await page.waitForFunction(()=>__tron.state.turretYaw===0&&__tron.state.aimPitch===0);
@@ -24,5 +28,5 @@ try{
  await page.mouse.move(900,800);await page.waitForTimeout(400);assert.equal(await page.evaluate(()=>__tron.state.aimPitch),0);
  await page.keyboard.press('Escape');await page.waitForFunction(()=>__tron.state.mode==='paused');
  await page.keyboard.press('Enter');await page.keyboard.press('KeyV');assert.equal(await page.evaluate(()=>__tron.state.gunner),false);
- assert.deepEqual(errors,[]);console.log('Absolute cursor targeting, crosshair alignment, no capture, fire, forward lock through hull turns, mouse unlock, base pitch limit and view lifecycle pass.');
+ assert.deepEqual(errors,[]);console.log('Desktop cursor targeting, fixed cannon crosshair, camera follows turret, no capture, fire, forward lock through hull turns, mouse unlock, base pitch limit and view lifecycle pass.');
 }finally{await browser.close();}
