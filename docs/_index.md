@@ -425,3 +425,8 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 - [x] Confirmed beams track observed Clu for 1.5 seconds during pursuit, then fade over 0.8 seconds. Losing sight stops beam tracking of hidden movement. Pause freezes projector motion; destruction/reset clears acquisition.
 
 - [x] Correct spotlight reach for distant visible targets: scanning retains a 260 m throw, acquisition/tracking extends to the observed target within sensor range. Projector yaw/pitch rates reduced to 0.5/0.4 rad/s, with an 11-second scan cycle and bounded motion across goal changes. Aim compensates for the age of the last visible sample.
+
+## Camera transitions and maze-tank awareness — September 16
+
+- [x] V eases between driving and aerial views instead of resetting the camera. Aerial viewing direction follows turret azimuth; floor and fog blend with elevation. Wheel zoom and reduced-motion support remain available.
+- [x] Ground tanks detect unobstructed Clu within 45 m from any direction and use turret direction as well as hull direction for distant sight. Nonfatal bullet impacts trigger a five-second investigation toward the incoming shot; this clue never reveals the hidden shooter position or permits firing/radio without visual confirmation.

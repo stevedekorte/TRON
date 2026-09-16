@@ -42,3 +42,20 @@ test('three maze tanks patrol clear routes independently of the eight carrier es
   assert.equal(wallIntersection({...e,y:2},{...e,y:2},3.5),null);
  }
 });
+
+test('maze patrol detects and fires at Clu close behind its hull',()=>{
+ const r=createRun();Object.assign(r,{x:-5000,s:-5000,speed:0,health:100});r.recognizers=[];
+ const e=r.enemyTanks.find(e=>e.role==='patrol');r.enemyTanks=[e];
+ Object.assign(e,{x:r.x,s:r.s+20,yaw:0,speed:0,vx:0,vs:0});
+ for(let i=0;i<360;i++)step(r,{},dt);
+ assert.equal(e.canSee,true);assert.equal(e.state,'pursue');assert.ok(r.events.some(e=>e.type==='enemyShot'));
+});
+test('damage turns a maze patrol toward the incoming shot before visually acquiring the attacker',()=>{
+ const r=createRun();Object.assign(r,{x:-5000,s:-5000,speed:0,health:100});r.recognizers=[];
+ const e=r.enemyTanks.find(e=>e.role==='patrol');r.enemyTanks=[e];
+ Object.assign(e,{x:r.x,s:r.s+140,yaw:0,speed:0,vx:0,vs:0});
+ r.projectiles=[{x:e.x,s:e.s-1,y:2,vx:0,vs:165,vy:0,life:1}];updateWeapons(r,{},dt);
+ assert.equal(e.health,2);assert.equal(e.memory,null);assert.ok(e.threatUntil>r.time);assert.equal(r.radio.length,0);
+ for(let i=0;i<600;i++)step(r,{},dt);
+ assert.equal(e.canSee,true);assert.ok(r.events.some(e=>e.type==='enemyShot'));
+});

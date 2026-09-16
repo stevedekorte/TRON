@@ -366,3 +366,7 @@ All 67 simulation tests passed: roster, ground patrol movement/clearance, delaye
 ### Spotlight reach and scanning fix — September 15
 
 All 69 simulation tests passed. Added a 500 m target case verifying elevation above the scanning pitch, actual rendered beam reach and successful confirmation, plus bounded scanning after abrupt goal changes. Chrome acquisition/tracking/fade check passed at 500 m and the rendered capture was reviewed with the beam on Clu. Scanning still uses 260 m; target acquisition uses the sensor range so an observer cannot freeze forever trying to illuminate a visible tank beyond the old beam limit. Production build passed.
+
+## Aerial transition and close patrol encounter — September 16
+
+All 71 simulation tests passed. Chrome checks `tests/aerial-transition.mjs`, `tests/aerial-zoom.mjs`, and `tests/maze-tank-awareness.mjs` passed against an isolated local Vite server: smooth V transitions both directions, turret-aligned aerial view, wheel zoom including pause, and an actual blueprint patrol detecting Clu behind it and landing a shot. Unit tests cover close rear detection and reaction to a nonfatal shot from beyond near-awareness range. Production build passed.

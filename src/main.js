@@ -94,7 +94,7 @@ listen(window, 'keydown', event => {
   if (event.repeat) return;
   if(key==='KeyF'&&['running','entering'].includes(mode)){run.gunnerLeveling=true;run.turretCentering=true;return;}
   if (key === 'KeyH' && mode === 'running') { showInstruments = !showInstruments; return; }
-  if (key === 'KeyV' && mode === 'running') { run.gunner=false;view.aerial = !view.aerial; view.freshCamera = true; return; }
+  if (key === 'KeyV' && mode === 'running') { run.gunner=false;view.aerial = !view.aerial; view.freshCamera = view.reducedMotion; return; }
   if (key === 'Enter' && mode === 'ready') { event.preventDefault(); terminal.done ? start() : terminal.finish(); return; }
   if(mode==='entering'&&key==='Enter'){event.preventDefault();finishOpening();return;}
   if (key === 'Escape') { ['running','entering'].includes(mode) ? pause() : resume(); return; }
