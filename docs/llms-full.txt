@@ -466,6 +466,8 @@ The full sight now uses the same interpolated hull/turret pose and elevation as 
 
 Music now fades from the fatal hit through the 2.1-second destruction/terminal transition, reaching zero before playback pauses. Restart restores normal music gain. The fade follows transition progress, so pausing does not consume the remaining transition.
 
+The end terminal plays the supplied “02 Only Solutions.mp3” after the gameplay track fades. Music has a separate output gain so terminal playback does not reactivate simulation sounds; mute still applies. Restart switches back to “We've Got Company.”
+
 
 ---
 
@@ -1494,3 +1496,5 @@ All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual
 83 simulation tests pass. Added measured angular velocity/acceleration checks at all four zoom levels with sudden target changes and reversals on a stationary hull, including arrival at the target. Chrome `tests/mouse-aim.mjs` passed with interpolated full-sight rendering, target convergence, firing, F lock and pointer lifecycle. Human smoothness assessment remains necessary; numerical limits alone do not establish feel.
 
 Death music fade: Chrome `tests/death-terminal.mjs` verifies decreasing music gain while playback continues, zero gain and paused playback at the terminal, and normal gain restored on restart. Audio gain was measured; no subjective listening claim.
+
+End-screen track: Chrome death-terminal check passed for continued gameplay fade, Only Solutions playback/time advancement on the terminal, and restoration of We've Got Company on restart.

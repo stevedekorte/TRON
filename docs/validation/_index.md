@@ -392,3 +392,5 @@ All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual
 83 simulation tests pass. Added measured angular velocity/acceleration checks at all four zoom levels with sudden target changes and reversals on a stationary hull, including arrival at the target. Chrome `tests/mouse-aim.mjs` passed with interpolated full-sight rendering, target convergence, firing, F lock and pointer lifecycle. Human smoothness assessment remains necessary; numerical limits alone do not establish feel.
 
 Death music fade: Chrome `tests/death-terminal.mjs` verifies decreasing music gain while playback continues, zero gain and paused playback at the terminal, and normal gain restored on restart. Audio gain was measured; no subjective listening claim.
+
+End-screen track: Chrome death-terminal check passed for continued gameplay fade, Only Solutions playback/time advancement on the terminal, and restoration of We've Got Company on restart.
