@@ -484,6 +484,8 @@ When pursuit ends without a replacement cue, music now fades to silence over 3 s
 
 P now blends camera position, quaternion orientation and field of view over 0.75 seconds in both directions. The complete sight fades with the transition; the exterior tank is hidden as the camera enters its volume. The transition follows moving Clu, restarts from the current camera pose on reversal, and is skipped with reduced-motion preference.
 
+The end terminal now retains the same blinking blue block cursor as the opening screen; reduced-motion preference keeps it steady.
+
 
 ---
 
@@ -1526,3 +1528,5 @@ Recognition music: 83 simulation tests pass, including no cue before spotlight c
 Quiet music transition: 86 unit/simulation tests pass. Chrome recognition-music check verifies a 3-second fade after all pursuers are removed, audible gain and continuing playback after 1 second, then zero gain and paused playback with no unwanted restart. Build passed.
 
 Gunner transitions: Chrome `tests/gunner-transition.mjs` passed entry/exit position and FOV interpolation, measured intermediate quaternion rotation, sight fading, mid-transition reversal and reduced-motion bypass. Existing `tests/gunner.mjs` controls regression also passed.
+
+End cursor: Chrome death-terminal check verifies visible cursor and `terminal-blink` animation on the end screen, alongside music and restart behavior.
