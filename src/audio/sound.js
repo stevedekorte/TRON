@@ -190,8 +190,18 @@ export class Sound {
     gain.gain.setValueAtTime(.13,now);gain.gain.exponentialRampToValueAtTime(.001,now+.35);
     o.connect(gain);o.start();o.stop(now+.4);o.onended=()=>{o.disconnect();gain.disconnect();};
   }
+  fadeMusic(progress){
+    if(!this.musicGain)return;
+    const gain=this.musicGain.gain,now=this.context.currentTime;
+    const level=.55*Math.pow(1-Math.max(0,Math.min(1,progress)),2);
+    gain.cancelScheduledValues(now);
+    if(progress>=1)gain.setValueAtTime(0,now);
+    else gain.setTargetAtTime(level,now,.02);
+  }
   startMusic(){
     if(!this.music)return;
+    this.musicGain.gain.cancelScheduledValues(this.context.currentTime);
+    this.musicGain.gain.setValueAtTime(.55,this.context.currentTime);
     this.music.currentTime=0;this.musicStarted=true;this.resumeMusic();
   }
   resumeMusic(){

@@ -464,6 +464,8 @@ Confirmed Recognizer spotlights now remain on through pursuit until the observed
 
 The full sight now uses the same interpolated hull/turret pose and elevation as rendering, rather than stepping through raw 60 Hz states. Mouse tracking has an explicit normalized acceleration bound of 6/s and a 0.22-second proportional slowdown near its target. At 1× this limits mouse-command yaw acceleration to 7.2 rad/s² and pitch acceleration to 4.8 rad/s²; both scale with zoom. The shared physical yaw speed cap remains in place for hull compensation. Mechanical elevation stops still clamp at their limits.
 
+Music now fades from the fatal hit through the 2.1-second destruction/terminal transition, reaching zero before playback pauses. Restart restores normal music gain. The fade follows transition progress, so pausing does not consume the remaining transition.
+
 
 ---
 
@@ -1490,3 +1492,5 @@ All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual
 ### Smooth mouse tracking — September 16
 
 83 simulation tests pass. Added measured angular velocity/acceleration checks at all four zoom levels with sudden target changes and reversals on a stationary hull, including arrival at the target. Chrome `tests/mouse-aim.mjs` passed with interpolated full-sight rendering, target convergence, firing, F lock and pointer lifecycle. Human smoothness assessment remains necessary; numerical limits alone do not establish feel.
+
+Death music fade: Chrome `tests/death-terminal.mjs` verifies decreasing music gain while playback continues, zero gain and paused playback at the terminal, and normal gain restored on restart. Audio gain was measured; no subjective listening claim.
