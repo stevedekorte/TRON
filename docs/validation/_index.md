@@ -402,3 +402,5 @@ Recognition music: 83 simulation tests pass, including no cue before spotlight c
 ### Action music selection and fades — September 16
 
 86 unit/simulation tests pass. Filename-category tests cover additions, case matching, missing categories, repeat avoidance, pursuit state and close-range hysteresis. Browser `recognition-music.mjs` passed opening recognition → pursued → proximity-triggered gotcha, including measured fade-out before the source changes and fade-in afterward. Updated death-terminal regression passed end music and fresh-run restoration. Glob discovery is build-time for the static production site; future local files require publishing a new build to appear there.
+
+Quiet music transition: 86 unit/simulation tests pass. Chrome recognition-music check verifies a 3-second fade after all pursuers are removed, audible gain and continuing playback after 1 second, then zero gain and paused playback with no unwanted restart. Build passed.

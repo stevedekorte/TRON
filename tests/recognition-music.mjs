@@ -12,5 +12,12 @@ try{
  const before=await page.evaluate(()=>__tron.state.music.gain);await page.waitForTimeout(150);const during=await page.evaluate(()=>__tron.state.music);assert.ok(during.gain<before);assert.equal(during.category,'pursued');
  await page.waitForFunction(()=>__tron.state.music.category==='gotcha'&&!__tron.state.music.paused&&__tron.state.music.time>0);await page.waitForTimeout(400);
  assert.ok(await page.evaluate(()=>__tron.state.music.gain)>.5);assert.equal(await page.evaluate(()=>__tron.state.music.loop),false);
+ await page.evaluate(()=>{const r=__tron.state;__tron.place({recognizers:r.recognizers.map(e=>({...e,state:'destroyed',canSee:false})),enemyTanks:[]});});
+ await page.waitForFunction(()=>__tron.state.music.transition==='silence');
+ const initial=await page.evaluate(()=>__tron.state.music.gain);await page.waitForTimeout(1000);
+ const fading=await page.evaluate(()=>__tron.state.music);assert.equal(fading.paused,false);assert.ok(fading.gain>initial*.4&&fading.gain<initial*.85);
+ await page.waitForFunction(()=>__tron.state.music.paused&&__tron.state.music.gain===0);
+ await page.waitForTimeout(250);assert.equal(await page.evaluate(()=>__tron.state.music.paused),true);
+ console.log('Three-second fade to silence passes.');
  console.log('Recognition opener leads to pursuit; close aircraft fades pursuit out and starts a once-only gotcha cue.');
 }finally{await browser.close();}

@@ -14,7 +14,7 @@ export function activelyPursued(run){
  return !run.crushed&&[...run.recognizers,...(run.enemyTanks||[])].some(e=>!e.targetGone&&['pursue','fold','drop'].includes(e.state));
 }
 
-export const MUSIC_CUES=Object.freeze({closeDistance:100,releaseDistance:140,fadeOut:.45,fadeIn:.3});
+export const MUSIC_CUES=Object.freeze({closeDistance:100,releaseDistance:140,fadeOut:.45,fadeIn:.3,quietFade:3});
 export function closeRecognizer(run,wasClose){
  if(run.crushed)return false;
  const distance=wasClose?MUSIC_CUES.releaseDistance:MUSIC_CUES.closeDistance;

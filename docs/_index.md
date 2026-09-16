@@ -466,3 +466,5 @@ Clip categories are discovered from MP3 filenames in `docs/assets/music/Tron/03 
 - When a cue ends, choose a pursued cue if a live enemy is pursuing/attacking. Avoid immediate repeats when alternatives exist. Searching/investigating alone does not count.
 - A pursuing Recognizer entering 100 m in 3D triggers gotcha; the encounter rearms beyond 140 m. Gotcha takes priority over new recognition cues while close.
 - Action changes may interrupt a track: fade out over 0.45 s before changing source, then fade in over 0.3 s. Clips never loop; death cancels pending changes and fades the current level into the end terminal's Only Solutions track.
+
+When pursuit ends without a replacement cue, music now fades to silence over 3 seconds (or the remaining clip duration if shorter). The final seconds of an unneeded clip also fade before its natural end. Reacquisition during this fade restores the current phrase smoothly. Cue-to-cue changes retain their quicker 0.45-second fade.

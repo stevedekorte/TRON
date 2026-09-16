@@ -86,17 +86,27 @@ export class Sound {
   update(run,camera,playing) {
     if(!this.context)return;
     const c=this.context,now=c.currentTime;
+    const wasPursued=this.pursued;
     this.pursued=activelyPursued(run);this.musicPlaying=playing;
     if(playing&&!run.crushed){
       const close=closeRecognizer(run,this.closeEncounter);
       if(close&&!this.closeEncounter)this.requestMusic('gotcha');
       this.closeEncounter=close;
+      if(wasPursued&&!this.pursued)this.fadeToQuiet();
+      else if(this.pursued&&this.musicTransition?.category==='silence'){
+        this.musicTransition=null;
+        this.musicGain.gain.cancelAndHoldAtTime(now);
+        this.musicGain.gain.linearRampToValueAtTime(.55,now+MUSIC_CUES.fadeIn);
+      }else if(this.pursued&&!wasPursued&&!this.musicStarted)this.requestMusic('pursued');
+      if(!this.pursued&&!this.musicTransition&&!this.music.paused&&!this.music.ended&&Number.isFinite(this.music.duration)&&this.music.duration-this.music.currentTime<=MUSIC_CUES.quietFade)this.fadeToQuiet();
       if(this.music.ended&&!this.musicTransition)this.nextMusic();
       if(this.musicTransition&&now>=this.musicTransition.at){
         const {url}=this.musicTransition;this.musicTransition=null;
-        this.startMusic('gameplay',url);
-        this.musicGain.gain.setValueAtTime(0,now);
-        this.musicGain.gain.linearRampToValueAtTime(.55,now+MUSIC_CUES.fadeIn);
+        if(url){
+          this.startMusic('gameplay',url);
+          this.musicGain.gain.setValueAtTime(0,now);
+          this.musicGain.gain.linearRampToValueAtTime(.55,now+MUSIC_CUES.fadeIn);
+        }else{this.musicGain.gain.setValueAtTime(0,now);this.music.pause();this.musicStarted=false;}
       }
     }
     this.master.gain.setTargetAtTime(this.muted||!playing?0:this.volume,now,.04);
@@ -219,6 +229,15 @@ export class Sound {
     gain.cancelScheduledValues(now);
     if(progress>=1)gain.setValueAtTime(0,now);
     else gain.setTargetAtTime(level,now,.02);
+  }
+  fadeToQuiet(){
+    if(!this.music||this.musicMode!=='gameplay'||this.musicTransition?.category==='silence')return;
+    const now=this.context.currentTime,gain=this.musicGain.gain;
+    const remaining=this.music.duration-this.music.currentTime;
+    const duration=Number.isFinite(remaining)?Math.min(MUSIC_CUES.quietFade,Math.max(0,remaining)):MUSIC_CUES.quietFade;
+    gain.cancelAndHoldAtTime(now);
+    gain.linearRampToValueAtTime(0,now+duration);
+    this.musicTransition={url:null,category:'silence',at:now+duration};
   }
   nextMusic(){
     if(this.disposed||this.musicMode!=='gameplay'||!this.musicPlaying||this.musicTransition)return;
