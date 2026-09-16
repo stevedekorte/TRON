@@ -408,3 +408,5 @@ Quiet music transition: 86 unit/simulation tests pass. Chrome recognition-music 
 Gunner transitions: Chrome `tests/gunner-transition.mjs` passed entry/exit position and FOV interpolation, measured intermediate quaternion rotation, sight fading, mid-transition reversal and reduced-motion bypass. Existing `tests/gunner.mjs` controls regression also passed.
 
 End cursor: Chrome death-terminal check verifies visible cursor and `terminal-blink` animation on the end screen, alongside music and restart behavior.
+
+Gunner exit correction: Chrome transition check samples height and quaternion-derived pitch through exit and verifies no reversals beyond 0.01 total excess travel in the stationary fixture. Entry, exit, rapid reversal and reduced-motion checks pass. Aerial transition regression also passed.

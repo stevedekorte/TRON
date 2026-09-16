@@ -486,6 +486,8 @@ P now blends camera position, quaternion orientation and field of view over 0.75
 
 The end terminal now retains the same blinking blue block cursor as the opening screen; reduced-motion preference keeps it steady.
 
+The chase camera now keeps an independent smoothed position while gunner mode or its transition controls the displayed camera. This removes feedback from the blend into chase height/pitch correction on exit.
+
 
 ---
 
@@ -1530,3 +1532,5 @@ Quiet music transition: 86 unit/simulation tests pass. Chrome recognition-music 
 Gunner transitions: Chrome `tests/gunner-transition.mjs` passed entry/exit position and FOV interpolation, measured intermediate quaternion rotation, sight fading, mid-transition reversal and reduced-motion bypass. Existing `tests/gunner.mjs` controls regression also passed.
 
 End cursor: Chrome death-terminal check verifies visible cursor and `terminal-blink` animation on the end screen, alongside music and restart behavior.
+
+Gunner exit correction: Chrome transition check samples height and quaternion-derived pitch through exit and verifies no reversals beyond 0.01 total excess travel in the stationary fixture. Entry, exit, rapid reversal and reduced-motion checks pass. Aerial transition regression also passed.

@@ -472,3 +472,5 @@ When pursuit ends without a replacement cue, music now fades to silence over 3 s
 P now blends camera position, quaternion orientation and field of view over 0.75 seconds in both directions. The complete sight fades with the transition; the exterior tank is hidden as the camera enters its volume. The transition follows moving Clu, restarts from the current camera pose on reversal, and is skipped with reduced-motion preference.
 
 The end terminal now retains the same blinking blue block cursor as the opening screen; reduced-motion preference keeps it steady.
+
+The chase camera now keeps an independent smoothed position while gunner mode or its transition controls the displayed camera. This removes feedback from the blend into chase height/pitch correction on exit.
