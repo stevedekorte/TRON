@@ -1,9 +1,11 @@
+import {musicCategory,selectMusic,activelyPursued,closeRecognizer,MUSIC_CUES} from './music-selection.js';
 import {CARRIER} from '../game/carrier.js';
 import endMusicUrl from "../../docs/assets/music/Tron/02 Only Solutions.mp3?url";
-import musicUrl from "../../docs/assets/music/Tron/03 We've Got Company.mp3?url";
+import musicUrl from "../../docs/assets/music/Tron/03 We've Got Company Clips/1 recognized 1.mp3?url";
 import { RECOGNIZER_STARTS, lineOfSight } from '../levels/maze.js';
 import {stereoEmitter,doppler} from './spatial.js';
 import {RECOGNIZER_HIT,recognizerHitSamples} from './recognizer-hit.js';
+const musicClips=Object.entries(import.meta.glob("../../docs/assets/music/Tron/03 We've Got Company Clips/*.mp3",{eager:true,query:'?url',import:'default'})).map(([path,url])=>({url,category:musicCategory(path)}));
 const files=['tank-drive','recognizer-flight','recognizer-approach','recognizer-explosion','cannon','carrier-rumble'];
 const keyFiles=Array.from({length:4},(_,i)=>'terminal-key-'+(i+1));
 // Film-derived stereo samples; synthesis remains available when a file fails.
@@ -35,10 +37,11 @@ export class Sound {
     const limiter=c.createDynamicsCompressor();limiter.threshold.value=-8;limiter.knee.value=6;limiter.ratio.value=8;
     this.outputMeter=c.createAnalyser();this.outputMeter.fftSize=512;
     this.master.connect(limiter);limiter.connect(this.outputMeter);this.outputMeter.connect(c.destination);
-    this.music=new Audio(musicUrl);this.music.preload='auto';
+    this.music=new Audio(musicUrl);this.music.preload='auto';this.music.loop=false;
     this.musicMaster=c.createGain();this.musicMaster.gain.value=0;this.musicMaster.connect(limiter);
     this.musicGain=c.createGain();this.musicGain.gain.value=.55;this.musicGain.connect(this.musicMaster);
     this.musicSource=c.createMediaElementSource(this.music);this.musicSource.connect(this.musicGain);
+    this.music.addEventListener('ended',()=>this.nextMusic());
     this.music.addEventListener('error',()=>{this.musicError='Music could not be loaded';});
     this.carrierEmitter=stereoEmitter(c,this.master,600);
     for(const p of this.carrierEmitter.panners)p.maxDistance=15000;
@@ -83,6 +86,19 @@ export class Sound {
   update(run,camera,playing) {
     if(!this.context)return;
     const c=this.context,now=c.currentTime;
+    this.pursued=activelyPursued(run);this.musicPlaying=playing;
+    if(playing&&!run.crushed){
+      const close=closeRecognizer(run,this.closeEncounter);
+      if(close&&!this.closeEncounter)this.requestMusic('gotcha');
+      this.closeEncounter=close;
+      if(this.music.ended&&!this.musicTransition)this.nextMusic();
+      if(this.musicTransition&&now>=this.musicTransition.at){
+        const {url}=this.musicTransition;this.musicTransition=null;
+        this.startMusic('gameplay',url);
+        this.musicGain.gain.setValueAtTime(0,now);
+        this.musicGain.gain.linearRampToValueAtTime(.55,now+MUSIC_CUES.fadeIn);
+      }
+    }
     this.master.gain.setTargetAtTime(this.muted||!playing?0:this.volume,now,.04);
     this.musicMaster.gain.setTargetAtTime(this.muted||(!playing&&this.musicMode!=='terminal')?0:this.volume,now,.04);
     const speed=Math.abs(run.speed),turn=Math.min(1,Math.abs(run.steer||0));
@@ -147,6 +163,7 @@ export class Sound {
   }
   effect(type,event) {
     if(!this.context)return;
+    if(type==='recognized'){this.recognitionMusic();return;}
     const c=this.context,now=c.currentTime,gain=c.createGain();
     if(type==='hit'&&event?.subject==='recognizer'){
       if(event.fatal)return;
@@ -194,18 +211,41 @@ export class Sound {
     o.connect(gain);o.start();o.stop(now+.4);o.onended=()=>{o.disconnect();gain.disconnect();};
   }
   fadeMusic(progress){
+    this.musicTransition=null;this.pursued=false;
     if(!this.musicGain)return;
     const gain=this.musicGain.gain,now=this.context.currentTime;
-    const level=.55*Math.pow(1-Math.max(0,Math.min(1,progress)),2);
+    this.deathMusicGain??=gain.value;
+    const level=this.deathMusicGain*Math.pow(1-Math.max(0,Math.min(1,progress)),2);
     gain.cancelScheduledValues(now);
     if(progress>=1)gain.setValueAtTime(0,now);
     else gain.setTargetAtTime(level,now,.02);
   }
-  startMusic(mode='gameplay'){
+  nextMusic(){
+    if(this.disposed||this.musicMode!=='gameplay'||!this.musicPlaying||this.musicTransition)return;
+    if(this.pursued)this.requestMusic('pursued');
+  }
+  recognitionMusic(){
+    if(this.closeEncounter||this.musicTransition?.category==='gotcha')return;
+    // One phrase covers overlapping recognitions, rather than restarting constantly.
+    if(this.musicCategory==='recognized'&&!this.music.ended&&!this.music.paused)return;
+    this.requestMusic('recognized');
+  }
+  requestMusic(category){
+    if(!this.music||this.musicMode!=='gameplay'||this.disposed||this.musicTransition?.category===category)return;
+    const url=selectMusic(musicClips,category,this.currentMusicUrl);if(!url)return;
+    const now=this.context.currentTime,gain=this.musicGain.gain;
+    gain.cancelAndHoldAtTime(now);
+    const duration=this.music.ended?0:MUSIC_CUES.fadeOut;
+    gain.linearRampToValueAtTime(0,now+duration);
+    this.musicTransition={url,category,at:now+duration};
+  }
+  startMusic(mode='gameplay',clipUrl=null){
     if(!this.music)return;
-    const url=mode==='terminal'?endMusicUrl:musicUrl;
-    if(this.musicMode!==mode)this.music.src=url;
-    this.musicMode=mode;this.musicError=null;
+    const url=clipUrl||(mode==='terminal'?endMusicUrl:musicUrl);
+    if(this.currentMusicUrl!==url)this.music.src=url;
+    this.currentMusicUrl=url;this.musicCategory=musicClips.find(c=>c.url===url)?.category||null;
+    if(mode==='terminal')this.musicTransition=null;
+    this.musicMode=mode;this.musicError=null;this.deathMusicGain=null;
     this.musicGain.gain.cancelScheduledValues(this.context.currentTime);
     this.musicGain.gain.setValueAtTime(.55,this.context.currentTime);
     this.music.currentTime=0;this.musicStarted=true;this.resumeMusic();
@@ -213,7 +253,7 @@ export class Sound {
   resumeMusic(){
     if(this.musicStarted&&!this.music.ended&&!this.disposed)this.music.play().catch(e=>{this.musicError=e.message;});
   }
-  reset(){this.music?.pause();if(this.music)this.music.currentTime=0;this.musicStarted=false;this.musicMode=null;this.lastImpact=0;this.lastEar=null;this.wasPlaying=false;for(const s of this.sources)if(!s.loop)s.stop();}
+  reset(){this.musicTransition=null;this.closeEncounter=false;this.pursued=false;this.music?.pause();if(this.music)this.music.currentTime=0;this.musicStarted=false;this.musicMode=null;this.lastImpact=0;this.lastEar=null;this.wasPlaying=false;for(const s of this.sources)if(!s.loop)s.stop();}
   silence(){this.music?.pause();if(this.context){this.master.gain.setTargetAtTime(0,this.context.currentTime,.02);this.musicMaster.gain.setTargetAtTime(0,this.context.currentTime,.02);}}
   dispose(){this.disposed=true;this.music?.pause();this.music?.removeAttribute('src');this.music?.load();this.musicSource?.disconnect();this.musicGain?.disconnect();this.musicMaster?.disconnect();this.context?.close();this.sources.clear();}
 }
