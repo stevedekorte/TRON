@@ -19,6 +19,13 @@ const AERIAL_CAMERA=Object.freeze({transitionSeconds:1.2,height:600,distance:Mat
 const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
 
 export class View {
+  mouseTargetAt(clientX,clientY){
+    // Freeze the viewing direction while the cannon traverses toward a screen point.
+    if(!this.mouseCamera)this.mouseCamera=this.camera.quaternion.clone();
+    const rect=this.renderer.domElement.getBoundingClientRect();
+    const ray=new THREE.Vector3((clientX-rect.left)/rect.width*2-1,1-(clientY-rect.top)/rect.height*2,.5).unproject(this.camera).sub(this.camera.position).normalize();
+    return {yaw:Math.atan2(-ray.x,-ray.z),pitch:Math.asin(ray.y)};
+  }
   constructor(canvas, tank, recognizer, carrier=null) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(1);
@@ -208,6 +215,7 @@ export class View {
       this.camera.position.set(pose.x,pose.y,-pose.s);
       this.camera.lookAt(pose.x-Math.sin(pose.yaw)*Math.cos(pitch)*100,pose.y+Math.sin(pitch)*100,-pose.s-Math.cos(pose.yaw)*Math.cos(pitch)*100);
     }
+    if(gunner&&this.mouseCamera)this.camera.quaternion.copy(this.mouseCamera);
     this.camera.far=12000;
     this.camera.fov = gunner?GUNNER.fovs[run.gunnerZoom]:this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov); this.camera.updateProjectionMatrix();
     // Apply only to the final camera orientation: no drift in follow smoothing or aim.
@@ -219,11 +227,11 @@ export class View {
       this.camera.rotateY(strength*IMPACT_SHAKE.yaw*(Math.sin(t*109)+.3*Math.cos(t*173)));
       this.camera.rotateZ(strength*IMPACT_SHAKE.roll*Math.sin(t*97));
     }
-    this.mouseAimScreen=null;
-    if(gunner&&run.mouseAim){
-      const {yaw:aimYaw,pitch}=run.mouseAim;
+    this.aimScreen=null;
+    if(gunner&&this.mouseCamera){
+      const aimYaw=yaw+this.tank.turret.rotation.y,pitch=(previous.aimPitch??run.aimPitch)+(run.aimPitch-(previous.aimPitch??run.aimPitch))*alpha;
       this.camera.updateMatrixWorld();
-      this.mouseAimScreen=new THREE.Vector3(-Math.sin(aimYaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(aimYaw)*Math.cos(pitch)).multiplyScalar(1000).add(this.camera.position).project(this.camera);
+      this.aimScreen=new THREE.Vector3(-Math.sin(aimYaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(aimYaw)*Math.cos(pitch)).multiplyScalar(1000).add(this.camera.position).project(this.camera);
     }
     this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):THREE.MathUtils.lerp(1,.06,aerialMix)));
     this.world.aerialView.value=this.opening!=null?1-this.opening:(!this.referenceCamera?aerialMix:0);

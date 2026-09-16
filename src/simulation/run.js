@@ -8,7 +8,7 @@ import { config, CLU_WEAPON, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, cl
 import { createRecognizers, updateRecognizers, perceive } from './recognizers.js';
 
 export function createRun() {
-  return {...SPAWN,cruiseThrottle:false,gunner:false,mouseAim:null,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+  return {...SPAWN,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
     enemyTanks:createGroundTanks(),health:3,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(),radio:[]};
 }
 
@@ -145,9 +145,15 @@ export function step(run,input,dt) {
   run.time+=dt;run.impact=Math.max(0,run.impact-dt*2.5);
   const hullYawBefore=run.yaw,aimScale=run.gunner?gunnerAimScale(run.gunnerZoom):1;
   const turretInput=clamp(input.turret||0,-1,1),pitchInput=clamp(input.aimPitch||0,-1,1);
+  const manualAim=turretInput||pitchInput||input.mouseTarget;
+  if(manualAim){
+    if(run.turretLocked){run.turretCentering=false;run.gunnerLeveling=false;}
+    run.turretLocked=false;
+    if(input.mouseTarget){run.turretCentering=false;run.gunnerLeveling=false;}
+  }
   if(pitchInput)run.gunnerLeveling=false;
   if(turretInput)run.turretCentering=false;
-  const centering=run.turretCentering,leveling=run.gunnerLeveling;
+  const centering=run.turretCentering||run.turretLocked,leveling=run.gunnerLeveling||run.turretLocked;
   const yawBefore=angleDelta(0,run.turretYaw),pitchBefore=run.aimPitch;
   const mouseAim=updateMouseAim(run,input,aimScale);
   const yawCommand=centering?Math.sign(yawBefore):mouseAim?.yaw??turretInput;
