@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron);
+ await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron);
  const initial=await page.evaluate(()=>__tron.state);
  assert.equal(initial.recognizers.length,3);
  assert.equal(initial.enemyTanks.length,11);assert.equal(initial.enemyTankVisuals.length,11);
@@ -27,7 +27,9 @@ try{
  await page.screenshot({path:'test-results/spotlight-lock.png'});
  await page.keyboard.press('Escape');const frozen=await page.evaluate(()=>__tron.state.recognizers[0].spotlight);
  await page.waitForTimeout(200);assert.deepEqual(await page.evaluate(()=>__tron.state.recognizers[0].spotlight),frozen);
- await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.recognizers[0].spotlight?.phase==='fade');
+ await page.keyboard.press('Enter');await page.waitForTimeout(2200);assert.equal(await page.evaluate(()=>__tron.state.recognizers[0].spotlight?.phase),'track');
+ await page.evaluate(()=>{const r=__tron.state,e=r.recognizers[0];__tron.place({s:e.s-100});});
+ await page.waitForFunction(()=>__tron.state.recognizers[0].spotlight?.phase==='fade');
  await page.waitForFunction(()=>!__tron.state.recognizers[0].spotlight&&!__tron.state.searchlights[0].visible);
  assert.equal(await page.evaluate(()=>__tron.state.recognizers[0].state),'pursue');
  assert.deepEqual(errors,[]);console.log('Blueprint patrols move; 3 Recognizers and 11 tanks render; beam acquires, tracks, pauses and fades before continued pursuit.');

@@ -382,3 +382,7 @@ All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual
 ### Mouse gunner verification — September 16
 
 `npm test`: 81 passing. Includes target convergence and rate limits at all zoom levels, forward lock/manual release, minimum elevation, nearest visible surface raycast, occlusion, hidden-object exclusion and empty-sky fallback. Chrome headless on isolated port 5174: revised `tests/mouse-aim.mjs` verifies pointer capture, independent view/gun lag and convergence, firing, forward lock, mouse unlock and pause/view lifecycle. `tests/gunner.mjs` covers keyboard controls. Mouse feel remains for human playtesting.
+
+### Visibility, turbo and spotlight checks — September 16
+
+82 simulation tests pass, including sustained distant spotlight tracking, close-range fading and lost-observation behavior. Chrome checks on isolated Vite port 5174 passed: mouse aiming with the complete sight, `tank-visibility.mjs` material isolation plus live turbo pulse/return to normal, and `spotlight-acquisition.mjs` sustained tracking, pause and close-range fade. Reviewed low-angle enemy and turbo-trim renders under representative lighting; in-game brightness remains subject to user review.

@@ -440,3 +440,9 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 P enters the gunner view; click to enable mouse-look (Escape releases and pauses). Mouse motion controls the viewing direction immediately at zoom-scaled sensitivity. A small central dot selects the nearest visible world/vehicle surface along the view ray; empty sky uses a distant fallback. The physical cannon aims from its muzzle toward that point using its existing accelerated, speed-limited motor. Film-style crosshairs show actual gun direction and converge on the desired dot. Shots always follow the physical barrel. This replaces the earlier desktop-cursor experiments.
 
 F centers and levels, then locks to the hull until manual aiming. Driving, firing, zoom and view changes preserve that lock. J/L and I/K switch back to keyboard aiming. The barrel cannot aim below the tank base (the hull currently has yaw-only rotation). Mouse capture is optional and keyboard aiming remains available.
+
+### Visibility and pursuit polish — September 16
+
+The whole film gun sight follows the actual barrel as one unit. Enemy tanks have isolated materials with a restrained blue-gray body fill and red trim so low-angle views retain their silhouette. Clu's red tread trim eases into a 2 Hz emissive pulse during turbo and fades back afterward; reduced-motion mode uses steady glow. Enemy materials are independent of this effect.
+
+Confirmed Recognizer spotlights now remain on through pursuit until the observed tank is within 120 m horizontally, then fade over 0.8 s. Loss of visual observation also fades the beam without following hidden movement. The former 1.5-second tracking timeout has been removed.

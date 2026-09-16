@@ -17,6 +17,7 @@ import { config, GUNNER, RECOGNIZER_SCALE, angleDelta, gunnerAimScale } from '..
 import { RECOGNIZER_STARTS, wallIntersection, lineOfSight } from '../levels/maze.js';
 
 const AERIAL_CAMERA=Object.freeze({transitionSeconds:1.2,height:600,distance:Math.hypot(180,320)});
+const TURBO_GLOW=Object.freeze({base:1.8,pulse:1.2,hz:2,response:10});
 const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
 
 export class View {
@@ -111,6 +112,11 @@ export class View {
     this.tank.barrel.rotation.x = 0;
     this.tank.barrel.position.z = run.recoil * 0.35;
     this.tank.flash.visible = false;
+    const turboTarget=run.turboRemaining>0&&!run.crushed?1:0;
+    this.turboGlow=THREE.MathUtils.damp(this.turboGlow||0,turboTarget,TURBO_GLOW.response,mode==='paused'?0:dt);
+    const pulse=this.reducedMotion ? .5 : (.5+.5*Math.sin(run.time*Math.PI*2*TURBO_GLOW.hz));
+    for(const material of this.tank.turboTrim||[]){material.emissive.setHex(0xff0301);material.emissiveIntensity=this.turboGlow*(TURBO_GLOW.base+TURBO_GLOW.pulse*pulse);}
+
     this.tank.tracks.forEach((t, i) => { t.material = this.tank.tracks[0].material; t.visible = (Math.floor(run.s * 3) + i) % 3 !== 0; });
 
     this.world.floor.position.set(x,-.06,-s);

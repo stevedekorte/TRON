@@ -36,10 +36,13 @@ test('searcher must illuminate Clu before pursuit and radio, then tracks and fad
  const confirmed=e.spotlight.confirmedAt;
  while(r.time<confirmed+1){r.time+=1/60;updateRecognizers(r,1/60);}
  assert.ok(receiver.memory);assert.equal(e.spotlight.phase,'track');
- while(r.time<confirmed+1.9){r.time+=1/60;updateRecognizers(r,1/60);}
- assert.equal(e.spotlight.phase,'fade');assert.ok(searchlightStrength(e,r.time)>0&&searchlightStrength(e,r.time)<1);
- while(r.time<confirmed+2.6){r.time+=1/60;updateRecognizers(r,1/60);}
- assert.equal(e.spotlight,null);assert.equal(e.state,'pursue');assert.equal(searchlightStrength(e,r.time),0);
+ // A distant confirmed target keeps its beam, independent of elapsed time.
+ updateSpotlight(e,r.time+10,1/60);assert.equal(e.spotlight.phase,'track');
+ e.s=r.s-SEARCHLIGHT.closeRange+1;
+ updateSpotlight(e,r.time,1/60);assert.equal(e.spotlight.phase,'fade');
+ updateSpotlight(e,r.time+.4,.4);assert.ok(searchlightStrength(e,r.time+.4)>0&&searchlightStrength(e,r.time+.4)<1);
+ updateSpotlight(e,r.time+1,1/60);assert.equal(e.spotlight,null);assert.equal(e.state,'pursue');
+
 });
 test('out-of-range or lost spotlight target cannot be reported, and hidden motion does not steer beam',()=>{
  const r=spotlightEncounter(),e=r.recognizers[0];r.s=e.s+SEARCHLIGHT.range+50;
@@ -76,4 +79,11 @@ test('free scanning respects the lower angular speed even when a goal jumps',()=
  updateSpotlight(e,1/60,1/60);
  assert.ok(Math.abs(e.scanBeam.yaw-before.yaw)<=SEARCHLIGHT.yawRate/60+1e-9);
  assert.ok(Math.abs(e.scanBeam.pitch-before.pitch)<=SEARCHLIGHT.pitchRate/60+1e-9);
+});
+
+test('confirmed beam fades on lost observation instead of tracking hidden Clu',()=>{
+ const r=spotlightEncounter(),e=r.recognizers[0];
+ e.spotlight={yaw:0,pitch:-.2,phase:'track',confirmedAt:0,target:null};
+ updateSpotlight(e,10,1/60);assert.equal(e.spotlight.phase,'fade');assert.equal(e.spotlight.yaw,0);
+ updateSpotlight(e,11,1/60);assert.equal(e.spotlight,null);
 });
