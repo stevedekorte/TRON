@@ -394,3 +394,7 @@ All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual
 Death music fade: Chrome `tests/death-terminal.mjs` verifies decreasing music gain while playback continues, zero gain and paused playback at the terminal, and normal gain restored on restart. Audio gain was measured; no subjective listening claim.
 
 End-screen track: Chrome death-terminal check passed for continued gameplay fade, Only Solutions playback/time advancement on the terminal, and restoration of We've Got Company on restart.
+
+Opening clip update: Chrome death-terminal check verifies restart selects “1 recognized 1.mp3” with looping disabled; terminal playback remains Only Solutions.
+
+Recognition music: 83 simulation tests pass, including no cue before spotlight confirmation and one cue through continued tracking. Chrome `tests/recognition-music.mjs` passed: an actual new sighting selects a different recognition clip and starts playback after the one-shot opener.
