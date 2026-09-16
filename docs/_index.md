@@ -450,3 +450,5 @@ Confirmed Recognizer spotlights now remain on through pursuit until the observed
 ### Mouse tracking smoothness — September 16
 
 The full sight now uses the same interpolated hull/turret pose and elevation as rendering, rather than stepping through raw 60 Hz states. Mouse tracking has an explicit normalized acceleration bound of 6/s and a 0.22-second proportional slowdown near its target. At 1× this limits mouse-command yaw acceleration to 7.2 rad/s² and pitch acceleration to 4.8 rad/s²; both scale with zoom. The shared physical yaw speed cap remains in place for hull compensation. Mechanical elevation stops still clamp at their limits.
+
+Music now fades from the fatal hit through the 2.1-second destruction/terminal transition, reaching zero before playback pauses. Restart restores normal music gain. The fade follows transition progress, so pausing does not consume the remaining transition.
