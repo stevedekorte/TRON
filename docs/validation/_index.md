@@ -420,3 +420,7 @@ Gunner exit correction: Chrome transition check samples height and quaternion-de
 ### Engine transient correction
 
 User listening found the shorter 0.28-second version repeated the clink faster. That version is superseded. The replacement averages the original engine sample’s frequency spectrum and reconstructs a 5.944-second periodic signal with randomized phases, discarding source impact timing rather than repeating a trimmed waveform. RMS is 0.140, peak 0.657; the wraparound sample step is 0.00435 versus maximum ordinary step 0.02104. This is a spectrum-derived sound, not an isolated film stem; listening approval remains outstanding.
+
+### Tank destruction sound
+
+`node tests/tank-explosion.mjs` passed: three synthesis variants at 44.1/48 kHz remain finite and below 0.841 peak, fade to silence, and contain stereo differences. Chrome OfflineAudioContext renders the actual Sound.effect path for both tank subjects; near RMS approximately 0.115 versus 0.030 at 180 m, and all sources release after playback. `npm run build` passed with the existing chunk-size advisory. Subjective listening/film fidelity remains for user review. `scripts/generate-tank-explosion.mjs` builds the library audition from the gameplay synthesis.

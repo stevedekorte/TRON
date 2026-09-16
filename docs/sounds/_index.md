@@ -201,6 +201,18 @@ Original 0.3-second stereo electrical snap, low impact and inharmonic metallic r
 
 [Source](https://github.com/stevedekorte/TRON/blob/main/src/audio/recognizer-hit.js) · Project synthesis · Original project sound
 
+### Tank destruction — layered electronic blast
+
+**Active for CLU and enemy tanks** · Tank destruction
+
+Original 1.65-second low shock, electrical rupture, noise blast and scattered inharmonic debris. Three procedural variants and slight playback-rate variation; stereo world placement and distance attenuation. Audition below uses the same synthesis as gameplay.
+
+<audio controls preload="none" aria-label="Tank destruction — layered electronic blast" src="../../audio/tank-explosion.wav"></audio>
+
+[Open audio file](../../audio/tank-explosion.wav)
+
+[Source](../../src/audio/tank-explosion.js) · Project synthesis · Original project sound
+
 ## Experiments
 
 ### Explosion cleanup — original

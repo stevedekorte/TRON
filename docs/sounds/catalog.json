@@ -421,6 +421,19 @@
       "license": "Original project sound",
       "playback": "../../audio/recognizer-hit.wav",
       "disk": "public/audio/recognizer-hit.wav"
+    },
+    {
+      "id": "tank-explosion-original",
+      "title": "Tank destruction \u2014 layered electronic blast",
+      "group": "Current game sounds",
+      "status": "Active for CLU and enemy tanks",
+      "use": "Tank destruction",
+      "notes": "Original 1.65-second low shock, electrical rupture, noise blast and scattered inharmonic debris. Three procedural variants and slight playback-rate variation; stereo world placement and distance attenuation. Audition below uses the same synthesis as gameplay.",
+      "author": "Project synthesis",
+      "source": "../../src/audio/tank-explosion.js",
+      "license": "Original project sound",
+      "playback": "../../audio/tank-explosion.wav",
+      "disk": "public/audio/tank-explosion.wav"
     }
   ]
 }
