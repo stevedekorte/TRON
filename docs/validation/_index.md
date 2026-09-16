@@ -374,3 +374,7 @@ All 71 simulation tests passed. Chrome checks `tests/aerial-transition.mjs`, `te
 ## Patrol routing and radio response — September 16
 
 Reproduced a blueprint patrol stopping permanently near (138, -252) after its steering entered the pathfinding clearance margin. All 73 tests now pass, including a two-minute blueprint patrol run checking movement every 20 seconds and clearance every step. A radio-only test verifies a Recognizer can send an occluded target report to a nearby ground patrol, trigger a route around the wall and move the tank without granting direct sight or fire permission. The close-range blueprint encounter also passed in Chrome after the navigation change. Production build passed.
+
+## Turret stabilization motor limit — September 16
+
+All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual aim plus hull compensation within a single relative-to-hull motor speed budget, recovery after saturation, idle enemy turret world-heading hold, and abrupt externally imposed yaw changes including angle wrap and zero dt. The gunner Chrome suite passed for aiming, stabilization, zoom, F centering, firing, pause and exit. World-space motion caused by the hull itself is distinct from the turret motor: if the hull outruns compensation, aim drifts instead of exceeding motor speed. Production build passed.

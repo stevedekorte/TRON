@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createRun,step,cannonPose,cannonTarget,updateWeapons} from '../src/simulation/run.js';
 import {angleDelta,GUNNER,gunnerAimScale} from '../src/game/config.js';
 function fixture(){const r=createRun();Object.assign(r,{x:-5000,s:-5000,yaw:0,gunner:true});r.recognizers=[];r.enemyTanks=[];return r;}
-test('gunner aim holds world heading through hull turns; manual aim stays independent',()=>{const r=fixture();r.turretYaw=.7;for(let i=0;i<300;i++)step(r,{steer:1},1/60);assert.ok(Math.abs(angleDelta(.7,r.yaw+r.turretYaw))<1e-8);const old=r.yaw+r.turretYaw;step(r,{turret:1,steer:1,aimPitch:1},1/60);assert.ok(angleDelta(old,r.yaw+r.turretYaw)<0);assert.ok(r.aimPitch>0);});
+test('gunner aim holds world heading through hull turns; manual aim stays independent',()=>{const r=fixture();r.turretYaw=.7;for(let i=0;i<300;i++)step(r,{steer:.5},1/60);assert.ok(Math.abs(angleDelta(.7,r.yaw+r.turretYaw))<1e-8);const old=r.yaw+r.turretYaw;step(r,{turret:1,steer:1,aimPitch:1},1/60);assert.ok(angleDelta(old,r.yaw+r.turretYaw)<0);assert.ok(r.aimPitch>0);});
 test('manual gunner rounds follow sight elevation without target assistance',()=>{const r=fixture();r.aimPitch=.6;const p=cannonPose(r);updateWeapons(r,{fire:true},0);const shot=r.projectiles[0];assert.ok(Math.abs(Math.atan2(shot.vy,Math.hypot(shot.vx,shot.vs))-.6)<1e-8);assert.equal(shot.x,p.x);for(let i=0;i<600;i++)step(r,{aimPitch:1},1/60);assert.equal(r.aimPitch,GUNNER.maxPitch);for(let i=0;i<600;i++)step(r,{aimPitch:-1},1/60);assert.equal(r.aimPitch,GUNNER.minPitch);});
 
 test('zoom scales horizontal and vertical aiming to preserve screen-space sensitivity',()=>{const samples=[0,1,2,3].map(gunnerZoom=>{const r=fixture();r.gunnerZoom=gunnerZoom;step(r,{turret:1,aimPitch:1},1/60);return r;});for(let z=1;z<4;z++){assert.ok(Math.abs(samples[z].turretYaw/samples[0].turretYaw-gunnerAimScale(z))<1e-8);assert.ok(Math.abs(samples[z].aimPitch/samples[0].aimPitch-gunnerAimScale(z))<1e-8);assert.ok(Math.abs(samples[z].turretYaw)<Math.abs(samples[z-1].turretYaw));}});
@@ -35,4 +35,51 @@ test('return centers relative to a turning hull and manual controls override eac
  Object.assign(r,{turretYaw:1,aimPitch:.3,turretCentering:true,gunnerLeveling:true});
  step(r,{turret:-1,aimPitch:1},1/60);
  assert.equal(r.turretCentering,false);assert.equal(r.gunnerLeveling,false);
+});
+
+test('stabilization holds world heading in every view and catches up within its motor limit',()=>{
+ for(const gunner of [false,true])for(const gunnerZoom of [0,3]){
+  const r=fixture();Object.assign(r,{gunner,gunnerZoom,turretYaw:.7});
+  for(let i=0;i<120;i++)step(r,{steer:.5},1/60);
+  assert.ok(Math.abs(angleDelta(.7,r.yaw+r.turretYaw))<1e-8);
+  for(let i=0;i<300;i++){
+   const before=r.turretYaw;step(r,{steer:1},1/60);
+   assert.ok(Math.abs(angleDelta(before,r.turretYaw))<=1.2/60+1e-9);
+  }
+  assert.ok(Math.abs(angleDelta(.7,r.yaw+r.turretYaw))>.01,'hull can outrun the motor');
+  for(let i=0;i<180;i++)step(r,{},1/60);
+  assert.ok(Math.abs(angleDelta(.7,r.yaw+r.turretYaw))<1e-8);
+ }
+});
+test('manual aiming and hull compensation share one motor budget without queued input',()=>{
+ for(const gunner of [false,true])for(const direction of [-1,1]){
+  const r=fixture();r.gunner=gunner;
+  for(let i=0;i<240;i++){
+   const before=r.turretYaw;step(r,{steer:direction,turret:-direction},1/60);
+   assert.ok(Math.abs(angleDelta(before,r.turretYaw))<=1.2/60+1e-9);
+  }
+  for(let i=0;i<180;i++)step(r,{},1/60);
+  const heading=r.yaw+r.turretYaw;
+  for(let i=0;i<120;i++)step(r,{},1/60);
+  assert.ok(Math.abs(angleDelta(heading,r.yaw+r.turretYaw))<1e-8);
+ }
+});
+
+import {stabilizeTurret} from '../src/simulation/turret.js';
+test('sudden external hull rotations cannot bypass the turret motor limit',()=>{
+ for(const rate of [1.2,1.3]){
+  const tank={yaw:0,turretYaw:.4},heading=.4;
+  for(const yaw of [2.8,-2.8,7,-9,0]){
+   tank.yaw=yaw;const before=tank.turretYaw;
+   stabilizeTurret(tank,heading,rate,1/60);
+   assert.ok(Math.abs(angleDelta(before,tank.turretYaw))<=rate/60+1e-9);
+   const stopped=tank.turretYaw;stabilizeTurret(tank,heading,rate,0);assert.ok(Math.abs(angleDelta(stopped,tank.turretYaw))<1e-9);
+  }
+ }
+ const r=fixture();r.turretYaw=.4;step(r,{},1/60);r.yaw+=2;
+ const before=r.turretYaw;step(r,{},1/60);
+ assert.ok(Math.abs(angleDelta(before,r.turretYaw))<=1.2/60+1e-9);
+ assert.ok(Math.abs(angleDelta(.4,r.yaw+r.turretYaw))>1.9);
+ for(let i=0;i<180;i++)step(r,{},1/60);
+ assert.ok(Math.abs(angleDelta(.4,r.yaw+r.turretYaw))<1e-8);
 });

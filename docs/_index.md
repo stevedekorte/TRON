@@ -432,3 +432,5 @@ Nonfatal Recognizer hits now play a dedicated 0.3-second synthesized armor impac
 - [x] Ground tanks detect unobstructed Clu within 45 m from any direction and use turret direction as well as hull direction for distant sight. Nonfatal bullet impacts trigger a five-second investigation toward the incoming shot; this clue never reveals the hidden shooter position or permits firing/radio without visual confirmation.
 
 - [x] Fix blueprint patrol stalls at corners: steering and pathfinding share swept clearance, waypoint advancement cannot cut blocked corners, and a valid route survives a failed replacement search. Radio updates trigger replanning; sightings too close to a wall receive a nearby clear approach point. Unreachable patrol destinations are replaced.
+
+- [x] Stabilize Clu turret heading in every view and enemy turret heading during hull turns. Manual aim and stabilization share one yaw motor limit (Clu 1.2 rad/s; enemies 1.3 rad/s). Hull disturbances can cause temporary aim error, recovered at the capped rate; no instantaneous compensation. F remains an explicit hull-forward/level command.

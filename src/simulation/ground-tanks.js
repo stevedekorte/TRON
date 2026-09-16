@@ -1,3 +1,4 @@
+import {stabilizeTurret} from './turret.js';
 import {raiseAlert} from './alertness.js';
 import {CARRIER} from '../game/carrier.js';
 import {clamp,angleDelta,config} from '../game/config.js';
@@ -78,6 +79,7 @@ export function reactToGroundHit(e,projectile,now){
 export function updateGroundTanks(run,dt,moveTank,cannonPose){
  const active=run.enemyTanks.filter(e=>e.state!=='destroyed');
  for(const e of active){
+  if(e.turretHeading==null)e.turretHeading=e.yaw+e.turretYaw;
   e.cooldown=Math.max(0,e.cooldown-dt);e.recoil=Math.max(0,e.recoil-dt*4);e.hit=Math.max(0,e.hit-dt*4);
   if(e.memory&&run.time-e.memory.seenAt>SENSORS.memorySeconds){e.memory=null;e.canSee=false;e.goal=null;}
   let goal=e.role==='patrol'&&!e.memory?patrolGoal(e):escortSlot(e.index,run.time+1);
@@ -120,8 +122,8 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   let aim=null;
   if(e.memory){const target=predict(e.memory,run.time);aim=intercept(cannonPose(e),{...target,y:2.3},{x:e.memory.vx,s:e.memory.vs,y:0});}
   const muzzle=cannonPose(e);
-  const desired=reacting?e.threatYaw:aim?-Math.atan2(aim.x-muzzle.x,aim.s-muzzle.s):e.yaw;
-  const relative=angleDelta(e.yaw,desired);e.turretYaw+=clamp(angleDelta(e.turretYaw,relative),-ESCORT.turretRate*dt,ESCORT.turretRate*dt);
+  const desired=reacting?e.threatYaw:aim?-Math.atan2(aim.x-muzzle.x,aim.s-muzzle.s):e.turretHeading;
+  e.turretHeading=desired;stabilizeTurret(e,desired,ESCORT.turretRate,dt);
   const pose=cannonPose(e);
   if(!aim||!e.canSee||run.time-e.memory.seenAt>.3||e.cooldown>0||Math.hypot(aim.x-e.x,aim.s-e.s)>ESCORT.fireRange)continue;
   const bearing=-Math.atan2(aim.x-pose.x,aim.s-pose.s);
