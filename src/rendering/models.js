@@ -77,7 +77,8 @@ export async function createTank() {
   const flash = new THREE.Mesh(new THREE.SphereGeometry(.36,12,8),glow(0xe0faff));
   flash.position.set(...TANK.muzzle.map((v,i)=>v-TANK.pivot[i]));
   flash.visible=false;flash.userData.breakupExclude=true; barrel.add(flash);
-  return {root,turret,barrel,flash,tracks:[],source:'arabinowitz'};
+  const turboTrim=[...new Set(meshes.filter(m=>m.material.name==='Wheels_Red_Emission').map(m=>m.material))];
+  return {root,turret,barrel,flash,tracks:[],turboTrim,source:'arabinowitz'};
 }
 
 const recognizerUrl = new URL('../../docs/models/tron_1982_recognizer.glb', import.meta.url).href;
@@ -167,11 +168,31 @@ export async function loadVehicles() {
   return results.map(r=>r.value);
 }
 
-// Reuse normalized geometry and materials; each escort has independent joints.
+// Share geometry, but isolate enemy materials from player turbo and tuning.
 export function cloneEnemyTank(source){
  const root=source.root.clone(true),mapping=new Map();
  function pair(a,b){mapping.set(a,b);a.children.forEach((c,i)=>pair(c,b.children[i]));}
  pair(source.root,root);
- root.traverse(o=>{if(o.material?.name==='White_Emission'){o.material=o.material.clone();o.material.color.setHex(0xff5343);o.material.emissive.setHex(0xa51e16);}});
+ const materials=new Map();
+ root.traverse(o=>{
+   if(!o.material)return;
+   const original=o.material;
+   if(!materials.has(original)){
+     const m=original.clone();m.onBeforeCompile=original.onBeforeCompile;
+     if(m.name.includes('Body_Black')){
+       m.color.setHex(m.name.startsWith('Upper')?0x192531:0x141e28);
+       m.emissive.setHex(0x101c2a);m.emissiveIntensity=.7;
+       m.specular.setHex(0x548092);m.shininess=32;
+     }else if(m.name.includes('Red_Emission')){
+       m.color.setHex(0xb13928);m.emissive.setHex(0x9a170b);m.emissiveIntensity=.3;
+     }else if(m.name==='White_Emission'){
+       m.color.setHex(0xff5343);m.emissive.setHex(0xa51e16);m.emissiveIntensity=.4;
+     }else if(m.name==='Wheels'){
+       m.emissive.setHex(0x21160a);m.emissiveIntensity=.5;
+     }
+     materials.set(original,m);
+   }
+   o.material=materials.get(original);
+ });
  return {root,turret:mapping.get(source.turret),barrel:mapping.get(source.barrel),flash:mapping.get(source.flash),tracks:[],source:source.source};
 }

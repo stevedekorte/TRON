@@ -1,7 +1,7 @@
 import {RECOGNIZER_SCALE,angleDelta,clamp} from '../game/config.js';
 import {lineOfSight,MAZE_LENGTH} from '../levels/maze.js';
 
-export const SEARCHLIGHT=Object.freeze({range:MAZE_LENGTH,scanRange:260,halfWidth:14,sweepPeriod:11,sweepAngle:.32,yawRate:.5,pitchRate:.4,lockAngle:.025,minimumAcquire:.25,trackSeconds:1.5,fadeSeconds:.8});
+export const SEARCHLIGHT=Object.freeze({range:MAZE_LENGTH,scanRange:260,halfWidth:14,sweepPeriod:11,sweepAngle:.32,yawRate:.5,pitchRate:.4,lockAngle:.025,minimumAcquire:.25,closeRange:120,fadeSeconds:.8});
 export function projectorOrigin(e){return {x:e.x-Math.sin(e.yaw)*3*RECOGNIZER_SCALE,y:e.y+7*RECOGNIZER_SCALE,s:e.s+Math.cos(e.yaw)*3*RECOGNIZER_SCALE};}
 export function scanAngles(e,time){
  const goal=e.goal||e.memory,base=goal?-Math.atan2(goal.x-e.x,goal.s-e.s):e.yaw;
@@ -30,7 +30,8 @@ export function updateSpotlight(e,now,dt){
  }
  e.scanBeam={yaw:beam.yaw,pitch:beam.pitch};
  if(e.targetGone||e.state==='destroyed'){e.spotlight=null;return;}
- if(beam.phase==='track'&&now-beam.confirmedAt>=SEARCHLIGHT.trackSeconds){beam.phase='fade';beam.fadeAt=now;}
+ const close=beam.target&&Math.hypot(beam.target.x-e.x,beam.target.s-e.s)<=SEARCHLIGHT.closeRange;
+ if(beam.phase==='track'&&(!beam.target||close)){beam.phase='fade';beam.fadeAt=now;}
  if(beam.phase==='fade'&&now-beam.fadeAt>=SEARCHLIGHT.fadeSeconds){e.spotlight=null;return;}
  const observed=beam.target;if(!observed)return;
  // Compensate for the sensor sampling interval using only the last visible velocity.
