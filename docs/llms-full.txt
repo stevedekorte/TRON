@@ -480,6 +480,8 @@ Clip categories are discovered from MP3 filenames in `docs/assets/music/Tron/03 
 - A pursuing Recognizer entering 100 m in 3D triggers gotcha; the encounter rearms beyond 140 m. Gotcha takes priority over new recognition cues while close.
 - Action changes may interrupt a track: fade out over 0.45 s before changing source, then fade in over 0.3 s. Clips never loop; death cancels pending changes and fades the current level into the end terminal's Only Solutions track.
 
+When pursuit ends without a replacement cue, music now fades to silence over 3 seconds (or the remaining clip duration if shorter). The final seconds of an unneeded clip also fade before its natural end. Reacquisition during this fade restores the current phrase smoothly. Cue-to-cue changes retain their quicker 0.45-second fade.
+
 
 ---
 
@@ -1518,3 +1520,5 @@ Recognition music: 83 simulation tests pass, including no cue before spotlight c
 ### Action music selection and fades — September 16
 
 86 unit/simulation tests pass. Filename-category tests cover additions, case matching, missing categories, repeat avoidance, pursuit state and close-range hysteresis. Browser `recognition-music.mjs` passed opening recognition → pursued → proximity-triggered gotcha, including measured fade-out before the source changes and fade-in afterward. Updated death-terminal regression passed end music and fresh-run restoration. Glob discovery is build-time for the static production site; future local files require publishing a new build to appear there.
+
+Quiet music transition: 86 unit/simulation tests pass. Chrome recognition-music check verifies a 3-second fade after all pursuers are removed, audible gain and continuing playback after 1 second, then zero gain and paused playback with no unwanted restart. Build passed.
