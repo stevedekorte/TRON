@@ -26,4 +26,5 @@ body.entering #turbo,body.entering #instruments,body.entering #survey{display:no
 
 body.detached .terminal-copy{font-size:clamp(22px,4vw,80px);line-height:.78}
 
-#game.mouse-gunner{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 15 15'%3E%3Ccircle cx='7.5' cy='7.5' r='3' fill='%23e5ffd8' stroke='%23051800' stroke-width='1.5'/%3E%3C/svg%3E") 7 7,crosshair}
+#aim-dot{position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;background:#e5ffd8;transform:translate(-50%,-50%)}
+#mouse-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);font:9px monospace;letter-spacing:1px}

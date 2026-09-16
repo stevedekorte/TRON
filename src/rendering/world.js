@@ -83,7 +83,7 @@ export function createWorld(scene) {
       float wash=.85+.15*sin(vSlab.x*.002-vSlab.z*.003);
       diffuseColor.rgb*=wash;`);
   };
-  scene.add(new THREE.Mesh(geometry,slabMaterial));
+  const slabs=new THREE.Mesh(geometry,slabMaterial);scene.add(slabs);
   const aerialView={value:0};
   const floorMaterial=new THREE.MeshBasicMaterial({color:0x2b4362});
   floorMaterial.onBeforeCompile=shader=>{
@@ -108,5 +108,5 @@ export function createWorld(scene) {
       diffuseColor.rgb=mix(diffuseColor.rgb*wash*visibility,vec3(.65,.76,.95),grid*outside*mix(.95,.045,aerialView)*gridFade);`);
   };
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),floorMaterial);floor.rotation.x=-Math.PI/2;floor.position.y=-.06;scene.add(floor);
-  return {floor,aerialView};
+  return {floor,slabs,aerialView};
 }
