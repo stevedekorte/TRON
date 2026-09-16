@@ -1,5 +1,5 @@
 import {GUNNER,config,angleDelta,clamp} from '../game/config.js';
-export const MOUSE_AIM=Object.freeze({slowdownSeconds:.12});
+export const MOUSE_AIM=Object.freeze({slowdownSeconds:.22,acceleration:6});
 export function updateMouseAim(run,input,scale){
  if(!run.gunner||run.crushed||input.turret||input.aimPitch||run.turretCentering||run.gunnerLeveling){run.mouseAim=null;return;}
  const heading=run.yaw+run.turretYaw;
@@ -8,4 +8,7 @@ export function updateMouseAim(run,input,scale){
  const yawError=angleDelta(run.mouseAim.yaw,heading),pitchError=run.mouseAim.pitch-run.aimPitch;
  return {yawError,pitchError,yaw:clamp(yawError/(config.turretSpeed*scale*MOUSE_AIM.slowdownSeconds),-1,1),pitch:clamp(pitchError/(GUNNER.pitchRate*scale*MOUSE_AIM.slowdownSeconds),-1,1)};
 }
-export function limitMouseStep(step,error){return step*error>=0?Math.sign(step)*Math.min(Math.abs(step),Math.abs(error)):step;}
+// Normalized motor command slew; actual angular acceleration scales with zoom/rate.
+export function accelerateMouseAim(current,target,dt){
+ return current+clamp(target-current,-MOUSE_AIM.acceleration*dt,MOUSE_AIM.acceleration*dt);
+}

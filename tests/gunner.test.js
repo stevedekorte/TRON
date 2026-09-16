@@ -120,3 +120,22 @@ test('keyboard and mouse cannot aim below the tank base',()=>{
  for(let i=0;i<120;i++)step(r,{mouseTarget:{yaw:0,pitch:-.6}},1/60);
  assert.equal(r.aimPitch,0);assert.equal(r.mouseAim.pitch,0);
 });
+
+
+test('mouse tracking bounds acceleration and speed through target jumps and reversals',()=>{
+ for(const zoom of [0,1,2,3]){
+  const r=fixture();r.gunnerZoom=zoom;r.aimPitch=.6;
+  const scale=gunnerAimScale(zoom),dt=1/60;let lastYawRate=0,lastPitchRate=0;
+  for(let i=0;i<300;i++){
+   const yaw=r.turretYaw,pitch=r.aimPitch;
+   const target={yaw:i<40?-1:i<95?.8:-.2,pitch:i<40?1:i<95?.3:.6};
+   step(r,{mouseTarget:target},dt);
+   const yawRate=angleDelta(yaw,r.turretYaw)/dt,pitchRate=(r.aimPitch-pitch)/dt;
+   assert.ok(Math.abs(yawRate)<=1.2*scale+1e-8);
+   assert.ok(Math.abs(pitchRate)<=GUNNER.pitchRate*scale+1e-8);
+   assert.ok(Math.abs(yawRate-lastYawRate)<=6*1.2*scale*dt+1e-8);
+   assert.ok(Math.abs(pitchRate-lastPitchRate)<=6*GUNNER.pitchRate*scale*dt+1e-8);
+   lastYawRate=yawRate;lastPitchRate=pitchRate;
+  }
+ }
+});
