@@ -406,3 +406,5 @@ Recognition music: 83 simulation tests pass, including no cue before spotlight c
 Quiet music transition: 86 unit/simulation tests pass. Chrome recognition-music check verifies a 3-second fade after all pursuers are removed, audible gain and continuing playback after 1 second, then zero gain and paused playback with no unwanted restart. Build passed.
 
 Gunner transitions: Chrome `tests/gunner-transition.mjs` passed entry/exit position and FOV interpolation, measured intermediate quaternion rotation, sight fading, mid-transition reversal and reduced-motion bypass. Existing `tests/gunner.mjs` controls regression also passed.
+
+End cursor: Chrome death-terminal check verifies visible cursor and `terminal-blink` animation on the end screen, alongside music and restart behavior.

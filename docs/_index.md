@@ -470,3 +470,5 @@ Clip categories are discovered from MP3 filenames in `docs/assets/music/Tron/03 
 When pursuit ends without a replacement cue, music now fades to silence over 3 seconds (or the remaining clip duration if shorter). The final seconds of an unneeded clip also fade before its natural end. Reacquisition during this fade restores the current phrase smoothly. Cue-to-cue changes retain their quicker 0.45-second fade.
 
 P now blends camera position, quaternion orientation and field of view over 0.75 seconds in both directions. The complete sight fades with the transition; the exterior tank is hidden as the camera enters its volume. The transition follows moving Clu, restarts from the current camera pose on reversal, and is skipped with reduced-motion preference.
+
+The end terminal now retains the same blinking blue block cursor as the opening screen; reduced-motion preference keeps it steady.
