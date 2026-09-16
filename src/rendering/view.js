@@ -68,6 +68,7 @@ export class View {
       void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;float n=fract(sin(dot(vUv+fract(time),vec2(12.9898,78.233)))*43758.5453)-.5;
       float vignette=1.-.36*pow(length((vUv-.5)*1.35),2.); gl_FragColor=vec4(c*vignette+n*.016,1.);}`,
     }); this.composer.addPass(this.film);
+    this.followPosition=new THREE.Vector3();
     this.look = new THREE.Vector3(); this.desired = new THREE.Vector3(); this.lookDesired = new THREE.Vector3(); this.projected = new THREE.Vector3();
     this.elapsed = 0; this.reducedMotion = false; this.lowQuality = false; this.freshCamera = true;
     this.resize();
@@ -193,7 +194,10 @@ export class View {
       this.lookDesired.lerp(new THREE.Vector3(x,0,-s),aerialMix);
     }
     const blend = this.freshCamera ? 1 : 1 - Math.exp(-dt * (this.reducedMotion ? 13 : config.cameraLag));
-    this.camera.position.lerp(this.desired, blend); this.look.lerp(this.lookDesired, blend);
+    // Keep chase smoothing independent of the displayed gunner/transition camera.
+    // Feeding the blended position back here made exit pitch corrections oscillate.
+    this.followPosition.lerp(this.desired,blend);
+    this.camera.position.copy(this.followPosition);this.look.lerp(this.lookDesired,blend);
     if (!preview && aerialMix===0) {
       const anchor={x,s,y:3.5},end={x:this.camera.position.x,s:-this.camera.position.z,y:this.camera.position.y};
       const collision=wallIntersection(anchor,end,1.2);
@@ -222,6 +226,7 @@ export class View {
       const length=Math.hypot(this.look.x-this.camera.position.x,this.look.z-this.camera.position.z);
       this.camera.lookAt(this.look.x,this.camera.position.y+Math.tan(pitch)*length,this.look.z);
     } else this.camera.lookAt(this.look);
+    this.followPosition.copy(this.camera.position);
     this.freshCamera = false;
     if(gunner){
       const pose=cannonPose({x,s,yaw,turretYaw:this.tank.turret.rotation.y});
