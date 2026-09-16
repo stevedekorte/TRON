@@ -236,7 +236,9 @@ export class View {
     this.gunScreen=null;
     if(gunner&&this.mouseLook){
       this.camera.updateMatrixWorld();
-      const pose=cannonPose(run),d=new THREE.Vector3(-Math.sin(pose.yaw)*Math.cos(run.aimPitch),Math.sin(run.aimPitch),-Math.cos(pose.yaw)*Math.cos(run.aimPitch));
+      const heading=yaw+this.tank.turret.rotation.y;
+      const pitch=(previous.aimPitch??run.aimPitch)+(run.aimPitch-(previous.aimPitch??run.aimPitch))*alpha;
+      const d=new THREE.Vector3(-Math.sin(heading)*Math.cos(pitch),Math.sin(pitch),-Math.cos(heading)*Math.cos(pitch));
       this.gunScreen=d.multiplyScalar(1000).add(this.camera.position).project(this.camera);
       updateMouseTarget.call(this,run);
     }

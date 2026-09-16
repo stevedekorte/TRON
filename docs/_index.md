@@ -446,3 +446,7 @@ F centers and levels, then locks to the hull until manual aiming. Driving, firin
 The whole film gun sight follows the actual barrel as one unit. Enemy tanks have isolated materials with a restrained blue-gray body fill and red trim so low-angle views retain their silhouette. Clu's red tread trim eases into a 2 Hz emissive pulse during turbo and fades back afterward; reduced-motion mode uses steady glow. Enemy materials are independent of this effect.
 
 Confirmed Recognizer spotlights now remain on through pursuit until the observed tank is within 120 m horizontally, then fade over 0.8 s. Loss of visual observation also fades the beam without following hidden movement. The former 1.5-second tracking timeout has been removed.
+
+### Mouse tracking smoothness — September 16
+
+The full sight now uses the same interpolated hull/turret pose and elevation as rendering, rather than stepping through raw 60 Hz states. Mouse tracking has an explicit normalized acceleration bound of 6/s and a 0.22-second proportional slowdown near its target. At 1× this limits mouse-command yaw acceleration to 7.2 rad/s² and pitch acceleration to 4.8 rad/s²; both scale with zoom. The shared physical yaw speed cap remains in place for hull compensation. Mechanical elevation stops still clamp at their limits.

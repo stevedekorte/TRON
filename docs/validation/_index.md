@@ -386,3 +386,7 @@ All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual
 ### Visibility, turbo and spotlight checks — September 16
 
 82 simulation tests pass, including sustained distant spotlight tracking, close-range fading and lost-observation behavior. Chrome checks on isolated Vite port 5174 passed: mouse aiming with the complete sight, `tank-visibility.mjs` material isolation plus live turbo pulse/return to normal, and `spotlight-acquisition.mjs` sustained tracking, pause and close-range fade. Reviewed low-angle enemy and turbo-trim renders under representative lighting; in-game brightness remains subject to user review.
+
+### Smooth mouse tracking — September 16
+
+83 simulation tests pass. Added measured angular velocity/acceleration checks at all four zoom levels with sudden target changes and reversals on a stationary hull, including arrival at the target. Chrome `tests/mouse-aim.mjs` passed with interpolated full-sight rendering, target convergence, firing, F lock and pointer lifecycle. Human smoothness assessment remains necessary; numerical limits alone do not establish feel.

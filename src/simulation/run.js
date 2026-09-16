@@ -1,4 +1,4 @@
-import {updateMouseAim,limitMouseStep} from './mouse-aim.js';
+import {updateMouseAim,accelerateMouseAim} from './mouse-aim.js';
 import {stabilizeTurret} from './turret.js';
 import {createGroundTanks,updateGroundTanks,reactToGroundHit} from './ground-tanks.js';
 import {intercept} from './intercept.js';
@@ -161,12 +161,11 @@ export function step(run,input,dt) {
   let yawMotion=yawCommand,pitchMotion=pitchCommand;
   if(run.gunner){
     const ease=(current,target)=>{const value=damp(current||0,target,target?GUNNER.aimResponse:GUNNER.aimBrakeResponse,dt);return !target&&Math.abs(value)<.0001?0:value;};
-    run.gunnerYawMotion=ease(run.gunnerYawMotion,yawCommand);
-    run.gunnerPitchMotion=ease(run.gunnerPitchMotion,pitchCommand);
+    run.gunnerYawMotion=mouseAim?accelerateMouseAim(run.gunnerYawMotion,yawCommand,dt):ease(run.gunnerYawMotion,yawCommand);
+    run.gunnerPitchMotion=mouseAim?accelerateMouseAim(run.gunnerPitchMotion,pitchCommand,dt):ease(run.gunnerPitchMotion,pitchCommand);
     yawMotion=run.gunnerYawMotion;pitchMotion=run.gunnerPitchMotion;
   }else{run.gunnerYawMotion=0;run.gunnerPitchMotion=0;}
   let yawStep=yawMotion*config.turretSpeed*dt*aimScale;
-  if(mouseAim)yawStep=limitMouseStep(yawStep,mouseAim.yawError);
   const worldHeading=hullYawBefore+yawBefore;
   if(run.turretHeading==null||run.crushed)run.turretHeading=worldHeading;
   // Input steers from the actual sight, avoiding queued rotation when the motor saturates.
@@ -176,7 +175,6 @@ export function step(run,input,dt) {
   }else run.turretYaw=angleDelta(0,yawBefore-yawStep);
   if(run.gunner||leveling){
     let pitchStep=pitchMotion*GUNNER.pitchRate*dt*aimScale;
-    if(mouseAim)pitchStep=limitMouseStep(pitchStep,mouseAim.pitchError);
     if(leveling&&(pitchBefore===0||pitchBefore*pitchStep<0&&Math.abs(pitchStep)>=Math.abs(pitchBefore))){
       run.aimPitch=0;run.gunnerLeveling=false;run.gunnerPitchMotion=0;
     }else{
