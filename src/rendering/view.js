@@ -17,6 +17,7 @@ import { config, GUNNER, RECOGNIZER_SCALE, angleDelta, gunnerAimScale } from '..
 import { RECOGNIZER_STARTS, wallIntersection, lineOfSight } from '../levels/maze.js';
 
 const AERIAL_CAMERA=Object.freeze({transitionSeconds:1.2,height:600,distance:Math.hypot(180,320)});
+const GUNNER_TRANSITION_SECONDS=.75;
 const TURBO_GLOW=Object.freeze({base:1.8,pulse:1.2,hz:2,response:10});
 const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
 
@@ -79,7 +80,7 @@ export class View {
     this.composer.setSize(w * config.renderScale, h * config.renderScale);
   }
 
-  reset() { this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
+  reset() { this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
 
   event(event) {
     if (!['hit', 'destroyed'].includes(event.type)) return;
@@ -101,6 +102,15 @@ export class View {
     else this.aerialBlend+=THREE.MathUtils.clamp(aerialTarget-this.aerialBlend,-dt/AERIAL_CAMERA.transitionSeconds,dt/AERIAL_CAMERA.transitionSeconds);
     const aerialMix=THREE.MathUtils.smoothstep(this.aerialBlend,0,1);
     const preview = mode === 'ready',gunner=run.gunner&&!run.crushed&&!preview&&this.opening==null;
+    if(gunner!==!!this.wasGunner){
+      this.gunnerTransition=!this.reducedMotion&&!preview&&!run.crushed?{
+        position:this.camera.position.clone(),rotation:this.camera.quaternion.clone(),fov:this.camera.fov,
+        x:run.x,s:run.s,opacity:this.gunnerOpacity||0,elapsed:0
+      }:null;
+      this.wasGunner=gunner;
+    }
+    if(preview||run.crushed||this.reducedMotion)this.gunnerTransition=null;
+
     if(this.carrier){this.carrier.visible=!preview;updateCarrier(this.carrier,run.time);}
     const x = previous.x + (run.x - previous.x) * alpha;
     const s = previous.s + (run.s - previous.s) * alpha;
@@ -223,7 +233,22 @@ export class View {
       this.camera.lookAt(pose.x-Math.sin(aim.yaw)*Math.cos(aim.pitch)*100,pose.y+Math.sin(aim.pitch)*100,-pose.s-Math.cos(aim.yaw)*Math.cos(aim.pitch)*100);
     }
     this.camera.far=12000;
-    this.camera.fov = gunner?GUNNER.fovs[run.gunnerZoom]:this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov); this.camera.updateProjectionMatrix();
+    this.camera.fov = gunner?GUNNER.fovs[run.gunnerZoom]:this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov);
+    this.gunnerOpacity=gunner?1:0;
+    if(this.gunnerTransition){
+      const transition=this.gunnerTransition;
+      transition.elapsed+=dt;
+      const t=THREE.MathUtils.smootherstep(Math.min(1,transition.elapsed/GUNNER_TRANSITION_SECONDS),0,1);
+      const origin=transition.position.clone().add(new THREE.Vector3(x-transition.x,0,-s+transition.s));
+      this.camera.position.lerpVectors(origin,this.camera.position,t);
+      this.camera.quaternion.slerpQuaternions(transition.rotation,this.camera.quaternion.clone(),t);
+      this.camera.fov=THREE.MathUtils.lerp(transition.fov,this.camera.fov,t);
+      this.gunnerOpacity=THREE.MathUtils.lerp(transition.opacity,gunner?1:0,t);
+      // Hide the exterior model only as the camera enters its volume.
+      this.tank.root.visible=!run.crushed&&(Math.hypot(this.camera.position.x-x,this.camera.position.z+s)>7||this.camera.position.y>5);
+      if(t===1){this.gunnerTransition=null;if(gunner)this.tank.root.visible=false;}
+    }
+    this.camera.updateProjectionMatrix();
     // Apply only to the final camera orientation: no drift in follow smoothing or aim.
     // Simulation time freezes the vibration on pause; impact decays in ~0.4 seconds.
     if(!preview&&!this.referenceCamera&&!this.reducedMotion){
@@ -248,7 +273,7 @@ export class View {
     this.film.enabled = !this.lowQuality; this.film.uniforms.time.value = this.elapsed;
     this.searchlights.update(run.recognizers,run.time,this.camera,mode==='paused'?0:dt,!preview);
     const muzzleAge=(1-run.recoil)/4;
-    this.muzzleFlash.visible=!gunner&&!run.crushed&&!preview&&muzzleAge<.17;
+    this.muzzleFlash.visible=!gunner&&!this.gunnerTransition&&!run.crushed&&!preview&&muzzleAge<.17;
     if(this.muzzleFlash.visible){
       this.muzzleFlash.material.uniforms.age.value=muzzleAge;
       this.muzzleFlash.material.uniforms.seed.value=run.shots*2.399;
