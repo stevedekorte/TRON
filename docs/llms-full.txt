@@ -488,6 +488,12 @@ The end terminal now retains the same blinking blue block cursor as the opening 
 
 The chase camera now keeps an independent smoothed position while gunner mode or its transition controls the displayed camera. This removes feedback from the blend into chase height/pitch correction on exit.
 
+## Closer carrier and randomized patrols — September 16
+
+The carrier route is nearer to Clu: forward offset is halved and left offset reduced from 9,000 to 3,000 meters. Two tanks escort it below, and two Recognizers follow flanking airborne slots. Air escorts use normal sight/radio rules to leave formation for contact, returning when their memory expires. The two opening pursuers remain separate.
+
+Three maze tanks and one maze Recognizer receive fresh positions, headings and route seeds each game. Ground starts require wall clearance and mutual spacing. `createRun(seed)` reproduces a run for diagnostics; ordinary starts and resets generate a new seed. Stalled ground patrols choose a new destination after five seconds.
+
 
 ---
 
@@ -573,7 +579,7 @@ The user supplied `docs/references/videos/1982 tron clu scene.mp4` (187.48 s, 44
 
 | Runtime sample | Local video in/out | Processing |
 | --- | --- | --- |
-| tank-drive.wav | 10.75–11.45 s | 65 Hz high-pass, 650 Hz low-pass, −18 dB notch at 330 Hz (Q=4), 120 ms loop crossfade |
+| tank-drive.wav | 10.99–11.37 s | Steady interior cut, 65 Hz high-pass, 650 Hz low-pass, −18 dB notch at 330 Hz (Q=4), shared stereo envelope leveling and 100 ms loop crossfade; rebuild with `scripts/smooth-tank-loop.py` |
 | recognizer-flight.wav | 124–126 s | 45 Hz high-pass, 6.5 kHz low-pass, 120 ms loop crossfade |
 | recognizer-approach.wav | 126.20–128.40 s | Same filters/crossfade; mixed into pursuit and attack |
 | cannon.wav | 121.38–121.76 s | 65 Hz high-pass, 12 kHz low-pass, 3 ms attack/70 ms release fades |
@@ -1534,3 +1540,9 @@ Gunner transitions: Chrome `tests/gunner-transition.mjs` passed entry/exit posit
 End cursor: Chrome death-terminal check verifies visible cursor and `terminal-blink` animation on the end screen, alongside music and restart behavior.
 
 Gunner exit correction: Chrome transition check samples height and quaternion-derived pitch through exit and verifies no reversals beyond 0.01 total excess travel in the stationary fixture. Entry, exit, rapid reversal and reduced-motion checks pass. Aerial transition regression also passed.
+
+## September 16 — carrier escorts, patrol variation and engine loop
+
+- `npm test`: 88 tests passed, including carrier air escort following/return after stale contact, seed reproduction, varying patrol positions, and two-minute blueprint patrol traversal.
+- `TRON_URL=http://127.0.0.1:5174 node tests/spotlight-acquisition.mjs`: Chrome passed; five Recognizers and five enemy tanks render, all three maze ground patrols move, aircraft audio sources exist, and spotlight acquisition/tracking/fade works without page errors.
+- Engine-loop inspection found a louder boundary region (40 ms mono RMS approximately 0.21–0.24 versus 0.12–0.18 in the interior). A dedicated rebuild takes the steadier interior, gently levels its shared stereo envelope and crossfades the boundary. New stereo WAV is 0.28 seconds, RMS 0.160, peak 0.613. Subjective listening approval remains with the user; no claim of an auditory check.

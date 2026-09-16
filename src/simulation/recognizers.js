@@ -1,18 +1,22 @@
+import {CARRIER,airEscortSlot} from '../game/carrier.js';
+import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
 import {beginSpotlight,updateSpotlight,spotlightOnTarget,SEARCHLIGHT} from './spotlight.js';
 import {raiseAlert,searchlightStrength} from './alertness.js';
 import {formationTarget} from './formation.js';
 import {retireTarget} from './target-memory.js';
 import {advanceFlight,FLIGHT} from './flight.js';
 import {beginCrush,advanceCrush,resolveCrush,CRUSH,stompTarget,stompApproach} from './crush.js';
-import { OPEN_CELLS, MAZE_LENGTH, RECOGNIZER_STARTS, WALL_HEIGHT, freePosition, lineOfSight } from '../levels/maze.js';
+import { OPEN_CELLS, MAZE_LENGTH, WALL_HEIGHT, freePosition, lineOfSight } from '../levels/maze.js';
 import { config, RECOGNIZER_SCALE, angleDelta, clamp } from '../game/config.js';
 
 export const SENSORS = Object.freeze({range:MAZE_LENGTH,groundNearRange:45,fov:Math.PI*.82,interval:.2,radioRange:1000*.3048,radioDelay:.45,radioInterval:1.4,memorySeconds:38,predictionSeconds:5});
 function random(e) {e.seed=(Math.imul(e.seed,1664525)+1013904223)>>>0;return e.seed/4294967296;}
-export function createRecognizers() {
-  return RECOGNIZER_STARTS.map((p,id)=>({...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:-Math.atan2(-p.x,-p.s),
-    alertUntil:0,state:'wander',health:3,hit:0,vx:0,vs:0,vy:0,seed:1982+id*199,
-    targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0}));
+export function createRecognizers(rng=Math.random) {
+  return RECOGNIZER_STARTS.map((start,id)=>{
+    const p=start.role==='patrol'?{...start,...OPEN_CELLS[Math.floor(rng()*OPEN_CELLS.length)]}:start;
+    return {...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s),
+    alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.role==='escort'?CARRIER.speed:0,vs:0,vy:0,seed:Math.floor(rng()*4294967296),
+    targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0};});
 }
 export function canSeeClu(e,clu) {
   if(clu.crushed)return false;
@@ -97,6 +101,8 @@ export function navigate(e,now,dt,others) {
     if(!e.canSee&&(Math.hypot(e.goal.x-e.x,e.goal.s-e.s)<24||now>e.goalUntil||age>16&&e.state==='investigate')) {
       e.state='search';e.goal=chooseSearch(e,now);e.goalUntil=now+8;
     }
+  } else if(e.role==='escort'){
+    e.state='escort';e.goal=airEscortSlot(e.escortIndex,now+2);e.goalUntil=now+3;
   } else {
     e.state='wander';
     if(!e.goal||Math.hypot(e.goal.x-e.x,e.goal.s-e.s)<25||now>e.goalUntil) {
@@ -136,7 +142,7 @@ export function navigate(e,now,dt,others) {
   const desired=-Math.atan2(headingX,headingS);
   if(!settling&&!yielding)e.yaw+=clamp(angleDelta(e.yaw,desired),-dt*FLIGHT.turnRate,dt*FLIGHT.turnRate);
   const alignment=Math.max(0,Math.cos(angleDelta(e.yaw,desired)));
-  const cruise=config.enemySpeed*(e.state==='pursue'?1.15:e.state==='wander'?.57:.7)*(formation?.speedScale??1);
+  const cruise=e.state==='escort'?CARRIER.speed+8:config.enemySpeed*(e.state==='pursue'?1.15:e.state==='wander'?.57:.7)*(formation?.speedScale??1);
   const targetSpeed=Math.min(cruise,distance*.6)*alignment*alignment;
   const speed=Math.hypot(e.vx,e.vs),forward=-Math.sin(e.yaw)*e.vx+Math.cos(e.yaw)*e.vs;
   const braking=clamp((speed-targetSpeed)/8,0,1);

@@ -6,21 +6,21 @@ import {OPEN_CELLS,freePosition,wallIntersection} from '../levels/maze.js';
 import {SENSORS,predict} from './recognizers.js';
 import {formationTarget} from './formation.js';
 import {intercept} from './intercept.js';
-export const ESCORT={count:8,turnRate:.8,turretRate:1.3,fireRange:340,fireInterval:1.8,spacing:38,damageAlertSeconds:5,damageProbeDistance:80};
-export const GROUND_PATROL={count:3};
+export const ESCORT={count:2,turnRate:.8,turretRate:1.3,fireRange:340,fireInterval:1.8,spacing:38,damageAlertSeconds:5,damageProbeDistance:80};
+export const GROUND_PATROL={count:3,stuckSeconds:5};
 export const GROUND_TANK_COUNT=ESCORT.count+GROUND_PATROL.count;
 const patrolCells=OPEN_CELLS.filter(p=>freePosition(p.x,p.s,config.tankRadius+1)&&wallIntersection({...p,y:2},{...p,y:2},config.tankRadius+.5)===null);
-export function escortSlot(index,time){return {x:CARRIER.startX+CARRIER.speed*time+(index%2?100:-100),s:CARRIER.s+(index-3.5)*ESCORT.spacing};}
-export function createGroundTanks(){
+export function escortSlot(index,time){return {x:CARRIER.startX+CARRIER.speed*time+(index%2?100:-100),s:CARRIER.s+(index-(ESCORT.count-1)/2)*ESCORT.spacing};}
+export function createGroundTanks(random=Math.random){
  const starts=[];
  for(let i=0;i<GROUND_PATROL.count;i++){
-  const target=patrolCells[Math.floor((i+.5)*patrolCells.length/GROUND_PATROL.count)];
-  const p=patrolCells.find(p=>Math.hypot(p.x-target.x,p.s-target.s)<60&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30))||target;
+  const candidates=patrolCells.filter(p=>starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
+  const p=candidates[Math.floor(random()*candidates.length)];
   starts.push(p);
  }
  return Array.from({length:GROUND_TANK_COUNT},(_,index)=>{
   const patrol=index>=ESCORT.count,position=patrol?starts[index-ESCORT.count]:escortSlot(index,0),speed=patrol?0:Math.min(CARRIER.speed,config.maxSpeed);
-  return {...position,index,id:100+index,kind:'ground',role:patrol?'patrol':'escort',patrolSeed:1982+index,patrolGoal:null,alertUntil:0,y:3.8,yaw:-Math.PI/2,turretYaw:0,speed,vx:speed,vs:0,vy:0,state:patrol?'patrol':'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]};
+  return {...position,index,id:100+index,kind:'ground',role:patrol?'patrol':'escort',patrolSeed:Math.floor(random()*4294967296),patrolGoal:null,alertUntil:0,y:3.8,yaw:patrol?random()*Math.PI*2:-Math.PI/2,turretYaw:0,speed,vx:speed,vs:0,vy:0,state:patrol?'patrol':'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]};
  });
 }
 function patrolGoal(e){
@@ -119,6 +119,10 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<config.tankRadius*2)||!run.crushed&&Math.hypot(run.x-e.x,run.s-e.s)<config.tankRadius*2){e.x=x;e.s=s;e.speed=0;}
   e.vx=(e.x-x)/dt;e.vs=(e.s-s)/dt;
   if(Math.hypot(e.vx,e.vs)<e.speed*.1)e.speed=0;
+  if(e.role==='patrol'&&!e.memory){
+   e.stalledSeconds=Math.hypot(e.vx,e.vs)<.5?(e.stalledSeconds||0)+dt:0;
+   if(e.stalledSeconds>GROUND_PATROL.stuckSeconds){e.patrolGoal=null;e.path=[];e.nextRoute=0;e.stalledSeconds=0;}
+  }
   let aim=null;
   if(e.memory){const target=predict(e.memory,run.time);aim=intercept(cannonPose(e),{...target,y:2.3},{x:e.memory.vx,s:e.memory.vs,y:0});}
   const muzzle=cannonPose(e);

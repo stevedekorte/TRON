@@ -77,7 +77,7 @@ The user supplied `docs/references/videos/1982 tron clu scene.mp4` (187.48 s, 44
 
 | Runtime sample | Local video in/out | Processing |
 | --- | --- | --- |
-| tank-drive.wav | 10.75–11.45 s | 65 Hz high-pass, 650 Hz low-pass, −18 dB notch at 330 Hz (Q=4), 120 ms loop crossfade |
+| tank-drive.wav | 10.99–11.37 s | Steady interior cut, 65 Hz high-pass, 650 Hz low-pass, −18 dB notch at 330 Hz (Q=4), shared stereo envelope leveling and 100 ms loop crossfade; rebuild with `scripts/smooth-tank-loop.py` |
 | recognizer-flight.wav | 124–126 s | 45 Hz high-pass, 6.5 kHz low-pass, 120 ms loop crossfade |
 | recognizer-approach.wav | 126.20–128.40 s | Same filters/crossfade; mixed into pursuit and attack |
 | cannon.wav | 121.38–121.76 s | 65 Hz high-pass, 12 kHz low-pass, 3 ms attack/70 ms release fades |

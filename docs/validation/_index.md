@@ -410,3 +410,9 @@ Gunner transitions: Chrome `tests/gunner-transition.mjs` passed entry/exit posit
 End cursor: Chrome death-terminal check verifies visible cursor and `terminal-blink` animation on the end screen, alongside music and restart behavior.
 
 Gunner exit correction: Chrome transition check samples height and quaternion-derived pitch through exit and verifies no reversals beyond 0.01 total excess travel in the stationary fixture. Entry, exit, rapid reversal and reduced-motion checks pass. Aerial transition regression also passed.
+
+## September 16 — carrier escorts, patrol variation and engine loop
+
+- `npm test`: 88 tests passed, including carrier air escort following/return after stale contact, seed reproduction, varying patrol positions, and two-minute blueprint patrol traversal.
+- `TRON_URL=http://127.0.0.1:5174 node tests/spotlight-acquisition.mjs`: Chrome passed; five Recognizers and five enemy tanks render, all three maze ground patrols move, aircraft audio sources exist, and spotlight acquisition/tracking/fade works without page errors.
+- Engine-loop inspection found a louder boundary region (40 ms mono RMS approximately 0.21–0.24 versus 0.12–0.18 in the interior). A dedicated rebuild takes the steadier interior, gently levels its shared stereo envelope and crossfades the boundary. New stereo WAV is 0.28 seconds, RMS 0.160, peak 0.613. Subjective listening approval remains with the user; no claim of an auditory check.

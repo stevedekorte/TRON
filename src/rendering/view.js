@@ -1,3 +1,4 @@
+import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
 import {updateMouseTarget} from './mouse-target.js';
 import {cannonPose} from '../simulation/run.js';
 import {GROUND_TANK_COUNT} from '../simulation/ground-tanks.js';
@@ -14,7 +15,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createWorld } from './world.js';
 import { createRecognizer,cloneEnemyTank } from './models.js';
 import { config, GUNNER, RECOGNIZER_SCALE, angleDelta, gunnerAimScale } from '../game/config.js';
-import { RECOGNIZER_STARTS, wallIntersection, lineOfSight } from '../levels/maze.js';
+import { wallIntersection, lineOfSight } from '../levels/maze.js';
 
 const AERIAL_CAMERA=Object.freeze({transitionSeconds:1.2,height:600,distance:Math.hypot(180,320)});
 const GUNNER_TRANSITION_SECONDS=.75;
