@@ -378,3 +378,7 @@ Reproduced a blueprint patrol stopping permanently near (138, -252) after its st
 ## Turret stabilization motor limit — September 16
 
 All 77 simulation tests passed. Coverage includes all Clu views and zoom, manual aim plus hull compensation within a single relative-to-hull motor speed budget, recovery after saturation, idle enemy turret world-heading hold, and abrupt externally imposed yaw changes including angle wrap and zero dt. The gunner Chrome suite passed for aiming, stabilization, zoom, F centering, firing, pause and exit. World-space motion caused by the hull itself is distinct from the turret motor: if the hull outruns compensation, aim drifts instead of exceeding motor speed. Production build passed.
+
+### Mouse gunner verification — September 16
+
+`npm test`: 78 passing, including mouse-target convergence at all four zoom levels, yaw/pitch rate limits, hull disturbance, keyboard override and view exit. Chrome headless on isolated Vite port 5174: `tests/gunner.mjs` and `tests/mouse-aim.mjs` passed. The latter verifies real pointer-lock acquisition/release, relative movement delivered through the input listener, marker visibility, convergence, firing, F override, lock-loss pause, recapture and aerial exit. Human mouse sensitivity/feel remains for playtesting.
