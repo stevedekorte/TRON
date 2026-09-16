@@ -398,3 +398,7 @@ End-screen track: Chrome death-terminal check passed for continued gameplay fade
 Opening clip update: Chrome death-terminal check verifies restart selects “1 recognized 1.mp3” with looping disabled; terminal playback remains Only Solutions.
 
 Recognition music: 83 simulation tests pass, including no cue before spotlight confirmation and one cue through continued tracking. Chrome `tests/recognition-music.mjs` passed: an actual new sighting selects a different recognition clip and starts playback after the one-shot opener.
+
+### Action music selection and fades — September 16
+
+86 unit/simulation tests pass. Filename-category tests cover additions, case matching, missing categories, repeat avoidance, pursuit state and close-range hysteresis. Browser `recognition-music.mjs` passed opening recognition → pursued → proximity-triggered gotcha, including measured fade-out before the source changes and fade-in afterward. Updated death-terminal regression passed end music and fresh-run restoration. Glob discovery is build-time for the static production site; future local files require publishing a new build to appear there.

@@ -39,6 +39,7 @@ export function perceive(e,clu,now) {
   e.nextSense=now+SENSORS.interval;
   const visible=canSeeClu(e,clu),searching=e.kind!=='ground'&&(e.spotlight?.phase==='acquire'||!e.spotlight&&searchlightStrength(e,now)>0);
   const observation=visible?{x:clu.x,s:clu.s,vx:-Math.sin(clu.yaw)*clu.speed,vs:Math.cos(clu.yaw)*clu.speed,seenAt:now,source:e.id}:null;
+  const previouslyVisible=e.canSee;
   e.canSee=false;
   if(searching){
     if(!visible){if(e.spotlight?.phase==='acquire'){e.spotlight.phase='fade';e.spotlight.fadeAt=now;e.spotlight.target=null;}return;}
@@ -51,6 +52,7 @@ export function perceive(e,clu,now) {
   if(e.spotlight?.phase==='fade'&&e.spotlight.confirmedAt==null)return;
   e.canSee=visible;
   if(visible){
+    if(!previouslyVisible&&e.kind!=='ground')clu.events?.push({type:'recognized',id:e.id});
     if(e.spotlight)e.spotlight.target=observation;
     remember(e,observation,now);
   }else if(e.spotlight){e.spotlight.target=null;}

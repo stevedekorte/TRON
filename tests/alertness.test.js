@@ -25,7 +25,7 @@ function spotlightEncounter(){
 }
 test('searcher must illuminate Clu before pursuit and radio, then tracks and fades',()=>{
  const r=spotlightEncounter(),e=r.recognizers[0],receiver=r.enemyTanks[0];
- updateRecognizers(r,1/60);assert.equal(e.spotlight.phase,'acquire');assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.equal(r.radio.length,0);
+ updateRecognizers(r,1/60);assert.equal(e.spotlight.phase,'acquire');assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.equal(r.radio.length,0);assert.equal(r.events.filter(e=>e.type==='recognized').length,0);
  const yaw=e.spotlight.yaw;r.time+=1/60;updateRecognizers(r,1/60);
  assert.ok(Math.abs(e.spotlight.yaw-yaw)<=SEARCHLIGHT.yawRate/60+1e-9);
  for(let i=0;i<180&&e.spotlight.phase==='acquire';i++){
@@ -33,9 +33,10 @@ test('searcher must illuminate Clu before pursuit and radio, then tracks and fad
   r.time+=1/60;updateRecognizers(r,1/60);
  }
  assert.equal(e.spotlight.phase,'track');assert.equal(e.canSee,true);assert.equal(e.state,'pursue');assert.ok(spotlightOnTarget(e,r));assert.ok(r.radio.length>0);assert.equal(searchlightStrength(e,r.time),1);
+ assert.equal(r.events.filter(e=>e.type==='recognized').length,1);
  const confirmed=e.spotlight.confirmedAt;
  while(r.time<confirmed+1){r.time+=1/60;updateRecognizers(r,1/60);}
- assert.ok(receiver.memory);assert.equal(e.spotlight.phase,'track');
+ assert.ok(receiver.memory);assert.equal(e.spotlight.phase,'track');assert.equal(r.events.filter(e=>e.type==='recognized').length,1);
  // A distant confirmed target keeps its beam, independent of elapsed time.
  updateSpotlight(e,r.time+10,1/60);assert.equal(e.spotlight.phase,'track');
  e.s=r.s-SEARCHLIGHT.closeRange+1;

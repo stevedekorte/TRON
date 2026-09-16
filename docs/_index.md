@@ -453,8 +453,16 @@ The full sight now uses the same interpolated hull/turret pose and elevation as 
 
 Music now fades from the fatal hit through the 2.1-second destruction/terminal transition, reaching zero before playback pauses. Restart restores normal music gain. The fade follows transition progress, so pausing does not consume the remaining transition.
 
-The end terminal plays the supplied “02 Only Solutions.mp3” after the gameplay track fades. Music has a separate output gain so terminal playback does not reactivate simulation sounds; mute still applies. Restart switches back to “We've Got Company.”
+The end terminal plays the supplied “02 Only Solutions.mp3” after the gameplay track fades. Music has a separate output gain so terminal playback does not reactivate simulation sounds; mute still applies. Restart switches back to the opening recognition clip.
 
 Opening music now uses the supplied “03 We've Got Company Clips/1 recognized 1.mp3”, once per new run without looping, replacing the full gameplay track. Only Solutions remains the end-terminal track.
 
-Fresh confirmed Recognizer sightings choose randomly among the four supplied recognition clips (including the misspelled “2 recongized 2.mp3”). Continuous sight and radio-only reports do not retrigger. A playing phrase finishes before one coalesced pending cue starts; no overlapping music or cue backlog. Death/reset clears pending cues.
+### Action-driven music
+
+Clip categories are discovered from MP3 filenames in `docs/assets/music/Tron/03 We've Got Company Clips` using a Vite glob. Recognized (also the existing spelling “recongized”), pursued, and gotcha are case-insensitive filename words. New files enter the development catalog automatically and the deployed catalog on the next build/deploy. No runtime server directory access is needed.
+
+- Start each run with “1 recognized 1.mp3” once.
+- Fresh confirmed visual contact selects a recognition cue; an already-playing recognition cue covers simultaneous sightings. Acquisition and radio-only reports do not trigger it.
+- When a cue ends, choose a pursued cue if a live enemy is pursuing/attacking. Avoid immediate repeats when alternatives exist. Searching/investigating alone does not count.
+- A pursuing Recognizer entering 100 m in 3D triggers gotcha; the encounter rearms beyond 140 m. Gotcha takes priority over new recognition cues while close.
+- Action changes may interrupt a track: fade out over 0.45 s before changing source, then fade in over 0.3 s. Clips never loop; death cancels pending changes and fades the current level into the end terminal's Only Solutions track.
