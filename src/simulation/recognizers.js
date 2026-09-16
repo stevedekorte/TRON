@@ -7,7 +7,7 @@ import {beginCrush,advanceCrush,resolveCrush,CRUSH,stompTarget,stompApproach} fr
 import { OPEN_CELLS, MAZE_LENGTH, RECOGNIZER_STARTS, WALL_HEIGHT, freePosition, lineOfSight } from '../levels/maze.js';
 import { config, RECOGNIZER_SCALE, angleDelta, clamp } from '../game/config.js';
 
-export const SENSORS = Object.freeze({range:MAZE_LENGTH,fov:Math.PI*.82,interval:.2,radioRange:1000*.3048,radioDelay:.45,radioInterval:1.4,memorySeconds:38,predictionSeconds:5});
+export const SENSORS = Object.freeze({range:MAZE_LENGTH,groundNearRange:45,fov:Math.PI*.82,interval:.2,radioRange:1000*.3048,radioDelay:.45,radioInterval:1.4,memorySeconds:38,predictionSeconds:5});
 function random(e) {e.seed=(Math.imul(e.seed,1664525)+1013904223)>>>0;return e.seed/4294967296;}
 export function createRecognizers() {
   return RECOGNIZER_STARTS.map((p,id)=>({...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:-Math.atan2(-p.x,-p.s),
@@ -19,7 +19,10 @@ export function canSeeClu(e,clu) {
   const dx=clu.x-e.x,ds=clu.s-e.s,distance=Math.hypot(dx,ds);
   if(Math.hypot(distance,e.y-2.8)>SENSORS.range)return false;
   // Downward vision includes the area immediately under the craft.
-  if(distance>(e.kind==='ground'?0:Math.max(24,(e.y-CRUSH.soleHeight)*.9)) && Math.abs(angleDelta(e.yaw,-Math.atan2(dx,ds)))>SENSORS.fov/2)return false;
+  const bearing=-Math.atan2(dx,ds),nearRange=e.kind==='ground'?SENSORS.groundNearRange:Math.max(24,(e.y-CRUSH.soleHeight)*.9);
+  const hullError=Math.abs(angleDelta(e.yaw,bearing));
+  const turretError=e.kind==='ground'?Math.abs(angleDelta(e.yaw+(e.turretYaw||0),bearing)):Infinity;
+  if(distance>nearRange&&Math.min(hullError,turretError)>SENSORS.fov/2)return false;
   return lineOfSight({x:e.x,s:e.s,y:e.y-1},{x:clu.x,s:clu.s,y:2.8});
 }
 function remember(e,sighting,now) {

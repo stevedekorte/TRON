@@ -15,6 +15,7 @@ import { createRecognizer,cloneEnemyTank } from './models.js';
 import { config, GUNNER, RECOGNIZER_SCALE, angleDelta } from '../game/config.js';
 import { RECOGNIZER_STARTS, wallIntersection, lineOfSight } from '../levels/maze.js';
 
+const AERIAL_CAMERA=Object.freeze({transitionSeconds:1.2,height:600,distance:Math.hypot(180,320)});
 const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
 
 export class View {
@@ -40,7 +41,7 @@ export class View {
     recognizer.traverse(o => o.material?.dispose());
     this.breakups=new Breakups(this.scene);
     this.searchlights=new Searchlights(this.scene,this.recognizers.length);
-    this.aerial = false;this.aerialZoom=1;
+    this.aerial = false;this.aerialZoom=1;this.aerialBlend=0;
     this.shots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.25, 6, 4), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffd2a3).multiplyScalar(4) }), 80);
     this.shots.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.shots.frustumCulled = false; this.shots.count = 0; this.scene.add(this.shots);
     this.debris = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xf67556).multiplyScalar(1.6) }), 140);
@@ -70,7 +71,7 @@ export class View {
     this.composer.setSize(w * config.renderScale, h * config.renderScale);
   }
 
-  reset() { this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
+  reset() { this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
 
   event(event) {
     if (!['hit', 'destroyed'].includes(event.type)) return;
@@ -87,6 +88,10 @@ export class View {
 
   render(run, previous, alpha, dt, mode, rear = false) {
     this.elapsed += dt;
+    const aerialTarget=this.aerial?1:0;
+    if(this.reducedMotion)this.aerialBlend=aerialTarget;
+    else this.aerialBlend+=THREE.MathUtils.clamp(aerialTarget-this.aerialBlend,-dt/AERIAL_CAMERA.transitionSeconds,dt/AERIAL_CAMERA.transitionSeconds);
+    const aerialMix=THREE.MathUtils.smoothstep(this.aerialBlend,0,1);
     const preview = mode === 'ready',gunner=run.gunner&&!run.crushed&&!preview&&this.opening==null;
     if(this.carrier){this.carrier.visible=!preview;updateCarrier(this.carrier,run.time);}
     const x = previous.x + (run.x - previous.x) * alpha;
@@ -102,7 +107,7 @@ export class View {
     this.tank.tracks.forEach((t, i) => { t.material = this.tank.tracks[0].material; t.visible = (Math.floor(run.s * 3) + i) % 3 !== 0; });
 
     this.world.floor.position.set(x,-.06,-s);
-    this.world.floor.scale.setScalar(this.aerial?Math.max(1,this.aerialZoom):1);
+    this.world.floor.scale.setScalar(aerialMix>0?Math.max(1,this.aerialZoom):1);
     run.recognizers.forEach((e,i)=>{
       const craft=this.recognizers[i];craft.root.visible=e.state!=='destroyed';
       craft.root.position.set(e.x,e.y,-e.s);craft.root.rotation.set(0,e.yaw,0);
@@ -128,7 +133,7 @@ export class View {
 
     let overhead=null;
     const cameraYaw=yaw+this.tank.turret.rotation.y+(rear?Math.PI:0);
-    if(!preview&&!this.aerial&&this.opening==null&&!this.referenceCamera) {
+    if(!preview&&aerialMix===0&&this.opening==null&&!this.referenceCamera) {
       const fragments=this.breakups.bursts.filter(b=>b.age<3).map(b=>{
         const center=new THREE.Vector3();for(const p of b.pieces)center.add(p.group.position);center.multiplyScalar(1/b.pieces.length);
         return {x:center.x,s:-center.z,y:center.y,state:'debris'};
@@ -145,9 +150,7 @@ export class View {
     }
     const focus=overhead?1-THREE.MathUtils.smoothstep(overhead.distance,25,110):0;
     this.encounterFocus=THREE.MathUtils.lerp(this.encounterFocus||0,focus,1-Math.exp(-dt*2));
-    if (this.aerial && !preview) {
-      this.desired.set(x+180*this.aerialZoom,600*this.aerialZoom,-s+320*this.aerialZoom); this.lookDesired.set(x,0,-s);
-    } else if (preview) {
+    if (preview) {
       this.desired.set(x + 15, 9, -s + 22);
       this.lookDesired.set(x - 5, 5, -s - 22);
     } else {
@@ -157,9 +160,18 @@ export class View {
       this.desired.set(x + Math.sin(cameraYaw) * distance, config.cameraHeight, -s + Math.cos(cameraYaw) * distance);
       this.lookDesired.set(x - Math.sin(cameraYaw) * 30, 5.1, -s - Math.cos(cameraYaw) * 30);
     }
+    if(!preview&&this.opening==null&&!this.referenceCamera){
+      // Clip the driving endpoint before blending so descent stays continuous near walls.
+      const anchor={x,s,y:3.5},end={x:this.desired.x,s:-this.desired.z,y:this.desired.y};
+      const hit=wallIntersection(anchor,end,1.2);
+      if(hit!==null){const t=Math.max(.05,hit-.06);this.desired.set(x+(end.x-x)*t,3.5+(end.y-3.5)*t,-s-(end.s-s)*t);}
+      const distance=AERIAL_CAMERA.distance*this.aerialZoom;
+      this.desired.lerp(new THREE.Vector3(x+Math.sin(cameraYaw)*distance,AERIAL_CAMERA.height*this.aerialZoom,-s+Math.cos(cameraYaw)*distance),aerialMix);
+      this.lookDesired.lerp(new THREE.Vector3(x,0,-s),aerialMix);
+    }
     const blend = this.freshCamera ? 1 : 1 - Math.exp(-dt * (this.reducedMotion ? 13 : config.cameraLag));
     this.camera.position.lerp(this.desired, blend); this.look.lerp(this.lookDesired, blend);
-    if (!preview && !this.aerial) {
+    if (!preview && aerialMix===0) {
       const anchor={x,s,y:3.5},end={x:this.camera.position.x,s:-this.camera.position.z,y:this.camera.position.y};
       const collision=wallIntersection(anchor,end,1.2);
       if(collision!==null) {
@@ -176,7 +188,7 @@ export class View {
     }
     if (this.referenceCamera) { this.camera.position.copy(this.referenceCamera.position); this.look.copy(this.referenceCamera.target); }
     const encounterFov=config.fov+8*this.encounterFocus;
-    if(!preview&&!this.aerial&&this.opening==null&&!this.referenceCamera) {
+    if(!preview&&aerialMix===0&&this.opening==null&&!this.referenceCamera) {
       const basePitch=Math.atan2(this.look.y-this.camera.position.y,Math.hypot(this.look.x-this.camera.position.x,this.look.z-this.camera.position.z));
       const tankPitch=Math.atan2(2-this.camera.position.y,Math.hypot(x-this.camera.position.x,-s-this.camera.position.z));
       const craftPitch=overhead?Math.atan2(overhead.e.y-this.camera.position.y,Math.hypot(overhead.e.x-this.camera.position.x,-overhead.e.s-this.camera.position.z)):basePitch;
@@ -207,8 +219,8 @@ export class View {
       this.camera.rotateY(strength*IMPACT_SHAKE.yaw*(Math.sin(t*109)+.3*Math.cos(t*173)));
       this.camera.rotateZ(strength*IMPACT_SHAKE.roll*Math.sin(t*97));
     }
-    this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):(this.aerial ? .06 : 1)));
-    this.world.aerialView.value=this.opening!=null?1-this.opening:(this.aerial&&!this.referenceCamera?1:0);
+    this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):THREE.MathUtils.lerp(1,.06,aerialMix)));
+    this.world.aerialView.value=this.opening!=null?1-this.opening:(!this.referenceCamera?aerialMix:0);
     this.bloom.strength = config.bloom; this.bloom.enabled = !this.lowQuality;
     this.film.enabled = !this.lowQuality; this.film.uniforms.time.value = this.elapsed;
     this.searchlights.update(run.recognizers,run.time,this.camera,mode==='paused'?0:dt,!preview);

@@ -1,10 +1,11 @@
+import {raiseAlert} from './alertness.js';
 import {CARRIER} from '../game/carrier.js';
 import {clamp,angleDelta,config} from '../game/config.js';
 import {OPEN_CELLS,freePosition,wallIntersection} from '../levels/maze.js';
 import {SENSORS,predict} from './recognizers.js';
 import {formationTarget} from './formation.js';
 import {intercept} from './intercept.js';
-export const ESCORT={count:8,turnRate:.8,turretRate:1.3,fireRange:340,fireInterval:1.8,spacing:38};
+export const ESCORT={count:8,turnRate:.8,turretRate:1.3,fireRange:340,fireInterval:1.8,spacing:38,damageAlertSeconds:5,damageProbeDistance:80};
 export const GROUND_PATROL={count:3};
 export const GROUND_TANK_COUNT=ESCORT.count+GROUND_PATROL.count;
 const patrolCells=OPEN_CELLS.filter(p=>freePosition(p.x,p.s,config.tankRadius+1)&&wallIntersection({...p,y:2},{...p,y:2},config.tankRadius+.5)===null);
@@ -51,6 +52,19 @@ export function groundRoute(start,goal){
  }
  return [];
 }
+// Impact direction is a local clue, not knowledge of the hidden shooter's position.
+export function reactToGroundHit(e,projectile,now){
+ if(e.targetGone)return;
+ raiseAlert(e,now);e.nextSense=0;
+ if(Math.hypot(projectile.vx,projectile.vs)<1e-6)return;
+ e.threatYaw=-Math.atan2(-projectile.vx,-projectile.vs);
+ e.threatUntil=now+ESCORT.damageAlertSeconds;e.threatGoal={x:e.x,s:e.s};
+ for(let d=10;d<=ESCORT.damageProbeDistance;d+=10){
+  const p={x:e.x-Math.sin(e.threatYaw)*d,s:e.s+Math.cos(e.threatYaw)*d};
+  if(!clear(e,p))break;e.threatGoal=p;
+ }
+ e.nextRoute=0;
+}
 export function updateGroundTanks(run,dt,moveTank,cannonPose){
  const active=run.enemyTanks.filter(e=>e.state!=='destroyed');
  for(const e of active){
@@ -64,13 +78,15 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
    if(formation&&freePosition(formation.x,formation.s,config.tankRadius+1)&&clear(e,formation))goal=formation;
    e.leader=formation?.leader??e.id;
   }else{e.state=e.role==='patrol'?'patrol':'escort';e.leader=null;}
+  const reacting=!e.canSee&&run.time<(e.threatUntil||0);
+  if(reacting){goal=e.threatGoal;e.state='investigate';}
   e.goal=goal;
   if(run.time>=e.nextRoute){e.path=groundRoute(e,goal);e.nextRoute=run.time+2;}
   while(e.path.length&&Math.hypot(e.x-e.path[0].x,e.s-e.path[0].s)<6)e.path.shift();
   const destination=clear(e,goal)?goal:e.path[0];
   let targetSpeed=0;
   if(destination){
-   const dx=destination.x-e.x,ds=destination.s-e.s,desired=-Math.atan2(dx,ds);
+   const dx=destination.x-e.x,ds=destination.s-e.s,desired=reacting?e.threatYaw:-Math.atan2(dx,ds);
    e.yaw+=clamp(angleDelta(e.yaw,desired),-ESCORT.turnRate*dt,ESCORT.turnRate*dt);
    targetSpeed=Math.min(config.maxSpeed,Math.hypot(dx,ds)*.8)*Math.max(0,Math.cos(angleDelta(e.yaw,desired)))**4;
    if(e.canSee&&Math.hypot(e.x-e.memory.x,e.s-e.memory.s)<100)targetSpeed=0;
@@ -83,7 +99,7 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   let aim=null;
   if(e.memory){const target=predict(e.memory,run.time);aim=intercept(cannonPose(e),{...target,y:2.3},{x:e.memory.vx,s:e.memory.vs,y:0});}
   const muzzle=cannonPose(e);
-  const desired=aim?-Math.atan2(aim.x-muzzle.x,aim.s-muzzle.s):e.yaw;
+  const desired=reacting?e.threatYaw:aim?-Math.atan2(aim.x-muzzle.x,aim.s-muzzle.s):e.yaw;
   const relative=angleDelta(e.yaw,desired);e.turretYaw+=clamp(angleDelta(e.turretYaw,relative),-ESCORT.turretRate*dt,ESCORT.turretRate*dt);
   const pose=cannonPose(e);
   if(!aim||!e.canSee||run.time-e.memory.seenAt>.3||e.cooldown>0||Math.hypot(aim.x-e.x,aim.s-e.s)>ESCORT.fireRange)continue;
