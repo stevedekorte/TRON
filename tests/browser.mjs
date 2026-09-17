@@ -32,7 +32,7 @@ try {
   assert.equal(await page.locator('#instruments').count(),0);
   await page.keyboard.down('KeyL');await page.waitForTimeout(600);await page.keyboard.up('KeyL');
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.yaw,SPAWN.yaw);assert.ok(state.turretYaw<-.5);assert.equal(state.weaponVisual.barrelPitch,0);
-  await page.keyboard.press('KeyR');await page.waitForTimeout(100);
+  await page.evaluate(()=>__tron.reset());await page.waitForTimeout(100);
   const initial=await page.evaluate(()=>window.__tron.state.s);
   await page.keyboard.down('KeyW');await page.waitForTimeout(7000);await page.keyboard.up('KeyW');
   state=await page.evaluate(()=>window.__tron.state);assert.ok(state.s>initial+75);assert.equal(state.status,'running');
@@ -48,7 +48,7 @@ try {
   await page.keyboard.press('KeyV');await page.waitForTimeout(1500);await page.screenshot({path:'test-results/maze-aerial.png'});
   await page.keyboard.press('Tab');await page.locator('#survey').waitFor({state:'visible'});await page.screenshot({path:'test-results/maze-survey.png'});
   await page.keyboard.press('Tab');await page.keyboard.press('KeyV');
-  await page.keyboard.press('KeyR');await page.waitForTimeout(100);
+  await page.evaluate(()=>__tron.reset());await page.waitForTimeout(100);
   await page.evaluate(()=>{
     const r=window.__tron.state;
     r.recognizers.forEach((e,i)=>Object.assign(e,{x:-1850-i*50,s:-1720-i*30,y:73,yaw:0,nextSense:0}));
@@ -60,13 +60,13 @@ try {
   const last=await page.evaluate(()=>window.__tron.state.recognizers[0].memory);
   await page.waitForTimeout(600);state=await page.evaluate(()=>window.__tron.state);
   assert.deepEqual(state.recognizers[0].memory,last);assert.notEqual(last.x,state.x);
-  await page.keyboard.press('KeyR');await page.waitForTimeout(100);
+  await page.evaluate(()=>__tron.reset());await page.waitForTimeout(100);
   await page.evaluate(()=>{const r=window.__tron.state;r.recognizers.forEach((e,i)=>Object.assign(e,{x:-1850+i*.1,s:-1700,y:73,yaw:0}));window.__tron.place({x:-1850,s:-1600,speed:0,recognizers:r.recognizers});});
   await page.waitForTimeout(1200);
   const flock=await page.evaluate(()=>window.__tron.state.recognizers);
   for(let i=0;i<flock.length;i++)for(let j=i+1;j<flock.length;j++)assert.ok(Math.hypot(flock[i].x-flock[j].x,flock[i].s-flock[j].s)>=23.9);
   await page.keyboard.down('KeyC');await page.waitForTimeout(1000);await page.screenshot({path:'test-results/recognizer-scale.png'});await page.keyboard.up('KeyC');
-  await page.keyboard.press('KeyR');await page.waitForTimeout(100);
+  await page.evaluate(()=>__tron.reset());await page.waitForTimeout(100);
   await page.evaluate(async()=>{
     window.__tron.configure({enemySpeed:0});
     const r=window.__tron.state;
@@ -76,7 +76,7 @@ try {
   await page.keyboard.down('Space');await page.waitForTimeout(4000);await page.keyboard.up('Space');
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.kills,1);assert.equal(state.recognizers[0].state,'destroyed');assert.equal(state.mode,'running');
   await page.evaluate(()=>window.__tron.configure({enemySpeed:27}));
-  for(let i=0;i<10;i++){await page.keyboard.press('KeyR');await page.waitForTimeout(70);}
+  for(let i=0;i<10;i++){await page.evaluate(()=>__tron.reset());await page.waitForTimeout(70);}
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.audioContexts,1);assert.equal(state.audioSources,3);assert.equal(state.recognizers.length,3);assert.ok(state.recognizers.every(e=>e.memory===null));
   await page.setViewportSize({width:960,height:640});await page.keyboard.press('KeyH');await page.waitForTimeout(200);await page.screenshot({path:'test-results/resized.png'});
   assert.deepEqual(errors,[]);

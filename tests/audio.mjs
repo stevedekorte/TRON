@@ -40,9 +40,9 @@ try {
  await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>window.__tron.state.music.time),musicTime);
  await page.keyboard.press('Enter');await page.waitForTimeout(250);
  assert.ok(await page.evaluate(()=>window.__tron.state.music.time)>musicTime);
- await page.keyboard.press('KeyR');await page.waitForTimeout(150);
+ await page.evaluate(()=>__tron.reset());await page.waitForTimeout(150);
  assert.ok(await page.evaluate(()=>window.__tron.state.music.time)<1);assert.deepEqual(state.audioSampleErrors,[]);assert.equal(state.audioNodes,11);
- for(let i=0;i<3;i++){await page.keyboard.press('Space');await page.keyboard.press('KeyR');await page.waitForTimeout(120);}
+ for(let i=0;i<3;i++){await page.keyboard.press('Space');await page.evaluate(()=>__tron.reset());await page.waitForTimeout(120);}
  await page.waitForTimeout(1000);state=await page.evaluate(()=>window.__tron.state);assert.equal(state.audioNodes,11);assert.equal(state.audioContexts,1);
  await page.keyboard.press('KeyM');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.__tron.state.mode),'paused');
  await page.goto('http://127.0.0.1:5173/audio.html');

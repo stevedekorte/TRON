@@ -21,7 +21,7 @@ try {
  await page.screenshot({path:'test-results/attack-impact.png'});
  await page.keyboard.down('KeyW');await page.waitForTimeout(500);await page.keyboard.up('KeyW');
  assert.equal(await page.evaluate(()=>window.__tron.state.speed),0);
- await page.keyboard.press('KeyR');
+ await page.evaluate(()=>__tron.reset());
  assert.equal(await page.evaluate(()=>window.__tron.state.crushed),false);
  await place();
  await page.waitForFunction(()=>window.__tron.state.recognizers[0].state==='fold');

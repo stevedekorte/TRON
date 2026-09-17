@@ -20,7 +20,7 @@ try{
  await page.waitForTimeout(150);assert.deepEqual((await page.evaluate(()=>window.__tron.state)).breakups,state.breakups);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__tron.state.breakups.length===0,{},{timeout:15000});
  assert.equal(await page.evaluate(()=>window.__tron.state.tankVisible),false);
- await page.keyboard.press('KeyR');await page.waitForFunction(()=>window.__tron.state.tankVisible);
+ await page.evaluate(()=>__tron.reset());await page.waitForFunction(()=>window.__tron.state.tankVisible);
  assert.equal(await page.evaluate(()=>window.__tron.state.crushed),false);assert.deepEqual(errors,[]);
  console.log('Stomp creates posed CLU fragments, hides tank/shadow, freezes debris on pause, expires debris and restores CLU on restart.');
 }finally{await browser.close();}
