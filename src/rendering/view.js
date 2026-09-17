@@ -22,6 +22,7 @@ const GUNNER_TRANSITION_SECONDS=.75;
 const TURBO_GLOW=Object.freeze({base:1.8,pulse:1.2,hz:2,response:10});
 const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
 
+const GUNNER_ZOOM_SECONDS=.35;
 export class View {
   moveMouseAim(dx,dy,run){
     if(!this.mouseLook)this.mouseLook={yaw:run.yaw+run.turretYaw,pitch:run.aimPitch};
@@ -82,7 +83,7 @@ export class View {
     this.composer.setSize(w * config.renderScale, h * config.renderScale);
   }
 
-  reset() { this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
+  reset() { this.zoomTransition=null;this.zoomFov=undefined;this.zoomTarget=undefined; this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
 
   event(event) {
     if (!['hit', 'destroyed'].includes(event.type)) return;
@@ -238,8 +239,20 @@ export class View {
       const aim=this.mouseLook||{yaw:pose.yaw,pitch};
       this.camera.lookAt(pose.x-Math.sin(aim.yaw)*Math.cos(aim.pitch)*100,pose.y+Math.sin(aim.pitch)*100,-pose.s-Math.cos(aim.yaw)*Math.cos(aim.pitch)*100);
     }
+    const zoomTarget=GUNNER.fovs[run.gunnerZoom];
+    if(!gunner||this.reducedMotion||this.zoomFov==null){
+      this.zoomFov=zoomTarget;this.zoomTarget=zoomTarget;this.zoomTransition=null;
+    }else if(zoomTarget!==this.zoomTarget){
+      this.zoomTransition={from:this.zoomFov,elapsed:0};this.zoomTarget=zoomTarget;
+    }
+    if(this.zoomTransition){
+      this.zoomTransition.elapsed+=dt;
+      const t=THREE.MathUtils.smootherstep(Math.min(1,this.zoomTransition.elapsed/GUNNER_ZOOM_SECONDS),0,1);
+      this.zoomFov=THREE.MathUtils.lerp(this.zoomTransition.from,zoomTarget,t);
+      if(t===1)this.zoomTransition=null;
+    }
     this.camera.far=12000;
-    this.camera.fov = gunner?GUNNER.fovs[run.gunnerZoom]:this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov);
+    this.camera.fov = gunner?this.zoomFov:this.referenceCamera?.fov ?? (this.aerial||preview||this.opening!=null?config.fov:encounterFov);
     this.gunnerOpacity=gunner?1:0;
     if(this.gunnerTransition){
       const transition=this.gunnerTransition;

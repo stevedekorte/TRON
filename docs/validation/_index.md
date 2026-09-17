@@ -424,3 +424,9 @@ User listening found the shorter 0.28-second version repeated the clink faster. 
 ### Tank destruction sound
 
 `node tests/tank-explosion.mjs` passed: three synthesis variants at 44.1/48 kHz remain finite and below 0.841 peak, fade to silence, and contain stereo differences. Chrome OfflineAudioContext renders the actual Sound.effect path for both tank subjects; near RMS approximately 0.115 versus 0.030 at 180 m, and all sources release after playback. `npm run build` passed with the existing chunk-size advisory. Subjective listening/film fidelity remains for user review. `scripts/generate-tank-explosion.mjs` builds the library audition from the gameplay synthesis.
+
+## September 17 — gunner zoom
+
+`node tests/gunner-zoom.mjs` passed in Chrome: intermediate FOVs for all four zoom changes including wrap, exact final FOVs, enlarged top-center label bounds, and immediate reduced-motion changes. Screenshot `test-results/gunner-zoom.png` reviewed. `node tests/gunner-transition.mjs` passed for entry/exit, reversals and reduced motion. Production build passed with the existing chunk-size advisory.
+
+The gunner zoom browser check additionally passed wheel zoom through every level in both directions, including clamping at 1×/8×. Wheel zoom uses the same eased field-of-view transition.

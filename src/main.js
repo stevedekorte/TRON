@@ -20,6 +20,8 @@ const DEATH_TERMINAL={holdSeconds:1.1,fadeSeconds:1,message:'ILLEGAL CODE\nCLU P
 let deathElapsed=0;
 let accumulator = 0, lastTime = 0, frameId, disposed = false, mouseFire = false,fireQueued=false;
 let mouseTarget=null,mouseWasLocked=false;
+const GUNNER_WHEEL={threshold:40,intervalMs:180,resetMs:250};
+let zoomWheelDelta=0,zoomWheelTime=-Infinity,zoomWheelStep=-Infinity;
 const keys = new Set(), cleanups = [], frameTimes = [];
 const fixedStep = 1 / 60;
 function listen(object, event, fn, options) { object.addEventListener(event, fn, options); cleanups.push(() => object.removeEventListener(event, fn, options)); }
@@ -125,9 +127,19 @@ listen(document,'pointerlockchange',()=>{
  mouseWasLocked=locked;
 });
 listen($('game'),'wheel',event=>{
-  if(!view?.aerial||!['running','paused'].includes(mode)||event.ctrlKey)return;
+  if(!(view?.aerial||run.gunner)||!['running','paused'].includes(mode)||event.ctrlKey)return;
   event.preventDefault();idleTime=0;
   const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
+  if(run.gunner){
+    const now=performance.now();
+    if(now-zoomWheelTime>GUNNER_WHEEL.resetMs||Math.sign(pixels)!==Math.sign(zoomWheelDelta))zoomWheelDelta=0;
+    zoomWheelTime=now;zoomWheelDelta+=pixels;
+    if(Math.abs(zoomWheelDelta)>=GUNNER_WHEEL.threshold&&now-zoomWheelStep>=GUNNER_WHEEL.intervalMs){
+      run.gunnerZoom=Math.max(0,Math.min(GUNNER.fovs.length-1,run.gunnerZoom-Math.sign(zoomWheelDelta)));
+      zoomWheelDelta=0;zoomWheelStep=now;
+    }
+    return;
+  }
   view.aerialZoom=Math.max(.25,Math.min(4,view.aerialZoom*Math.exp(Math.max(-600,Math.min(600,pixels))*.0015)));
 },{passive:false});
 listen(window, 'pointerup', () => { mouseFire = false; });
@@ -154,7 +166,7 @@ function updateHud() {
   $('mouse-hint').textContent=document.pointerLockElement===$('game')?'':'CLICK / MOUSE AIM';
   $('gunner-zoom').textContent=['1×','2×','4×','8×'][run.gunnerZoom];
   $('instruments').hidden=!showInstruments;
-  $('zoom-hint').hidden=!view.aerial;
+  $('zoom-hint').hidden=!(view.aerial||run.gunner);
   $('survey').hidden=!showSurvey;
   $('speed').textContent=Math.round(Math.abs(run.speed)*3.6);
   $('coordinates').textContent=`${Math.round(run.x)}, ${Math.round(run.s)}`;
