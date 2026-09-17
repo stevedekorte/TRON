@@ -16,6 +16,7 @@ let controlsFirstKey=null,idleReminderArmed=false;
 function noteControlKey(){if(controlsFirstKey===null)controlsFirstKey=run.time;else if(run.time-controlsFirstKey>=10)idleReminderArmed=true;}
 let openingTime=0,pausedFrom='running',startingThrottle=false;
 const openingDuration=5.5;
+const HEALTH_WARNING={orange:.5,red:.25,critical:.1};
 const DEATH_TERMINAL={holdSeconds:1.1,fadeSeconds:1,message:'ILLEGAL CODE\nCLU PROGRAM DETACHED FROM SYSTEM'};
 let deathElapsed=0;
 let accumulator = 0, lastTime = 0, frameId, disposed = false, mouseFire = false,fireQueued=false;
@@ -174,11 +175,11 @@ function updateHud() {
   $('orientation').textContent=`TURRET ${Math.round(-run.turretYaw*180/Math.PI)}°`;
   const healthFraction=run.crushed?0:Math.max(0,Math.min(1,run.health/CLU_HEALTH.max)),healthPercent=Math.ceil(healthFraction*100);
   $('health-fill').style.transform=`scaleX(${healthFraction})`;
-  $('health-status').textContent=`${healthPercent}%`;
   $('health-meter').setAttribute('aria-valuenow',String(healthPercent));
-  $('clu-health').classList.toggle('low',healthFraction<=1/3);
+  $('clu-health').dataset.level=healthFraction<=HEALTH_WARNING.critical?'critical':healthFraction<=HEALTH_WARNING.red?'red':healthFraction<=HEALTH_WARNING.orange?'orange':'normal';
   const turbo=$('turbo'),boosting=run.turboRemaining>0,charging=run.turboCooldown>0;
-  $('turbo-status').textContent=boosting?`BOOST ${Math.ceil(run.turboRemaining)}s`:charging?`RECHARGE ${Math.ceil(run.turboCooldown)}s`:'READY';
+  $('turbo-status').textContent=!boosting&&!charging?'✓':'';
+  turbo.setAttribute('aria-label',boosting?'Turbo active':charging?'Turbo recharging':'Turbo ready');
   turbo.classList.toggle('boosting',boosting);turbo.classList.toggle('charging',charging);
   $('turbo-fill').style.transform=`scaleX(${boosting?run.turboRemaining/TURBO.duration:1-run.turboCooldown/TURBO.rechargeSeconds})`;
   const openingControls=controlsFirstKey===null||run.time-controlsFirstKey<10;
