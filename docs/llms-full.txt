@@ -522,7 +522,7 @@ The HDR renderer retains 4-sample MSAA and adds SMAA before output conversion. R
 
 Gunner mode outlines enemy tanks in soft cyan, with hidden edges suppressed. When a shot along the actual barrel should intersect a moving enemy, the central hash mark smoothly shrinks to half size and glows yellow. It returns to normal on a predicted miss; the outer crosshairs remain green and all marks retain their shared aiming position. Targeting feedback uses no text. The prediction uses current linear velocity, projectile lifetime and maze occlusion, and shares the simulation's approximate part volumes. Future turns, acceleration or leg folding can invalidate the estimate. It does not steer shots.
 
-The lower-left instruments readout is hidden in gunner view, retaining its selected visibility when returning to an exterior view.
+The instruments feature is removed: no lower-left readout, H-key toggle or instruments control hint remains.
 
 The top controls row separates hints with centered dots.
 
