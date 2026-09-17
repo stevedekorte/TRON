@@ -84,7 +84,7 @@ export class View {
     this.composer.setSize(w * config.renderScale, h * config.renderScale);
   }
 
-  reset() { this.zoomTransition=null;this.zoomFov=undefined;this.zoomTarget=undefined; this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
+  reset() { this.damageSparkTimes=new Map(); this.zoomTransition=null;this.zoomFov=undefined;this.zoomTarget=undefined; this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
 
   event(event) {
     if (!['hit', 'destroyed'].includes(event.type)) return;
@@ -149,6 +149,22 @@ export class View {
       this.matrixObject.updateMatrix(); this.shots.setMatrixAt(i, this.matrixObject.matrix);
     }); this.shots.instanceMatrix.needsUpdate = true;
     const particleDt = mode === 'paused' ? 0 : dt;
+    this.damageSparkTimes??=new Map();
+    if(particleDt>0&&!preview)for(const enemy of [...run.recognizers,...run.enemyTanks]){
+      if(enemy.state==='destroyed')continue;
+      const tick=Math.floor(run.time*4);
+      if(this.damageSparkTimes.get(enemy.id)===tick)continue;
+      this.damageSparkTimes.set(enemy.id,tick);
+      for(const [part,hits] of Object.entries(enemy.partHits||{})){
+        if(!(part.endsWith('-track')&&hits>=1||part.endsWith('-leg')&&hits>=2))continue;
+        const ground=enemy.kind==='ground',side=part.startsWith('left')?-1:1;
+        const localX=side*(ground?3:(14-(enemy.fold||0)*13)*RECOGNIZER_SCALE);
+        for(let i=0;i<2&&this.particles.length<140;i++)this.particles.push({
+          x:enemy.x+Math.cos(enemy.yaw)*localX,y:ground?1:enemy.y-12*RECOGNIZER_SCALE,z:-enemy.s-Math.sin(enemy.yaw)*localX,
+          vx:Math.sin(tick*2.3+i)*2,vy:1.5+i,vz:Math.cos(tick*3.1+i)*2,age:0,life:.45+i*.1,scale:.12});
+      }
+    }
+
     if(particleDt>0)this.breakups.update(particleDt);
     this.particles = this.particles.filter(p => p.age < p.life);
     this.debris.count = this.particles.length;

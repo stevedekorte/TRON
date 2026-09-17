@@ -50,7 +50,7 @@ export function advanceCrush(e,now,dt) {
   return true;
 }
 export function beginCrush(e,now) {
-  if(e.targetGone||e.attack||!e.canSee||!e.memory||now-e.memory.seenAt>.25||now<(e.nextAttack||0))return;
+  if(e.stompDisabled||e.targetGone||e.attack||!e.canSee||!e.memory||now-e.memory.seenAt>.25||now<(e.nextAttack||0))return;
   const target=stompTarget(e,now),duration=stompDuration(e.y);
   const drift=(1-Math.exp(-(FLIGHT.drag+FLIGHT.brakeDrag)*duration))/(FLIGHT.drag+FLIGHT.brakeDrag);
   const landing={x:e.x+(e.vx||0)*drift,s:e.s+(e.vs||0)*drift};
@@ -64,6 +64,7 @@ export function beginCrush(e,now) {
 }
 export function resolveCrush(run,e) {
   if(!e.attack?.impact)return;
+  if(e.stompDisabled){e.attack.impact=false;return;}
   e.attack.impact=false;
   run.events.push({type:'hit',x:e.x,y:.2,s:e.s});
   if(!run.crushed&&Math.hypot(run.x-e.x,run.s-e.s)<CRUSH.hitRadius) {

@@ -89,3 +89,15 @@ test('idle enemy turrets hold world direction while their hulls turn, within the
   const e=r.recognizers[0];e.memory={x:e.x+200,s:e.s+200,vx:0,vs:0,seenAt:r.time,source:e.id};e.goal=null;step(r,{},dt);assert.notEqual(e.state,'escort');
   e.memory.seenAt=r.time-40;step(r,{},dt);assert.equal(e.state,'escort');
  });
+
+test('track damage reduces mobility, and two disabled tracks leave a live firing tank',async()=>{
+ const {trackMobility}=await import('../src/simulation/part-damage.js');
+ const r=encounter(),e=r.enemyTanks[0];e.yaw=0;
+ const shoot=x=>{r.projectiles=[{x:e.x+x,s:e.s,y:1,vx:0,vs:0,vy:0,life:1}];updateWeapons(r,{},dt);};
+ shoot(-3);assert.equal(e.health,2.5);assert.equal(trackMobility(e).speed,.65);
+ shoot(-3);assert.equal(e.health,2);assert.equal(trackMobility(e).speed,.25);
+ shoot(3);shoot(3);assert.equal(e.health,1);assert.equal(trackMobility(e).speed,0);
+ const start={x:e.x,s:e.s,yaw:e.yaw};e.speed=0;e.vx=0;e.vs=0;Object.assign(r,{x:e.x,s:e.s+80,health:100});
+ for(let i=0;i<240;i++)step(r,{},dt);
+ assert.deepEqual({x:e.x,s:e.s,yaw:e.yaw},start);assert.ok(r.events.some(event=>event.type==='enemyShot'));assert.notEqual(e.state,'destroyed');
+});

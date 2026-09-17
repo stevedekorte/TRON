@@ -450,3 +450,7 @@ Chrome `tests/health-meter.mjs` passed the readiness checkmark, removal of visib
 ### Enemy hit-part tracking
 
 `npm test`: all 90 tests passed. Projectile integration tests cover every Recognizer zone at two yaw angles in open/folded poses, all four tank zones at two yaw angles, event identifiers, last-hit coordinates/time, per-part counts and fatal-event classification. No rendered geometry precision is claimed; tank armor subdivisions are approximate within existing collision volumes.
+
+### Critical hits and component damage
+
+All 92 simulation tests passed: one-shot crown kills, half-damage limb hits, repeated-leg stomp disable, aborting a committed drop, track mobility loss, and an immobilized tank retaining firing ability. The wall-only movement fixture now excludes randomized enemies so it tests wall geometry independently. The long-range projectile fixture now expects its crown hit to be fatal. Chrome `tests/part-damage.mjs` passed live crown/leg damage checks with no rendering errors; the browser also measured imported turret bounds used for classification. Build passed with the existing chunk-size advisory.
