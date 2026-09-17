@@ -1,3 +1,5 @@
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
+import {gunnerSolution} from '../simulation/gunner-solution.js';
 import {TANK} from '../game/tank.js';
 import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
 import {updateMouseTarget} from './mouse-target.js';
@@ -11,6 +13,7 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createWorld } from './world.js';
@@ -20,6 +23,7 @@ import { wallIntersection, lineOfSight } from '../levels/maze.js';
 
 const AERIAL_CAMERA=Object.freeze({transitionSeconds:1.2,height:600,distance:Math.hypot(180,320)});
 const GUNNER_TRANSITION_SECONDS=.75;
+const EDGE_QUALITY={minPixelRatio:1.25,maxPixelRatio:1.5,supersamplePixelBudget:4000000};
 const TURBO_GLOW=Object.freeze({base:1.8,pulse:1.2,hz:2,response:10});
 const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
 
@@ -62,7 +66,12 @@ export class View {
     const renderTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
     this.composer = new EffectComposer(this.renderer, renderTarget);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.enemyOutline=new OutlinePass(new THREE.Vector2(1,1),this.scene,this.camera);
+    this.enemyOutline.visibleEdgeColor.setHex(0x70bfd6);this.enemyOutline.hiddenEdgeColor.setHex(0x000000);
+    this.enemyOutline.edgeStrength=1.6;this.enemyOutline.edgeGlow=.35;this.enemyOutline.edgeThickness=1;
+    this.enemyOutline.enabled=false;this.composer.addPass(this.enemyOutline);
     this.bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), config.bloom, 0.5, 0.85); this.composer.addPass(this.bloom);
+    this.smaa=new SMAAPass();this.composer.addPass(this.smaa);
     this.output = new OutputPass(); this.composer.addPass(this.output);
     this.film = new ShaderPass({
       uniforms: { tDiffuse: { value: null }, time: { value: 0 } },
@@ -80,11 +89,17 @@ export class View {
   resize() {
     const w = window.innerWidth, h = window.innerHeight;
     this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+    // Supersample small displays and use some Retina resolution, with a cap on
+    // extra pixels. Never reduce resolution below the previous native-size view.
+    const ratio=this.lowQuality?1:Math.max(1,Math.min(EDGE_QUALITY.maxPixelRatio,
+      Math.max(EDGE_QUALITY.minPixelRatio,window.devicePixelRatio||1),
+      Math.sqrt(EDGE_QUALITY.supersamplePixelBudget/(w*h))));
+    this.renderer.setPixelRatio(ratio);this.composer.setPixelRatio(ratio);
     this.renderer.setSize(w * config.renderScale, h * config.renderScale, false);
     this.composer.setSize(w * config.renderScale, h * config.renderScale);
   }
 
-  reset() { this.damageSparkTimes=new Map(); this.zoomTransition=null;this.zoomFov=undefined;this.zoomTarget=undefined; this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
+  reset() { this.gunnerHit=null;this.nextGunnerSolution=0; this.damageSparkTimes=new Map(); this.zoomTransition=null;this.zoomFov=undefined;this.zoomTarget=undefined; this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
 
   event(event) {
     if (!['hit', 'destroyed'].includes(event.type)) return;
@@ -309,6 +324,12 @@ export class View {
     }
     this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):THREE.MathUtils.lerp(1,.06,aerialMix)));
     this.world.aerialView.value=this.opening!=null?1-this.opening:(!this.referenceCamera?aerialMix:0);
+    this.enemyOutline.enabled=gunner;
+    if(gunner){
+      this.enemyOutline.selectedObjects=run.enemyTanks.flatMap((enemy,i)=>enemy.state==='destroyed'?[]:[this.enemyTanks[i].root]);
+      if(run.time>=(this.nextGunnerSolution||0)){this.gunnerHit=gunnerSolution(run);this.nextGunnerSolution=run.time+.08;}
+    }else{this.gunnerHit=null;this.nextGunnerSolution=0;this.enemyOutline.selectedObjects=[];}
+    this.smaa.enabled=!this.lowQuality;
     this.bloom.strength = config.bloom; this.bloom.enabled = !this.lowQuality;
     this.film.enabled = !this.lowQuality; this.film.uniforms.time.value = this.elapsed;
     this.searchlights.update(run.recognizers,run.time,this.camera,mode==='paused'?0:dt,!preview);

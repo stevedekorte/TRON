@@ -139,3 +139,21 @@ test('mouse tracking bounds acceleration and speed through target jumps and reve
   }
  }
 });
+
+test('gunner hit cue predicts moving tanks and rejects a shot aimed behind their motion',async()=>{
+ const {gunnerSolution}=await import('../src/simulation/gunner-solution.js');
+ const r=fixture(),pose=cannonPose(r),enemy={...createRun(1982).enemyTanks[0],x:pose.x-20,s:pose.s+165,yaw:0,turretYaw:0,vx:20,vs:0,vy:0};r.enemyTanks=[enemy];
+ const hit=gunnerSolution(r);assert.equal(hit.id,enemy.id);assert.ok(hit.time>.9&&hit.time<1.1);
+ enemy.vx=0;assert.equal(gunnerSolution(r),null);
+ enemy.x=pose.x;assert.equal(gunnerSolution(r).id,enemy.id);
+ enemy.state='destroyed';assert.equal(gunnerSolution(r),null);
+});
+test('gunner cue handles airborne targets, critical regions, range and blocking maze walls',async()=>{
+ const {gunnerSolution}=await import('../src/simulation/gunner-solution.js');
+ const {WALLS}=await import('../src/levels/maze.js');
+ const r=fixture(),pose=cannonPose(r),enemy={...createRun(1982).recognizers[0],x:pose.x,s:pose.s+165,y:pose.y-6*.65,yaw:0,fold:0,vx:0,vs:0,vy:0};r.recognizers=[enemy];
+ assert.equal(gunnerSolution(r).critical,true);assert.equal(gunnerSolution(r).part,'crown');
+ enemy.s=pose.s+1000;assert.equal(gunnerSolution(r),null);
+ const wall=WALLS[0],center=wall.points.reduce((a,p)=>({x:a.x+p.x/wall.points.length,s:a.s+p.s/wall.points.length}),{x:0,s:0});
+ Object.assign(r,center);Object.assign(enemy,{x:center.x,s:center.s+100,y:pose.y});assert.equal(gunnerSolution(r),null);
+});

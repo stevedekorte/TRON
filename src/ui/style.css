@@ -38,3 +38,5 @@ body.detached .terminal-copy{font-size:clamp(22px,4vw,80px);line-height:.78}
 @keyframes health-warning{0%,100%{opacity:1}50%{opacity:.28}}
 @media(prefers-reduced-motion:reduce){.health-indicator[data-level="critical"] #health-fill{animation:none}}
 body.paused #health-fill{animation-play-state:paused}body.entering #clu-health{display:none}
+
+#gunner-sight.on-target{color:#eec768}#gunner-sight.critical-target{color:#ff9572}#gunner-target-cue{font:14px monospace;letter-spacing:2px}
