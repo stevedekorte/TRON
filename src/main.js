@@ -168,7 +168,7 @@ function updateHud() {
   $('gunner-sight').classList.toggle('on-target',!!view.gunnerHit);
   $('gunner-sight').classList.toggle('critical-target',!!view.gunnerHit?.critical);
   $('gunner-zoom').textContent=['1×','2×','4×','8×'][run.gunnerZoom];
-  $('instruments').hidden=!showInstruments;
+  $('instruments').hidden=!showInstruments||run.gunner;
   $('zoom-hint').hidden=!(view.aerial||run.gunner);
   $('survey').hidden=!showSurvey;
   $('speed').textContent=Math.round(Math.abs(run.speed)*3.6);
