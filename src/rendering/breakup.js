@@ -39,7 +39,9 @@ export class Breakups {
     // The rig's "body" includes the crown, crossbar and both shoulder blocks.
     // Keep these separate so a crown hit cannot also shred both shoulders.
     let section=part;
-    if(part==='body'){
+    const block=geometry.attributes.breakupBlock;
+    if(!fracture&&block){section=`block-${block.getX(i)}`;}
+    else if(part==='body'){
      let lx=0,ly=0;
      for(let j=0;j<3;j++){const k=mesh.geometry.index?.getX(i+j)??i+j;lx+=local.getX(k)/3;ly+=local.getY(k)/3;}
      section=Math.abs(lx)>9?(lx<0?'left-shoulder':'right-shoulder'):(ly>1?'crown':'crossbar');
