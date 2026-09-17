@@ -29,7 +29,7 @@ body.detached .terminal-copy{font-size:clamp(22px,4vw,80px);line-height:.78}
 #aim-dot{position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;background:#e5ffd8;transform:translate(-50%,-50%)}
 #mouse-hint{position:absolute;bottom:2.5%;left:50%;transform:translateX(-50%);font:9px monospace;letter-spacing:1px}
 
-#turbo-status{margin-left:5px}.turbo-meter{height:3px}
+.turbo-meter{height:3px}
 .health-indicator{top:64px;z-index:4}
 .health-indicator[data-level="orange"]{color:#efa04f}
 .health-indicator[data-level="red"],.health-indicator[data-level="critical"]{color:#f25858}

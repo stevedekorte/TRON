@@ -178,7 +178,6 @@ function updateHud() {
   $('health-meter').setAttribute('aria-valuenow',String(healthPercent));
   $('clu-health').dataset.level=healthFraction<=HEALTH_WARNING.critical?'critical':healthFraction<=HEALTH_WARNING.red?'red':healthFraction<=HEALTH_WARNING.orange?'orange':'normal';
   const turbo=$('turbo'),boosting=run.turboRemaining>0,charging=run.turboCooldown>0;
-  $('turbo-status').textContent=!boosting&&!charging?'✓':'';
   turbo.setAttribute('aria-label',boosting?'Turbo active':charging?'Turbo recharging':'Turbo ready');
   turbo.classList.toggle('boosting',boosting);turbo.classList.toggle('charging',charging);
   $('turbo-fill').style.transform=`scaleX(${boosting?run.turboRemaining/TURBO.duration:1-run.turboCooldown/TURBO.rechargeSeconds})`;
