@@ -488,3 +488,5 @@ Gunner magnification changes now ease over 0.35 seconds, including cycling from 
 The gunner view also accepts mouse-wheel zoom: up zooms in, down zooms out, clamped at 1× and 8×. Trackpad input accumulates with a small threshold and rate limit to avoid racing through levels; O still cycles. Aerial wheel controls are unchanged.
 
 The gunner camera is now anchored at the turret pivot instead of the muzzle. Independent mouse-look no longer moves sideways as the barrel catches up, removing motor-driven camera sway and its changing raycast origin. Turret speed/acceleration limits and muzzle-based projectile aiming remain unchanged.
+
+CLU turret motion now has a quiet, low-pitched servo tone that follows actual yaw/elevation motor speed, including centering and stabilization. It fades on stopping, pause or destruction, and is spatialized at the tank. Following listening feedback, its gain is 0.032 and fundamental pitch spans 55–110 Hz.

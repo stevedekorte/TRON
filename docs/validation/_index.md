@@ -434,3 +434,7 @@ The gunner zoom browser check additionally passed wheel zoom through every level
 ### Mouse gunner stability
 
 A stationary-tank mouse test reproduced camera translation during turret catch-up before the fix. `tests/mouse-aim.mjs` now verifies fixed camera position and stable mouse-view orientation throughout catch-up, along with convergence, firing, F lock and pointer-lock lifecycle; Chrome passed after anchoring the camera at the turret pivot. All 88 simulation tests passed, including mouse motor limits.
+
+### Turret servo audio
+
+`node tests/turret-servo.mjs` passed: yaw/elevation motion drives sound, render-only frames retain the last motor measurement, hull-only rotation does not trigger it, and stop/pause/destruction/reset silence the tone. Chrome offline rendering measured moving RMS 0.0182 and silent conditions at zero. Build passed with the existing chunk advisory. The user confirmed playback; subsequent tuning lowers gain from 0.065 to 0.032 and pitch from 95–195 Hz to 55–110 Hz.

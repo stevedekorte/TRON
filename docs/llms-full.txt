@@ -502,6 +502,8 @@ The gunner view also accepts mouse-wheel zoom: up zooms in, down zooms out, clam
 
 The gunner camera is now anchored at the turret pivot instead of the muzzle. Independent mouse-look no longer moves sideways as the barrel catches up, removing motor-driven camera sway and its changing raycast origin. Turret speed/acceleration limits and muzzle-based projectile aiming remain unchanged.
 
+CLU turret motion now has a quiet, low-pitched servo tone that follows actual yaw/elevation motor speed, including centering and stabilization. It fades on stopping, pause or destruction, and is spatialized at the tank. Following listening feedback, its gain is 0.032 and fundamental pitch spans 55–110 Hz.
+
 
 ---
 
@@ -1584,3 +1586,7 @@ The gunner zoom browser check additionally passed wheel zoom through every level
 ### Mouse gunner stability
 
 A stationary-tank mouse test reproduced camera translation during turret catch-up before the fix. `tests/mouse-aim.mjs` now verifies fixed camera position and stable mouse-view orientation throughout catch-up, along with convergence, firing, F lock and pointer-lock lifecycle; Chrome passed after anchoring the camera at the turret pivot. All 88 simulation tests passed, including mouse motor limits.
+
+### Turret servo audio
+
+`node tests/turret-servo.mjs` passed: yaw/elevation motion drives sound, render-only frames retain the last motor measurement, hull-only rotation does not trigger it, and stop/pause/destruction/reset silence the tone. Chrome offline rendering measured moving RMS 0.0182 and silent conditions at zero. Build passed with the existing chunk advisory. The user confirmed playback; subsequent tuning lowers gain from 0.065 to 0.032 and pitch from 95–195 Hz to 55–110 Hz.
