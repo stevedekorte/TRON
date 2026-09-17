@@ -39,4 +39,6 @@ body.detached .terminal-copy{font-size:clamp(22px,4vw,80px);line-height:.78}
 @media(prefers-reduced-motion:reduce){.health-indicator[data-level="critical"] #health-fill{animation:none}}
 body.paused #health-fill{animation-play-state:paused}body.entering #clu-health{display:none}
 
-#gunner-sight.on-target{color:#eec768}#gunner-sight.critical-target{color:#ff9572}#gunner-target-cue{font:14px monospace;letter-spacing:2px}
+#gunner-center{transform-box:view-box;transform-origin:500px 325px;transform:scale(1);transition:transform .22s ease-in-out,color .22s ease-in-out,filter .22s ease-in-out;filter:drop-shadow(0 0 0 transparent)}
+#gunner-sight.on-target #gunner-center{transform:scale(.5);color:#ffe45c;filter:drop-shadow(0 0 4px #ffda36) drop-shadow(0 0 8px #ffda36)}
+@media(prefers-reduced-motion:reduce){#gunner-center{transition:none}}
