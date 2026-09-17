@@ -1,3 +1,4 @@
+import {createTurretServo} from './turret-servo.js';
 import {TANK_EXPLOSION,tankExplosionSamples} from './tank-explosion.js';
 import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
 import {musicCategory,selectMusic,activelyPursued,closeRecognizer,MUSIC_CUES} from './music-selection.js';
@@ -49,6 +50,7 @@ export class Sound {
     for(const p of this.carrierEmitter.panners)p.maxDistance=15000;
     this.carrierFilter=c.createBiquadFilter();this.carrierFilter.type='lowpass';this.carrierFilter.frequency.value=900;this.carrierFilter.connect(this.carrierEmitter.input);
     this.tankEmitter=stereoEmitter(c,this.master,18);this.tankEmitter.gain.gain.value=1;
+    this.turretServo=createTurretServo(c,this.tankEmitter.input);
     this.engineGain=c.createGain();this.engineGain.gain.value=0;this.engineGain.connect(this.tankEmitter.input);
     this.engineFilter=c.createBiquadFilter();this.engineFilter.type='lowpass';this.engineFilter.frequency.value=1200;this.engineFilter.connect(this.engineGain);
     this.engine=c.createOscillator();this.engine.type='sawtooth';this.engine.frequency.value=38;this.engine.connect(this.engineFilter);this.engine.start();
@@ -113,6 +115,7 @@ export class Sound {
     }
     this.master.gain.setTargetAtTime(this.muted||!playing?0:this.volume,now,.04);
     this.musicMaster.gain.setTargetAtTime(this.muted||(!playing&&this.musicMode!=='terminal')?0:this.volume,now,.04);
+    this.turretServo.update(run,playing);
     const speed=Math.abs(run.speed),turn=Math.min(1,Math.abs(run.steer||0));
     if(this.engineSample)this.engineSample.playbackRate.setTargetAtTime(.8+speed*.018+turn*.07,now,.15);
     else this.engine.frequency.setTargetAtTime(33+speed*2.8+turn*5,now,.08);
@@ -290,7 +293,7 @@ export class Sound {
   resumeMusic(){
     if(this.musicStarted&&!this.music.ended&&!this.disposed)this.music.play().catch(e=>{this.musicError=e.message;});
   }
-  reset(){this.musicTransition=null;this.closeEncounter=false;this.pursued=false;this.music?.pause();if(this.music)this.music.currentTime=0;this.musicStarted=false;this.musicMode=null;this.lastImpact=0;this.lastEar=null;this.wasPlaying=false;for(const s of this.sources)if(!s.loop)s.stop();}
+  reset(){this.turretServo?.reset();this.musicTransition=null;this.closeEncounter=false;this.pursued=false;this.music?.pause();if(this.music)this.music.currentTime=0;this.musicStarted=false;this.musicMode=null;this.lastImpact=0;this.lastEar=null;this.wasPlaying=false;for(const s of this.sources)if(!s.loop)s.stop();}
   silence(){this.music?.pause();if(this.context){this.master.gain.setTargetAtTime(0,this.context.currentTime,.02);this.musicMaster.gain.setTargetAtTime(0,this.context.currentTime,.02);}}
-  dispose(){this.disposed=true;this.music?.pause();this.music?.removeAttribute('src');this.music?.load();this.musicSource?.disconnect();this.musicGain?.disconnect();this.musicMaster?.disconnect();this.context?.close();this.sources.clear();}
+  dispose(){this.disposed=true;this.turretServo?.dispose();this.music?.pause();this.music?.removeAttribute('src');this.music?.load();this.musicSource?.disconnect();this.musicGain?.disconnect();this.musicMaster?.disconnect();this.context?.close();this.sources.clear();}
 }
