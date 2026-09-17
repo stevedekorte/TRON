@@ -471,3 +471,7 @@ These checks do not measure frame rate across hardware or guarantee hits against
 ## Compact gunner feedback — September 17
 
 Replaced targeting text and whole-crosshair color changes with a 220 ms transition of the central hash mark to half size and yellow glow. Misses restore its size and green color. Reduced-motion preferences disable the transition. The existing gunner browser check passes for tank and Recognizer hits, restoration on misses and exiting gunner mode; inspected the resulting screenshot to confirm the center stays aligned and the surrounding crosshairs stay green.
+
+## Intact Recognizer explosions — September 17
+
+`node tests/breakup.mjs` passes in isolated headless Chrome: exactly six distinct intact sections, randomized motion between explosions, falling, pause freezing and geometry cleanup after expiry. The resource comparison warms up a complete explosion before measuring the next cycle, avoiding unrelated lazy scene allocations. Inspected the early explosion capture with the camera transition settled: original block silhouettes remain recognizable around the flash/rings.
