@@ -442,3 +442,7 @@ A stationary-tank mouse test reproduced camera translation during turret catch-u
 ### Hull health and regeneration
 
 All 89 simulation tests passed, including five-minute recharge rate/cap, reset to full, and no regeneration after destruction. `node tests/health-meter.mjs` passed in Chrome: fractional health matches elapsed simulation time, pause freezes it, HUD visibility in gunner view, and a fatal projectile leaves zero health. Production build passed with the existing chunk-size advisory. Health HUD screenshot: `test-results/health-meter.png`.
+
+### Compact status bars
+
+Chrome `tests/health-meter.mjs` passed the readiness checkmark, removal of visible health percentage, normal/orange/red/critical thresholds and critical pulse/reduced-motion override, alongside recharge/pause/death checks. Build passed with the existing chunk advisory.

@@ -491,4 +491,6 @@ The gunner camera is now anchored at the turret pivot instead of the muzzle. Ind
 
 CLU turret motion now has a quiet, low-pitched servo tone that follows actual yaw/elevation motor speed, including centering and stabilization. It fades on stopping, pause or destruction, and is spatialized at the tank. Following listening feedback, its gain is 0.032 and fundamental pitch spans 55–110 Hz.
 
-CLU has a small hull-health percentage and bar below turbo, also visible in gunner mode. Missing health regenerates continuously at 1% of maximum every three simulation seconds (five minutes for a full bar). Pause freezes recharge; destruction sets health to zero and cannot regenerate. Enemy health is unchanged.
+CLU has a small HEALTH bar below turbo, also visible in gunner mode. Missing health regenerates continuously at 1% of maximum every three simulation seconds (five minutes for a full bar). Pause freezes recharge; destruction sets health to zero and cannot regenerate. Enemy health is unchanged.
+
+Turbo now uses one label line, `T / TURBO ✓` when ready, with no countdown text. HEALTH has no visible percentage (its accessible meter value remains). Health turns orange at 50%, red at 25%, and pulses red at 10%; reduced-motion preference retains steady red.
