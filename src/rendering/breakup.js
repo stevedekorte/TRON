@@ -8,12 +8,13 @@ const BREAKUP_MOTION={
  tank:{impulseScale:1,spinScale:1,lift:3,liftVariation:5,delay:.12,flash:.22,gravity:9.81,life:10,lifeVariation:2,fade:2},
 };
 
-// Fragment the struck anatomical section; detach the other sections whole.
-// Preserve posed surfaces and trim, with fresh impulses and fracture seeds.
+// Recognizers detach as intact blocks; tanks retain their fractured impact effect.
+// Preserve posed surfaces and trim, with fresh impulses for each explosion.
 export class Breakups {
  constructor(scene){this.scene=scene;this.bursts=[];}
  spawn(craft,event){
   const motion=BREAKUP_MOTION[['tank','enemyTank'].includes(event.subject)?'tank':'recognizer'];
+  const fracture=motion===BREAKUP_MOTION.tank;
   if(this.bursts.length>=5)this.remove(this.bursts[0]);
   craft.root.position.set(event.x,event.y,-event.s);craft.root.rotation.y=event.yaw;
   craft.pose?.(event.fold);craft.root.updateMatrixWorld(true);
@@ -54,7 +55,7 @@ export class Breakups {
   });
   if(!centers.length)return;
   const struck=centers.filter(c=>c.part===hitPart).map(c=>c.center);
-  const seeds=[struck[Math.floor(Math.random()*struck.length)].clone()],count=8+Math.floor(Math.random()*6);
+  const seeds=fracture?[struck[Math.floor(Math.random()*struck.length)].clone()]:[],count=fracture?8+Math.floor(Math.random()*6):0;
   for(let n=1;n<count;n++){
    let best=null,score=-1;
    for(let j=0;j<80;j++){
@@ -66,7 +67,7 @@ export class Breakups {
   }
   const parts=seeds.map(()=>hitPart);
   for(const part of new Set(centers.map(c=>c.part))){
-   if(part===hitPart)continue;
+   if(fracture&&part===hitPart)continue;
    const points=centers.filter(c=>c.part===part),center=new THREE.Vector3();
    for(const point of points)center.add(point.center);
    seeds.push(center.divideScalar(points.length));parts.push(part);
@@ -100,7 +101,7 @@ export class Breakups {
   for(const geometry of new Set(surfaces.map(s=>s.geometry)))geometry.dispose();
   const seamMaterial=new THREE.LineBasicMaterial({color:['tank','enemyTank'].includes(event.subject)?0x518da0:0xa53029,transparent:true,opacity:1,depthWrite:false});
   materials.push(seamMaterial);
-  for(let i=0;i<groups.length;i++)if(parts[i]===hitPart){
+  for(let i=0;i<groups.length;i++)if(fracture&&parts[i]===hitPart){
    for(const mesh of [...groups[i].children]){
     const seams=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry,180),seamMaterial);
     mesh.add(seams);
@@ -108,7 +109,7 @@ export class Breakups {
   }
   const blastBias=new THREE.Vector3(Math.random()-.5,0,Math.random()-.5).multiplyScalar(.45);
   const pieces=groups.map((group,index)=>{
-   const fragmented=parts[index]===hitPart;
+   const fragmented=fracture&&parts[index]===hitPart;
    // Intact Recognizer sections blast away from the craft's center instead of
    // all travelling to the same side of an off-center bullet impact.
    const origin=!fragmented&&motion===BREAKUP_MOTION.recognizer?craft.root.position:impact;

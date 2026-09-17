@@ -514,3 +514,7 @@ The instruments feature is removed: no lower-left readout, H-key toggle or instr
 The top controls row separates hints with centered dots.
 
 The R-key reset shortcut and its controls hint are removed. Development scenario tests use the existing development-only reset hook.
+
+## Intact Recognizer explosions — September 17
+
+Recognizers now burst into six intact sections: crown, crossbar, two shoulders and two legs. The struck section also remains whole. Each block receives randomized outward impulse, delay and tumbling before falling; original surface trim, flash and optical rings remain. No fracture shards or new cut seams are generated for Recognizers. Tank destruction retains its existing fracture effect.
