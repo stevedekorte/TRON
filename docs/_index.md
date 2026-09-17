@@ -494,3 +494,5 @@ CLU turret motion now has a quiet, low-pitched servo tone that follows actual ya
 CLU has a small HEALTH bar below turbo, also visible in gunner mode. Missing health regenerates continuously at 1% of maximum every three simulation seconds (five minutes for a full bar). Pause freezes recharge; destruction sets health to zero and cannot regenerate. Enemy health is unchanged.
 
 Turbo now uses one label line, `T / TURBO`, with readiness shown by the bar alone and no countdown text. HEALTH has no visible percentage (its accessible meter value remains). Health turns orange at 50%, red at 25%, and pulses red at 10%; reduced-motion preference retains steady red.
+
+Enemy bullet impacts now retain `lastHit` (part, simulation time, world x/y/s) and `partHits` counters. Hit events include `id` and `hitPart`; fatal destruction events carry the same classification. Recognizers distinguish crown, crossbar, shoulders and legs, including folded poses; tanks distinguish approximate turret/hull/track armor zones. This is collision-region tracking, not triangle picking. Existing damage and renderer nearest-surface breakup selection remain unchanged.

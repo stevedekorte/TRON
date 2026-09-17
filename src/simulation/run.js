@@ -1,3 +1,4 @@
+import {enemyHitPart,recordEnemyHit} from './hit-parts.js';
 import {randomSeed,seededRandom} from '../game/random.js';
 import {updateMouseAim,accelerateMouseAim} from './mouse-aim.js';
 import {stabilizeTurret} from './turret.js';
@@ -122,16 +123,12 @@ export function updateWeapons(run,input,dt) {
       }
       for(const e of [...run.recognizers,...run.enemyTanks]) {
         if(e.state==='destroyed')continue;
-        const dx=(p.x-e.x)/RECOGNIZER_SCALE,dz=-(p.s-e.s)/RECOGNIZER_SCALE,localX=Math.cos(e.yaw)*dx-Math.sin(e.yaw)*dz;
-        const localZ=Math.sin(e.yaw)*dx+Math.cos(e.yaw)*dz,localY=(p.y-e.y)/RECOGNIZER_SCALE;
-        const hull=Math.abs(localX)<18&&localY>-4&&localY<5;
-        const crown=Math.abs(localX)<7&&localY>=5&&localY<8;
-        const legX=Math.abs(localX)+(e.fold||0)*13;
-        const legs=legX>10&&legX<17&&localY>-22&&localY<=-4;
-        if(e.kind==='ground'?(Math.hypot(p.x-e.x,p.s-e.s)<3.5&&p.y<3.5):Math.abs(localZ)<4.35&&(hull||crown||legs)) {
+        const hitPart=enemyHitPart(e,p);
+        if(hitPart) {
+          recordEnemyHit(e,p,hitPart,run.time);
           e.health--;e.hit=1;p.life=0;
-          if(e.kind==='ground'&&e.health>0)reactToGroundHit(e,p,run.time);run.events.push({type:'hit',subject:e.kind==='ground'?'enemyTank':'recognizer',fatal:e.health===0,x:p.x,y:p.y,s:p.s});
-          if(e.health===0){e.state='destroyed';e.canSee=false;e.memory=null;run.kills++;run.events.push({type:'destroyed',subject:e.kind==='ground'?'enemyTank':undefined,turretYaw:e.turretYaw,id:e.id,x:e.x,y:e.kind==='ground'?0:e.y,s:e.s,yaw:e.yaw,fold:e.fold||0,vx:e.vx,vy:e.vy,vs:e.vs,hit:{x:p.x,y:p.y,z:-p.s}});}
+          if(e.kind==='ground'&&e.health>0)reactToGroundHit(e,p,run.time);run.events.push({type:'hit',subject:e.kind==='ground'?'enemyTank':'recognizer',id:e.id,hitPart,fatal:e.health===0,x:p.x,y:p.y,s:p.s});
+          if(e.health===0){e.state='destroyed';e.canSee=false;e.memory=null;run.kills++;run.events.push({type:'destroyed',subject:e.kind==='ground'?'enemyTank':undefined,turretYaw:e.turretYaw,id:e.id,hitPart,x:e.x,y:e.kind==='ground'?0:e.y,s:e.s,yaw:e.yaw,fold:e.fold||0,vx:e.vx,vy:e.vy,vs:e.vs,hit:{x:p.x,y:p.y,z:-p.s}});}
           break;
         }
       }

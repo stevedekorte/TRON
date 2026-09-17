@@ -446,3 +446,7 @@ All 89 simulation tests passed, including five-minute recharge rate/cap, reset t
 ### Compact status bars
 
 Chrome `tests/health-meter.mjs` passed the readiness checkmark, removal of visible health percentage, normal/orange/red/critical thresholds and critical pulse/reduced-motion override, alongside recharge/pause/death checks. Build passed with the existing chunk advisory.
+
+### Enemy hit-part tracking
+
+`npm test`: all 90 tests passed. Projectile integration tests cover every Recognizer zone at two yaw angles in open/folded poses, all four tank zones at two yaw angles, event identifiers, last-hit coordinates/time, per-part counts and fatal-event classification. No rendered geometry precision is claimed; tank armor subdivisions are approximate within existing collision volumes.
