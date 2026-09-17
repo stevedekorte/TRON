@@ -486,3 +486,5 @@ Tank destruction now uses a dedicated 1.65-second layered electronic explosion f
 Gunner magnification changes now ease over 0.35 seconds, including cycling from 8× back to 1×; repeated zoom input starts from the current interpolated field of view. Reduced-motion mode changes immediately. The larger magnification label sits in the top-center gap of the crosshair frame and follows the complete sight when aiming.
 
 The gunner view also accepts mouse-wheel zoom: up zooms in, down zooms out, clamped at 1× and 8×. Trackpad input accumulates with a small threshold and rate limit to avoid racing through levels; O still cycles. Aerial wheel controls are unchanged.
+
+The gunner camera is now anchored at the turret pivot instead of the muzzle. Independent mouse-look no longer moves sideways as the barrel catches up, removing motor-driven camera sway and its changing raycast origin. Turret speed/acceleration limits and muzzle-based projectile aiming remain unchanged.

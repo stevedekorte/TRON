@@ -1,3 +1,4 @@
+import {TANK} from '../game/tank.js';
 import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
 import {updateMouseTarget} from './mouse-target.js';
 import {cannonPose} from '../simulation/run.js';
@@ -231,7 +232,11 @@ export class View {
     this.followPosition.copy(this.camera.position);
     this.freshCamera = false;
     if(gunner){
-      const pose=cannonPose({x,s,yaw,turretYaw:this.tank.turret.rotation.y});
+      // Anchor the sight at the turret pivot, not the muzzle: motor correction
+      // must not orbit the camera or feed changing parallax back into mouse aim.
+      const pose={x:x+Math.cos(yaw)*TANK.pivot[0]+Math.sin(yaw)*TANK.pivot[2],
+        s:s+Math.sin(yaw)*TANK.pivot[0]-Math.cos(yaw)*TANK.pivot[2],
+        y:TANK.muzzle[1],yaw:yaw+this.tank.turret.rotation.y};
       const pitch=(previous.aimPitch??run.aimPitch)+(run.aimPitch-(previous.aimPitch??run.aimPitch))*alpha;
       const obstruction=wallIntersection({x,s,y:pose.y},pose,.2);
       if(obstruction!==null){const t=Math.max(0,obstruction-.02);pose.x=x+(pose.x-x)*t;pose.s=s+(pose.s-s)*t;}
