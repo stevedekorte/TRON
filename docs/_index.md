@@ -512,3 +512,5 @@ Gunner mode outlines enemy tanks in soft cyan, with hidden edges suppressed. Whe
 The instruments feature is removed: no lower-left readout, H-key toggle or instruments control hint remains.
 
 The top controls row separates hints with centered dots.
+
+The R-key reset shortcut and its controls hint are removed. Development scenario tests use the existing development-only reset hook.

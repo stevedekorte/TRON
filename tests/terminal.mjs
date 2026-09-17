@@ -44,7 +44,7 @@ try {
   await page.waitForFunction(()=>window.__tron.state.mode==='running');
   await page.screenshot({path:'test-results/opening-clu.png'});
   await page.keyboard.down('KeyC');await page.waitForTimeout(1000);await page.screenshot({path:'test-results/recognizer-starting-line.png'});await page.keyboard.up('KeyC');
-  await page.keyboard.press('KeyR');
+  await page.evaluate(()=>__tron.reset());
   await page.waitForTimeout(250);assert.equal(await page.evaluate(()=>window.__tron.state.speed),22);
   await page.keyboard.down('KeyW');await page.keyboard.up('KeyW');
   await page.waitForTimeout(300);assert.ok(await page.evaluate(()=>window.__tron.state.speed)<22);

@@ -106,7 +106,6 @@ listen(window, 'keydown', event => {
   if(mode==='entering'&&key==='Enter'){event.preventDefault();finishOpening();return;}
   if (key === 'Escape') { ['running','entering'].includes(mode) ? pause() : resume(); return; }
   if (key === 'KeyM') { mute(); return; }
-  if (key === 'KeyR' && !['loading','error'].includes(mode)) { start(); return; }
   if(key==='KeyT'){
     if(event.shiftKey&&import.meta.env.DEV){$('tuning').hidden=!$('tuning').hidden;return;}
     if(['running','entering'].includes(mode))boostTank(run,keys.has('KeyS')||keys.has('ArrowDown')?-1:1);
