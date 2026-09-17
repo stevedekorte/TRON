@@ -167,7 +167,6 @@ function updateHud() {
   $('mouse-hint').textContent=document.pointerLockElement===$('game')?'':'CLICK / MOUSE AIM';
   $('gunner-sight').classList.toggle('on-target',!!view.gunnerHit);
   $('gunner-sight').classList.toggle('critical-target',!!view.gunnerHit?.critical);
-  $('gunner-target-cue').textContent=view.gunnerHit?(view.gunnerHit.critical?'CRITICAL':'ON TARGET'):'';
   $('gunner-zoom').textContent=['1×','2×','4×','8×'][run.gunnerZoom];
   $('instruments').hidden=!showInstruments;
   $('zoom-hint').hidden=!(view.aerial||run.gunner);

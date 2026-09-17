@@ -520,7 +520,7 @@ Enemy tanks now fire every 3.4–4.2 seconds with per-shot seeded variation. The
 
 The HDR renderer retains 4-sample MSAA and adds SMAA before output conversion. Rendering uses 1.25–1.5× pixel density where the four-million-pixel supersampling budget allows; large windows retain at least native resolution. The existing render-scale control remains available. This improves edge smoothing without adding ray tracing.
 
-Gunner mode outlines enemy tanks in soft cyan, with hidden edges suppressed. The complete crosshair changes color and shows ON TARGET when a shot along the actual barrel should intersect a moving enemy; crown intersections show CRITICAL. The prediction uses current linear velocity, projectile lifetime and maze occlusion, and shares the simulation's approximate part volumes. Future turns, acceleration or leg folding can invalidate the estimate. It does not steer shots.
+Gunner mode outlines enemy tanks in soft cyan, with hidden edges suppressed. When a shot along the actual barrel should intersect a moving enemy, the central hash mark smoothly shrinks to half size and glows yellow. It returns to normal on a predicted miss; the outer crosshairs remain green and all marks retain their shared aiming position. Targeting feedback uses no text. The prediction uses current linear velocity, projectile lifetime and maze occlusion, and shares the simulation's approximate part volumes. Future turns, acceleration or leg folding can invalidate the estimate. It does not steer shots.
 
 
 ---
@@ -1637,3 +1637,7 @@ All 94 simulation tests passed. New checks cover varied/reproducible shot spread
 - Inspected the exterior anti-aliasing capture and gunner tank-outline capture. The tank silhouette is readable with a thin cyan edge; predicted-hit feedback moves with the complete crosshair.
 
 These checks do not measure frame rate across hardware or guarantee hits against accelerating targets. Supersampling and the outline pass add GPU work.
+
+## Compact gunner feedback — September 17
+
+Replaced targeting text and whole-crosshair color changes with a 220 ms transition of the central hash mark to half size and yellow glow. Misses restore its size and green color. Reduced-motion preferences disable the transition. The existing gunner browser check passes for tank and Recognizer hits, restoration on misses and exiting gunner mode; inspected the resulting screenshot to confirm the center stays aligned and the surrounding crosshairs stay green.

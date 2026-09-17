@@ -467,3 +467,7 @@ All 94 simulation tests passed. New checks cover varied/reproducible shot spread
 - Inspected the exterior anti-aliasing capture and gunner tank-outline capture. The tank silhouette is readable with a thin cyan edge; predicted-hit feedback moves with the complete crosshair.
 
 These checks do not measure frame rate across hardware or guarantee hits against accelerating targets. Supersampling and the outline pass add GPU work.
+
+## Compact gunner feedback — September 17
+
+Replaced targeting text and whole-crosshair color changes with a 220 ms transition of the central hash mark to half size and yellow glow. Misses restore its size and green color. Reduced-motion preferences disable the transition. The existing gunner browser check passes for tank and Recognizer hits, restoration on misses and exiting gunner mode; inspected the resulting screenshot to confirm the center stays aligned and the surrounding crosshairs stay green.
