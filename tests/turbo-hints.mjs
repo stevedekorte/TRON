@@ -13,15 +13,15 @@ try{
  await page.keyboard.press('KeyT');await page.waitForFunction(()=>window.__tron.state.turboRemaining>0);
  let state=await page.evaluate(()=>window.__tron.state);assert.ok(state.speed>50);assert.ok(state.turboRemaining<=10);
  assert.equal(await page.locator('#tuning').isVisible(),false);
- assert.equal(await page.locator('#turbo-status').textContent(),'');
+ assert.equal(await page.locator('#turbo > span').textContent(),'T / TURBO');
  assert.equal(await page.locator('#hint').evaluate(e=>e.classList.contains('faded')),false);
  await page.keyboard.press('Escape');const remaining=await page.evaluate(()=>window.__tron.state.turboRemaining);
  await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>window.__tron.state.turboRemaining),remaining);
  await page.keyboard.press('Enter');await page.evaluate(()=>window.__tron.place({turboRemaining:.05}));
  await page.waitForFunction(()=>window.__tron.state.turboRemaining===0);await page.waitForTimeout(1800);
  assert.ok(await page.evaluate(()=>window.__tron.state.speed)<=22);
- assert.equal(await page.locator('#turbo-status').textContent(),'');
+ assert.equal(await page.locator('#turbo > span').textContent(),'T / TURBO');
  await page.keyboard.press('KeyT');assert.equal(await page.evaluate(()=>window.__tron.state.turboRemaining),0);
- await page.evaluate(()=>window.__tron.place({turboCooldown:.02}));await page.waitForFunction(()=>document.querySelector('#turbo-status').textContent==='✓');
+ await page.evaluate(()=>window.__tron.place({turboCooldown:.02}));await page.waitForFunction(()=>document.querySelector('#turbo').getAttribute('aria-label')==='Turbo ready');
  console.log('T boosts, pauses and expires; startup controls remain centered in one row after the first input.');
 }finally{await browser.close();}

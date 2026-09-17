@@ -493,4 +493,4 @@ CLU turret motion now has a quiet, low-pitched servo tone that follows actual ya
 
 CLU has a small HEALTH bar below turbo, also visible in gunner mode. Missing health regenerates continuously at 1% of maximum every three simulation seconds (five minutes for a full bar). Pause freezes recharge; destruction sets health to zero and cannot regenerate. Enemy health is unchanged.
 
-Turbo now uses one label line, `T / TURBO ✓` when ready, with no countdown text. HEALTH has no visible percentage (its accessible meter value remains). Health turns orange at 50%, red at 25%, and pulses red at 10%; reduced-motion preference retains steady red.
+Turbo now uses one label line, `T / TURBO`, with readiness shown by the bar alone and no countdown text. HEALTH has no visible percentage (its accessible meter value remains). Health turns orange at 50%, red at 25%, and pulses red at 10%; reduced-motion preference retains steady red.

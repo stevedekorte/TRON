@@ -14,8 +14,8 @@ try{
  assert.ok(after.health>before.health);assert.ok(Math.abs(after.health-before.health-(after.time-before.time)*.01)<1e-8);
  await page.keyboard.press('Escape');const frozen=await page.evaluate(()=>__tron.state.health);await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.health),frozen);
  await page.keyboard.press('Enter');await page.keyboard.press('KeyP');await page.waitForFunction(()=>__tron.state.gunner&&!__tron.state.camera.gunnerTransition&&__tron.state.camera.gunnerOpacity===1);assert.ok(await page.locator('#clu-health').isVisible());
- assert.equal(await page.locator('#turbo-status').textContent(),'✓');
- await page.evaluate(()=>__tron.place({turboCooldown:30}));await page.waitForFunction(()=>document.querySelector('#turbo-status').textContent==='');
+ assert.equal(await page.locator('#turbo > span').textContent(),'T / TURBO');
+ await page.evaluate(()=>__tron.place({turboCooldown:30}));await page.waitForFunction(()=>document.querySelector('#turbo').getAttribute('aria-label')==='Turbo recharging');
  for(const [health,level] of [[2.7,'normal'],[1.2,'orange'],[.6,'red'],[.24,'critical']]){
   await page.evaluate(health=>__tron.place({health}),health);await page.waitForFunction(level=>document.querySelector('#clu-health').dataset.level===level,level);
  }
