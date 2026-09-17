@@ -430,3 +430,7 @@ User listening found the shorter 0.28-second version repeated the clink faster. 
 `node tests/gunner-zoom.mjs` passed in Chrome: intermediate FOVs for all four zoom changes including wrap, exact final FOVs, enlarged top-center label bounds, and immediate reduced-motion changes. Screenshot `test-results/gunner-zoom.png` reviewed. `node tests/gunner-transition.mjs` passed for entry/exit, reversals and reduced motion. Production build passed with the existing chunk-size advisory.
 
 The gunner zoom browser check additionally passed wheel zoom through every level in both directions, including clamping at 1×/8×. Wheel zoom uses the same eased field-of-view transition.
+
+### Mouse gunner stability
+
+A stationary-tank mouse test reproduced camera translation during turret catch-up before the fix. `tests/mouse-aim.mjs` now verifies fixed camera position and stable mouse-view orientation throughout catch-up, along with convergence, firing, F lock and pointer-lock lifecycle; Chrome passed after anchoring the camera at the turret pivot. All 88 simulation tests passed, including mouse motor limits.
