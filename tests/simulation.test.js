@@ -375,3 +375,22 @@ test('Clu gradually regenerates a full hull over five minutes without reviving',
  for(let i=0;i<600;i++)step(r,{},1/60);assert.equal(r.health,0);
  assert.equal(createRun().health,3);
 });
+
+test('enemy bullet events retain anatomical hit parts, location and per-part counts',()=>{
+ const localPoint=(e,x,y,z,scale)=>({x:e.x+(Math.cos(e.yaw)*x+Math.sin(e.yaw)*z)*scale,s:e.s-(-Math.sin(e.yaw)*x+Math.cos(e.yaw)*z)*scale,y:(e.kind==='ground'?0:e.y)+y*scale});
+ for(const yaw of [0,1.3])for(const fold of [0,1]){
+  const r=createRun(1982);r.enemyTanks=[];const e=r.recognizers[0];r.recognizers=[e];Object.assign(e,{x:-5000,s:-5000,y:80,yaw,fold,health:100});
+  const parts=[['crown',0,6],['crossbar',0,0],['left-shoulder',-12,0],['right-shoulder',12,0],['left-leg',-(14-fold*13),-12],['right-leg',14-fold*13,-12]];
+  for(const [part,x,y] of parts){
+   const p=localPoint(e,x,y,0,RECOGNIZER_SCALE);r.projectiles=[{...p,vx:0,vy:0,vs:0,life:1}];updateWeapons(r,{},1/60);
+   const event=r.events.at(-1);assert.equal(event.hitPart,part);assert.equal(event.id,e.id);assert.equal(e.partHits[part],1);assert.deepEqual(e.lastHit,{part,time:r.time,...p});
+  }
+  e.health=1;const p=localPoint(e,0,0,0,RECOGNIZER_SCALE);r.projectiles=[{...p,vx:0,vy:0,vs:0,life:1}];updateWeapons(r,{},1/60);assert.equal(r.events.at(-1).hitPart,'crossbar');assert.equal(e.partHits.crossbar,2);
+ }
+ for(const yaw of [0,1.3]){
+  const r=createRun(1982);r.recognizers=[];const e=r.enemyTanks[0];r.enemyTanks=[e];Object.assign(e,{x:-5000,s:-5000,yaw,health:100});
+  for(const [part,x,y] of [['hull',0,1],['turret',0,2.5],['left-track',-3,1],['right-track',3,1]]){
+   const p=localPoint(e,x,y,0,1);r.projectiles=[{...p,vx:0,vy:0,vs:0,life:1}];updateWeapons(r,{},1/60);assert.equal(e.lastHit.part,part);assert.equal(r.events.at(-1).hitPart,part);
+  }
+ }
+});
