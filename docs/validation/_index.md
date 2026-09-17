@@ -454,3 +454,7 @@ Chrome `tests/health-meter.mjs` passed the readiness checkmark, removal of visib
 ### Critical hits and component damage
 
 All 92 simulation tests passed: one-shot crown kills, half-damage limb hits, repeated-leg stomp disable, aborting a committed drop, track mobility loss, and an immobilized tank retaining firing ability. The wall-only movement fixture now excludes randomized enemies so it tests wall geometry independently. The long-range projectile fixture now expects its crown hit to be fatal. Chrome `tests/part-damage.mjs` passed live crown/leg damage checks with no rendering errors; the browser also measured imported turret bounds used for classification. Build passed with the existing chunk-size advisory.
+
+### Enemy firing cadence and spread
+
+All 94 simulation tests passed. New checks cover varied/reproducible shot spread, horizontal/vertical angular bounds, unchanged projectile speed, 3.4–4.2-second cooldown samples, and actual shot spacing during a 20-second simulated encounter. The ground encounter fixture now supplies an explicit seed. Build passed with the existing chunk-size advisory.
