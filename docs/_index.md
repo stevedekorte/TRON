@@ -482,3 +482,7 @@ The carrier route is nearer to Clu: forward offset is halved and left offset red
 Three maze tanks and one maze Recognizer receive fresh positions, headings and route seeds each game. Ground starts require wall clearance and mutual spacing. `createRun(seed)` reproduces a run for diagnostics; ordinary starts and resets generate a new seed. Stalled ground patrols choose a new destination after five seconds.
 
 Tank destruction now uses a dedicated 1.65-second layered electronic explosion for CLU and enemy tanks, replacing the generic noise burst. Three synthesized variants combine a low shock, electrical rupture and scattered metallic debris; playback is spatial and distance-attenuated. A sample is available in the sound library.
+
+Gunner magnification changes now ease over 0.35 seconds, including cycling from 8× back to 1×; repeated zoom input starts from the current interpolated field of view. Reduced-motion mode changes immediately. The larger magnification label sits in the top-center gap of the crosshair frame and follows the complete sight when aiming.
+
+The gunner view also accepts mouse-wheel zoom: up zooms in, down zooms out, clamped at 1× and 8×. Trackpad input accumulates with a small threshold and rate limit to avoid racing through levels; O still cycles. Aerial wheel controls are unchanged.

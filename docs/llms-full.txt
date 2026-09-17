@@ -496,6 +496,10 @@ Three maze tanks and one maze Recognizer receive fresh positions, headings and r
 
 Tank destruction now uses a dedicated 1.65-second layered electronic explosion for CLU and enemy tanks, replacing the generic noise burst. Three synthesized variants combine a low shock, electrical rupture and scattered metallic debris; playback is spatial and distance-attenuated. A sample is available in the sound library.
 
+Gunner magnification changes now ease over 0.35 seconds, including cycling from 8× back to 1×; repeated zoom input starts from the current interpolated field of view. Reduced-motion mode changes immediately. The larger magnification label sits in the top-center gap of the crosshair frame and follows the complete sight when aiming.
+
+The gunner view also accepts mouse-wheel zoom: up zooms in, down zooms out, clamped at 1× and 8×. Trackpad input accumulates with a small threshold and rate limit to avoid racing through levels; O still cycles. Aerial wheel controls are unchanged.
+
 
 ---
 
@@ -1568,3 +1572,9 @@ User listening found the shorter 0.28-second version repeated the clink faster. 
 ### Tank destruction sound
 
 `node tests/tank-explosion.mjs` passed: three synthesis variants at 44.1/48 kHz remain finite and below 0.841 peak, fade to silence, and contain stereo differences. Chrome OfflineAudioContext renders the actual Sound.effect path for both tank subjects; near RMS approximately 0.115 versus 0.030 at 180 m, and all sources release after playback. `npm run build` passed with the existing chunk-size advisory. Subjective listening/film fidelity remains for user review. `scripts/generate-tank-explosion.mjs` builds the library audition from the gameplay synthesis.
+
+## September 17 — gunner zoom
+
+`node tests/gunner-zoom.mjs` passed in Chrome: intermediate FOVs for all four zoom changes including wrap, exact final FOVs, enlarged top-center label bounds, and immediate reduced-motion changes. Screenshot `test-results/gunner-zoom.png` reviewed. `node tests/gunner-transition.mjs` passed for entry/exit, reversals and reduced motion. Production build passed with the existing chunk-size advisory.
+
+The gunner zoom browser check additionally passed wheel zoom through every level in both directions, including clamping at 1×/8×. Wheel zoom uses the same eased field-of-view transition.

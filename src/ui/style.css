@@ -20,7 +20,7 @@ body{visibility:visible}
 
 body.entering #turbo,body.entering #instruments,body.entering #survey{display:none}
 
-#gunner-sight{position:fixed;inset:0;pointer-events:none;color:#56d633;z-index:3}#gunner-sight svg{width:100%;height:100%;filter:drop-shadow(0 0 2px #51dd46);opacity:.8}#gunner-zoom{position:absolute;bottom:5%;left:50%;transform:translateX(-50%);font:12px monospace;letter-spacing:2px}body.paused #gunner-sight{opacity:.35}
+#gunner-sight{position:fixed;inset:0;pointer-events:none;color:#56d633;z-index:3}#gunner-sight svg{width:100%;height:100%;filter:drop-shadow(0 0 2px #51dd46);opacity:.8}#gunner-zoom{font:30px monospace;letter-spacing:1px}body.paused #gunner-sight{opacity:.35}
 
 #death-fade{position:fixed;inset:0;background:#020204;z-index:20;pointer-events:none}
 
