@@ -29,7 +29,7 @@ try {
   await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.screenshot({path:'test-results/intro.png'});
   await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
   let state=await page.evaluate(()=>window.__tron.state);assert.equal(state.weaponVisual.source,'arabinowitz');assert.equal(state.recognizers.length,3);assert.equal(state.audioSources,3);
-  assert.equal(await page.locator('#instruments').isVisible(),false);
+  assert.equal(await page.locator('#instruments').count(),0);
   await page.keyboard.down('KeyL');await page.waitForTimeout(600);await page.keyboard.up('KeyL');
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.yaw,SPAWN.yaw);assert.ok(state.turretYaw<-.5);assert.equal(state.weaponVisual.barrelPitch,0);
   await page.keyboard.press('KeyR');await page.waitForTimeout(100);

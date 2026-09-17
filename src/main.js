@@ -3,7 +3,7 @@ import { loadVehicles } from './rendering/models.js';
 import { Terminal } from './ui/terminal.js';
 import { View } from './rendering/view.js';
 import { Sound } from './audio/sound.js';
-import { createRun, step, cannonTarget, startPursuit, boostTank } from './simulation/run.js';
+import { createRun, step, startPursuit, boostTank } from './simulation/run.js';
 import { WALLS, HALF, BASIS, MAZE_KIND } from './levels/maze.js';
 import { config, defaults, TURBO, CLU_HEALTH, GUNNER } from './game/config.js';
 
@@ -11,7 +11,7 @@ const $ = id => document.getElementById(id);
 const sound = new Sound();
 const terminal = new Terminal($('terminal-text'), $('terminal-actions'));
 let view, run = createRun(), previous = { ...run }, mode = 'loading';
-let showInstruments = false, showSurvey = false,idleTime=0;
+let showSurvey = false,idleTime=0;
 let controlsFirstKey=null,idleReminderArmed=false;
 function noteControlKey(){if(controlsFirstKey===null)controlsFirstKey=run.time;else if(run.time-controlsFirstKey>=10)idleReminderArmed=true;}
 let openingTime=0,pausedFrom='running',startingThrottle=false;
@@ -101,7 +101,6 @@ listen(window, 'keydown', event => {
   if (key === 'Tab' && mode === 'running') { event.preventDefault(); if (!event.repeat) showSurvey = !showSurvey; return; }
   if (event.repeat) return;
   if(key==='KeyF'&&['running','entering'].includes(mode)){clearMouseAim();run.gunnerLeveling=true;run.turretCentering=true;run.turretLocked=true;return;}
-  if (key === 'KeyH' && mode === 'running') { showInstruments = !showInstruments; return; }
   if (key === 'KeyV' && mode === 'running') { run.gunner=false;clearMouseAim();releaseMouse();view.aerial = !view.aerial; view.freshCamera = view.reducedMotion; return; }
   if (key === 'Enter' && mode === 'ready') { event.preventDefault(); terminal.done ? start() : terminal.finish(); return; }
   if(mode==='entering'&&key==='Enter'){event.preventDefault();finishOpening();return;}
@@ -168,13 +167,8 @@ function updateHud() {
   $('gunner-sight').classList.toggle('on-target',!!view.gunnerHit);
   $('gunner-sight').classList.toggle('critical-target',!!view.gunnerHit?.critical);
   $('gunner-zoom').textContent=['1×','2×','4×','8×'][run.gunnerZoom];
-  $('instruments').hidden=!showInstruments||run.gunner;
   $('zoom-hint').hidden=!(view.aerial||run.gunner);
   $('survey').hidden=!showSurvey;
-  $('speed').textContent=Math.round(Math.abs(run.speed)*3.6);
-  $('coordinates').textContent=`${Math.round(run.x)}, ${Math.round(run.s)}`;
-  $('weapon-status').textContent=run.crushed?'CLU DEREZZED — R TO RESET':run.extraShots>0?`CANNON READY +${run.extraShots}`:run.cooldown>.15?'RECHARGING':run.gunner?'MANUAL AIM':cannonTarget(run).lock?'HEIGHT ASSIST':'CANNON READY';
-  $('orientation').textContent=`TURRET ${Math.round(-run.turretYaw*180/Math.PI)}°`;
   const healthFraction=run.crushed?0:Math.max(0,Math.min(1,run.health/CLU_HEALTH.max)),healthPercent=Math.ceil(healthFraction*100);
   $('health-fill').style.transform=`scaleX(${healthFraction})`;
   $('health-meter').setAttribute('aria-valuenow',String(healthPercent));
