@@ -19,7 +19,7 @@ test('maze is connected with branches, cycles, dead ends and four exterior openi
 });
 
 test('tank sweeps solid walls, slides, enters maze and can turn in place',()=>{
-  const r=createRun();Object.assign(r,gridToWorld(-HALF+CELL*2.5,-HALF-20));
+  const r=createRun(1982);r.recognizers=[];r.enemyTanks=[];Object.assign(r,gridToWorld(-HALF+CELL*2.5,-HALF-20));
   assert.equal(moveTank(r,gridToWorld(0,200).x,gridToWorld(0,200).s),true);assert.ok(worldToGrid(r.x,r.s).v<-HALF);assert.ok(freePosition(r.x,r.s,config.tankRadius-.001));
   const before=r.x;moveTank(r,12,12);assert.ok(r.x>before);assert.ok(freePosition(r.x,r.s,config.tankRadius-.001));
   Object.assign(r,gridToWorld(0,-HALF-40));moveTank(r,gridToWorld(0,160).x,gridToWorld(0,160).s);assert.ok(worldToGrid(r.x,r.s).v>-HALF+100);
@@ -382,6 +382,7 @@ test('enemy bullet events retain anatomical hit parts, location and per-part cou
   const r=createRun(1982);r.enemyTanks=[];const e=r.recognizers[0];r.recognizers=[e];Object.assign(e,{x:-5000,s:-5000,y:80,yaw,fold,health:100});
   const parts=[['crown',0,6],['crossbar',0,0],['left-shoulder',-12,0],['right-shoulder',12,0],['left-leg',-(14-fold*13),-12],['right-leg',14-fold*13,-12]];
   for(const [part,x,y] of parts){
+   e.health=100;e.state="wander";
    const p=localPoint(e,x,y,0,RECOGNIZER_SCALE);r.projectiles=[{...p,vx:0,vy:0,vs:0,life:1}];updateWeapons(r,{},1/60);
    const event=r.events.at(-1);assert.equal(event.hitPart,part);assert.equal(event.id,e.id);assert.equal(e.partHits[part],1);assert.deepEqual(e.lastHit,{part,time:r.time,...p});
   }
@@ -393,4 +394,18 @@ test('enemy bullet events retain anatomical hit parts, location and per-part cou
    const p=localPoint(e,x,y,0,1);r.projectiles=[{...p,vx:0,vy:0,vs:0,life:1}];updateWeapons(r,{},1/60);assert.equal(e.lastHit.part,part);assert.equal(r.events.at(-1).hitPart,part);
   }
  }
+});
+
+test('one crown hit kills; repeated leg hits disable stomping and abort a drop',async()=>{
+ const {beginCrush,resolveCrush}=await import('../src/simulation/crush.js');
+ const r=createRun(1982);r.enemyTanks=[];const e=r.recognizers[0];r.recognizers=[e];Object.assign(e,{x:-5000,s:-5000,y:80,yaw:0,fold:0});
+ const shoot=(x,y)=>{r.projectiles=[{x:e.x+x*RECOGNIZER_SCALE,s:e.s,y:e.y+y*RECOGNIZER_SCALE,vx:0,vs:0,vy:0,life:1}];updateWeapons(r,{},1/60);};
+ shoot(0,6);assert.equal(e.health,0);assert.equal(e.state,'destroyed');assert.equal(r.events.at(-1).critical,true);assert.equal(r.kills,1);
+ Object.assign(e,{health:3,state:'wander',partHits:{},canSee:true,memory:{x:e.x,s:e.s,vx:0,vs:0,seenAt:0}});
+ shoot(-14,-12);assert.equal(e.health,2.5);assert.equal(e.stompDisabled,undefined);
+ e.attack={phase:'drop',altitude:80,impact:true,velocity:10};shoot(-14,-12);
+ assert.equal(e.health,2);assert.equal(e.stompDisabled,true);assert.equal(e.attack.phase,'rise');assert.equal(e.attack.impact,false);
+ Object.assign(r,{x:e.x,s:e.s});e.attack.impact=true;resolveCrush(r,e);assert.equal(r.crushed,false);
+ e.attack=null;beginCrush(e,0);assert.equal(e.attack,null);
+ assert.equal(createRun().recognizers[0].stompDisabled,undefined);
 });

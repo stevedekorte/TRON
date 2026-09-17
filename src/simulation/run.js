@@ -1,3 +1,4 @@
+import {applyPartDamage} from './part-damage.js';
 import {enemyHitPart,recordEnemyHit} from './hit-parts.js';
 import {randomSeed,seededRandom} from '../game/random.js';
 import {updateMouseAim,accelerateMouseAim} from './mouse-aim.js';
@@ -126,9 +127,9 @@ export function updateWeapons(run,input,dt) {
         const hitPart=enemyHitPart(e,p);
         if(hitPart) {
           recordEnemyHit(e,p,hitPart,run.time);
-          e.health--;e.hit=1;p.life=0;
-          if(e.kind==='ground'&&e.health>0)reactToGroundHit(e,p,run.time);run.events.push({type:'hit',subject:e.kind==='ground'?'enemyTank':'recognizer',id:e.id,hitPart,fatal:e.health===0,x:p.x,y:p.y,s:p.s});
-          if(e.health===0){e.state='destroyed';e.canSee=false;e.memory=null;run.kills++;run.events.push({type:'destroyed',subject:e.kind==='ground'?'enemyTank':undefined,turretYaw:e.turretYaw,id:e.id,hitPart,x:e.x,y:e.kind==='ground'?0:e.y,s:e.s,yaw:e.yaw,fold:e.fold||0,vx:e.vx,vy:e.vy,vs:e.vs,hit:{x:p.x,y:p.y,z:-p.s}});}
+          const {critical,damage}=applyPartDamage(e,hitPart);e.hit=1;p.life=0;
+          if(e.kind==='ground'&&e.health>0)reactToGroundHit(e,p,run.time);run.events.push({type:'hit',subject:e.kind==='ground'?'enemyTank':'recognizer',id:e.id,hitPart,critical,damage,fatal:e.health===0,x:p.x,y:p.y,s:p.s});
+          if(e.health===0){e.state='destroyed';e.canSee=false;e.memory=null;run.kills++;run.events.push({type:'destroyed',subject:e.kind==='ground'?'enemyTank':undefined,turretYaw:e.turretYaw,id:e.id,hitPart,critical,x:e.x,y:e.kind==='ground'?0:e.y,s:e.s,yaw:e.yaw,fold:e.fold||0,vx:e.vx,vy:e.vy,vs:e.vs,hit:{x:p.x,y:p.y,z:-p.s}});}
           break;
         }
       }

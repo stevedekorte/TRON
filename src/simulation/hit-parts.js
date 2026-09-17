@@ -1,13 +1,19 @@
+import {TANK} from '../game/tank.js';
 import {RECOGNIZER_SCALE} from '../game/config.js';
-// Collision regions, independent of rendering. Preserve the existing hit volumes.
+// Collision regions independent of rendering; turret bounds follow the imported model.
 // Tank subdivisions are approximate armor zones, not triangle-level model hits.
 export function enemyHitPart(enemy,point){
  const dx=point.x-enemy.x,dz=-(point.s-enemy.s);
  const x=Math.cos(enemy.yaw)*dx-Math.sin(enemy.yaw)*dz;
  if(enemy.kind==='ground'){
   if(Math.hypot(dx,dz)>=3.5||point.y>=3.5)return null;
-  if(point.y>=1.8)return 'turret';
-  if(Math.abs(x)>2.2)return x<0?'left-track':'right-track';
+  if(point.y>=1.925){
+   // Imported turret bounds in its own rotating frame (including barrel).
+   const z=Math.sin(enemy.yaw)*dx+Math.cos(enemy.yaw)*dz,tx=x-TANK.pivot[0],tz=z-TANK.pivot[2],yaw=enemy.turretYaw||0;
+   const localX=Math.cos(yaw)*tx-Math.sin(yaw)*tz,localZ=Math.sin(yaw)*tx+Math.cos(yaw)*tz;
+   return point.y<=2.777&&localX>=-3.635&&localX<=1.556&&localZ>=-7.537&&localZ<=4.161?'turret':null;
+  }
+  if(Math.abs(x)>2.4)return x<0?'left-track':'right-track';
   return 'hull';
  }
  const lx=x/RECOGNIZER_SCALE,lz=(Math.sin(enemy.yaw)*dx+Math.cos(enemy.yaw)*dz)/RECOGNIZER_SCALE,ly=(point.y-enemy.y)/RECOGNIZER_SCALE;

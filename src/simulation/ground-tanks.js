@@ -1,3 +1,4 @@
+import {trackMobility} from './part-damage.js';
 import {stabilizeTurret} from './turret.js';
 import {raiseAlert} from './alertness.js';
 import {CARRIER} from '../game/carrier.js';
@@ -101,16 +102,18 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
    e.nextRoute=run.time+2;
   }
   while(e.path.length&&Math.hypot(e.x-e.path[0].x,e.s-e.path[0].s)<6&&(!e.path[1]||clear(e,e.path[1])))e.path.shift();
+  const mobility=trackMobility(e);
   const destination=clear(e,goal)?goal:e.path[0];
   let targetSpeed=0;
   if(destination){
    const dx=destination.x-e.x,ds=destination.s-e.s,desired=reacting?e.threatYaw:-Math.atan2(dx,ds);
-   e.yaw+=clamp(angleDelta(e.yaw,desired),-ESCORT.turnRate*dt,ESCORT.turnRate*dt);
+   e.yaw+=clamp(angleDelta(e.yaw,desired),-ESCORT.turnRate*mobility.turn*dt,ESCORT.turnRate*mobility.turn*dt);
    targetSpeed=Math.min(config.maxSpeed,Math.hypot(dx,ds)*.8)*Math.max(0,Math.cos(angleDelta(e.yaw,desired)))**4;
    if(!clear(e,goal)&&Math.abs(angleDelta(e.yaw,desired))>.2)targetSpeed=0;
    if(e.canSee&&Math.hypot(e.x-e.memory.x,e.s-e.memory.s)<100)targetSpeed=0;
    if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<12&&(-Math.sin(e.yaw)*(o.x-e.x)+Math.cos(e.yaw)*(o.s-e.s))>0))targetSpeed=0;
   }
+  targetSpeed*=mobility.speed;
   e.speed+=clamp(targetSpeed-e.speed,-18*dt,8*dt);
   const x=e.x,s=e.s,moveX=-Math.sin(e.yaw)*e.speed*dt,moveS=Math.cos(e.yaw)*e.speed*dt;
   // Steering must obey the same swept margin as pathfinding, including while turning.
