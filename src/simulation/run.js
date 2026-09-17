@@ -5,13 +5,13 @@ import {createGroundTanks,updateGroundTanks,reactToGroundHit} from './ground-tan
 import {intercept} from './intercept.js';
 import { TANK } from '../game/tank.js';
 import { nearbyWalls, insideWall, closestWallPoint, SPAWN, wallIntersection, lineOfSight } from '../levels/maze.js';
-import { config, CLU_WEAPON, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, clamp, damp, angleDelta } from '../game/config.js';
+import { config, CLU_HEALTH, CLU_WEAPON, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, clamp, damp, angleDelta } from '../game/config.js';
 import { createRecognizers, updateRecognizers, perceive } from './recognizers.js';
 
 export function createRun(seed=randomSeed()) {
   const random=seededRandom(seed);
   return {...SPAWN,seed,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    enemyTanks:createGroundTanks(random),health:3,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
+    enemyTanks:createGroundTanks(random),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
 }
 
 export function boostTank(run,requestedDirection=1){
@@ -115,7 +115,7 @@ export function updateWeapons(run,input,dt) {
       if(p.faction==='enemy'){
         if(run.enemyTanks.some(e=>e.id!==p.owner&&e.state!=='destroyed'&&Math.hypot(p.x-e.x,p.s-e.s)<3.5&&p.y<3.5)){p.life=0;continue;}
         if(!run.crushed&&Math.hypot(p.x-run.x,p.s-run.s)<3.5&&p.y<3.5){
-          p.life=0;run.health--;run.impact=1;run.events.push({type:'hit',subject:'tank',fatal:run.health<=0,x:p.x,y:p.y,s:p.s});
+          p.life=0;run.health=Math.max(0,run.health-1);run.impact=1;run.events.push({type:'hit',subject:'tank',fatal:run.health<=0,x:p.x,y:p.y,s:p.s});
           if(run.health<=0){const speed=run.speed;run.crushed=true;run.speed=0;run.events.push({type:'destroyed',subject:'tank',x:run.x,y:0,s:run.s,yaw:run.yaw,turretYaw:run.turretYaw,vx:-Math.sin(run.yaw)*speed,vs:Math.cos(run.yaw)*speed,hit:{x:p.x,y:p.y,z:-p.s}});}
         }
         continue;
@@ -214,4 +214,6 @@ export function step(run,input,dt) {
     if(travel<Math.abs(run.speed)*dt*.05)run.speed=0;
   }
   updateRecognizers(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);
+  if(run.crushed)run.health=0;
+  else if(run.health>0&&run.health<CLU_HEALTH.max)run.health=Math.min(CLU_HEALTH.max,run.health+CLU_HEALTH.max*dt/CLU_HEALTH.rechargeSeconds);
 }

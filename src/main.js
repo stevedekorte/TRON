@@ -5,7 +5,7 @@ import { View } from './rendering/view.js';
 import { Sound } from './audio/sound.js';
 import { createRun, step, cannonTarget, startPursuit, boostTank } from './simulation/run.js';
 import { WALLS, HALF, BASIS, MAZE_KIND } from './levels/maze.js';
-import { config, defaults, TURBO, GUNNER } from './game/config.js';
+import { config, defaults, TURBO, CLU_HEALTH, GUNNER } from './game/config.js';
 
 const $ = id => document.getElementById(id);
 const sound = new Sound();
@@ -172,6 +172,11 @@ function updateHud() {
   $('coordinates').textContent=`${Math.round(run.x)}, ${Math.round(run.s)}`;
   $('weapon-status').textContent=run.crushed?'CLU DEREZZED — R TO RESET':run.extraShots>0?`CANNON READY +${run.extraShots}`:run.cooldown>.15?'RECHARGING':run.gunner?'MANUAL AIM':cannonTarget(run).lock?'HEIGHT ASSIST':'CANNON READY';
   $('orientation').textContent=`TURRET ${Math.round(-run.turretYaw*180/Math.PI)}°`;
+  const healthFraction=run.crushed?0:Math.max(0,Math.min(1,run.health/CLU_HEALTH.max)),healthPercent=Math.ceil(healthFraction*100);
+  $('health-fill').style.transform=`scaleX(${healthFraction})`;
+  $('health-status').textContent=`${healthPercent}%`;
+  $('health-meter').setAttribute('aria-valuenow',String(healthPercent));
+  $('clu-health').classList.toggle('low',healthFraction<=1/3);
   const turbo=$('turbo'),boosting=run.turboRemaining>0,charging=run.turboCooldown>0;
   $('turbo-status').textContent=boosting?`BOOST ${Math.ceil(run.turboRemaining)}s`:charging?`RECHARGE ${Math.ceil(run.turboCooldown)}s`:'READY';
   turbo.classList.toggle('boosting',boosting);turbo.classList.toggle('charging',charging);

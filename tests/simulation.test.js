@@ -364,3 +364,14 @@ test('Recognizer hit events distinguish surviving armor impacts from fatal hits'
   assert.equal(r.events.some(e=>e.type==='destroyed'),fatal);
  }
 });
+
+test('Clu gradually regenerates a full hull over five minutes without reviving',()=>{
+ const r=createRun(1982);r.recognizers=[];r.enemyTanks=[];r.health=.3;
+ for(let i=0;i<6000;i++)step(r,{},1/60);
+ assert.ok(Math.abs(r.health-1.3)<1e-8);
+ for(let i=0;i<12000;i++)step(r,{},1/60);
+ assert.equal(r.health,3);
+ r.crushed=true;step(r,{},1/60);assert.equal(r.health,0);
+ for(let i=0;i<600;i++)step(r,{},1/60);assert.equal(r.health,0);
+ assert.equal(createRun().health,3);
+});
