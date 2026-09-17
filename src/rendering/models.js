@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {tagRecognizerBlocks} from './recognizer-blocks.js';
 import { TANK } from '../game/tank.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -99,6 +100,7 @@ export async function loadRecognizer() {
     mesh.geometry.applyMatrix4(new THREE.Matrix4().multiplyMatrices(transform,mesh.matrixWorld));
     meshes.push(mesh);
   });
+  tagRecognizerBlocks(meshes);
   const legs=[new THREE.Group(),new THREE.Group()];
   legs.forEach((leg,i)=>{leg.name=i?'right-leg':'left-leg';root.add(leg);});
   for (const mesh of meshes) {

@@ -475,3 +475,7 @@ Replaced targeting text and whole-crosshair color changes with a 220 ms transiti
 ## Intact Recognizer explosions — September 17
 
 `node tests/breakup.mjs` passes in isolated headless Chrome: exactly six distinct intact sections, randomized motion between explosions, falling, pause freezing and geometry cleanup after expiry. The resource comparison warms up a complete explosion before measuring the next cycle, avoiding unrelated lazy scene allocations. Inspected the early explosion capture with the camera transition settled: original block silhouettes remain recognizable around the flash/rings.
+
+## Recognizer component correction — September 17
+
+The six positional regions still crossed authored blocks. The loader now tags connected geometry across both source materials before rigging; explosions preserve those tags. `node tests/breakup.mjs` passes with 15 unique, unfragmented blocks, repeated random motion, falling, pause behavior and resource cleanup. The early rendered capture was inspected. `node tests/gunner-targeting.mjs` also passes after adding the synchronized 90-degree center-mark rotation.

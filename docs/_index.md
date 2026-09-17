@@ -517,4 +517,4 @@ The R-key reset shortcut and its controls hint are removed. Development scenario
 
 ## Intact Recognizer explosions — September 17
 
-Recognizers now burst into six intact sections: crown, crossbar, two shoulders and two legs. The struck section also remains whole. Each block receives randomized outward impulse, delay and tumbling before falling; original surface trim, flash and optical rings remain. No fracture shards or new cut seams are generated for Recognizers. Tank destruction retains its existing fracture effect.
+Recognizers now burst into their 15 actual connected model blocks. Connectivity is computed across black surfaces and red trim before leg posing, replacing the six position-based regions that could cut through blocks. The struck block also remains whole. Each block receives randomized outward impulse, delay and tumbling before falling; original surface trim, flash and optical rings remain. No fracture shards or new cut seams are generated for Recognizers. Tank destruction retains its existing fracture effect.

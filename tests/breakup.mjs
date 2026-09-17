@@ -20,10 +20,10 @@ try{
   await page.waitForTimeout(180);
   return page.evaluate(()=>window.__tron.state.breakups[0]);
  }
- const first=await destroy();assert.equal(first.pieces.length,6);
- assert.equal(first.pieces.filter(p=>!p.fragmented).length,6);
- assert.equal(new Set(first.pieces.map(p=>p.part)).size,6);
- assert.deepEqual(first.pieces.map(p=>p.part).sort(),['crossbar','crown','left-leg','left-shoulder','right-leg','right-shoulder']);
+ const first=await destroy();assert.equal(first.pieces.length,15);
+ assert.equal(first.pieces.filter(p=>!p.fragmented).length,15);
+ assert.equal(new Set(first.pieces.map(p=>p.part)).size,15);
+ assert.ok(first.pieces.every(p=>p.part.startsWith('block-')));
  await page.screenshot({path:'test-results/recognizer-breakup-early.png'});
  await page.keyboard.press('Escape');const frozen=await page.evaluate(()=>window.__tron.state.breakups);
  await page.waitForTimeout(150);assert.deepEqual(await page.evaluate(()=>window.__tron.state.breakups),frozen);
@@ -35,5 +35,5 @@ try{
  await page.screenshot({path:'test-results/recognizer-breakup-falling.png'});
  await page.waitForFunction(()=>window.__tron.state.breakups.length===0,{},{timeout:15000});
  const remaining=await page.evaluate(()=>window.__tron.state.renderer.geometries);assert.ok(remaining<=baseline+1,JSON.stringify({baseline,remaining}));
- assert.deepEqual(errors,[]);console.log('Six intact Recognizer blocks vary per destruction, tumble/fall, freeze on pause and release geometry after expiry.');
+ assert.deepEqual(errors,[]);console.log('Fifteen connected Recognizer blocks vary per destruction, tumble/fall, freeze on pause and release geometry after expiry.');
 }finally{await browser.close();}
