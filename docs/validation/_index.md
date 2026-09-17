@@ -458,3 +458,12 @@ All 92 simulation tests passed: one-shot crown kills, half-damage limb hits, rep
 ### Enemy firing cadence and spread
 
 All 94 simulation tests passed. New checks cover varied/reproducible shot spread, horizontal/vertical angular bounds, unchanged projectile speed, 3.4–4.2-second cooldown samples, and actual shot spacing during a 20-second simulated encounter. The ground encounter fixture now supplies an explicit seed. Build passed with the existing chunk-size advisory.
+
+## Edge smoothing and gunner targeting — September 17
+
+- `npm test`: 96 tests passed, including moving-target interception, misses, destroyed targets, airborne critical regions, range and wall blocking.
+- `node tests/antialiasing.mjs`: isolated headless Chrome passed pixel-density, 4-sample MSAA, SMAA, resize and render-scale checks without browser errors.
+- `node tests/gunner-targeting.mjs`: isolated headless Chrome passed outline visibility, hit/miss cue changes, Recognizer crown critical indication and cleanup on leaving gunner mode. The airborne fixture is paused to prevent autonomous altitude changes from moving its crown away from the test ray.
+- Inspected the exterior anti-aliasing capture and gunner tank-outline capture. The tank silhouette is readable with a thin cyan edge; predicted-hit feedback moves with the complete crosshair.
+
+These checks do not measure frame rate across hardware or guarantee hits against accelerating targets. Supersampling and the outline pass add GPU work.
