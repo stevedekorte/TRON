@@ -490,3 +490,5 @@ The gunner view also accepts mouse-wheel zoom: up zooms in, down zooms out, clam
 The gunner camera is now anchored at the turret pivot instead of the muzzle. Independent mouse-look no longer moves sideways as the barrel catches up, removing motor-driven camera sway and its changing raycast origin. Turret speed/acceleration limits and muzzle-based projectile aiming remain unchanged.
 
 CLU turret motion now has a quiet, low-pitched servo tone that follows actual yaw/elevation motor speed, including centering and stabilization. It fades on stopping, pause or destruction, and is spatialized at the tank. Following listening feedback, its gain is 0.032 and fundamental pitch spans 55–110 Hz.
+
+CLU has a small hull-health percentage and bar below turbo, also visible in gunner mode. Missing health regenerates continuously at 1% of maximum every three simulation seconds (five minutes for a full bar). Pause freezes recharge; destruction sets health to zero and cannot regenerate. Enemy health is unchanged.

@@ -438,3 +438,7 @@ A stationary-tank mouse test reproduced camera translation during turret catch-u
 ### Turret servo audio
 
 `node tests/turret-servo.mjs` passed: yaw/elevation motion drives sound, render-only frames retain the last motor measurement, hull-only rotation does not trigger it, and stop/pause/destruction/reset silence the tone. Chrome offline rendering measured moving RMS 0.0182 and silent conditions at zero. Build passed with the existing chunk advisory. The user confirmed playback; subsequent tuning lowers gain from 0.065 to 0.032 and pitch from 95–195 Hz to 55–110 Hz.
+
+### Hull health and regeneration
+
+All 89 simulation tests passed, including five-minute recharge rate/cap, reset to full, and no regeneration after destruction. `node tests/health-meter.mjs` passed in Chrome: fractional health matches elapsed simulation time, pause freezes it, HUD visibility in gunner view, and a fatal projectile leaves zero health. Production build passed with the existing chunk-size advisory. Health HUD screenshot: `test-results/health-meter.png`.
