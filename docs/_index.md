@@ -535,3 +535,8 @@ Recognizers now burst into their 15 actual connected model blocks. Connectivity 
 - [x] Two underside searchlights detect unobscured CLU beneath the carrier and turn smoothly toward him. They continue tracking while he remains visible and nearby.
 - [x] Once a light is aligned and illuminated, report the observed position and velocity once per second to both enemy types within a horizontal circle centered on the carrier. The circle has one maze width diameter (half a maze width radius); delivery takes 0.45 seconds.
 - [x] Wall occlusion stops new reports immediately and fades the lights. Existing reports preserve their original timestamps; destroyed CLU is no longer tracked.
+
+### Data transfer and carrier drone — September 17
+
+- [x] Adapt the vertical blue-white curtain in the supplied `Sark and MCP.mp4` at 53–54 seconds into 32 shafts around stationary CLU. Stop within the red beam to build the curtain over 1.2 seconds, hold for 2.5 seconds, and reverse over 1.2 seconds before collecting data and fading the red beam. Moving or destruction interrupts transfer; passing through no longer collects data.
+- [x] Replace the carrier film loop with a steady synthesized 16-second machinery drone. Preserve the original `carrier-rumble.wav` in the sound library for future use. Retain positional attenuation and Doppler.

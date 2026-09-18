@@ -177,18 +177,6 @@ Video time 1.585s; 0.060s prepared audio. Mixed film soundtrack; may include sco
 
 [Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
-### Carrier rumble
-
-**Active** · Carrier presence
-
-Carrier and solar sailer video, 116.2–120.2 seconds; filtered and looped to 3.6 seconds.
-
-<audio controls preload="none" aria-label="Carrier rumble" src="../../audio/carrier-rumble.wav"></audio>
-
-[Open audio file](../../audio/carrier-rumble.wav)
-
-[Source](../references/videos/carrier%20and%20solar%20sailer.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
-
 ### Recognizer armor hit
 
 **Active — nonfatal Recognizer hits** · Combat feedback
@@ -213,7 +201,31 @@ Original 1.65-second low shock, electrical rupture, noise blast and scattered in
 
 [Source](../../src/audio/tank-explosion.js) · Project synthesis · Original project sound
 
+### Carrier — steady machinery drone
+
+**Active** · Carrier presence
+
+Synthesized 16-second stereo loop: stable bass harmonics and quiet diffuse machinery texture. Whole-cycle frequencies avoid a crossfade dip; no amplitude modulation. Generated with scripts/generate-carrier-drone.mjs.
+
+<audio controls preload="none" aria-label="Carrier — steady machinery drone" src="../../audio/carrier-drone.wav"></audio>
+
+[Open audio file](../../audio/carrier-drone.wav)
+
+[Source](undefined) · Project synthesis · Project-generated audio
+
 ## Experiments
+
+### Carrier rumble — archived film candidate
+
+**Reserved for future use** · Unassigned
+
+Carrier and solar sailer video, 116.2–120.2 seconds; filtered and looped to 3.6 seconds. Removed from carrier playback September 17; retained unchanged for future effects.
+
+<audio controls preload="none" aria-label="Carrier rumble — archived film candidate" src="../../audio/carrier-rumble.wav"></audio>
+
+[Open audio file](../../audio/carrier-rumble.wav)
+
+[Source](../references/videos/carrier%20and%20solar%20sailer.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
 ### Explosion cleanup — original
 

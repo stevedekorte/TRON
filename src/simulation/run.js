@@ -142,7 +142,6 @@ export function updateWeapons(run,input,dt) {
 }
 
 export function step(run,input,dt) {
-  const previousPosition={x:run.x,s:run.s};
   if(run.crushed){run.gunnerLeveling=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.cruiseThrottle=false;input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
   run.turboCooldown=run.turboCooldown<=dt+1e-8?0:run.turboCooldown-dt;
   run.time+=dt;run.impact=Math.max(0,run.impact-dt*2.5);
@@ -214,7 +213,7 @@ export function step(run,input,dt) {
     // This also allows immediate reverse instead of braking stored wall pressure.
     if(travel<Math.abs(run.speed)*dt*.05)run.speed=0;
   }
-  updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run,previousPosition);
+  updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run);
   if(run.crushed)run.health=0;
   else if(run.health>0&&run.health<CLU_HEALTH.max)run.health=Math.min(CLU_HEALTH.max,run.health+CLU_HEALTH.max*dt/CLU_HEALTH.rechargeSeconds);
 }
