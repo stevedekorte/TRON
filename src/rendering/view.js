@@ -58,6 +58,10 @@ export class View {
     recognizer.traverse(o => o.material?.dispose());
     this.breakups=new Breakups(this.scene);
     this.searchlights=new Searchlights(this.scene,this.recognizers.length);
+    this.carrierLights=new Searchlights(this.scene,2,light=>({
+      origin:new THREE.Vector3(light.x,light.y,-light.s),direction:new THREE.Vector3(light.dx,light.dy,-light.ds),
+      strength:light.strength,range:Math.min(1200,light.y/Math.max(.1,-light.dy)+30),halfWidth:24,sourceRadius:2
+    }));
     this.aerial = false;this.aerialZoom=1;this.aerialBlend=0;
     this.shots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.25, 6, 4), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffd2a3).multiplyScalar(4) }), 80);
     this.shots.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.shots.frustumCulled = false; this.shots.count = 0; this.scene.add(this.shots);
@@ -100,7 +104,7 @@ export class View {
     this.composer.setSize(w * config.renderScale, h * config.renderScale);
   }
 
-  reset() { this.gunnerHit=null;this.nextGunnerSolution=0; this.damageSparkTimes=new Map(); this.zoomTransition=null;this.zoomFov=undefined;this.zoomTarget=undefined; this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
+  reset() { this.gunnerHit=null;this.nextGunnerSolution=0; this.damageSparkTimes=new Map(); this.zoomTransition=null;this.zoomFov=undefined;this.zoomTarget=undefined; this.gunnerTransition=null;this.wasGunner=false;this.gunnerOpacity=0;this.aerialBlend=0;this.searchlights.reset();this.carrierLights.reset();this.breakups.clear();this.encounterFocus=0;this.encounterPitch=undefined;this.freshCamera = true; this.particles.length = 0; }
 
   event(event) {
     if (!['hit', 'destroyed'].includes(event.type)) return;
@@ -335,6 +339,7 @@ export class View {
     this.bloom.strength = config.bloom; this.bloom.enabled = !this.lowQuality;
     this.film.enabled = !this.lowQuality; this.film.uniforms.time.value = this.elapsed;
     this.searchlights.update(run.recognizers,run.time,this.camera,mode==='paused'?0:dt,!preview);
+    this.carrierLights.update(run.carrierSearch.lights,run.time,this.camera,mode==='paused'?0:dt,!preview&&!!this.carrier);
     const muzzleAge=(1-run.recoil)/4;
     this.muzzleFlash.visible=!gunner&&!this.gunnerTransition&&!run.crushed&&!preview&&muzzleAge<.17;
     if(this.muzzleFlash.visible){

@@ -543,6 +543,12 @@ Recognizers now burst into their 15 actual connected model blocks. Connectivity 
 - Nonfatal tank/Recognizer impacts use new layered pressure, electrical crack and descending synthetic tail, with three variations. Removed the old metallic resonators; tank impacts are shorter and pitched higher than Recognizer impacts. Stereo placement and distance attenuation remain.
 - Tank projected shadows use a consistent opaque footprint and polygon depth offset, preventing overlapping transparent triangles from accumulating darkness and reducing floor depth fighting at long camera distances.
 
+### Carrier surveillance — September 17
+
+- [x] Two underside searchlights detect unobscured CLU beneath the carrier and turn smoothly toward him. They continue tracking while he remains visible and nearby.
+- [x] Once a light is aligned and illuminated, report the observed position and velocity once per second to both enemy types within a horizontal circle centered on the carrier. The circle has one maze width diameter (half a maze width radius); delivery takes 0.45 seconds.
+- [x] Wall occlusion stops new reports immediately and fades the lights. Existing reports preserve their original timestamps; destroyed CLU is no longer tracked.
+
 
 ---
 
@@ -1679,3 +1685,7 @@ The six positional regions still crossed authored blocks. The loader now tags co
 - The new hit samples are original synthesized sounds. Subjective impact quality and intermittent shadow stability still benefit from normal play on the user's display; automated checks cannot establish those.
 
 `node tests/armor-hit.mjs` passes: bounded finite stereo samples at 44.1/48 kHz, separate tank/Recognizer durations, successful offline playback for all three hit subjects, distance attenuation and source cleanup. The offline audio check runs without the game renderer to avoid contention. `npm run build` passes with the existing large-bundle warning.
+
+## Carrier searchlights — September 17
+
+`npm test`: 103/103 passing, including smooth acquisition before radio, both enemy types receiving reports within half a maze width radius, outside-range exclusion, occlusion, destruction and initial detection footprint. `node tests/carrier-search.mjs`: passed in isolated headless Chrome at 1280×800 against Vite on port 5174; both beams render and acquire CLU, disappear after destruction, and produce no browser errors. Captured and inspected `test-results/carrier-search.png`. Subjective brightness and tracking feel remain available for in-game review.
