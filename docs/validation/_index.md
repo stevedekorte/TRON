@@ -492,3 +492,9 @@ The six positional regions still crossed authored blocks. The loader now tags co
 ## Carrier searchlights — September 17
 
 `npm test`: 103/103 passing, including smooth acquisition before radio, both enemy types receiving reports within half a maze width radius, outside-range exclusion, occlusion, destruction and initial detection footprint. `node tests/carrier-search.mjs`: passed in isolated headless Chrome at 1280×800 against Vite on port 5174; both beams render and acquire CLU, disappear after destruction, and produce no browser errors. Captured and inspected `test-results/carrier-search.png`. Subjective brightness and tracking feel remain available for in-game review.
+
+## Stationary data transfer and carrier drone — September 17
+
+Inspected a nine-frame contact sheet from 52.8–54.6 seconds of the supplied `Sark and MCP.mp4`. Added a sequential vertical light curtain around CLU with build/hold/reverse timing. `npm test`: 103/103 passed, including stationary acquisition, interruption by motion/death, delayed one-time collection and reset. `node tests/data-beams.mjs`: all four sites transferred and faded independently, then reset without browser errors; inspected `test-results/data-transfer.png` and reduced excessive glow.
+
+`node scripts/generate-carrier-drone.mjs`: generated a 16-second stereo loop, peak 0.65, quarter-second RMS max/min ratio 1.007 and loop seam 0.00073. Chrome confirmed `carrier-drone` decoded, old `carrier-rumble` was not loaded, and no sample errors occurred. This verifies loading and numerical continuity, not subjective listening approval. Original rumble file remains untouched. `npm run build` passed.

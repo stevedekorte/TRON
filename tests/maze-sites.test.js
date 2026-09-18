@@ -27,11 +27,15 @@ test('each maze has clear data and its own ground and air patrols',()=>{
  }
  assert.notDeepEqual(r.dataBeams,createRun(43).dataBeams);
 });
-test('beam collection is swept, once only, and resets with the run',()=>{
- const r=createRun(42),b=r.dataBeams[0];r.x=b.x+30;r.s=b.s;
- collectData(r,{x:b.x-30,s:b.s});assert.equal(r.dataCollected,1);assert.equal(b.collectedAt,0);
- collectData(r,{x:b.x-30,s:b.s});assert.equal(r.events.filter(e=>e.type==='dataCollected').length,1);
- const other=r.dataBeams[1];r.crushed=true;r.x=other.x;r.s=other.s;collectData(r,r);assert.equal(other.collectedAt,null);
+test('beam transfer requires stopping, cancels on motion or death, and collects once after reversing',()=>{
+ const r=createRun(42),b=r.dataBeams[0];r.x=b.x;r.s=b.s;r.speed=10;
+ collectData(r);assert.equal(b.transferStartedAt,null);assert.equal(r.dataCollected,0);
+ r.speed=0;collectData(r);assert.equal(b.transferStartedAt,0);
+ r.time=2;collectData(r);assert.equal(r.dataCollected,0);
+ r.speed=1;collectData(r);assert.equal(b.transferStartedAt,null);
+ r.speed=0;collectData(r);r.crushed=true;collectData(r);assert.equal(b.transferStartedAt,null);
+ r.crushed=false;collectData(r);r.time+=DATA_BEAM.buildSeconds+DATA_BEAM.holdSeconds+DATA_BEAM.retractSeconds+.01;
+ collectData(r);assert.equal(r.dataCollected,1);collectData(r);assert.equal(r.events.filter(e=>e.type==='dataCollected').length,1);
  assert.equal(createRun(42).dataCollected,0);
 });
 test('patrol decisions favor new areas and expire old exploration memory',()=>{

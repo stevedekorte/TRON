@@ -23,7 +23,17 @@ export class DataBeams{
    pulse.rotation.x=-Math.PI/2;pulse.visible=false;group.add(pulse);
    const flare=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),effectMaterial(0xffc2a3));
    flare.position.y=2;flare.visible=false;group.add(flare);
-   group.userData.effects={pool,ring,pulse,flare};
+   const curtain=new THREE.Group();
+   const shaftGeometry=new THREE.CylinderGeometry(.07,.07,1,6,1,true);
+   const glowGeometry=new THREE.CylinderGeometry(.3,.3,1,8,1,true);
+   for(let j=0;j<32;j++){
+    const bar=new THREE.Group(),angle=j/32*Math.PI*2;
+    const core=new THREE.Mesh(shaftGeometry,effectMaterial(0x75cfff));
+    const halo=new THREE.Mesh(glowGeometry,effectMaterial(0x168aff));
+    bar.add(core,halo);bar.position.set(Math.cos(angle)*8.5,0,Math.sin(angle)*8.5);curtain.add(bar);
+   }
+   group.add(curtain);
+   group.userData.effects={pool,ring,pulse,flare,curtain};
    scene.add(group);return group;
   });
  }
@@ -40,7 +50,20 @@ export class DataBeams{
     mesh.scale.set(1-progress*.95+flareAmount*.6,1,1-progress*.95+flareAmount*.6);
     mesh.position.y=DATA_BEAM.height/2+SHUTDOWN.lift*progress*progress;
    }
-   const {pool,ring,pulse,flare}=group.userData.effects;
+   const {pool,ring,pulse,flare,curtain}=group.userData.effects;
+   const transferAge=beam.transferStartedAt===null?-1:run.time-beam.transferStartedAt;
+   const end=DATA_BEAM.buildSeconds+DATA_BEAM.holdSeconds;
+   const sweep=transferAge<0||active?0:transferAge<end?Math.min(1,transferAge/DATA_BEAM.buildSeconds):Math.max(0,1-(transferAge-end)/DATA_BEAM.retractSeconds);
+   curtain.visible=sweep>0;
+   curtain.position.set((beam.transferX??beam.x)-beam.x,0,-((beam.transferS??beam.s)-beam.s));
+   curtain.children.forEach((bar,j)=>{
+    // Successive shafts descend around the tank; reversing sweep unwinds them.
+    const t=THREE.MathUtils.smoothstep(sweep,j/32*.65,j/32*.65+.35);
+    const height=22*t;bar.visible=t>0;bar.position.y=22-height/2;
+    bar.scale.y=Math.max(.001,height);
+    bar.children[0].material.opacity=.32*t;
+    bar.children[1].material.opacity=.045*t;
+   });
    pool.material.opacity=.3*opacity*(1+flareAmount);pool.scale.setScalar(1+flareAmount);
    ring.visible=pulse.visible=flare.visible=active&&opacity>0;
    ring.scale.setScalar(DATA_BEAM.radius+SHUTDOWN.ringRadius*(1-(1-progress)**2));ring.material.opacity=opacity*.9;

@@ -9,7 +9,7 @@ import { lineOfSight } from '../levels/maze.js';
 import {stereoEmitter,doppler} from './spatial.js';
 import {RECOGNIZER_HIT,recognizerHitSamples} from './recognizer-hit.js';
 const musicClips=Object.entries(import.meta.glob("../../docs/assets/music/Tron/03 We've Got Company Clips/*.mp3",{eager:true,query:'?url',import:'default'})).map(([path,url])=>({url,category:musicCategory(path)}));
-const files=['tank-drive','recognizer-flight','recognizer-approach','recognizer-explosion','cannon','carrier-rumble'];
+const files=['tank-drive','recognizer-flight','recognizer-approach','recognizer-explosion','cannon','carrier-drone'];
 const keyFiles=Array.from({length:4},(_,i)=>'terminal-key-'+(i+1));
 // Film-derived stereo samples; synthesis remains available when a file fails.
 export class Sound {
@@ -78,7 +78,7 @@ export class Sound {
     }));
     if(this.disposed)return;
     if(this.samples['tank-drive']){this.engine.stop();this.engine.disconnect();this.engineSample=this.source(this.samples['tank-drive'],this.engineFilter,true);}
-    if(this.samples['carrier-rumble'])this.carrierSample=this.source(this.samples['carrier-rumble'],this.carrierFilter,true);
+    if(this.samples['carrier-drone'])this.carrierSample=this.source(this.samples['carrier-drone'],this.carrierFilter,true);
     this.voices.forEach((v,i)=>{
       if(this.samples['recognizer-flight']) {
         v.rotor.stop();v.merger.disconnect();

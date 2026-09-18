@@ -549,6 +549,11 @@ Recognizers now burst into their 15 actual connected model blocks. Connectivity 
 - [x] Once a light is aligned and illuminated, report the observed position and velocity once per second to both enemy types within a horizontal circle centered on the carrier. The circle has one maze width diameter (half a maze width radius); delivery takes 0.45 seconds.
 - [x] Wall occlusion stops new reports immediately and fades the lights. Existing reports preserve their original timestamps; destroyed CLU is no longer tracked.
 
+### Data transfer and carrier drone — September 17
+
+- [x] Adapt the vertical blue-white curtain in the supplied `Sark and MCP.mp4` at 53–54 seconds into 32 shafts around stationary CLU. Stop within the red beam to build the curtain over 1.2 seconds, hold for 2.5 seconds, and reverse over 1.2 seconds before collecting data and fading the red beam. Moving or destruction interrupts transfer; passing through no longer collects data.
+- [x] Replace the carrier film loop with a steady synthesized 16-second machinery drone. Preserve the original `carrier-rumble.wav` in the sound library for future use. Retain positional attenuation and Doppler.
+
 
 ---
 
@@ -1022,18 +1027,6 @@ Video time 1.585s; 0.060s prepared audio. Mixed film soundtrack; may include sco
 
 [Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
-### Carrier rumble
-
-**Active** · Carrier presence
-
-Carrier and solar sailer video, 116.2–120.2 seconds; filtered and looped to 3.6 seconds.
-
-<audio controls preload="none" aria-label="Carrier rumble" src="../../audio/carrier-rumble.wav"></audio>
-
-[Open audio file](../../audio/carrier-rumble.wav)
-
-[Source](../references/videos/carrier%20and%20solar%20sailer.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
-
 ### Recognizer armor hit
 
 **Active — nonfatal Recognizer hits** · Combat feedback
@@ -1058,7 +1051,31 @@ Original 1.65-second low shock, electrical rupture, noise blast and scattered in
 
 [Source](../../src/audio/tank-explosion.js) · Project synthesis · Original project sound
 
+### Carrier — steady machinery drone
+
+**Active** · Carrier presence
+
+Synthesized 16-second stereo loop: stable bass harmonics and quiet diffuse machinery texture. Whole-cycle frequencies avoid a crossfade dip; no amplitude modulation. Generated with scripts/generate-carrier-drone.mjs.
+
+<audio controls preload="none" aria-label="Carrier — steady machinery drone" src="../../audio/carrier-drone.wav"></audio>
+
+[Open audio file](../../audio/carrier-drone.wav)
+
+[Source](undefined) · Project synthesis · Project-generated audio
+
 ## Experiments
+
+### Carrier rumble — archived film candidate
+
+**Reserved for future use** · Unassigned
+
+Carrier and solar sailer video, 116.2–120.2 seconds; filtered and looped to 3.6 seconds. Removed from carrier playback September 17; retained unchanged for future effects.
+
+<audio controls preload="none" aria-label="Carrier rumble — archived film candidate" src="../../audio/carrier-rumble.wav"></audio>
+
+[Open audio file](../../audio/carrier-rumble.wav)
+
+[Source](../references/videos/carrier%20and%20solar%20sailer.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
 ### Explosion cleanup — original
 
@@ -1689,3 +1706,9 @@ The six positional regions still crossed authored blocks. The loader now tags co
 ## Carrier searchlights — September 17
 
 `npm test`: 103/103 passing, including smooth acquisition before radio, both enemy types receiving reports within half a maze width radius, outside-range exclusion, occlusion, destruction and initial detection footprint. `node tests/carrier-search.mjs`: passed in isolated headless Chrome at 1280×800 against Vite on port 5174; both beams render and acquire CLU, disappear after destruction, and produce no browser errors. Captured and inspected `test-results/carrier-search.png`. Subjective brightness and tracking feel remain available for in-game review.
+
+## Stationary data transfer and carrier drone — September 17
+
+Inspected a nine-frame contact sheet from 52.8–54.6 seconds of the supplied `Sark and MCP.mp4`. Added a sequential vertical light curtain around CLU with build/hold/reverse timing. `npm test`: 103/103 passed, including stationary acquisition, interruption by motion/death, delayed one-time collection and reset. `node tests/data-beams.mjs`: all four sites transferred and faded independently, then reset without browser errors; inspected `test-results/data-transfer.png` and reduced excessive glow.
+
+`node scripts/generate-carrier-drone.mjs`: generated a 16-second stereo loop, peak 0.65, quarter-second RMS max/min ratio 1.007 and loop seam 0.00073. Chrome confirmed `carrier-drone` decoded, old `carrier-rumble` was not loaded, and no sample errors occurred. This verifies loading and numerical continuity, not subjective listening approval. Original rumble file remains untouched. `npm run build` passed.

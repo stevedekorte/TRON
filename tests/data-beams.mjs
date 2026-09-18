@@ -18,6 +18,8 @@ try{
   await page.waitForTimeout(900);
   if(i===0)await page.screenshot({path:'test-results/data-beam.png'});
   await page.evaluate(i=>{const b=__tron.state.dataBeams[i];__tron.place({x:b.x,s:b.s,speed:0});},i);
+  await page.waitForFunction(i=>__tron.state.dataBeams[i].transferStartedAt!==null,i);
+  if(i===0){await page.waitForTimeout(1700);await page.screenshot({path:'test-results/data-transfer.png'});assert.equal(await page.evaluate(()=>__tron.state.dataCollected),0);}
   await page.waitForFunction(i=>__tron.state.dataBeams[i].collectedAt!==null,i);
   await page.waitForFunction(i=>__tron.state.beamVisuals[i].opacity<.8&&__tron.state.beamVisuals[i].opacity>.1,i);
   if(i===0){await page.keyboard.press('Escape');await page.screenshot({path:'test-results/data-beam-shutdown.png'});await page.keyboard.press('Escape');}

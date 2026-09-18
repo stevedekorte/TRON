@@ -257,11 +257,11 @@
     },
     {
       "id": "carrier-rumble",
-      "title": "Carrier rumble",
-      "group": "Current game sounds",
-      "status": "Active",
-      "use": "Carrier presence",
-      "notes": "Carrier and solar sailer video, 116.2\u2013120.2 seconds; filtered and looped to 3.6 seconds.",
+      "title": "Carrier rumble \u2014 archived film candidate",
+      "group": "Experiments",
+      "status": "Reserved for future use",
+      "use": "Unassigned",
+      "notes": "Carrier and solar sailer video, 116.2\u2013120.2 seconds; filtered and looped to 3.6 seconds. Removed from carrier playback September 17; retained unchanged for future effects.",
       "author": "TRON (1982) film soundtrack; local edit",
       "source": "../references/videos/carrier%20and%20solar%20sailer.mp4",
       "license": "User-supplied film reference; personal project",
@@ -434,6 +434,18 @@
       "license": "Original project sound",
       "playback": "../../audio/tank-explosion.wav",
       "disk": "public/audio/tank-explosion.wav"
+    },
+    {
+      "id": "carrier-drone",
+      "title": "Carrier \u2014 steady machinery drone",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "Carrier presence",
+      "notes": "Synthesized 16-second stereo loop: stable bass harmonics and quiet diffuse machinery texture. Whole-cycle frequencies avoid a crossfade dip; no amplitude modulation. Generated with scripts/generate-carrier-drone.mjs.",
+      "author": "Project synthesis",
+      "license": "Project-generated audio",
+      "playback": "../../audio/carrier-drone.wav",
+      "disk": "public/audio/carrier-drone.wav"
     }
   ]
 }
