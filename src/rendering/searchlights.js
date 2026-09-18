@@ -22,7 +22,8 @@ export function clippedBeamEnd(origin,end){
  return origin.clone().lerp(end,Math.max(0,t));
 }
 export class Searchlights {
- constructor(scene,count){
+ constructor(scene,count,poseFor=beamPose){
+  this.poseFor=poseFor;
   this.beams=Array.from({length:count},()=>{
    const geometry=new THREE.BufferGeometry(),positions=new Float32Array((columns+1)*(rows+1)*3),uv=[] ,indices=[];
    for(let y=0;y<=rows;y++)for(let x=0;x<=columns;x++)uv.push(x/columns,y/rows);
@@ -45,7 +46,7 @@ export class Searchlights {
  reset(){for(const beam of this.beams){beam.strength=0;beam.mesh.visible=false;}}
  update(enemies,time,camera,dt,visible){
   this.beams.forEach((beam,i)=>{
-   const pose=visible&&enemies[i]?beamPose(enemies[i],time):null;
+   const pose=visible&&enemies[i]?this.poseFor(enemies[i],time):null;
    if(enemies[i]?.targetGone)beam.strength=0;
    beam.strength=THREE.MathUtils.lerp(beam.strength,pose?.strength||0,1-Math.exp(-dt*5));
    if(pose)beam.pose=pose;
@@ -58,8 +59,8 @@ export class Searchlights {
    let shortest=range;
    for(let x=0;x<=columns;x++){
     const lateral=x/columns*2-1;
-    const start=origin.clone().addScaledVector(side,lateral*1.0);
-    const end=clippedBeamEnd(start,origin.clone().addScaledVector(direction,range).addScaledVector(side,lateral*SEARCHLIGHT.halfWidth));
+    const start=origin.clone().addScaledVector(side,lateral*(pose?.sourceRadius||1.0));
+    const end=clippedBeamEnd(start,origin.clone().addScaledVector(direction,range).addScaledVector(side,lateral*(beam.pose.halfWidth||SEARCHLIGHT.halfWidth)));
     shortest=Math.min(shortest,start.distanceTo(end));
     for(let y=0;y<=rows;y++){
      const p=start.clone().lerp(end,y/rows);position.setXYZ(y*(columns+1)+x,p.x,p.y,p.z);

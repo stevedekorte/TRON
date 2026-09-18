@@ -488,3 +488,7 @@ The six positional regions still crossed authored blocks. The loader now tags co
 - The new hit samples are original synthesized sounds. Subjective impact quality and intermittent shadow stability still benefit from normal play on the user's display; automated checks cannot establish those.
 
 `node tests/armor-hit.mjs` passes: bounded finite stereo samples at 44.1/48 kHz, separate tank/Recognizer durations, successful offline playback for all three hit subjects, distance attenuation and source cleanup. The offline audio check runs without the game renderer to avoid contention. `npm run build` passes with the existing large-bundle warning.
+
+## Carrier searchlights — September 17
+
+`npm test`: 103/103 passing, including smooth acquisition before radio, both enemy types receiving reports within half a maze width radius, outside-range exclusion, occlusion, destruction and initial detection footprint. `node tests/carrier-search.mjs`: passed in isolated headless Chrome at 1280×800 against Vite on port 5174; both beams render and acquire CLU, disappear after destruction, and produce no browser errors. Captured and inspected `test-results/carrier-search.png`. Subjective brightness and tracking feel remain available for in-game review.

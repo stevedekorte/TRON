@@ -529,3 +529,9 @@ Recognizers now burst into their 15 actual connected model blocks. Connectivity 
 - Recognizer blocks receive 3.6 times the prior horizontal blast impulse, retaining all 15 connected blocks and the existing downward acceleration.
 - Nonfatal tank/Recognizer impacts use new layered pressure, electrical crack and descending synthetic tail, with three variations. Removed the old metallic resonators; tank impacts are shorter and pitched higher than Recognizer impacts. Stereo placement and distance attenuation remain.
 - Tank projected shadows use a consistent opaque footprint and polygon depth offset, preventing overlapping transparent triangles from accumulating darkness and reducing floor depth fighting at long camera distances.
+
+### Carrier surveillance — September 17
+
+- [x] Two underside searchlights detect unobscured CLU beneath the carrier and turn smoothly toward him. They continue tracking while he remains visible and nearby.
+- [x] Once a light is aligned and illuminated, report the observed position and velocity once per second to both enemy types within a horizontal circle centered on the carrier. The circle has one maze width diameter (half a maze width radius); delivery takes 0.45 seconds.
+- [x] Wall occlusion stops new reports immediately and fades the lights. Existing reports preserve their original timestamps; destroyed CLU is no longer tracked.
