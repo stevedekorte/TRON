@@ -1,3 +1,4 @@
+import {DataBeams} from './data-beams.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import {gunnerSolution} from '../simulation/gunner-solution.js';
 import {TANK} from '../game/tank.js';
@@ -48,7 +49,7 @@ export class View {
     this.scene.add(new THREE.HemisphereLight(0xaac8ff, 0x251829, 2));
     const key = new THREE.DirectionalLight(0xc4d9ff, 2.4); key.position.set(-35, 70, -35); this.scene.add(key);
     const fill = new THREE.DirectionalLight(0x7b72ab, 0.9); fill.position.set(50, 15, -40); this.scene.add(fill);
-    this.world = createWorld(this.scene);
+    this.world = createWorld(this.scene);this.dataBeams=new DataBeams(this.scene);
     this.carrier=carrier;if(carrier)this.scene.add(carrier);
     this.tank = tank; this.scene.add(this.tank.root);
     this.muzzleFlash=createMuzzleFlash();this.scene.add(this.muzzleFlash);
@@ -324,6 +325,7 @@ export class View {
     }
     this.scene.fog.density = config.fog * (this.referenceCamera?.fogScale ?? (this.opening!=null?THREE.MathUtils.lerp(.06,1,this.opening):THREE.MathUtils.lerp(1,.06,aerialMix)));
     this.world.aerialView.value=this.opening!=null?1-this.opening:(!this.referenceCamera?aerialMix:0);
+    this.dataBeams.update(run,!preview&&['running','entering','paused'].includes(mode));
     this.enemyOutline.enabled=gunner;
     if(gunner){
       this.enemyOutline.selectedObjects=run.enemyTanks.flatMap((enemy,i)=>enemy.state==='destroyed'?[]:[this.enemyTanks[i].root]);

@@ -178,18 +178,20 @@ export class Sound {
   }
   effect(type,event) {
     if(!this.context)return;
+    if(type==='dataCollected'){this.terminalTone('access');return;}
     if(type==='recognized'){this.recognitionMusic();return;}
     const c=this.context,now=c.currentTime,gain=c.createGain();
-    if(type==='hit'&&event?.subject==='recognizer'){
-      if(event.fatal)return;
-      if(!this.recognizerHitBuffer){
-        const channels=recognizerHitSamples(c.sampleRate);
-        this.recognizerHitBuffer=c.createBuffer(2,channels[0].length,c.sampleRate);
-        channels.forEach((a,i)=>this.recognizerHitBuffer.copyToChannel(a,i));
+    if(type==='hit'&&['recognizer','tank','enemyTank'].includes(event?.subject)){
+      if(event.fatal){gain.disconnect();return;}
+      const kind=event.subject==='recognizer'?'recognizer':'tank',variant=Math.floor(Math.random()*3),key=kind+variant;
+      this.armorHitBuffers??={};
+      if(!this.armorHitBuffers[key]){
+        const channels=recognizerHitSamples(c.sampleRate,kind,variant),buffer=c.createBuffer(2,channels[0].length,c.sampleRate);
+        channels.forEach((a,i)=>buffer.copyToChannel(a,i));this.armorHitBuffers[key]=buffer;
       }
-      const emitter=stereoEmitter(c,this.master,35);emitter.gain.gain.value=1;
-      emitter.position(event.x,event.y,-event.s,0);gain.gain.value=RECOGNIZER_HIT.gain;gain.connect(emitter.input);
-      const s=this.source(this.recognizerHitBuffer,gain);
+      const emitter=stereoEmitter(c,this.master,kind==='recognizer'?45:30);emitter.gain.gain.value=1;
+      emitter.position(event.x,event.y??2,-event.s,0);gain.gain.value=RECOGNIZER_HIT.gain;gain.connect(emitter.input);
+      const s=this.source(this.armorHitBuffers[key],gain);
       s.playbackRate.value=RECOGNIZER_HIT.minRate+Math.random()*(RECOGNIZER_HIT.maxRate-RECOGNIZER_HIT.minRate);
       s.onended=()=>{s.disconnect();gain.disconnect();emitter.input.disconnect();emitter.panners.forEach(p=>p.disconnect());emitter.gain.disconnect();this.sources.delete(s);};
       return;

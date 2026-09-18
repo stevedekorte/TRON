@@ -518,3 +518,14 @@ The R-key reset shortcut and its controls hint are removed. Development scenario
 ## Intact Recognizer explosions — September 17
 
 Recognizers now burst into their 15 actual connected model blocks. Connectivity is computed across black surfaces and red trim before leg posing, replacing the six position-based regions that could cut through blocks. The struck block also remains whole. Each block receives randomized outward impulse, delay and tumbling before falling; original surface trim, flash and optical rings remain. No fracture shards or new cut seams are generated for Recognizers. Tank destruction retains its existing fracture effect.
+
+## Data collection across maze sites — September 17
+
+- Four maze sites: the original and three copies separated by roughly three maze lengths, with independently randomized rotations per page load. Layout remains stable across resets/hot reloads; beam locations and patrol starts are chosen anew for each run. Rendering, collision, line of sight, projectile blocking and routing share transformed wall geometry.
+- Each site has one central red data beam, at a different local position with at least 20 m wall clearance. The column reaches beyond the camera far plane without a visible cap. Driving through its 7 m collection radius collects once, including fast swept crossings. No score panel or automatic ending is added.
+- Collection triggers a short electronic confirmation and a 1.5 s shutdown: initial flare, expanding ground ring, narrowing shaft and an ascending pulse. State and visuals reset with a new run.
+- Each maze has three ground patrol tanks and one Recognizer. The opening pursuit and carrier escorts remain separate. Patrols choose nearby destinations as they move, favor recently unexplored areas, avoid blocked routes and other tanks, and make short local escape decisions at awkward corners. Sight/radio information and pursuit rules remain shared across all units. No preset patrol circuit is used.
+- Distant walls receive a gradual blue brightness lift beyond 350 m and reduced distant fog; nearby colors remain unchanged. The floor covers the expanded world.
+- Recognizer blocks receive 3.6 times the prior horizontal blast impulse, retaining all 15 connected blocks and the existing downward acceleration.
+- Nonfatal tank/Recognizer impacts use new layered pressure, electrical crack and descending synthetic tail, with three variations. Removed the old metallic resonators; tank impacts are shorter and pitched higher than Recognizer impacts. Stereo placement and distance attenuation remain.
+- Tank projected shadows use a consistent opaque footprint and polygon depth offset, preventing overlapping transparent triangles from accumulating darkness and reducing floor depth fighting at long camera distances.

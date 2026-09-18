@@ -8,11 +8,12 @@ const {OPEN_CELLS,lineOfSight,wallIntersection}=await import('../src/levels/maze
 const dt=1/60;
 test('all blueprint patrol tanks continue through corners for two minutes',()=>{
  const r=createRun(1982);r.recognizers=[];r.enemyTanks=r.enemyTanks.filter(e=>e.role==='patrol');r.x=-9000;r.s=-9000;
- let previous=r.enemyTanks.map(e=>({x:e.x,s:e.s}));
+ let previous=r.enemyTanks.map(e=>({x:e.x,s:e.s})),travel=r.enemyTanks.map(()=>0);
  for(let i=0;i<7200;i++){
   step(r,{},dt);
+  for(const [j,e] of r.enemyTanks.entries()){travel[j]+=Math.hypot(e.x-previous[j].x,e.s-previous[j].s);previous[j]={x:e.x,s:e.s};}
   for(const e of r.enemyTanks)assert.equal(wallIntersection({...e,y:2},{...e,y:2},4),null);
-  if(i%1200===1199){for(const [j,e] of r.enemyTanks.entries())assert.ok(Math.hypot(e.x-previous[j].x,e.s-previous[j].s)>5,`patrol ${e.id} stalled at ${r.time}`);previous=r.enemyTanks.map(e=>({x:e.x,s:e.s}));}
+  if(i%1200===1199){for(const [j,e] of r.enemyTanks.entries())assert.ok(travel[j]>5,`patrol ${e.id} stalled at ${r.time}`);travel.fill(0);}
  }
 });
 test('Recognizer radio sends a maze patrol around a wall without granting direct sight',()=>{

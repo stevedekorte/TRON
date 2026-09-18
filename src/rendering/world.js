@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { WALLS, WALL_HEIGHT, HALF, FLOOR_HALF, BASIS, wallAt } from '../levels/maze.js';
+import { MAZE_INSTANCES, WALLS, WALL_HEIGHT, HALF, FLOOR_HALF, BASIS, wallAt } from '../levels/maze.js';
 
 // Preserve near fog exactly; distant geometry keeps a readable silhouette.
-function distantFog(shader){
-  shader.fragmentShader=shader.fragmentShader.replace('#include <fog_fragment>',THREE.ShaderChunk.fog_fragment.replace('fogDensity * fogDensity * vFogDepth * vFogDepth', 'fogDensity * fogDensity * readableDepth * readableDepth').replace('#ifdef FOG_EXP2', '#ifdef FOG_EXP2\n float readableDepth = vFogDepth <= 250. ? vFogDepth : 250. + 200. * (1. - exp(-(vFogDepth - 250.) / 200.));'));
+function distantFog(shader,falloff=200){
+  shader.fragmentShader=shader.fragmentShader.replace('#include <fog_fragment>',THREE.ShaderChunk.fog_fragment.replace('fogDensity * fogDensity * vFogDepth * vFogDepth', 'fogDensity * fogDensity * readableDepth * readableDepth').replace('#ifdef FOG_EXP2', `#ifdef FOG_EXP2\n float readableDepth = vFogDepth <= 250. ? vFogDepth : 250. + ${falloff.toFixed(1)} * (1. - exp(-(vFogDepth - 250.) / ${falloff.toFixed(1)}));`));
 }
 export function createWorld(scene) {
   const positions=[],colors=[],exposed=[];
@@ -69,19 +69,22 @@ export function createWorld(scene) {
   }
   const seams=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(lines),
     new THREE.LineBasicMaterial({color:0x354963,transparent:true,opacity:.68,depthWrite:false}));
-  seams.material.onBeforeCompile=distantFog;
+  seams.material.onBeforeCompile=shader=>distantFog(shader,120);
   scene.add(seams);
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.computeBoundingSphere();
   const slabMaterial=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide});
   slabMaterial.onBeforeCompile=shader=>{
-    distantFog(shader);
+    distantFog(shader,120);
     shader.vertexShader='varying vec3 vSlab;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvSlab=position;');
     shader.fragmentShader='varying vec3 vSlab;\n'+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       // Continuous broad washes across joined cells, never a tile-by-tile tint.
       float wash=.85+.15*sin(vSlab.x*.002-vSlab.z*.003);
-      diffuseColor.rgb*=wash;`);
+      diffuseColor.rgb*=wash;
+      // Lift far silhouettes gradually, without altering nearby surface colors.
+      float distantReadability=smoothstep(350.,1600.,distance(cameraPosition.xz,vSlab.xz));
+      diffuseColor.rgb+=vec3(.005,.012,.028)*distantReadability;`);
   };
   const slabs=new THREE.Mesh(geometry,slabMaterial);scene.add(slabs);
   const aerialView={value:0};
@@ -99,14 +102,19 @@ export function createWorld(scene) {
       vec2 cell=abs(fract(vGround.xz/24.+.5)-.5)*24.;
       vec2 aa=fwidth(vGround.xz)*1.2;
       float grid=1.-min(smoothstep(.10,.10+aa.x,cell.x),smoothstep(.10,.10+aa.y,cell.y));
-      vec2 localMaze=vec2(${BASIS.d.toFixed(6)}*vGround.x+${BASIS.b.toFixed(6)}*vGround.z,-${BASIS.c.toFixed(6)}*vGround.x-${BASIS.a.toFixed(6)}*vGround.z)/${(BASIS.a*BASIS.d-BASIS.b*BASIS.c).toFixed(6)};
-      float outside=max(step(${FLOOR_HALF[0].toFixed(1)},abs(localMaze.x)),step(${FLOOR_HALF[1].toFixed(1)},abs(localMaze.y)));
+      float outside=1.;
+      ${MAZE_INSTANCES.map(m=>`{
+        vec2 delta=vec2(vGround.x,-vGround.z)-vec2(${m.x.toFixed(6)},${m.s.toFixed(6)});
+        vec2 site=vec2(${Math.cos(m.angle).toFixed(6)}*delta.x+${Math.sin(m.angle).toFixed(6)}*delta.y,${(-Math.sin(m.angle)).toFixed(6)}*delta.x+${Math.cos(m.angle).toFixed(6)}*delta.y);
+        vec2 localMaze=vec2(${BASIS.d.toFixed(6)}*site.x-(${BASIS.b.toFixed(6)})*site.y,-(${BASIS.c.toFixed(6)})*site.x+${BASIS.a.toFixed(6)}*site.y)/${(BASIS.a*BASIS.d-BASIS.b*BASIS.c).toFixed(6)};
+        outside*=max(step(${FLOOR_HALF[0].toFixed(1)},abs(localMaze.x)),step(${FLOOR_HALF[1].toFixed(1)},abs(localMaze.y)));
+      }`).join('\n')}
       float grazing=1.-abs(normalize(cameraPosition-vGround).y);
       float visibility=mix(.55,1.,smoothstep(.2,.8,grazing))*mix(1.,.16,smoothstep(50.,140.,cameraPosition.y));
       visibility=mix(visibility,.85,aerialView);
       float gridFade=1.-smoothstep(mix(160.,1800.,aerialView),mix(650.,3000.,aerialView),length(cameraPosition-vGround));
       diffuseColor.rgb=mix(diffuseColor.rgb*wash*visibility,vec3(.65,.76,.95),grid*outside*mix(.95,.045,aerialView)*gridFade);`);
   };
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),floorMaterial);floor.rotation.x=-Math.PI/2;floor.position.y=-.06;scene.add(floor);
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),floorMaterial);floor.rotation.x=-Math.PI/2;floor.position.y=-.06;scene.add(floor);
   return {floor,slabs,aerialView};
 }

@@ -479,3 +479,12 @@ Replaced targeting text and whole-crosshair color changes with a 220 ms transiti
 ## Recognizer component correction — September 17
 
 The six positional regions still crossed authored blocks. The loader now tags connected geometry across both source materials before rigging; explosions preserve those tags. `node tests/breakup.mjs` passes with 15 unique, unfragmented blocks, repeated random motion, falling, pause behavior and resource cleanup. The early rendered capture was inspected. `node tests/gunner-targeting.mjs` also passes after adding the synchronized 90-degree center-mark rotation.
+
+## Four maze sites, collection and dynamic patrols — September 17
+
+- `npm test`: 100 tests passed. Added transformed geometry/occlusion, per-site patrol ownership, beam clearance, swept one-shot collection/reset and exploration-memory tests. The blueprint patrol regression simulates all twelve ground patrols for two minutes; it measures distance traveled so intentional loops are not mistaken for stalls.
+- `node tests/data-beams.mjs`: isolated headless Chrome passes all four beam sites, collection, independent fades, reset and error checks. Inspected the near beam, distant maze and shutdown-ring captures. A negative-angle shader interpolation error found during testing was fixed.
+- `node tests/breakup.mjs`: passes after increasing blast impulse, preserving all 15 connected blocks, randomized motion, falling, pause and resource cleanup.
+- The new hit samples are original synthesized sounds. Subjective impact quality and intermittent shadow stability still benefit from normal play on the user's display; automated checks cannot establish those.
+
+`node tests/armor-hit.mjs` passes: bounded finite stereo samples at 44.1/48 kHz, separate tank/Recognizer durations, successful offline playback for all three hit subjects, distance attenuation and source cleanup. The offline audio check runs without the game renderer to avoid contention. `npm run build` passes with the existing large-bundle warning.

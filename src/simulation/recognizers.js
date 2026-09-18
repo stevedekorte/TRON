@@ -1,3 +1,4 @@
+import {patrolChoices} from './patrol-decisions.js';
 import {CARRIER,airEscortSlot} from '../game/carrier.js';
 import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
 import {beginSpotlight,updateSpotlight,spotlightOnTarget,SEARCHLIGHT} from './spotlight.js';
@@ -13,7 +14,8 @@ export const SENSORS = Object.freeze({range:MAZE_LENGTH,groundNearRange:45,fov:M
 function random(e) {e.seed=(Math.imul(e.seed,1664525)+1013904223)>>>0;return e.seed/4294967296;}
 export function createRecognizers(rng=Math.random) {
   return RECOGNIZER_STARTS.map((start,id)=>{
-    const p=start.role==='patrol'?{...start,...OPEN_CELLS[Math.floor(rng()*OPEN_CELLS.length)]}:start;
+    const cells=OPEN_CELLS.filter(p=>p.mazeId===(start.mazeId??0));
+    const p=start.role==='patrol'?{...start,...cells[Math.floor(rng()*cells.length)]}:start;
     return {...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s),
     alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.role==='escort'?CARRIER.speed:0,vs:0,vy:0,seed:Math.floor(rng()*4294967296),
     targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0};});
@@ -106,7 +108,8 @@ export function navigate(e,now,dt,others) {
   } else {
     e.state='wander';
     if(!e.goal||Math.hypot(e.goal.x-e.x,e.goal.s-e.s)<25||now>e.goalUntil) {
-      const p=OPEN_CELLS[Math.floor(random(e)*OPEN_CELLS.length)];
+      const cells=OPEN_CELLS.filter(p=>p.mazeId===(e.mazeId??0));
+      const p=patrolChoices(e,cells,()=>random(e),now,450)[0];
       e.goal={x:p.x,s:p.s};e.goalUntil=now+24;
     }
   }
