@@ -4,7 +4,7 @@ import {createBlast} from './blast.js';
 
 // Seconds and meters/second²; keep ground-tank destruction at its existing pace.
 const BREAKUP_MOTION={
- recognizer:{impulseScale:5,spinScale:2.2,lift:1,liftVariation:2,delay:.04,flash:.1,gravity:14.7,life:5,lifeVariation:1,fade:1},
+ recognizer:{impulseScale:18,spinScale:2.2,lift:1,liftVariation:2,delay:.04,flash:.1,gravity:14.7,life:5,lifeVariation:1,fade:1},
  tank:{impulseScale:1,spinScale:1,lift:3,liftVariation:5,delay:.12,flash:.22,gravity:9.81,life:10,lifeVariation:2,fade:2},
 };
 

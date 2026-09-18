@@ -1,22 +1,23 @@
+import {patrolChoices} from './patrol-decisions.js';
 import {enemyShot} from './enemy-fire.js';
 import {trackMobility} from './part-damage.js';
 import {stabilizeTurret} from './turret.js';
 import {raiseAlert} from './alertness.js';
 import {CARRIER} from '../game/carrier.js';
 import {clamp,angleDelta,config} from '../game/config.js';
-import {OPEN_CELLS,freePosition,wallIntersection} from '../levels/maze.js';
+import {MAZE_INSTANCES,OPEN_CELLS,freePosition,wallIntersection} from '../levels/maze.js';
 import {SENSORS,predict} from './recognizers.js';
 import {formationTarget} from './formation.js';
 import {intercept} from './intercept.js';
 export const ESCORT={count:2,turnRate:.8,turretRate:1.3,fireRange:340,spacing:38,damageAlertSeconds:5,damageProbeDistance:80};
 export const GROUND_PATROL={count:3,stuckSeconds:5};
-export const GROUND_TANK_COUNT=ESCORT.count+GROUND_PATROL.count;
+export const GROUND_TANK_COUNT=ESCORT.count+GROUND_PATROL.count*MAZE_INSTANCES.length;
 const patrolCells=OPEN_CELLS.filter(p=>freePosition(p.x,p.s,config.tankRadius+1)&&wallIntersection({...p,y:2},{...p,y:2},config.tankRadius+.5)===null);
 export function escortSlot(index,time){return {x:CARRIER.startX+CARRIER.speed*time+(index%2?100:-100),s:CARRIER.s+(index-(ESCORT.count-1)/2)*ESCORT.spacing};}
 export function createGroundTanks(random=Math.random){
  const starts=[];
- for(let i=0;i<GROUND_PATROL.count;i++){
-  const candidates=patrolCells.filter(p=>starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
+ for(let i=0;i<GROUND_PATROL.count*MAZE_INSTANCES.length;i++){
+  const candidates=patrolCells.filter(p=>p.mazeId===Math.floor(i/GROUND_PATROL.count)&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
   const p=candidates[Math.floor(random()*candidates.length)];
   starts.push(p);
  }
@@ -25,14 +26,29 @@ export function createGroundTanks(random=Math.random){
   return {...position,index,id:100+index,kind:'ground',role:patrol?'patrol':'escort',patrolSeed:Math.floor(random()*4294967296),weaponSeed:Math.floor(random()*4294967296),patrolGoal:null,alertUntil:0,y:3.8,yaw:patrol?random()*Math.PI*2:-Math.PI/2,turretYaw:0,speed,vx:speed,vs:0,vy:0,state:patrol?'patrol':'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]};
  });
 }
-function patrolGoal(e){
- if(e.patrolGoal&&Math.hypot(e.x-e.patrolGoal.x,e.s-e.patrolGoal.s)>12)return e.patrolGoal;
- for(let i=0;i<24;i++){
-  e.patrolSeed=(Math.imul(e.patrolSeed,1664525)+1013904223)>>>0;
-  const p=patrolCells[e.patrolSeed%patrolCells.length],distance=Math.hypot(p.x-e.x,p.s-e.s);
-  if(distance<30||distance>350)continue;
-  const path=groundRoute(e,p);
-  if(path.length){e.patrolGoal={x:p.x,s:p.s};e.path=path;e.nextRoute=0;return e.patrolGoal;}
+function patrolGoal(e,now,others){
+ if(e.patrolGoal&&Math.hypot(e.x-e.patrolGoal.x,e.s-e.patrolGoal.s)>6)return e.patrolGoal;
+ const cells=patrolCells.filter(p=>p.mazeId===e.mazeId);
+ const random=()=>{e.patrolSeed=(Math.imul(e.patrolSeed,1664525)+1013904223)>>>0;return e.patrolSeed/4294967296;};
+ // Patrol one visible corridor segment at a time; choose again at its end.
+ // This keeps exploration responsive instead of repeatedly solving long routes.
+ const navigable=p=>{
+  if(Math.hypot(p.x-e.x,p.s-e.s)>=180||!clear(e,p))return false;
+  const dx=p.x-e.x,ds=p.s-e.s,length2=dx*dx+ds*ds;
+  return !others.some(o=>{
+   if(o===e||!length2)return false;
+   const t=((o.x-e.x)*dx+(o.s-e.s)*ds)/length2;
+   return t>0&&t<1&&Math.hypot(e.x+t*dx-o.x,e.s+t*ds-o.s)<12;
+  });
+ };
+ let reachable=cells.filter(navigable);
+ if(!reachable.some(p=>Math.hypot(p.x-e.x,p.s-e.s)>20)){
+  reachable=[];
+  for(const radius of [12,24,48])for(let i=0;i<24;i++){const angle=i*Math.PI/12,p={x:e.x+Math.cos(angle)*radius,s:e.s+Math.sin(angle)*radius};if(navigable(p))reachable.push(p);}
+ }
+ for(const p of patrolChoices(e,reachable,random,now,180)){
+  if(Math.hypot(p.x-e.x,p.s-e.s)<8)continue;
+  e.patrolGoal={x:p.x,s:p.s};e.path=[e.patrolGoal];e.nextRoute=now+2;return e.patrolGoal;
  }
  return {x:e.x,s:e.s};
 }
@@ -84,7 +100,7 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   if(e.turretHeading==null)e.turretHeading=e.yaw+e.turretYaw;
   e.cooldown=Math.max(0,e.cooldown-dt);e.recoil=Math.max(0,e.recoil-dt*4);e.hit=Math.max(0,e.hit-dt*4);
   if(e.memory&&run.time-e.memory.seenAt>SENSORS.memorySeconds){e.memory=null;e.canSee=false;e.goal=null;}
-  let goal=e.role==='patrol'&&!e.memory?patrolGoal(e):escortSlot(e.index,run.time+1);
+  let goal=e.role==='patrol'&&!e.memory?patrolGoal(e,run.time,active):escortSlot(e.index,run.time+1);
   if(e.memory){
    e.state=e.canSee?'pursue':'investigate';goal=predict(e.memory,run.time+1);
    if(!e.canSee&&Math.hypot(e.x-goal.x,e.s-goal.s)<25){e.state='search';const phase=Math.floor((run.time-e.memory.seenAt)/5)+e.index;goal={x:goal.x+Math.cos(phase*2.4)*60,s:goal.s+Math.sin(phase*2.4)*60};}

@@ -7,7 +7,7 @@ import {WALLS,wallIntersection} from '../src/levels/maze.js';
 import {config} from '../src/game/config.js';
 const dt=1/60;
 function encounter(){const r=createRun(1982);Object.assign(r,{x:-5000,s:-5000,yaw:0,speed:0});r.recognizers=[];r.enemyTanks=r.enemyTanks.slice(0,1);Object.assign(r.enemyTanks[0],{x:-5000,s:-4800,yaw:Math.PI,speed:0,vx:0,vs:0,nextSense:0});return r;}
-test('two escorts keep pace beneath the moving carrier',()=>{const r=createRun();r.recognizers=[];for(let i=0;i<1200;i++)step(r,{},dt);assert.equal(r.enemyTanks.length,5);for(const e of r.enemyTanks.filter(e=>e.role==='escort')){const goal=escortSlot(e.index,r.time);assert.ok(Math.hypot(e.x-goal.x,e.s-goal.s)<45);assert.equal(e.memory,null);}});
+test('two escorts keep pace beneath the moving carrier',()=>{const r=createRun();r.recognizers=[];for(let i=0;i<1200;i++)step(r,{},dt);assert.equal(r.enemyTanks.length,14);for(const e of r.enemyTanks.filter(e=>e.role==='escort')){const goal=escortSlot(e.index,r.time);assert.ok(Math.hypot(e.x-goal.x,e.s-goal.s)<45);assert.equal(e.memory,null);}});
 test('ground sight obeys range, facing and wall occlusion',()=>{const r=encounter(),e=r.enemyTanks[0];assert.ok(canSeeClu(e,r));assert.equal(canSeeClu({...e,yaw:0},r),false);assert.equal(canSeeClu({...e,s:r.s+SENSORS.range+1},r),false);const w=WALLS[0],a=w.points[0],b=w.points[1],mx=(a.x+b.x)/2,ms=(a.s+b.s)/2,dx=b.x-a.x,ds=b.s-a.s,len=Math.hypot(dx,ds);const p={x:mx-ds/len*25,s:ms+dx/len*25},q={x:mx+ds/len*25,s:ms-dx/len*25};assert.equal(canSeeClu({...e,...p,yaw:-Math.atan2(q.x-p.x,q.s-p.s)},q),false);});
 test('tank/aircraft radio works in both directions, preserves age and respects range',()=>{for(const senderGround of [true,false]){const r=createRun();r.recognizers=r.recognizers.slice(0,1);r.enemyTanks=r.enemyTanks.slice(0,2);const ground=r.enemyTanks[0],air=r.recognizers[0],far=r.enemyTanks[1];Object.assign(ground,{x:-5000,s:-5000,nextSense:Infinity});Object.assign(air,{x:-5000,s:-4900,nextSense:Infinity,nextAttack:Infinity});Object.assign(far,{x:-6000,s:-5000,nextSense:Infinity});const sender=senderGround?ground:air,receiver=senderGround?air:ground;sender.memory={x:-4900,s:-4900,vx:2,vs:0,seenAt:1,source:sender.id};r.time=2;updateRecognizers(r,dt);assert.equal(receiver.memory,null);r.time=2.5;updateRecognizers(r,dt);assert.equal(receiver.memory.seenAt,1);assert.equal(receiver.memory.source,sender.id);assert.equal(far.memory,null);}});
 test('turret acquires and enemy rounds destroy Clu; observers retire the target',()=>{const r=encounter();for(let i=0;i<900&&!r.crushed;i++)step(r,{},dt);assert.ok(r.events.some(e=>e.type==='enemyShot'));assert.ok(r.crushed);assert.ok(r.events.some(e=>e.subject==='tank'));for(let i=0;i<30;i++)step(r,{},dt);assert.ok(r.enemyTanks[0].targetGone);});
@@ -33,7 +33,7 @@ test('enemy pursuit reaches Clu normal top speed and never inherits turbo',()=>{
 
 test('three maze tanks patrol clear routes independently of the two carrier escorts',()=>{
  const r=createRun();r.recognizers=[];r.x=-9000;r.s=-9000;
- const patrols=r.enemyTanks.filter(e=>e.role==='patrol');assert.equal(patrols.length,3);
+ const patrols=r.enemyTanks.filter(e=>e.role==='patrol');assert.equal(patrols.length,12);
  const positions=patrols.map(e=>({x:e.x,s:e.s}));
  for(let i=0;i<900;i++)step(r,{},dt);
  for(const [i,e] of patrols.entries()){

@@ -43,3 +43,7 @@ September 13 updates: the terminal remains black until Return, with a block curs
 September 14 follow-up: Recognizers now use model scale 0.65 (30% larger), with physical clearances and projector mounts adjusted. P enables the stabilized first-person sight, J/L yaw, I/K elevate, O zooms, and F levels elevation. Gunner aim has short acceleration/deceleration and zoom-sensitive rates. Clu rounds travel up to 825 m. Clu destruction now fades back to the film terminal message and Return starts a fresh run.
 
 September 15: A Recognizer already searching with its spotlight must aim the beam onto visible Clu within its visual detection range before pursuing or reporting the new sighting. Acquisition brakes its flight; confirmed contact enables pursuit/radio and 1.5 seconds of beam tracking, followed by a 0.8-second fade. Lost targets do not steer the beam through walls.
+
+## Expanded exploration — September 17
+
+Four separated maze sites now provide local data-collection destinations, each with a red vertical beam and its own dynamically deciding patrols. Entering a beam collects its data and triggers a shutdown animation. Preserve the open-ended atmosphere: no score panel or automatic victory screen.

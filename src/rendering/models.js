@@ -62,9 +62,10 @@ export async function createTank() {
   // A crisp projected silhouette gives the tank the grounded, graphic shadow
   // in the film. Two shared batches follow hull and turret independently.
   const shadowMaterial=new THREE.ShaderMaterial({
-    transparent:true,depthWrite:false,
+    transparent:true,depthWrite:false,blending:THREE.NoBlending,side:THREE.DoubleSide,
+    polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4,
     vertexShader:`void main(){vec4 world=modelMatrix*vec4(position,1.);world.xz+=vec2(.5,.5)*world.y;world.y=.025;gl_Position=projectionMatrix*viewMatrix*world;}`,
-    fragmentShader:'void main(){gl_FragColor=vec4(0.,.001,.004,.88);}'
+    fragmentShader:'void main(){gl_FragColor=vec4(0.,.001,.004,1.);}'
   });
   for(const parent of [root,barrel]) {
     const pieces=meshes.filter(m=>m.parent===parent).map(m=>{
@@ -73,7 +74,7 @@ export async function createTank() {
       if(g.index){const flat=g.toNonIndexed();g.dispose();return flat;}return g;
     });
     const geometry=mergeGeometries(pieces);pieces.forEach(g=>g.dispose());
-    const shadow=new THREE.Mesh(geometry,shadowMaterial);shadow.frustumCulled=false;shadow.userData.breakupExclude=true;parent.add(shadow);
+    const shadow=new THREE.Mesh(geometry,shadowMaterial);shadow.frustumCulled=false;shadow.renderOrder=1;shadow.userData.breakupExclude=true;parent.add(shadow);
   }
   const flash = new THREE.Mesh(new THREE.SphereGeometry(.36,12,8),glow(0xe0faff));
   flash.position.set(...TANK.muzzle.map((v,i)=>v-TANK.pivot[i]));

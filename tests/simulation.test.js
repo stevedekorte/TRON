@@ -9,12 +9,13 @@ import { config,RECOGNIZER_SCALE } from '../src/game/config.js';
 const tick=(r,input={},seconds=1)=>{for(let i=0;i<Math.round(seconds*60);i++)step(r,input,1/60);};
 
 test('maze is connected with branches, cycles, dead ends and four exterior openings',()=>{
+  const localCells=OPEN_CELLS.filter(p=>p.mazeId===0);
   const key=(c,r)=>`${c},${r}`,seen=new Set(),queue=[OPEN_CELLS[0]];let edges=0,junctions=0,deadEnds=0,openings=0;
   while(queue.length){const p=queue.pop(),k=key(p.c,p.r);if(seen.has(k))continue;seen.add(k);
     for(const [dc,dr] of [[1,0],[-1,0],[0,1],[0,-1]]){const c=p.c+dc,r=p.r+dr;if(GRID[r]?.[c]===0)queue.push({c,r});}}
-  for(const p of OPEN_CELLS){let degree=0;for(const [dc,dr]of [[1,0],[-1,0],[0,1],[0,-1]])if(GRID[p.r+dr]?.[p.c+dc]===0)degree++;
+  for(const p of localCells){let degree=0;for(const [dc,dr]of [[1,0],[-1,0],[0,1],[0,-1]])if(GRID[p.r+dr]?.[p.c+dc]===0)degree++;
     edges+=degree;if(degree>=3)junctions++;if(degree===1)deadEnds++;if(p.c===0||p.r===0||p.c===SIZE-1||p.r===SIZE-1)openings++;}
-  assert.equal(seen.size,OPEN_CELLS.length);assert.ok(edges/2>=OPEN_CELLS.length);assert.ok(junctions>10);assert.ok(deadEnds>5);assert.ok(openings>=4);
+  assert.equal(seen.size,localCells.length);assert.ok(edges/2>=localCells.length);assert.ok(junctions>10);assert.ok(deadEnds>5);assert.ok(openings>=4);
   assert.ok(freePosition(SPAWN.x,SPAWN.s,config.tankRadius));
 });
 
@@ -87,7 +88,7 @@ test('walls block auto aim and a protruding muzzle cannot shoot through a wall',
 test('independent agents persist, simulation has no timed outcome, reset is clean',()=>{
   const r=createRun();for(const e of r.recognizers.slice(0,2))assert.ok(Math.abs(worldToGrid(e.x,e.s).u)>HALF||Math.abs(worldToGrid(e.x,e.s).v)>HALF);
   const start=r.recognizers.map(e=>[e.x,e.s]);tick(r,{},100);
-  assert.equal(r.status,'running');assert.equal(r.recognizers.length,5);assert.ok(r.radio.length<40);
+  assert.equal(r.status,'running');assert.equal(r.recognizers.length,8);assert.ok(r.radio.length<40);
   assert.ok(r.recognizers.every((e,i)=>Math.hypot(e.x-start[i][0],e.s-start[i][1])>50));
   const fresh=createRun();assert.equal(fresh.radio.length,0);assert.ok(fresh.recognizers.every(e=>e.memory===null));assert.equal(fresh.turretYaw,0);
 });
@@ -343,7 +344,7 @@ test('autonomous Recognizers intercept a tank moving at cruise speed',()=>{
 
 test('additional patrols start scattered with no target; sight requires range and clearance',()=>{
  const r=createRun(1982),patrols=r.recognizers.filter(e=>e.role==='patrol');
- assert.equal(patrols.length,1);
+ assert.equal(patrols.length,4);
  for(const e of patrols){assert.equal(e.state,'wander');assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.ok(e.y>54);}
  assert.deepEqual(createRun(1982).recognizers.filter(e=>e.role==='patrol'),patrols);
  for(let i=0;i<patrols.length;i++)for(let j=i+1;j<patrols.length;j++)assert.ok(Math.hypot(patrols[i].x-patrols[j].x,patrols[i].s-patrols[j].s)>=150);

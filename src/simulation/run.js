@@ -1,3 +1,4 @@
+import {createDataBeams,collectData} from './data-beams.js';
 import {applyPartDamage} from './part-damage.js';
 import {enemyHitPart,recordEnemyHit} from './hit-parts.js';
 import {randomSeed,seededRandom} from '../game/random.js';
@@ -13,7 +14,7 @@ import { createRecognizers, updateRecognizers, perceive } from './recognizers.js
 export function createRun(seed=randomSeed()) {
   const random=seededRandom(seed);
   return {...SPAWN,seed,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    enemyTanks:createGroundTanks(random),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
+    dataBeams:createDataBeams(random),dataCollected:0,enemyTanks:createGroundTanks(random),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
 }
 
 export function boostTank(run,requestedDirection=1){
@@ -140,6 +141,7 @@ export function updateWeapons(run,input,dt) {
 }
 
 export function step(run,input,dt) {
+  const previousPosition={x:run.x,s:run.s};
   if(run.crushed){run.gunnerLeveling=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.cruiseThrottle=false;input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
   run.turboCooldown=run.turboCooldown<=dt+1e-8?0:run.turboCooldown-dt;
   run.time+=dt;run.impact=Math.max(0,run.impact-dt*2.5);
@@ -211,7 +213,7 @@ export function step(run,input,dt) {
     // This also allows immediate reverse instead of braking stored wall pressure.
     if(travel<Math.abs(run.speed)*dt*.05)run.speed=0;
   }
-  updateRecognizers(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);
+  updateRecognizers(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run,previousPosition);
   if(run.crushed)run.health=0;
   else if(run.health>0&&run.health<CLU_HEALTH.max)run.health=Math.min(CLU_HEALTH.max,run.health+CLU_HEALTH.max*dt/CLU_HEALTH.rechargeSeconds);
 }
