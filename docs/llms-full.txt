@@ -554,6 +554,168 @@ Recognizers now burst into their 15 actual connected model blocks. Connectivity 
 - [x] Adapt the vertical blue-white curtain in the supplied `Sark and MCP.mp4` at 53–54 seconds into 32 shafts around stationary CLU. Stop within the red beam to build the curtain over 1.2 seconds, hold for 2.5 seconds, and reverse over 1.2 seconds before collecting data and fading the red beam. Moving or destruction interrupts transfer; passing through no longer collects data.
 - [x] Replace the carrier film loop with a steady synthesized 16-second machinery drone. Preserve the original `carrier-rumble.wav` in the sound library for future use. Retain positional attenuation and Doppler.
 
+### Carrier escape shuttle — September 17
+
+- [x] Inspect supplied four-angle stills and the 2:34–2:57 escape sequence; construct an open shell model with ribbed trays, upright end blades and a single green-paneled side wall.
+- [x] Provide a standalone orbit/turntable studio at `shuttle.html`, six camera presets and GLB export. See [model notes](models/carrier-shuttle/index.html) for uncertain dimensions and hidden surfaces.
+
+### Maze music and presentation — September 17
+
+- [x] Use the four supplied Tower Music clips: exploration once per game; approaching a nearby hidden beam; spotting its base; entering the column. Close means within 120 m. Visibility checks the camera frustum and wall line of sight to the base, not the infinitely tall shaft. Cues advance once per beam without restarting when the camera turns; pursuit has priority. Entry remains latched during its fade-in so driving through still triggers it. New runs reset cue history.
+- [x] Replace near-coplanar shadow depth tests with explicit opaque draw order: floor, flat tank shadows, then vehicles and maze walls. This preserves occlusion while eliminating floor-versus-shadow depth competition.
+- [x] Remove the C rear-view shortcut and its hints. Append `END OF LINE` to the closing terminal and show a small fan tribute at the bottom of that screen only. End-screen timing remains unchanged, per the user's correction.
+
+The closing tribute now uses the FilmTerminal face, uppercase lettering and left alignment with the main terminal text. It types at 50 characters/second after a half-second pause, ends with MADE TOGETHER, ACROSS THE INTERFACE. followed by END OF LINE, and leaves the cursor there. Reduced-motion mode shows the complete text immediately. Restart cancels and resets typing.
+
+### Beam transfer revision — September 17
+
+Stopping inside a red beam pauses propulsion and engine audio while aiming and firing remain available. The shortened 18-second entry cue accompanies a 16-second transfer: surrounding shafts assemble over three seconds, hold until second nine, then open over seven seconds. Health restores gradually throughout. The column blends red through white into permanent blue; returning to blue does not repeat healing or effects. Completion sends a 12-second spherical wave out to half a maze width in radius, destroying ground/air enemies on contact and removing 25 of the carrier's 100 health per wave. Carrier damage darkens its hull and briefly flashes it; a carrier breakup sequence is not implemented.
+
+All closing text matches the opening terminal font size. Closing tribute text now types at roughly ten characters per second with random keystroke spacing and longer punctuation/paragraph pauses. Reduced-motion preference still displays it immediately.
+
+The transfer surround uses sky-reaching shafts that switch on individually at full height around CLU, then switch off in reverse order after second nine. No downward growth or visible upper ends.
+
+The closing tribute waits after ACROSS THE INTERFACE until the outro media element reaches its final five seconds. It then inserts a newline, switches the cursor to red, and types END OF LINE in red. Timing follows actual playback, including pauses; reduced motion preserves the music cue but displays the final phrase without per-character animation.
+
+Recognizer projector speeds now distinguish scanning (0.5/0.4 rad/s yaw/pitch), visible acquisition (1.2/0.9) and confirmed tracking (1.8/1.2). This allows turbo cross-traffic to remain illuminated while preserving slower searching, bounded movement, observed-velocity prediction and wall occlusion.
+
+The closing screen holds for three seconds before the tribute starts typing; the final red sign-off remains synchronized to the last five seconds of the outro.
+
+At second nine, when the transfer ring starts opening, the entry cue fades into the user-supplied `5 afterglow.mp3`, played once. The afterglow survives beam completion and leaving the beam; new pursuit may still interrupt it using the usual music rules.
+
+### Recognizer shadows — September 18
+
+Recognizers now project their actual body and folding-leg silhouettes onto the ground, using the same light direction and floor-first rendering as tank shadows. Shadows follow flight height and pose and disappear with the destroyed craft. They are excluded from breakup geometry and share the source geometry. This is a ground-plane projection, not shadow mapping onto roofs or vehicles.
+
+### September 18 follow-up
+
+Recognizers and breakup pieces now use a compact light-space shadow atlas to darken the maze walls, roofs, seams and floor. Debris shadows follow tumbling pieces and fade with their lifetime. Existing tank and Recognizer projected silhouettes remain on the ground. The atlas supports five simultaneous breakup groups, matching the existing debris lifetime cap. The shuttle studio and export now interpret the ribbed shell as an underside, with upward-looking cameras and illumination from below.
+
+The outro never loops. Once the red END OF LINE finishes, the terminal fades to black over five seconds and returns to the opening screen without starting a new game automatically.
+
+### September 18 combat and shadow corrections
+
+- Five pursuers start spread behind CLU; each maze retains its own patrol and the carrier retains its escorts.
+- Recognizer central core hits (crossbar and crown) destroy it in one shot. Shoulder/leg armor retains its existing damage behavior. Any bullet hit destroys an enemy tank.
+- Gunner controls are keyboard-only for now: mouse aiming, clicking and wheel zoom are disabled in this view. O cycles 2× → 4× → 8× → 2×; the former 1× FOV remains only as the sensitivity reference. Aerial wheel zoom is unchanged.
+- Active transfer-ring shafts destroy touching Recognizers at any flight height. Shaft visibility and collision use the same timed sequence; blue/inactive rings cannot cause contact damage.
+- Shadow atlas rectangles now use physical texture coordinates independently of the game's supersampling ratio. Actual debris also has crisp projected ground silhouettes. Maze floor shadows use exact projected geometry rather than the coarse shadow map; wall/roof receiving still uses static shadow maps.
+
+Wall-shadow refinement: exact floor silhouettes now use a lighter blue-black fill. Maze shadows on roofs, walls and vehicle surfaces use 50% attenuation; CLU, enemy tanks, Recognizers and carrier materials receive the static maze maps. Emissive material light is preserved.
+
+### Faster beam sequence and outside-view cannon spread — September 18
+
+Ring engagement takes 1.5 seconds, holds for six seconds, then disengages over 3.5 seconds. The transfer/healing/color sequence completes in 11 seconds; afterglow begins with ring opening at 7.5 seconds. The expanding damage sphere reaches its unchanged final radius in four seconds, three times its previous speed.
+
+Outside gunner view, CLU shots have up to 0.6 degrees of horizontal and 0.3 degrees of vertical spread around their assisted trajectory. Level shots have no vertical spread, and all outside-view trajectories are clamped to the horizon or above to avoid floor strikes. Gunner shots remain precise. Spread is reproducible for a given run seed and shot sequence.
+
+### Carrier shadows and wall self-shadow correction — September 18
+
+Sark's carrier casts a moving, crisp hull silhouette onto the floor and a separate 1024-pixel shadow map onto maze walls and vehicles. Emissive vehicle trim stays lit. Only armor casts, avoiding redundant painted outlines and beacon meshes. The carrier atlas uses one tile; the static maze atlas remains cached after its first render. Slope-aware depth bias on maze/carrier receivers suppresses triangular self-shadow artifacts on bevelled wall faces without changing the exact floor silhouettes.
+
+### Sentence-by-sentence closing tribute — September 18
+
+The replacement tribute types three sentence cards at the same position. Each holds for three seconds, fades over 0.8 seconds, then clears before the next sentence. The initial three-second delay and human typing cadence remain. Reduced motion shows each sentence without typing/fading, retaining readable holds. The last sentence stays visible through the outro; the cursor waits beneath it for the song's final five seconds. The first character of the red END OF LINE sign-off triggers the supplied MCP dialog once; reset stops it and the sound toggle mutes it. The existing five-second final fade follows the completed sign-off.
+
+### Clean screenshot export — September 18
+
+F9 captures a PNG of the rendered scene during gameplay, the opening zoom, or pause. DOM overlays (including the guide, turbo, health, and gunner reticle) are excluded from the image. The HUD hides temporarily and restores after saving or cancellation. Browsers supporting the File System Access save picker let the user select a destination; other browsers download a timestamped Space-Paranoids PNG using their configured download behavior. Capturing renders immediately before reading the WebGL canvas, avoiding cleared/blank screenshots without permanently preserving the drawing buffer.
+
+Wall shadow follow-up: the slope bias now covers the combined X/Y depth change of diagonal PCF samples, rather than just the larger axis. Matched close-up captures with shadows on/off isolate the previous triangular pattern and verify continuous shading after the correction.
+
+### Drifting grid-cloud layer — September 18
+
+The extracted cloud model is reused in a three-instance layer at 1,080 meters (three times the carrier altitude). All clouds drift along +X at 6 m/s across bounds enclosing all maze sites and the starting approach. Each cloud owns a separate Z lane with 700-meter edge margins, wider than its maximum half-extent, so their footprints cannot overlap even at a wrap. Each crossing deterministically varies its position within that lane and its size using the run seed. All clouds share one fixed orientation: their long axes and grid lines align with world +X and the ground grid, matching their shared direction of travel. Whole clouds fade to zero at map boundaries before wrapping to the opposite edge; distant clouds also fade between 4 and 6.5 km. Sky-only far-plane handling preserves distant visibility without changing the ground camera clipping. The single instanced mesh has no collision, shadow, sensor, or gameplay participation. Simulation time controls motion so pause and reset remain stable.
+
+### Glyph-aligned CRT raster — September 18
+
+Opening and closing terminal text now use the local Interface Raster color font derived from VT323. Dimmed raster bands are embedded in each glyph, with blue/red palettes, instead of a separate fixed screen-space mask. Bands retain 68% brightness rather than cutting transparent gaps. Credits use the same raster treatment, and the sign-off and cursor stay red. Existing typing, sentence replacement, final-line hold, and outro timing remain in place.
+
+### Beam-base stability and grid-preserving carrier shadow — September 18
+
+The beam base and expanding ground ring render in the floor-decoration pass, after the floor/shadows and before solid vehicles/walls. Their additive blending stays intact without an almost-coplanar floor depth comparison. The surrounding shafts and their contact damage are centered on the main beam, independent of CLU's stopping offset.
+
+The carrier now shades the original floor material through its shadow atlas instead of painting a solid floor silhouette. Grid lines remain visible inside the shadow. Shader cache keys preserve each receiver's pre-existing material customizations when stacking shadow hooks.
+
+### Directional blue horizon — September 18
+
+A fixed world-space sunrise glow faces CLU's initial heading: blue haze fades upward, with a narrow violet accent at the horizon and a smooth angular falloff to darkness toward the sides/rear. A single background shader reconstructs world viewing rays, so the effect follows camera orientation without moving with the player or appearing as a nearby object. Existing floor, fog, and vehicle lighting remain unchanged. The terminal/reference studio hides the effect; scene disposal releases its geometry/material normally.
+
+### Debris collisions and revised tribute — September 18
+
+- [x] Give each intact Recognizer block and tank fragment an oriented box collider. Resolve floor, wall sides and roof contacts against nearby shared maze prisms, with bounded short steps for fast explosions, bounce, friction and sleep after settling.
+- [x] Limit debris to five bursts / 160 pieces. Debris remains visual: it neither blocks vehicles nor collides with other debris. Existing fading, pause and disposal behavior remain.
+- [x] Replace credits with the user's two-paragraph tribute, preserving explicit line breaks. Keep the collaboration paragraph visible through the outro and retain the red END OF LINE signoff.
+- [x] Gently brighten the maze's blue-black wall faces and upright ledges for close-range readability.
+
+### Rapier debris — September 18
+
+- [x] Replace the provisional debris contact solver with Rapier rigid bodies, preserving the intact Recognizer blocks, existing blast velocities and per-vehicle gravity. Angular inertia and off-center contacts now produce natural tumbling, tipping and settling.
+- [x] Use a fixed 120 Hz physics step with interpolated poses, continuous collision detection, sleeping bodies, nearby static maze prisms and the existing five-burst / 160-piece cap. Collision groups exclude debris/debris contacts and vehicles remain under their existing controls.
+
+### Debris damage and shadow layering — September 18
+
+- [x] Debris physically contacts CLU, enemy tanks, Recognizers and the carrier through coarse kinematic collision shapes. Damage uses the closing component of relative contact velocity, including spin, and estimated fragment mass (60 kg/m³): no damage below 5,000 J, then one health point per additional 50,000 J. Compound contacts are deduplicated; resting contacts cannot repeatedly damage a vehicle.
+- [x] Run debris updates and apply damage during fixed gameplay steps. Fatal impacts use existing hit/destruction events, allowing subsequent explosions. Vehicle driving remains independently controlled.
+- [x] Draw maze floor shadows before vehicle/debris ground shadows. Increase wall-face brightness again and reduce maze shadow darkening from 50% to 40%.
+- [x] Update tribute wording to “FAN TRIBUTE GAME” and “LOVE AND GREAT APPRECIATION,” retaining the user's explicit line breaks and final collaboration paragraph.
+
+Credits are authored in `docs/credits.txt` and imported as text by Vite. Explicit line breaks and blank-line paragraph changes are preserved; the timed red END OF LINE remains generated by the terminal sequence. Edit the text file to update the credits (rebuild for deployment).
+
+- [x] Preserve the destroyed vehicle's full world velocity in each fragment's initial Rapier velocity, added to its explosion impulse. Sections with a delayed release continue translating at the vehicle velocity before detaching.
+
+### Crisp shadows without triangle seams — September 18
+
+- [x] Compare shadow depth against the receiver plane at the sampled texel center; handle tiny projected derivatives at distant coordinates. Use hard nearest-depth shadows rather than a nine-tap blur, with 512-pixel dynamic tiles.
+- [x] Replace stochastic debris ground-shadow fading with a uniform minimum-blend fade. Overlapping projected triangles cannot accumulate darkness or reveal noisy/triangular fade patches; the established ground-shadow draw order is retained.
+
+- [x] Use B as the displayed screenshot shortcut, retaining F9 as an alias for systems that deliver it to the browser. Brief save/cancel/download status makes capture feedback visible. The PNG remains canvas-only, without HUD or status overlays.
+
+### Roof-edge self-shadow suppression — September 18
+
+- [x] Give each slab and its decorative receivers a stable identity. Maze depth maps encode slab identity alongside depth; a slab ignores its own depth-map shadow, avoiding roof-edge sawtooth artifacts. Other slabs and vehicles still receive its shadows. This also suppresses self-occlusion within a single concave slab; inter-slab shadowing remains.
+- [ ] Visually verify the roof-edge fix in-browser. Added `tests/roof-edge-shadows.mjs` for closed roof/wall corners and identities above 255; current execution permissions prevent launching the browser test.
+
+Browser-launch follow-up: the roof-edge test now defaults to port 5173 and accepts `TRON_URL`. Both desktop Chrome and the matching Playwright headless shell fail before loading a page in the current restricted session; the headless shell explicitly reports macOS Mach service registration permission denied. Browser verification remains pending; run `node tests/roof-edge-shadows.mjs` from a normal Terminal with Vite running.
+
+
+### Grid-preserving maze shadows — September 19
+
+- [x] Shade the existing floor material with the cached maze shadow atlas instead of drawing opaque projected polygons. Grid lines remain visible under wall shadows, using the same material-shading approach as the carrier. Maze attenuation remains 40%, and vehicle/debris ground shadows still draw after the floor.
+- [x] Verify grid visibility and tank-shadow layering in Chrome and complete a production build. The floor now shares the 1024-pixel-per-site map; unlike the former exact projected polygons, close-up floor edges have finite texel resolution.
+
+Browser permission follow-up: the approved Chrome launch succeeded and `tests/roof-edge-shadows.mjs` passed all 30 closed-box poses with zero self-shadowed pixels. This supersedes the launch blocker above; exact visual matching to the user's roof-edge screenshot remains separate.
+
+
+### Throttle-controlled turbo and crisp grid shadows — September 19
+
+- [x] Turbo only raises speed and acceleration limits (both multipliers 2.5). Activation no longer changes velocity or supplies throttle. Forward/reverse input, coasting and braking retain control; duration, recharge and the existing reverse limit remain unchanged.
+- [x] Replace the coarse maze floor-map edge with exact projected slab geometry. Multiply the existing floor color to preserve grid lines, using stencil bit 0 to darken each covered sample only once. Enable stencil attachments on the game renderer and multisampled scene target. Vehicle/debris shadows still draw afterward; wall/roof receiving retains the cached atlas.
+
+This supersedes the finite-resolution floor-edge compromise in the preceding entry. Rendered blueprint and full-game captures were inspected, including grid retention and a clean diagonal floor-shadow boundary.
+
+
+### Recognizer inertia and wall-shadow filtering — September 19
+
+- [x] Persist yaw velocity with a 0.8 rad/s² acceleration/braking limit and retain the 0.62 rad/s turning limit. Heading changes, yielding, acquisition and attacks now decelerate rotation instead of freezing it. Horizontal forward thrust and drag remain momentum-based.
+- [x] Persist vertical velocity with 14 m/s² controlled lift acceleration and a 22 m/s requested lift-speed limit. Hover changes, folding, recovery and aborted drops retain velocity. A drop uses its incoming vertical velocity and gravity; ground contact is the physical stop. Recovery completion uses small position/velocity tolerances rather than snapping to altitude.
+- [x] Expose Recognizer turning and lift limits with units in the development tuning panel, including reset/export.
+- [x] Increase the cached maze wall/roof atlas to 2048 pixels per site and add nine-sample, continuously weighted edge filtering. Each sample keeps receiver-plane depth correction and slab-identity exclusion. Dynamic aircraft/carrier maps retain their existing nearest-depth behavior; exact grid-preserving floor silhouettes remain separate.
+
+Wall edges are now softened over a small texel neighborhood instead of making a binary step. This is still a finite-resolution shadow map, with greater texture memory than the former 1024-pixel maps, not exact geometric wall-on-wall shadowing. Human review of Recognizer weight and close wall edges remains appropriate.
+
+
+### Exact wall-on-wall shadows and isolated development — September 19
+
+- [x] Replace the softened maze wall/roof map with exact static geometry: clip each receiving triangle against caster triangles extruded along the fixed light direction. A light-plane spatial hash bounds the setup work; stencil bit 1 makes overlapping polygons a single shadow. Receiver slab identity still suppresses self-shadowing. Small depth bias keeps clipped polygons on their receivers, behind occluding vehicles. This supersedes the filtered wall-edge approach above.
+- [x] Retain exact grid-preserving floor silhouettes. The initial WebGL context now explicitly requests stencil, as does the multisampled scene target. Moving vehicles still receive a separate cached 1024-pixel maze atlas.
+- [x] Add an isolated Docker launcher with TRON as the only host-folder bind mount, separate Linux dependency/home volumes, an unprivileged user, read-only image filesystem, private IPC and no Docker socket. Codex approvals are disabled only inside that external boundary. Native Chrome remains the browser-test default; the container uses bundled Chromium.
+
+Use `scripts/codex-container login` once, then `scripts/codex-container` for future container sessions. Current native session credentials/history are not mounted or copied. See README for build, test, port and authentication details.
+
+- [x] Default Vite to manual refresh (`server.hmr: false`) so source edits do not interrupt play. `TRON_HMR=1 npm run dev` opts into automatic reload. Browser verification confirms a source edit preserves the running page and a manual refresh loads the update.
+- [x] Verify exact wall edges against independent ray/box intersections and inspect the authored-maze capture. User confirms the wall shadows look right after this change.
+
 
 ---
 
@@ -576,7 +738,7 @@ The tank and Recognizers are user-supplied Sketchfab GLBs; Sark’s carrier is a
 | Tank movement and Recognizer flight/approach | User-supplied TRON scene | Three stereo PCM WAV loops, about 0.76 MB combined | Film-derived excerpts; source/timecodes below | Active, awaiting auditory review |
 | Cannon | User-supplied TRON scene | Stereo PCM WAV, 102 KB | Film-derived excerpt | Active |
 | Impact, destruction, missing-file fallback | Project Web Audio synthesis | Short oscillator/noise envelopes | Original synthesized effects | Active |
-| UI and favicon | Project HTML/CSS; inline favicon path | Local VT323 terminal font; system fonts elsewhere | Original project implementation | Active |
+| UI and favicon | Project HTML/CSS; inline favicon path | Local Interface Raster terminal font derived from VT323; system fonts elsewhere | Original project implementation | Active |
 | Terminal font | Peter Hull / [VT323 in Google Fonts](https://github.com/google/fonts/tree/main/ofl/vt323) | Local `public/fonts/VT323-Regular.ttf` | SIL Open Font License 1.1; retained in `public/fonts/OFL-VT323.txt` | Active |
 | Film reference stills | User-supplied screenshots from the linked 1982 sequence | 15 PNGs in `docs/references/images/` | Study references; not used as runtime art | Inspected |
 | Three.js | [Three.js](https://github.com/mrdoob/three), installed 0.186.0 | npm dependency, lockfile pinned | MIT; upstream license remains in package | Active |
@@ -683,6 +845,20 @@ The supplied `Recognizer Explosion.m4a` edit matches video time 113.207 seconds 
 
 [Open the sound library](../sounds/index.html) for downloaded Syna-Max recreation previews, existing film edits, cleanup candidates, verified stock-effect catalog IDs and vendor metadata exports. The shelf preserves inactive resources, author/source links and licensing notes for this personal-use project. `docs/sounds/catalog.json` is the editable inventory; `scripts/build-sound-library.mjs` regenerates its page during the docs build. Public MP3 previews are clearly distinguished from original downloads and unacquired commercial-library audio.
 
+### MCP closing dialog
+
+`docs/references/dialog/END OF LINE.mp3` is the user-supplied MCP “END OF LINE” film dialog (1.28-second MP3). It plays once as the terminal starts typing the final sign-off. Imported directly through Vite and decoded into Web Audio; no edits to the source recording. Source: Disney's 1982 TRON, supplied by the user for this fan tribute.
+
+### Embedded terminal raster font
+
+`public/fonts/InterfaceRaster-Regular.ttf` is a modified VT323 font, renamed **Interface Raster**. Each of 582 glyphs retains its original monochrome outline and adds COLRv0 layers: bright pixels plus 15-unit bands at 68% brightness within each 80-unit source pixel row. The two embedded palettes match terminal blue and sign-off red. This replaces the screen-space scanline mask, keeping the dim bands aligned through typing, resizing, and sentence fades. The CSS cursor receives a matching dim-band treatment.
+
+Based on Peter Hull's VT323 under SIL OFL 1.1; original notices remain in the font and `public/fonts/OFL-VT323.txt`. Rebuild with `uv run --with fonttools==4.65.0 --with skia-pathops==0.9.2 python scripts/build-terminal-font.py`. No extra dependencies are needed to run the game.
+
+## Debris physics
+
+Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The local npm package includes WebAssembly; no runtime CDN is required. Used for vehicle debris only. [Source and license](https://github.com/dimforge/rapier).
+
 
 ---
 
@@ -738,6 +914,50 @@ Carrier trim balance: softened red paint and emission, increased the original bl
 Recognizer destruction refinement: the earlier rig grouped the complete upper assembly as one body, so one body hit could fragment crown, crossbar and shoulders together. Breakup now treats crown, crossbar, left shoulder, right shoulder and the two articulated legs as six sections. Only the struck section fragments; the remaining five detach whole. Section boundaries use the source triangle centers, preserving every original triangle.
 
 Clu destruction now uses the same posed-surface breakup system: a stomp hides the intact tank and its projected shadows and scatters randomized tank fragments. Current turret yaw and tank momentum are captured by the destruction event. Shadow geometry and muzzle effects are excluded. Thin blue boundary seams outline tank fragments; red boundary seams outline fractured Recognizer sections. Interior triangle diagonals are excluded. Seams fade and dispose with debris. Restart restores the intact tank.
+
+## Carrier escape shuttle
+
+[Model notes and GLB](carrier-shuttle/index.html) · [Interactive preview](../../shuttle.html). Reference reconstruction from the supplied film stills and escape sequence, with provisional scale and hidden surfaces.
+
+## Grid cloud
+
+[cloud.glb](cloud.glb) contains one complete connected grid cloud extracted from `extra/tron_1982.glb`, with no neighboring cloud fragments. Original cyan emissive material and imported scale are preserved; source transforms are baked to Y-up and the cloud is centered at the origin. It contains 1,046 vertices and 846 triangles and spans approximately 735 × 695 meters in the XZ plane. [Preview](cloud-preview.png).
+
+Source: **Tron 1982** by **jvouillon**, from the source file's embedded metadata: https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88 — CC BY 4.0. Attribution and modification notes are retained in the exported GLB. Reproduce with `python3 scripts/extract-cloud.py`. The game reuses this asset for its decorative drifting cloud layer.
+
+
+---
+
+<!-- Page: models/carrier-shuttle -->
+Source: /models/carrier-shuttle/
+
+---
+title: Carrier escape shuttle
+topTitle: TRON
+subtitle: Reference reconstruction of the carrier escape pod
+---
+
+[Open the interactive model studio](../../../shuttle.html) · [Download the GLB](carrier-escape-shuttle.glb)
+
+## Model
+
+A locally authored, faceted Three.js model based on the supplied TRON (1982) stills and the escape sequence in `MCP destroyed.mp4`, 2:34–2:57. The studio supports orbit, zoom, fixed detachment/reference/side/top/rear/underside views, a turntable and GLB export. This is a standalone asset, with no new game behavior attached.
+
+The revised model uses an open asymmetric shell: two ribbed overhead surfaces, two downward-hanging end blades, a single outer side wall with a recessed green panel, and a narrow connecting saddle. The first solid-pontoon interpretation was rejected in comparison with the detachment still. Materials are assigned directly to geometry, avoiding dependence on external textures. Source: `src/rendering/carrier-shuttle.js`; preview: `shuttle.html`.
+
+The 20 × 14 × 9 m envelope is provisional. Absolute dimensions, internal saddle details, side-wall thickness and forward-axis assignment remain inferred. This is a reference reconstruction, not a recovered original film model. These areas should be revisited as more views become available.
+
+## Supplied references
+
+- [Side / three-quarter](../../references/images/Carrier%20Escape%20Pod/Escapepodside.webp)
+- [Top](../../references/images/Carrier%20Escape%20Pod/Escapepodtop.webp)
+- [Back](../../references/images/Carrier%20Escape%20Pod/Escapepodback.webp)
+- [Detachment](../../references/images/Carrier%20Escape%20Pod/Escapepoddetach.webp)
+- [MCP destroyed clip](../../references/videos/MCP%20destroyed.mp4), 2:34–2:57
+
+User-supplied film references; personal project. Geometry authored for this project from those references. The GLB embeds its source and provisional reconstruction notes in scene metadata.
+
+September 18 orientation correction: the shell opens downward, and the ribbed surfaces are viewed from below. Reference and detachment cameras look upward; the principal light and hemisphere fill now come from below. The exported GLB includes the corrected orientation.
 
 
 ---
@@ -1062,6 +1282,30 @@ Synthesized 16-second stereo loop: stable bass harmonics and quiet diffuse machi
 [Open audio file](../../audio/carrier-drone.wav)
 
 [Source](undefined) · Project synthesis · Project-generated audio
+
+### Data transfer ring — forming
+
+**Film-derived adaptation; listening review pending** · CLU data transfer surround
+
+Sark and MCP.mp4, 52.75–54.25 s. Filtered mixed soundtrack, stretched to about three seconds with soft fades. Opening cue reverses the extract. Rebuild: scripts/extract-transfer-sfx.py. Residual soundtrack may remain.
+
+<audio controls preload="none" aria-label="Data transfer ring — forming" src="../../audio/data-ring-close.wav"></audio>
+
+[Open audio file](../../audio/data-ring-close.wav)
+
+[Source](../references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
+
+### Data transfer ring — opening
+
+**Film-derived adaptation; listening review pending** · CLU data transfer surround
+
+Sark and MCP.mp4, 52.75–54.25 s. Filtered mixed soundtrack, stretched to about three seconds with soft fades. Opening cue reverses the extract. Rebuild: scripts/extract-transfer-sfx.py. Residual soundtrack may remain.
+
+<audio controls preload="none" aria-label="Data transfer ring — opening" src="../../audio/data-ring-open.wav"></audio>
+
+[Open audio file](../../audio/data-ring-open.wav)
+
+[Source](../references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
 
 ## Experiments
 
@@ -1712,3 +1956,136 @@ The six positional regions still crossed authored blocks. The loader now tags co
 Inspected a nine-frame contact sheet from 52.8–54.6 seconds of the supplied `Sark and MCP.mp4`. Added a sequential vertical light curtain around CLU with build/hold/reverse timing. `npm test`: 103/103 passed, including stationary acquisition, interruption by motion/death, delayed one-time collection and reset. `node tests/data-beams.mjs`: all four sites transferred and faded independently, then reset without browser errors; inspected `test-results/data-transfer.png` and reduced excessive glow.
 
 `node scripts/generate-carrier-drone.mjs`: generated a 16-second stereo loop, peak 0.65, quarter-second RMS max/min ratio 1.007 and loop seam 0.00073. Chrome confirmed `carrier-drone` decoded, old `carrier-rumble` was not loaded, and no sample errors occurred. This verifies loading and numerical continuity, not subjective listening approval. Original rumble file remains untouched. `npm run build` passed.
+
+## Carrier shuttle studio — September 17
+
+Inspected all four supplied stills and contact sheets covering the 2:34–2:57 escape sequence. Rendered reference, side, top, rear and underside views; adjusted the channel width, flared ends, reference camera and lighting after inspecting captures. `node tests/shuttle-preview.mjs` passed in isolated headless Chrome: 552 triangles, 88,756-byte binary GLB, successful Three.js reimport, bounds approximately 14.22 × 9.17 × 20.19 m including trim, no browser errors. Geometry is an approximate reconstruction; scale and hidden structure remain inferred. The closing terminal now appends `END OF LINE` on its own line.
+
+Shuttle revision after user comparison: replaced the solid pontoons with thin trays, standing end blades and a single side wall. Added an enlarged detachment crop to the studio and a corresponding camera preset. Model proportions are now provisionally 20 m wide × 14 m long × 9 m tall; final fidelity still requires reference review.
+
+Final revised export check: `node tests/shuttle-preview.mjs` passed with six rendered views, 436 triangles, 65,884-byte GLB, reimported bounds 20 × 9 × 14 m, and no browser errors. Inspected the detachment capture with the film crop alongside it.
+
+## Maze music, shadows and closing tribute — September 17
+
+`npm test`: 106/106 passed. Replaced a flaky patrol test's final net-displacement check with accumulated travel over ten samples: returning near a starting point does not mean the unit failed to move. `tests/exploration-music.mjs` verified exploration plays once and resets with a new run. `tests/maze-music.mjs` verified all four cues using actual browser media playback, preservation of the entry cue after collection, combat interruption and quiet fade. No music errors occurred.
+
+`tests/shadow-stability.mjs` renders the actual projected tank shadow at 24 moving positions near world coordinates (7000, -6000), at camera heights 3/12/150 m. Dark footprint pixel ranges were 4454–4457, 12953–12960 and 758–759 respectively; no large missing patches appeared. This is a targeted regression check, not a guarantee that every intermittent visual artifact is resolved. `tests/death-terminal.mjs` passed with END OF LINE, the bottom tribute visible only on the closing screen, music fade, cursor and unchanged Return-to-restart behavior. Inspected the closing-screen capture. C rear-camera code and both visible/hidden control hints were removed.
+
+Closing tribute follow-up: `tests/death-terminal.mjs` passed with incremental typing, final credit/END OF LINE ordering, cursor at the tribute and clean restart. Inspected the completed screen capture.
+
+### Transfer and human typing revision — September 17
+
+- Full simulation suite: 107 tests passed; the subsequently added carrier-wave boundary test also passed with all six maze-site tests. Checks cover drive lock with working turret, gradual healing, one-time collection, cancellation on death, spherical ground/air contact timing, single carrier damage and out-of-range survival.
+- `node tests/data-beams.mjs`: isolated headless Chrome passed all four transfers, persistent blue columns and clean reset, with no browser errors. Inspected surround and completion captures.
+- `TRON_URL=http://127.0.0.1:5174 node tests/death-terminal.mjs`: isolated headless Chrome passed incremental human-paced tribute typing, final cursor, music and restart.
+- `npm run build` and `git diff --check` passed. Actual timing/music feel remains subject to play review. Carrier receives damage and a visual response; no carrier destruction animation yet.
+
+Transfer surround follow-up: shafts extend into the sky and appear individually at full height. Film-derived ring audio extracted from Sark and MCP at 52.75–54.25 seconds; mild noise filtering, pitch-preserving stretch, soft fades, reversed variant for opening at second nine. Six maze-site simulation checks passed. Clean isolation and sound fidelity require listening review.
+
+September 18: `node tests/models.mjs` passed in isolated headless Chrome. Inspected normal and fully folded Recognizer ground-shadow captures; verified three rig-following shadow meshes are excluded from debris. Imported dimensions and muzzle alignment remain unchanged.
+
+### Wall/debris shadows, shuttle orientation and outro return — September 18
+
+- `node tests/recognizer-shadows.mjs`: isolated Chrome detected 5,758 roof and 13,308 wall pixels darkened by the Recognizer, plus 4,912 roof and 10,743 wall pixels darkened by a debris piece. Full game started with the maze, seam and floor shader hooks and no browser/shader errors.
+- `node tests/shuttle-preview.mjs`: six camera presets rendered without errors; corrected underside-facing GLB exported and reimported at 20 × 9 × 14 m. Detachment capture inspected; geometry fidelity remains provisional.
+- `TRON_URL=http://127.0.0.1:5174 node tests/death-terminal.mjs`: final-five-second red sign-off, non-looping music, gradual black fade, return to opening and subsequent restart passed.
+- Production build and whitespace checks passed. Shadow maps use 256-pixel tiles; fine-detail aliasing and performance with many simultaneous explosions still need play review.
+
+September 18 follow-up checks: full simulation suite passed 109 tests before the new ring-contact test; all seven maze-site tests then passed including that test. Gunner browser test passed the 2× minimum, keyboard cycling, disabled mouse firing/aiming/wheel input and five-pursuer roster. Recognizer shadow test passed at 1.5× pixel ratio using actual explosion blocks. Captured and inspected actual in-game debris shadows at 1.25× and the maze entrance's crisp ground silhouette. Production build passed. Static shadows received by walls/roofs still have finite map resolution.
+
+September 18 shadow follow-up: isolated Chrome at 1.5 device pixel ratio verifies the actual carrier casts onto raised surfaces and the ground (`node tests/carrier-shadows.mjs`). `node tests/maze-shadow-receivers.mjs` still detects 40,393 shadowed tank pixels after slope bias. A running-game maze entrance capture shows continuous wall bevel shading and crisp floor shadows, with no shader errors. These captures cover the tested angles, not every wall/camera combination.
+
+Closing tribute now presents replacement sentence cards, with the final MADE TOGETHER line retained under the detached-program message until the outro finishes. The browser lifecycle check exercises sentence replacement, persistence past the previous fade deadline, MCP dialog playback at the first sign-off character, red text/cursor, and reset after the final fade. Screenshot checks cover PNG content/dimensions, picker save, cancellation, HUD restoration, paused-state preservation, and normal-download fallback.
+
+Grid clouds: `node tests/cloud-layer.mjs` loads the exported model, renders the instanced layer, verifies 1,080-meter altitude, 6 m/s drift, deterministic pause/reset transforms, changed lanes after a full crossing, and disabled shadow flags. It then boots the full game and checks for JavaScript/shader errors. The standalone sky capture was visually inspected. The layer is single-pass and instance GPU buffers are disposed with the view.
+
+`node tests/terminal-raster.mjs` passes in isolated Chrome: the custom font loads, no terminal scanline pseudo-overlay remains, and rendered captures contain both bright and dim blue/red glyph layers at 28, 56, and 80 pixels. The capture was visually inspected. Font generation also verifies its COLRv0 table and both palettes; Safari rendering has not been separately tested.
+
+Beam/carrier follow-up: all nine maze-site tests pass, including off-center CLU entry with beam-centered ring damage. `tests/beam-base.mjs` measures identical red-pool coverage over 24 small world-coordinate translations at each of three camera heights (3, 12, 150 m); a covering solid box completely occludes the pool. `tests/carrier-shadows.mjs` detects both floor/wall shadows and visible grid pixels inside the carrier shadow.
+
+`node tests/horizon.mjs` passes: the forward horizon is brighter than the upper sky and rearward horizon, translating the camera 6 km leaves the gradient unchanged, and full-game startup produces no JavaScript/shader errors. The in-game capture was visually reviewed for the blue/violet directional horizon and foreground occlusion.
+
+## Debris collision volumes — September 18
+
+- `npm test`: 120 checks pass, including five new checks for tilted block floor clearance/sleep, fast thin-wall impact, roof landing, above-wall clearance and diagonal deflection.
+- `node tests/debris-collision.mjs`: isolated headless Chrome, four Recognizer explosions plus a tank explosion (68 pieces in this randomized run). Lowest transformed mesh vertex stayed above the floor; 18 pieces were sleeping by 4.5 seconds. Physics-only update averaged 0.14 ms, p95 0.20 ms over 270 frames. This excludes rendering and is not a mobile performance claim. Rendered debris capture inspected; cleanup leaves zero bursts.
+- `node tests/breakup.mjs`: actual game retains 15 intact Recognizer blocks per explosion, randomized motion, pause freeze and geometry disposal after expiry.
+- Collision shapes are coarse oriented boxes, not triangle-mesh rigid bodies; no debris/debris or debris/vehicle contacts. Concave maze walls use their shared convex triangle prisms. Settled blocks retain their final orientation rather than computing a full torque/friction rigid-body solution.
+- `TRON_URL=http://127.0.0.1:5174 node tests/death-terminal.mjs`: revised two-paragraph credits pass the end-screen lifecycle check, including keeping the collaboration paragraph visible, red signoff/audio and return to opening.
+
+## Rapier debris migration — September 18
+
+Supersedes the custom collision solver described above. Seven physics checks cover airborne angular momentum, off-center collision torque, tipping/settling, thin-wall CCD, roof support, above-wall clearance, collision filtering and rigid-body removal. The actual-game breakup browser check passes (15 intact blocks, pause and cleanup).
+
+`node tests/debris-collision.mjs`: isolated headless Chrome, five simultaneous explosions / 73 pieces in the measured randomized run. Physics updates averaged 0.53 ms, p95 0.80 ms over 270 frames; six pieces sleeping at 4.5 seconds. Both burst count and Rapier body count return to zero on clear. Rendered capture inspected. Measurements exclude rendering, and do not establish mobile performance. Rapier contact compliance and interpolated rotations can briefly place a corner below the ground; a render-only floor correction prevents visible clipping without modifying physical velocity or spin.
+
+## Debris damage / wall readability — September 18
+
+- `npm test`: 125 checks pass. Additional damage coverage verifies the energy threshold, proportional damage, CLU/enemy/carrier health, fatal hit events, no duplicate kills and removal of destroyed vehicles from collision targets. Rapier checks cover actual vehicle contacts, low-energy bumps, equal-velocity impacts, faster impacts and fragment mass scaling; one collision produces one damage report.
+- `node tests/breakup.mjs`: passes the actual game lifecycle after moving debris updates into the fixed gameplay loop.
+- `node tests/maze-shadow-receivers.mjs`: passes; 29,928 tank pixels receive maze shadows and 23,877 pixels show the vehicle silhouette over the maze shadow in the fixture. Explicit draw-order check passes.
+- `node tests/wall-shadow-acne.mjs`: passes after brightening wall faces and reducing shadow darkness (6,218 changed wall/bevel pixels under the 10,000 threshold). Brighter wall capture inspected.
+- Vehicle collision shapes and fragment density are approximations for damage tuning, not measured film mass/geometry. Carrier contacts use its existing coarse hull bounds. Damage uses normal closing speed, not tangential scrape speed. Debris does not push the independently controlled vehicle bodies or collide with other debris.
+
+## Inherited debris velocity — September 18
+
+`node --test tests/debris-inheritance.test.js tests/debris-physics.test.js`: ten checks pass. Matched explosions verify that every piece receives the exact vehicle velocity difference, including vertical motion and world-Z conversion, and that Rapier receives that velocity. Delayed pieces move with the destroyed vehicle before activation rather than hanging motionless.
+
+## Receiver-plane shadow correction — September 18
+
+- `node tests/shadow-receiver-plane.mjs`: 30 triangulated wall poses at varied oblique angles and 0/7,000-meter offsets; zero self-shadowed pixels compared with shadows disabled.
+- `node tests/debris-shadow-fade.mjs`: duplicate overlapping projected shadows produce exactly the same pixels as a single shadow; the interior has one uniform color during fading, without stochastic speckles.
+- `node tests/recognizer-shadows.mjs`: hard shadows remain visible on roof/wall receivers from both intact aircraft and debris (5,660 / 13,063 intact pixels; 9,354 / 9,081 debris pixels in this randomized fixture).
+- Isolated headless Chrome coverage; the user's Safari screenshot angle is not reproduced exactly, so these checks do not establish artifact-free shadows at every viewpoint.
+- Final close-up check after limiting maze casters to solid wall faces/roofs and adding a conservative texel-footprint bias: 384 changed wall/bevel pixels; tightened regression threshold from 10,000 to 1,000. The ledge close-up no longer shows the alternating triangle patches on inspection.
+
+## Screenshot shortcut compatibility — September 18
+
+`node tests/screenshot.mjs` passes with B for capture/download and F9 for cancellation, checking the save-picker path, fallback download, pause preservation, nonblank PNG (1250 × 875), HUD restoration and status feedback. macOS may intercept F9 for a system action; B avoids that conflict. Tested in isolated Chrome; Safari itself was not automated. The final Recognizer shadow fixture and full-game startup check also pass; an earlier run interrupted during development reloads was rerun after edits stopped.
+
+## Roof-edge slab identities — September 18
+
+Launch retry: desktop Chrome 153.0.8010.48 aborts in macOS `_RegisterApplication`. Playwright headless shell 153.0.8010.12 also fails before page creation, explicitly reporting `bootstrap_check_in … Permission denied (1100)`. No rendering assertions ran. Vite starts successfully on 5173. The test now uses that port by default, with a `TRON_URL` override for other servers.
+
+Production build passes. Node geometry checks validate all 1,208 authored-layout slab identities, matching caster position/identity counts, constant identity across each triangle, and generation of the packed depth/identity shader. Added a 30-pose closed-box roof-edge browser regression with slab ID 1208. Browser validation is **not completed**: Chrome launch aborted under current execution permissions. Earlier flat-plane checks do not cover this new roof-edge correction. The local Vite server was restarted on port 5173 and returned HTTP 200.
+
+
+## Grid-preserving maze shadows — September 19
+
+On the development Mac (Mac14,6, macOS 26.6.2), isolated headless Google Chrome now launches with approved execution outside the workspace sandbox.
+
+- `node tests/maze-grid-shadows.mjs`: passes; 100,481 floor pixels darken and 11,337 grid pixels remain visible inside shadow. Captures of the regression fixture and actual blueprint wall/floor materials were inspected. No JavaScript or shader errors. Actual maze capture shows finite-resolution stepping on close floor-shadow edges; this replaces the old exact but opaque silhouette.
+- `node tests/maze-shadow-receivers.mjs`: passes; 30,015 tank pixels receive maze shadows, 23,877 pixels retain the tank's own ground silhouette, and floor-before-vehicle ordering passes.
+- `npm run build`: passes, with the existing large-bundle warning.
+- Previous resumed run: `node tests/roof-edge-shadows.mjs` passed all 30 poses with zero self-shadowed pixels after browser-launch approval. The earlier permission blocker is resolved.
+
+The production floor intentionally suppresses the grid within maze-site bounds independently of shadows; this change preserves grid lines wherever the original floor material draws them. Actual Safari verification remains unrun.
+
+
+## Throttle-controlled turbo and exact floor-shadow edges — September 19
+
+- `npm test`: all 128 checks pass. Turbo regression covers stopped activation, no impulse while moving, 2.5× forward/reverse acceleration, coasting to rest without restarting, unchanged braking, timer/cooldown, and expiry easing.
+- `npm run test:browser -- --turbo-hints`: headless Chrome passes actual T/W input, stopped activation, accelerated driving, pause, expiry, cooldown, and existing hint behavior.
+- `node tests/maze-grid-shadows.mjs`: 100,805 floor pixels darken and 11,357 grid pixels remain visible; duplicating the entire projected shadow produces zero changed pixels. Inspected blueprint-material and full-game captures: the coarse stair-step boundary is gone. Full game/composer starts and renders without JavaScript or shader errors.
+- `node tests/maze-shadow-receivers.mjs`: 30,015 shadowed tank pixels and 23,877 tank ground-shadow pixels; ordering check passes.
+
+Exact projected geometry now replaces the floor shadow map described above. Stencil attachments preserve uniform attenuation over overlapping triangles and slabs; normal frame clearing resets coverage. These checks use Chrome on the development Mac; Safari remains untested.
+
+
+## Recognizer momentum and filtered wall edges — September 19
+
+- `npm test`: 132 checks pass, including bounded yaw/lift acceleration, delayed reversals, settled heading/altitude, momentum through acquisition/folding/aborted drops, and 60/120 Hz agreement. Existing pursuit, crush/recovery, hidden-player independence and separation checks pass.
+- `node tests/recognizer-momentum.mjs`: Chrome confirms rotational carry-through followed by reversal, bounded yaw/lift velocity changes, pause freeze and reset. Controlled scene captures provide a reproducible motion comparison. The development turning-acceleration control and reset are also exercised.
+- `node tests/wall-shadow-edges.mjs`: matched close-up diagonal shadows compare the old 1024 nearest map with the 2048 filtered map. The original has zero intermediate edge pixels; the filtered result has 15,673 while retaining substantial fully lit and shadowed regions. Both captures inspected; the large binary teeth become a softer, finer transition. Finite-resolution edge variation remains possible, especially at grazing angles.
+- `node tests/roof-edge-shadows.mjs`: filtered sampling retains zero self-shadowed pixels in all 30 closed-box poses, including distant coordinates and slab ID 1208.
+- `node tests/maze-grid-shadows.mjs`: floor grid visibility and duplicate-shadow uniformity pass, including full-game startup with the larger cached atlas.
+
+Browser evidence uses isolated headless Chrome on the development Mac. This does not substitute for the user's Safari view or final human approval of motion feel. Static shadow-map color/depth storage increases approximately fourfold; maps still render only once per scene.
+
+## Exact wall shadows and manual refresh — September 19
+
+The exact geometric wall overlay supersedes the filtered atlas above; moving vehicles retain a 1024-pixel maze atlas. `node tests/wall-shadow-edges.mjs` compares rendered pixels with independent ray/box intersections: native Chrome reports zero mismatches for geometric shadows versus 5,959 for the old nearest atlas. Docker Chromium/SwiftShader reports 17 versus 5,957 (raster-edge precision differences). The actual maze capture `test-results/wall-edge-maze.png` was inspected and shows straight, crisp inter-wall boundaries. The user also confirms the wall shadows look great. Native `tests/maze-shadow-receivers.mjs` preserves tank receiving and ground-shadow layering.
+
+Vite now disables HMR by default. An isolated Chromium check changed an imported source module while keeping a page-state marker: the page and old module value remained intact, then manual refresh loaded the new value. `TRON_HMR=1` remains the opt-in native development setting. The Recognizer reset regression now reads velocities in the same browser task as reset, avoiding accidental measurement after subsequent simulation frames.
+
+`scripts/codex-container test` passed on Docker Desktop on the development Mac: Linux ARM64, Node 22.23.2, Codex 0.155.1, Chromium 153.0.8010.12 and ANGLE/SwiftShader Vulkan. It verified unprivileged UID 1000, absent host home and Docker socket, denied root-filesystem writes, permitted project writes, WebGL 2 pixel output, all 132 simulation tests, 30 roof-edge poses, grid retention/overlap uniformity/full-game startup, Recognizer momentum/pause/reset/tuning and the production build. `test-results/container-check.json` records the run. Container software rendering is substantially slower than native GPU rendering; native driving feel and Safari-specific behavior are separate checks. Device login remains an interactive user step.

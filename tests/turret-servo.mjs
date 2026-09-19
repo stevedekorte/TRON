@@ -9,7 +9,7 @@ assert.equal(servoMotion(motion,{...still,time:2/60,turretYaw:.01}).speed,0);
 assert.equal(servoMotion(motion,{...still,time:0}).speed,0);
 const initial=servoMotion(null,still);assert.ok(servoMotion(initial,{...still,time:1/60,aimPitch:.01}).speed>0);
 assert.equal(servoMotion(initial,{...still,time:1/60,yaw:1}).speed,0);
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage();await page.goto('http://127.0.0.1:5174');
  const levels=await page.evaluate(async()=>{

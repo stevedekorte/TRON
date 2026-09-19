@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
@@ -8,6 +8,7 @@ try{
  await page.keyboard.press('Enter');await page.keyboard.press('KeyP');await page.waitForFunction(()=>__tron.state.mode==='running');await page.keyboard.press('KeyP');await page.keyboard.down('KeyW');await page.keyboard.up('KeyW');
  await page.evaluate(()=>{const r=__tron.state;__tron.place({speed:0,recognizers:r.recognizers.map(e=>({...e,state:'destroyed'})),enemyTanks:r.enemyTanks.map(e=>({...e,state:'destroyed'}))});});
  await page.waitForTimeout(1000);await page.screenshot({path:'test-results/maze-distance.png'});
+ await page.waitForFunction(()=>['data-ring-close','data-ring-open'].every(k=>__tron.state.audioSamples.includes(k)));
  const count=await page.evaluate(()=>__tron.state.dataBeams.length);assert.equal(count,4);
  for(let i=0;i<count;i++){
   await page.evaluate(async i=>{
@@ -21,12 +22,14 @@ try{
   await page.waitForFunction(i=>__tron.state.dataBeams[i].transferStartedAt!==null,i);
   if(i===0){await page.waitForTimeout(1700);await page.screenshot({path:'test-results/data-transfer.png'});assert.equal(await page.evaluate(()=>__tron.state.dataCollected),0);}
   await page.waitForFunction(i=>__tron.state.dataBeams[i].collectedAt!==null,i);
-  await page.waitForFunction(i=>__tron.state.beamVisuals[i].opacity<.8&&__tron.state.beamVisuals[i].opacity>.1,i);
-  if(i===0){await page.keyboard.press('Escape');await page.screenshot({path:'test-results/data-beam-shutdown.png'});await page.keyboard.press('Escape');}
-  await page.waitForFunction(i=>!__tron.state.beamVisuals[i].visible,i);
+  await page.waitForFunction(i=>__tron.state.beamVisuals[i].color===0x168aff,i);
+  assert.equal(await page.evaluate(i=>__tron.state.beamVisuals[i].visible,i),true);
+  assert.equal(await page.evaluate(i=>__tron.state.beamVisuals[i].curtain,i),false);
+  if(i===0)await page.screenshot({path:'test-results/data-beam-shutdown.png'});
+
  }
  assert.equal(await page.evaluate(()=>__tron.state.dataCollected),4);
  await page.evaluate(()=>__tron.reset());await page.waitForFunction(()=>__tron.state.dataCollected===0);
  assert.equal(await page.evaluate(()=>__tron.state.dataBeams.every(b=>b.collectedAt===null)),true);
- assert.deepEqual(errors,[]);console.log('Four maze beams render, collect once, fade independently, and reset without browser errors.');
+ assert.deepEqual(errors,[]);console.log('Four maze beams render, collect once, remain blue independently, and reset without browser errors.');
 }finally{await browser.close();}

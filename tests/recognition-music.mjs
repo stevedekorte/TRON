@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage();await page.goto('http://127.0.0.1:5174');await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');await page.keyboard.up('KeyW');
  await page.evaluate(()=>{const r=__tron.state;__tron.configure({enemySpeed:0});__tron.place({x:-5000,s:-5000,speed:0,enemyTanks:[],recognizers:r.recognizers.map((e,i)=>({...e,x:-5000,s:-5600,y:75,yaw:0,vx:0,vs:0,state:i?'destroyed':'wander',canSee:false,memory:null,spotlight:null,alertUntil:0,nextSense:0,nextAttack:Infinity,targetGone:false}))});});

@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:2}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});

@@ -12,7 +12,7 @@ test('real sighting and cross-unit radio activate alert using original observati
  const r=createRun();Object.assign(r,{x:-5000,s:-5000,yaw:0,speed:0,time:5});r.recognizers=r.recognizers.slice(0,1);r.enemyTanks=r.enemyTanks.slice(0,1);const e=r.recognizers[0],tank=r.enemyTanks[0];Object.assign(tank,{x:-5000,s:-5100,yaw:0,nextSense:0});Object.assign(e,{x:-5100,s:-5100,nextSense:Infinity});perceive(tank,r,5);assert.equal(tank.alertUntil,5+ALERT.duration);updateRecognizers(r,1/60);r.time=5.5;updateRecognizers(r,1/60);assert.equal(e.alertUntil,5+ALERT.duration);
 });
 test('reverse turbo stays reverse, caps at 75%, and eases down after boost',()=>{
- const r=createRun();Object.assign(r,{x:-5000,s:-5000,speed:-5});r.enemyTanks=[];r.recognizers=[];boostTank(r);assert.equal(r.speed,-config.maxSpeed*TURBO.speedMultiplier*.75);step(r,{},1/60);assert.ok(r.speed<0);for(let i=0;i<605;i++)step(r,{throttle:-1},1/60);assert.ok(r.speed< -config.reverseSpeed);for(let i=0;i<180;i++)step(r,{throttle:-1},1/60);assert.equal(r.speed,-config.reverseSpeed);const stopped=createRun();assert.ok(boostTank(stopped,-1));assert.ok(stopped.speed<0);
+ const r=createRun();Object.assign(r,{x:-5000,s:-5000,speed:-5});r.enemyTanks=[];r.recognizers=[];boostTank(r);assert.equal(r.speed,-5);step(r,{},1/60);assert.ok(r.speed<0);for(let i=0;i<605;i++)step(r,{throttle:-1},1/60);assert.ok(r.speed< -config.reverseSpeed);for(let i=0;i<180;i++)step(r,{throttle:-1},1/60);assert.equal(r.speed,-config.reverseSpeed);const stopped=createRun();assert.ok(boostTank(stopped));assert.equal(stopped.speed,0);
 });
 
 import {SEARCHLIGHT,projectorOrigin,spotlightOnTarget,updateSpotlight} from '../src/simulation/spotlight.js';
@@ -27,7 +27,7 @@ test('searcher must illuminate Clu before pursuit and radio, then tracks and fad
  const r=spotlightEncounter(),e=r.recognizers[0],receiver=r.enemyTanks[0];
  updateRecognizers(r,1/60);assert.equal(e.spotlight.phase,'acquire');assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.equal(r.radio.length,0);assert.equal(r.events.filter(e=>e.type==='recognized').length,0);
  const yaw=e.spotlight.yaw;r.time+=1/60;updateRecognizers(r,1/60);
- assert.ok(Math.abs(e.spotlight.yaw-yaw)<=SEARCHLIGHT.yawRate/60+1e-9);
+ assert.ok(Math.abs(e.spotlight.yaw-yaw)<=SEARCHLIGHT.acquireYawRate/60+1e-9);
  for(let i=0;i<180&&e.spotlight.phase==='acquire';i++){
   assert.equal(e.canSee,false);assert.equal(e.memory,null);assert.equal(receiver.memory,null);assert.equal(r.radio.length,0);assert.notEqual(e.state,'pursue');
   r.time+=1/60;updateRecognizers(r,1/60);
@@ -88,3 +88,19 @@ test('confirmed beam fades on lost observation instead of tracking hidden Clu',(
  updateSpotlight(e,10,1/60);assert.equal(e.spotlight.phase,'fade');assert.equal(e.spotlight.yaw,0);
  updateSpotlight(e,11,1/60);assert.equal(e.spotlight,null);
 });
+
+ test('confirmed spotlight follows turbo cross-traffic with sampled observations and bounded servo speed',()=>{
+  const e={id:0,x:-5000,s:-5000,y:85,yaw:0,state:'pursue'},speed=config.maxSpeed*TURBO.speedMultiplier,dt=1/60;
+  const target={x:-5100,s:-4875},origin=projectorOrigin(e);
+  e.spotlight={phase:'track',yaw:-Math.atan2(target.x-origin.x,target.s-origin.s),pitch:Math.atan2(2.8-origin.y,Math.hypot(target.x-origin.x,target.s-origin.s)),target:{...target,vx:speed,vs:0,seenAt:0}};
+  let locked=0;
+  for(let i=1;i<=180;i++){
+   const now=i*dt;e.x=-5000-speed*now;target.x=-5100+speed*now;
+   if(i%12===0)e.spotlight.target={...target,vx:speed,vs:0,seenAt:now};
+   const yaw=e.spotlight.yaw,pitch=e.spotlight.pitch;updateSpotlight(e,now,dt);
+   assert.ok(Math.abs(e.spotlight.yaw-yaw)<=SEARCHLIGHT.trackYawRate*dt+1e-8);
+   assert.ok(Math.abs(e.spotlight.pitch-pitch)<=SEARCHLIGHT.trackPitchRate*dt+1e-8);
+   if(spotlightOnTarget(e,target))locked++;
+  }
+  assert.ok(locked>=175,`kept target lit on ${locked}/180 frames`);
+ });

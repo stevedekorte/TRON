@@ -1,7 +1,7 @@
 import {RECOGNIZER_SCALE,angleDelta,clamp} from '../game/config.js';
 import {lineOfSight,MAZE_LENGTH} from '../levels/maze.js';
 
-export const SEARCHLIGHT=Object.freeze({range:MAZE_LENGTH,scanRange:260,halfWidth:14,sweepPeriod:11,sweepAngle:.32,yawRate:.5,pitchRate:.4,lockAngle:.025,minimumAcquire:.25,closeRange:120,fadeSeconds:.8});
+export const SEARCHLIGHT=Object.freeze({range:MAZE_LENGTH,scanRange:260,halfWidth:14,sweepPeriod:11,sweepAngle:.32,yawRate:.5,pitchRate:.4,acquireYawRate:1.2,acquirePitchRate:.9,trackYawRate:1.8,trackPitchRate:1.2,lockAngle:.025,minimumAcquire:.25,closeRange:120,fadeSeconds:.8});
 export function projectorOrigin(e){return {x:e.x-Math.sin(e.yaw)*3*RECOGNIZER_SCALE,y:e.y+7*RECOGNIZER_SCALE,s:e.s+Math.cos(e.yaw)*3*RECOGNIZER_SCALE};}
 export function scanAngles(e,time){
  const goal=e.goal||e.memory,base=goal?-Math.atan2(goal.x-e.x,goal.s-e.s):e.yaw;
@@ -38,8 +38,11 @@ export function updateSpotlight(e,now,dt){
  const age=clamp(now-observed.seenAt,0,.25);
  const target={x:observed.x+(observed.vx||0)*age,s:observed.s+(observed.vs||0)*age};
  const origin=projectorOrigin(e),yaw=-Math.atan2(target.x-origin.x,target.s-origin.s),pitch=Math.atan2(2.8-origin.y,Math.hypot(target.x-origin.x,target.s-origin.s));
- beam.yaw+=clamp(angleDelta(beam.yaw,yaw),-SEARCHLIGHT.yawRate*dt,SEARCHLIGHT.yawRate*dt);
- beam.pitch+=clamp(pitch-beam.pitch,-SEARCHLIGHT.pitchRate*dt,SEARCHLIGHT.pitchRate*dt);
+ // A visible target gets a faster servo than the deliberate search sweep.
+ const yawRate=beam.phase==='acquire'?SEARCHLIGHT.acquireYawRate:SEARCHLIGHT.trackYawRate;
+ const pitchRate=beam.phase==='acquire'?SEARCHLIGHT.acquirePitchRate:SEARCHLIGHT.trackPitchRate;
+ beam.yaw+=clamp(angleDelta(beam.yaw,yaw),-yawRate*dt,yawRate*dt);
+ beam.pitch+=clamp(pitch-beam.pitch,-pitchRate*dt,pitchRate*dt);
 }
 export function spotlightStrength(e,now){
  const beam=e.spotlight;if(!beam)return 0;

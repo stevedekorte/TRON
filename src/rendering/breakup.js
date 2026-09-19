@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import {wallIntersection} from '../levels/maze.js';
+import {nearbyWalls} from '../levels/maze.js';
+import {DEBRIS_PHYSICS,DebrisPhysics} from './debris-physics.js';
 import {createBlast} from './blast.js';
 
 // Seconds and meters/second²; keep ground-tank destruction at its existing pace.
@@ -11,7 +12,7 @@ const BREAKUP_MOTION={
 // Recognizers detach as intact blocks; tanks retain their fractured impact effect.
 // Preserve posed surfaces and trim, with fresh impulses for each explosion.
 export class Breakups {
- constructor(scene){this.scene=scene;this.bursts=[];}
+ constructor(scene){this.scene=scene;this.bursts=[];this.physics=new DebrisPhysics(nearbyWalls);}
  spawn(craft,event){
   const motion=BREAKUP_MOTION[['tank','enemyTank'].includes(event.subject)?'tank':'recognizer'];
   const fracture=motion===BREAKUP_MOTION.tank;
@@ -109,7 +110,21 @@ export class Breakups {
     mesh.add(seams);
    }
   }
+  const groundShadow=new THREE.ShaderMaterial({
+   depthTest:false,depthWrite:false,side:THREE.DoubleSide,
+   // Minimum blending is idempotent: overlapping projected triangles cannot
+   // darken one another during the fade. Keep opaque-pass ordering.
+   blending:THREE.CustomBlending,blendEquation:THREE.MinEquation,blendSrc:THREE.OneFactor,blendDst:THREE.OneFactor,
+   uniforms:{fade:{value:1}},
+   vertexShader:`void main(){vec4 world=modelMatrix*vec4(position,1.);world.xz+=vec2(.5)*max(0.,world.y);world.y=.025;gl_Position=projectionMatrix*viewMatrix*world;}`,
+   fragmentShader:`uniform float fade;void main(){gl_FragColor=vec4(mix(vec3(0.,.001,.004),vec3(1.),pow(1.-fade,2.)),1.);}`
+  });materials.push(groundShadow);
+  for(const group of groups)for(const mesh of [...group.children]){
+   if(!mesh.isMesh)continue;
+   const shadow=new THREE.Mesh(mesh.geometry,groundShadow);shadow.name='debris-ground-shadow';shadow.frustumCulled=false;shadow.renderOrder=-1;shadow.userData.breakupExclude=true;mesh.add(shadow);
+  }
   const blastBias=new THREE.Vector3(Math.random()-.5,0,Math.random()-.5).multiplyScalar(.45);
+  const inheritedVelocity=new THREE.Vector3(event.vx??0,event.vy??0,-(event.vs??0));
   const pieces=groups.map((group,index)=>{
    const fragmented=fracture&&parts[index]===hitPart;
    // Intact Recognizer sections blast away from the craft's center instead of
@@ -124,8 +139,10 @@ export class Breakups {
    // Long, intact sections tip end-over-end; small shards spin more freely.
    if(!fragmented&&motion===BREAKUP_MOTION.recognizer)spin.y*=.2;
    const delay=motion===BREAKUP_MOTION.recognizer&&!fragmented?.03+Math.random()*.12:Math.random()*motion.delay;
-   return {group,part:parts[index],fragmented,velocity:direction.multiplyScalar(impulse).add(new THREE.Vector3(event.vx||0,(event.vy||0)+motion.lift+Math.random()*motion.liftVariation,-(event.vs||0))),spin,delay};
+   return {group,part:parts[index],fragmented,inheritedVelocity:inheritedVelocity.clone(),velocity:direction.multiplyScalar(impulse).add(inheritedVelocity).add(new THREE.Vector3(0,motion.lift+Math.random()*motion.liftVariation,0)),spin,delay};
   });
+  for(const piece of pieces)this.physics.add(piece,motion.gravity);
+  while(this.bursts.length&&this.bursts.reduce((n,b)=>n+b.pieces.length,0)+pieces.length>DEBRIS_PHYSICS.maxPieces)this.remove(this.bursts[0]);
   const flash=new THREE.Mesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshBasicMaterial({color:new THREE.Color(5,4.4,1.7),transparent:true,depthWrite:false}));
   flash.position.copy(impact);this.scene.add(flash);
   const optical=motion===BREAKUP_MOTION.recognizer?createBlast(impact):null;
@@ -133,32 +150,25 @@ export class Breakups {
   this.bursts.push({pieces,materials,flash,optical,hitPart,motion,subject:event.subject||'recognizer',age:0,life:motion.life+Math.random()*motion.lifeVariation});
  }
  update(dt){
+  this.physics.update(dt);
   for(const burst of [...this.bursts]){
    burst.age+=dt;
    const flash=Math.max(0,1-burst.age/burst.motion.flash);burst.flash.visible=!burst.optical&&flash>0;
    burst.optical?.update(burst.age);
    burst.flash.scale.setScalar(1+(1-flash)*5);burst.flash.material.opacity=flash;
-   for(const piece of burst.pieces){
-    if(burst.age<piece.delay)continue;
-    const p=piece.group.position,old=p.clone();
-    piece.velocity.y-=burst.motion.gravity*dt;piece.velocity.multiplyScalar(Math.exp(-.12*dt));
-    p.addScaledVector(piece.velocity,dt);
-    const hit=wallIntersection({x:old.x,y:old.y,s:-old.z},{x:p.x,y:p.y,s:-p.z});
-    if(hit!==null){p.copy(old);piece.velocity.multiplyScalar(-.2);piece.spin.multiplyScalar(.5);}
-    if(p.y<.5){p.y=.5;piece.velocity.y=Math.abs(piece.velocity.y)*.2;piece.velocity.x*=.8;piece.velocity.z*=.8;piece.spin.multiplyScalar(.8);}
-    piece.group.rotation.x+=piece.spin.x*dt;piece.group.rotation.y+=piece.spin.y*dt;piece.group.rotation.z+=piece.spin.z*dt;
-   }
    const opacity=Math.min(1,(burst.life-burst.age)/burst.motion.fade);
-   for(const material of burst.materials)material.opacity=Math.max(0,opacity);
+   for(const material of burst.materials){material.opacity=Math.max(0,opacity);if(material.uniforms?.fade)material.uniforms.fade.value=material.opacity;}
    if(burst.age>=burst.life)this.remove(burst);
   }
  }
  remove(burst){
+  for(const piece of burst.pieces)this.physics.remove(piece);
   for(const {group} of burst.pieces){group.traverse(o=>o.geometry?.dispose());this.scene.remove(group);}
   for(const material of burst.materials)material.dispose();
   this.scene.remove(burst.flash);burst.flash.geometry.dispose();burst.flash.material.dispose();
   if(burst.optical){this.scene.remove(burst.optical.mesh,burst.optical.sparks);burst.optical.dispose();}
   this.bursts=this.bursts.filter(b=>b!==burst);
  }
- clear(){for(const burst of [...this.bursts])this.remove(burst);}
+ clear(){for(const burst of [...this.bursts])this.remove(burst);this.physics.clear();}
+ dispose(){this.clear();this.physics.dispose();}
 }

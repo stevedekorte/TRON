@@ -3,3 +3,7 @@
 @media(max-width:800px){.masthead{padding:22px}.edition{display:none}.header-right{gap:15px}.overlay{padding:100px 7vw 65px}h1{letter-spacing:-2px}.lede{font-size:14px}.control-grid{gap:17px}.intro-note{font-size:9px}footer{left:22px;right:22px;font-size:8px}footer>span:last-child{display:none}.bottom-hud{left:22px;right:22px;gap:15px;bottom:25px}.map-panel{width:90px}.map-panel canvas{width:72px;height:100px}.map-panel>span{font-size:7px}.speed-panel{min-width:100px}.speed-panel strong{font-size:48px}.run-center #hint{font-size:8px;line-height:1.8}.run-center #hint span{margin:0 2px}.objective{left:22px;top:110px}.warning{top:165px;max-width:85vw;width:max-content;font-size:9px}.result{padding-right:0}.target-box{width:45px}.brand{font-size:24px}.brand span{font-size:8px}#kill-count{font-size:7px}}
 @media(max-height:650px){.overlay{padding-top:85px;padding-bottom:35px}h1{font-size:44px;margin:15px 0}.lede{font-size:13px;margin-bottom:16px}.control-grid{margin-top:15px}.intro-note{margin-top:14px}.masthead{padding-top:18px}.primary{padding:12px 18px}footer{bottom:14px}}
 @media(prefers-reduced-motion:reduce){.primary{transition:none}.primary:hover{transform:none}}
+
+.taking-screenshot #hud{visibility:hidden!important}
+
+#screenshot-status{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:100;pointer-events:none;color:#9fc5dd;background:#020710dd;padding:8px 12px;font:11px/1.5 monospace;letter-spacing:1px;text-align:center;}

@@ -15,7 +15,7 @@ export const {instances:MAZE_INSTANCES,walls:WALLS,openCells:OPEN_CELLS,nearbyWa
 export const FLOOR_HALF=maze.FLOOR_HALF||[HALF,HALF];
 
 export const MAZE_LENGTH=Math.max(2*FLOOR_HALF[0]*Math.hypot(BASIS.a,BASIS.c),2*FLOOR_HALF[1]*Math.hypot(BASIS.b,BASIS.d));
-export const PURSUER_COUNT=2;
+export const PURSUER_COUNT=5;
 export const PATROL_COUNT=MAZE_INSTANCES.length;
 // Seeded random placement is repeatable on restart for visual/behavior comparisons.
 const patrols=MAZE_INSTANCES.map(m=>({...OPEN_CELLS.find(p=>p.mazeId===m.id),mazeId:m.id}));

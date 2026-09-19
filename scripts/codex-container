@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euo pipefail
+TRON_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+COMPOSE=(docker compose --project-directory "$TRON_ROOT" -f "$TRON_ROOT/containers/codex/compose.yaml")
+case "${1:-}" in
+  build) shift; exec "${COMPOSE[@]}" build "$@" ;;
+  login) shift; exec "${COMPOSE[@]}" run --rm codex codex login --device-auth "$@" ;;
+  test) shift; exec "${COMPOSE[@]}" run --rm -T codex node /usr/local/lib/tron-container-check.mjs "$@" ;;
+  run) shift; exec "${COMPOSE[@]}" run --rm -T codex "$@" ;;
+  shell) shift; exec "${COMPOSE[@]}" run --rm --service-ports codex bash "$@" ;;
+  help|--help|-h)
+    cat <<'HELP'
+Usage: scripts/codex-container [build|login|test|shell|run COMMAND...|CODEX_ARGUMENTS...]
+  build    Build/update the pinned Linux tools and Chromium image.
+  login    Authenticate Codex using device login (saved in a Docker volume).
+  test     Verify isolation, Chromium/WebGL, simulation and browser regressions.
+  run      Run a command in the same isolated container (no published ports).
+  shell    Open a container shell with both Vite servers running.
+  default  Run Codex without per-command approvals inside the container.
+
+Only this checkout is bind-mounted. Docker volumes hold Linux dependencies and
+container-only home/login/session data. No host home or Docker socket is mounted.
+While a session or shell runs, open http://127.0.0.1:5183 on your Mac.
+HELP
+    exit 0 ;;
+esac
+exec "${COMPOSE[@]}" run --rm --service-ports codex \
+  codex --sandbox danger-full-access --ask-for-approval never -C /workspace "$@"

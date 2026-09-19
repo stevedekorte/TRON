@@ -47,3 +47,13 @@ Carrier trim balance: softened red paint and emission, increased the original bl
 Recognizer destruction refinement: the earlier rig grouped the complete upper assembly as one body, so one body hit could fragment crown, crossbar and shoulders together. Breakup now treats crown, crossbar, left shoulder, right shoulder and the two articulated legs as six sections. Only the struck section fragments; the remaining five detach whole. Section boundaries use the source triangle centers, preserving every original triangle.
 
 Clu destruction now uses the same posed-surface breakup system: a stomp hides the intact tank and its projected shadows and scatters randomized tank fragments. Current turret yaw and tank momentum are captured by the destruction event. Shadow geometry and muzzle effects are excluded. Thin blue boundary seams outline tank fragments; red boundary seams outline fractured Recognizer sections. Interior triangle diagonals are excluded. Seams fade and dispose with debris. Restart restores the intact tank.
+
+## Carrier escape shuttle
+
+[Model notes and GLB](carrier-shuttle/index.html) · [Interactive preview](../../shuttle.html). Reference reconstruction from the supplied film stills and escape sequence, with provisional scale and hidden surfaces.
+
+## Grid cloud
+
+[cloud.glb](cloud.glb) contains one complete connected grid cloud extracted from `extra/tron_1982.glb`, with no neighboring cloud fragments. Original cyan emissive material and imported scale are preserved; source transforms are baked to Y-up and the cloud is centered at the origin. It contains 1,046 vertices and 846 triangles and spans approximately 735 × 695 meters in the XZ plane. [Preview](cloud-preview.png).
+
+Source: **Tron 1982** by **jvouillon**, from the source file's embedded metadata: https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88 — CC BY 4.0. Attribution and modification notes are retained in the exported GLB. Reproduce with `python3 scripts/extract-cloud.py`. The game reuses this asset for its decorative drifting cloud layer.

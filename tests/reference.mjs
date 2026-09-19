@@ -5,7 +5,7 @@ if(process.argv.includes('--audio')){await import('./audio.mjs');process.exit(0)
 if(process.argv.includes('--camera')){await import('./camera.mjs');process.exit(0);}
 if(process.argv.includes('--attack')){await import('./attack.mjs');process.exit(0);}
 await mkdir('test-results/reference',{recursive:true});
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:2048,height:820}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});

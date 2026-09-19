@@ -1,0 +1,10 @@
+{
+  "source": "docs/references/videos/Sark and MCP.mp4",
+  "start": 52.75,
+  "duration": 1.5,
+  "origin": "User-supplied TRON (1982) mixed soundtrack; not an isolated production stem",
+  "processing": "highpass=f=180,lowpass=f=7200,afftdn=nf=-28:tn=1",
+  "close": "Pitch-preserving 2x stretch with soft attack and release",
+  "open": "Reversed close source, same stretch and fades; designed adaptation, not a separate original film effect",
+  "rebuild": "python3 scripts/extract-transfer-sfx.py"
+}

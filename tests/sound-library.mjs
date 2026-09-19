@@ -8,7 +8,7 @@ for(const item of catalog.items){
  if(item.disk){assert.ok(fs.existsSync(item.disk));if(item.sha256)assert.equal(crypto.createHash('sha256').update(fs.readFileSync(item.disk)).digest('hex'),item.sha256);}
  if(item.catalog)assert.ok(fs.existsSync('docs/sounds/'+item.catalog));
 }
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));

@@ -1,26 +1,31 @@
 import * as THREE from 'three';
 import { MAZE_INSTANCES, WALLS, WALL_HEIGHT, HALF, FLOOR_HALF, BASIS, wallAt } from '../levels/maze.js';
 
+// Linear RGB: a modest lift for wall faces, retaining the blue-black palette.
+const WALL_FACE_TONE=[.012,.022,.047];
+
 // Preserve near fog exactly; distant geometry keeps a readable silhouette.
 function distantFog(shader,falloff=200){
   shader.fragmentShader=shader.fragmentShader.replace('#include <fog_fragment>',THREE.ShaderChunk.fog_fragment.replace('fogDensity * fogDensity * vFogDepth * vFogDepth', 'fogDensity * fogDensity * readableDepth * readableDepth').replace('#ifdef FOG_EXP2', `#ifdef FOG_EXP2\n float readableDepth = vFogDepth <= 250. ? vFogDepth : 250. + ${falloff.toFixed(1)} * (1. - exp(-(vFogDepth - 250.) / ${falloff.toFixed(1)}));`));
 }
 export function createWorld(scene) {
-  const positions=[],colors=[],exposed=[];
-  function quad(a,b,c,d,tone) {for(const p of [a,b,c,a,c,d]){positions.push(...p);colors.push(...tone);}}
+  const positions=[],colors=[],exposed=[],shadowIds=[];let shadowId=0;
+  function quad(a,b,c,d,tone) {for(const p of [a,b,c,a,c,d]){positions.push(...p);colors.push(...tone);shadowIds.push(shadowId);}}
   for(const w of WALLS) {
+    shadowId++;
     const h=WALL_HEIGHT;
     const roof=[.035,.075,.19];
-    for(const tri of THREE.ShapeUtils.triangulateShape(w.points.map(p=>new THREE.Vector2(p.x,p.s)),[]))for(const p of tri.map(i=>w.points[i])){positions.push(p.x,h,-p.s);colors.push(...roof);}
+    for(const tri of THREE.ShapeUtils.triangulateShape(w.points.map(p=>new THREE.Vector2(p.x,p.s)),[]))for(const p of tri.map(i=>w.points[i])){positions.push(p.x,h,-p.s);colors.push(...roof);shadowIds.push(shadowId);}
     for(const edge of w.edges) {
       const {a,b,nx,ns}=edge;
       if(wallAt((a.x+b.x)/2+nx*.1,(a.s+b.s)/2+ns*.1))continue;
-      exposed.push(edge);
+      exposed.push({...edge,shadowId});
       const shade=1+nx*.25-ns*.12;
-      quad([a.x,0,-a.s],[b.x,0,-b.s],[b.x,h,-b.s],[a.x,h,-a.s],[.004*shade,.007*shade,.017*shade]);
+      quad([a.x,0,-a.s],[b.x,0,-b.s],[b.x,h,-b.s],[a.x,h,-a.s],WALL_FACE_TONE.map(channel=>channel*shade));
 
     }
   }
+  const shadowPositions=positions.slice(),casterShadowIds=shadowIds.slice();
   // Join collinear cell boundaries before detailing, so the underlying maze
   // grid does not turn into a visible checkerboard of panel seams.
   const key=p=>p.x.toFixed(4)+','+p.s.toFixed(4);
@@ -35,14 +40,15 @@ export function createWorld(scene) {
     }
     faces.push({...first,b:end});
   }
-  const lines=[],corners=new Map();
-  const line=(a,b)=>lines.push(new THREE.Vector3(...a),new THREE.Vector3(...b));
-  for(const {a,b,nx,ns} of faces) {
+  const lines=[],lineShadowIds=[],corners=new Map();
+  const line=(a,b)=>{lines.push(new THREE.Vector3(...a),new THREE.Vector3(...b));lineShadowIds.push(shadowId,shadowId);};
+  for(const {a,b,nx,ns,shadowId:faceShadowId} of faces) {
+    shadowId=faceShadowId;
     const length=Math.hypot(b.x-a.x,b.s-a.s);
     const p=(distance,y,out=.035)=>[a.x+(b.x-a.x)*distance/length+nx*out,y,-a.s-(b.s-a.s)*distance/length-ns*out];
     line(p(0,WALL_HEIGHT-.12),p(length,WALL_HEIGHT-.12));
     for(const point of [a,b]) {
-      const k=key(point),list=corners.get(k)||[];list.push({point,nx,ns});corners.set(k,list);
+      const k=key(point),list=corners.get(k)||[];list.push({point,nx,ns,shadowId});corners.set(k,list);
     }
     if(length<28)continue;
     // Sparse, tall inset faces above shallow beveled lower ledges.
@@ -55,7 +61,7 @@ export function createWorld(scene) {
       line(p(left+cut,high),p(right,high));
       line(p(right,high),p(right,low+2));
       // A dark upright lip with a brighter sloped top reads as actual relief.
-      quad(p(left,low-1),p(right,low-1),p(right,low+.65,depth),p(left,low+.65,depth),[.003,.005,.012]);
+      quad(p(left,low-1),p(right,low-1),p(right,low+.65,depth),p(left,low+.65,depth),[.005,.008,.018]);
       quad(p(left,low+.65,depth),p(right,low+.65,depth),p(right-cut,low+1.15),p(left+cut,low+1.15),[.026,.042,.075]);
       line(p(left,low+.65,depth+.01),p(right,low+.65,depth+.01));
       quad(p(left,low-1),p(left,low+.65,depth),p(left+cut,low+1.15),p(left+cut,low-1),[.012,.022,.045]);
@@ -64,14 +70,16 @@ export function createWorld(scene) {
   // Vertical seams only at silhouette corners, not between coplanar cells.
   for(const items of corners.values()) {
     if(items.length<2||items.every(e=>Math.abs(e.nx-items[0].nx)+Math.abs(e.ns-items[0].ns)<.001))continue;
+    shadowId=items[0].shadowId;
     const {point}=items[0],nx=items.reduce((v,e)=>v+e.nx,0)*.035,ns=items.reduce((v,e)=>v+e.ns,0)*.035;
     line([point.x+nx,.25,-point.s-ns],[point.x+nx,WALL_HEIGHT-.15,-point.s-ns]);
   }
   const seams=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(lines),
     new THREE.LineBasicMaterial({color:0x354963,transparent:true,opacity:.68,depthWrite:false}));
+  seams.geometry.setAttribute('shadowWallId',new THREE.Float32BufferAttribute(lineShadowIds,1));
   seams.material.onBeforeCompile=shader=>distantFog(shader,120);
   scene.add(seams);
-  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.computeBoundingSphere();
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setAttribute('shadowWallId',new THREE.Float32BufferAttribute(shadowIds,1));geometry.computeBoundingSphere();
   const slabMaterial=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide});
   slabMaterial.onBeforeCompile=shader=>{
     distantFog(shader,120);
@@ -86,7 +94,7 @@ export function createWorld(scene) {
       float distantReadability=smoothstep(350.,1600.,distance(cameraPosition.xz,vSlab.xz));
       diffuseColor.rgb+=vec3(.005,.012,.028)*distantReadability;`);
   };
-  const slabs=new THREE.Mesh(geometry,slabMaterial);scene.add(slabs);
+  const slabs=new THREE.Mesh(geometry,slabMaterial);slabs.userData.shadowPositions=shadowPositions;slabs.userData.shadowIds=casterShadowIds;scene.add(slabs);
   const aerialView={value:0};
   const floorMaterial=new THREE.MeshBasicMaterial({color:0x2b4362});
   floorMaterial.onBeforeCompile=shader=>{
@@ -115,6 +123,6 @@ export function createWorld(scene) {
       float gridFade=1.-smoothstep(mix(160.,1800.,aerialView),mix(650.,3000.,aerialView),length(cameraPosition-vGround));
       diffuseColor.rgb=mix(diffuseColor.rgb*wash*visibility,vec3(.65,.76,.95),grid*outside*mix(.95,.045,aerialView)*gridFade);`);
   };
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),floorMaterial);floor.rotation.x=-Math.PI/2;floor.position.y=-.06;scene.add(floor);
-  return {floor,slabs,aerialView};
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),floorMaterial);floor.rotation.x=-Math.PI/2;floor.position.y=-.06;floor.renderOrder=-2;scene.add(floor);
+  return {floor,slabs,seams,aerialView};
 }
