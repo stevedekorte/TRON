@@ -9,6 +9,7 @@
 ## Models
 
 - [Models](/models/): Imported vehicle sources and runtime adapters
+- [Carrier escape shuttle](/models/carrier-shuttle/): Reference reconstruction of the carrier escape pod
 
 ## References
 

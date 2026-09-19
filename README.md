@@ -99,3 +99,62 @@ Sound audition: http://127.0.0.1:5173/audio.html. Headphones are useful for the 
 ### Website deployment
 
 The dekorte.com Pages workflow checks out the pinned `fun/TRON` revision using its `TRON_DEPLOY_KEY` secret (a read-only deploy key for this repository), runs `npm ci` and `npm run build`, then publishes `dist` at `/fun/TRON/`. Push TRON changes, update the website submodule pointer, and push the website to deploy. The Vite relative base supports both root hosting and subdirectory hosting. `tests/production-path.mjs` checks a static build at that path; set `TRON_URL` to test the live site.
+
+## Isolated Codex and browser tests
+
+Development servers leave the running game intact when source files change.
+Refresh the browser when you want to load edits. For automatic reload instead,
+start the native server with `TRON_HMR=1 npm run dev`.
+
+The container launcher gives Codex and its subprocesses access to this checkout
+without mounting your Mac home directory, SSH agent, or Docker socket. TRON is
+the **only host-folder bind mount**, at `/workspace`. Linux dependencies and the
+container home (including Codex login and session history) use separate Docker
+volumes. The container runs as an unprivileged user, with a read-only image
+filesystem, no added capabilities, and private temporary/shared memory. Network
+access is enabled for Codex and dependency downloads.
+
+Docker Desktop must be running. From this folder:
+
+```sh
+scripts/codex-container build   # Already built during setup; repeat after image changes.
+scripts/codex-container login   # One-time Codex device login; follow its browser instructions.
+scripts/codex-container         # Start a new Codex session inside the container.
+```
+
+Codex runs with `--sandbox danger-full-access --ask-for-approval never` **inside
+this container**: Docker supplies the filesystem boundary. The launcher does
+not grant those permissions to a Codex process running directly on your Mac.
+Existing host sessions and credentials are not copied; `scripts/codex-container
+resume --last` resumes the last *container* session after one exists.
+
+Both historical test servers start automatically at container ports 5173 and
+5174. During an interactive session or shell, open
+<http://127.0.0.1:5183> on your Mac (5184 forwards the second server). These
+loopback-only host ports avoid the existing native development server. Exiting
+the session removes that container and its servers; source edits, dependencies,
+login and history persist. There is no background privileged Docker agent
+inside the container.
+
+```sh
+scripts/codex-container test                       # Isolation, WebGL, tests, build
+scripts/codex-container run node tests/wall-shadow-edges.mjs
+scripts/codex-container shell                      # Interactive Linux shell
+```
+
+The test command does not require Codex login. Reports and captures are written
+to `test-results/` in this checkout. Chromium renders through SwiftShader in the
+container; its performance is not representative of native Mac GPU rendering.
+The full-game container regressions use reduced motion and lower render scale.
+Browser fixtures accept `TRON_BROWSER_CHANNEL`; the container selects bundled
+Chromium, while native runs retain Google Chrome as their default.
+
+Image/configuration: `containers/codex/`. The image's Playwright version must
+match `package-lock.json`; rebuild if that dependency changes. The entrypoint
+refreshes the isolated Linux dependency volume when the package files change.
+Do not mount the Docker socket or additional host directories if you want to
+preserve the folder-only host-file boundary.
+
+References: [Codex containers](https://learn.chatgpt.com/docs/agent-approvals-security#run-codex-in-dev-containers),
+[device authentication](https://learn.chatgpt.com/docs/auth),
+[Playwright containers](https://playwright.dev/docs/docker).

@@ -1,11 +1,11 @@
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 const page=await browser.newPage({viewport:{width:1400,height:900}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 try {
   await page.route('**/model-inspection',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0;background:#03050c"></body>'}));
-  await page.goto('http://127.0.0.1:5173/model-inspection');
+  await page.goto('http://127.0.0.1:5174/model-inspection');
   const result=await page.evaluate(async()=>{
     const T=await import('/node_modules/three/build/three.module.js');
     const {createTank,loadRecognizer,createRecognizer}=await import('/src/rendering/models.js');
@@ -24,10 +24,12 @@ try {
     }
     tank.root.position.set(-5,0,0);tank.root.rotation.y=.15;tank.turret.rotation.y=.25;
     scene.add(tank.root);craft.root.scale.setScalar(RECOGNIZER_SCALE);craft.root.position.set(10,CRUSH.soleHeight,-8);scene.add(craft.root);
+    const shadows=[];craft.root.traverse(o=>{if(o.name==='recognizer-ground-shadow')shadows.push(o);});
+    if(shadows.length!==3||shadows.some(o=>!o.userData.breakupExclude))throw Error('Missing rigid-part shadows');
     const b=new T.Box3().setFromObject(craft.root);
     scene.add(new T.HemisphereLight(0xaac8ff,0x251829,2));
     const light=new T.DirectionalLight(0xc4d9ff,2.4);light.position.set(-35,70,35);scene.add(light);
-    const floor=new T.Mesh(new T.PlaneGeometry(200,200),new T.MeshStandardMaterial({color:0x152640,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.03;scene.add(floor);
+    const floor=new T.Mesh(new T.PlaneGeometry(200,200),new T.MeshStandardMaterial({color:0x152640,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.03;floor.renderOrder=-2;scene.add(floor);
     const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(1400,900);
     renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.24;document.body.append(renderer.domElement);
     const camera=new T.PerspectiveCamera(48,1400/900,.1,500);camera.position.set(-22,15,-32);camera.lookAt(1,5,-3);

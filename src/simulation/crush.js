@@ -1,5 +1,5 @@
 import {retireTarget} from './target-memory.js';
-import {advanceFlight,FLIGHT} from './flight.js';
+import {advanceFlight,advanceYaw,advanceLift,FLIGHT} from './flight.js';
 import {freePosition, WALL_HEIGHT} from '../levels/maze.js';
 import {clamp,RECOGNIZER_SCALE} from '../game/config.js';
 
@@ -29,23 +29,28 @@ export function stompApproach(e,now,speed){
 
 export function advanceCrush(e,now,dt) {
   if(!e.attack)return false;
-  const a=e.attack;e.vx??=0;e.vs??=0;e.vy=0;
+  const a=e.attack;e.vx??=0;e.vs??=0;e.vy??=0;
+  advanceYaw(e,dt);
   // No horizontal thrust during the committed strike; residual drift decays.
   advanceFlight(e,dt,0,1);
   if(a.phase==='fold') {
+    advanceLift(e,dt,a.altitude);
     e.state='fold';e.fold=clamp((now-a.started)/CRUSH.foldSeconds,0,1);
     if(e.fold===1){a.phase='drop';e.state='drop';}
   } else if(a.phase==='drop') {
-    e.state='drop';a.velocity+=CRUSH.dropAcceleration*dt;
-    e.vy=-a.velocity;e.y=Math.max(CRUSH.soleHeight,e.y-a.velocity*dt);
+    e.state='drop';const before=e.vy;e.vy-=CRUSH.dropAcceleration*dt;a.velocity=-e.vy;
+    e.y=Math.max(CRUSH.soleHeight,e.y+(before+e.vy)*.5*dt);
     if(e.y===CRUSH.soleHeight){a.phase='hold';a.started=now;a.impact=true;e.vy=0;}
   } else if(a.phase==='hold') {
     e.state='recover';if(now-a.started>.65)a.phase='rise';
   } else {
-    e.state='recover';e.y=Math.min(a.altitude,e.y+CRUSH.recoverSpeed*dt);e.vy=CRUSH.recoverSpeed;
+    e.state='recover';advanceLift(e,dt,a.altitude,CRUSH.recoverSpeed);
+    // An aborted drop still carries downward momentum until lift brakes it
+    // or physical ground contact stops it.
+    if(e.y<CRUSH.soleHeight){e.y=CRUSH.soleHeight;e.vy=Math.max(0,e.vy);}
     // Keep folded while passing the walls; open after the soles clear the roofs.
     if(e.y>WALL_HEIGHT+CRUSH.soleHeight)e.fold=Math.max(0,e.fold-dt/CRUSH.foldSeconds);
-    if(e.y===a.altitude&&e.fold===0){e.attack=null;e.nextAttack=now+CRUSH.cooldown;e.goal=null;e.state=e.targetGone?'wander':'investigate';}
+    if(Math.abs(e.y-a.altitude)<.2&&Math.abs(e.vy)<.3&&e.fold===0){e.attack=null;e.nextAttack=now+CRUSH.cooldown;e.goal=null;e.state=e.targetGone?'wander':'investigate';}
   }
   return true;
 }

@@ -14,7 +14,7 @@ The tank and Recognizers are user-supplied Sketchfab GLBs; Sark’s carrier is a
 | Tank movement and Recognizer flight/approach | User-supplied TRON scene | Three stereo PCM WAV loops, about 0.76 MB combined | Film-derived excerpts; source/timecodes below | Active, awaiting auditory review |
 | Cannon | User-supplied TRON scene | Stereo PCM WAV, 102 KB | Film-derived excerpt | Active |
 | Impact, destruction, missing-file fallback | Project Web Audio synthesis | Short oscillator/noise envelopes | Original synthesized effects | Active |
-| UI and favicon | Project HTML/CSS; inline favicon path | Local VT323 terminal font; system fonts elsewhere | Original project implementation | Active |
+| UI and favicon | Project HTML/CSS; inline favicon path | Local Interface Raster terminal font derived from VT323; system fonts elsewhere | Original project implementation | Active |
 | Terminal font | Peter Hull / [VT323 in Google Fonts](https://github.com/google/fonts/tree/main/ofl/vt323) | Local `public/fonts/VT323-Regular.ttf` | SIL Open Font License 1.1; retained in `public/fonts/OFL-VT323.txt` | Active |
 | Film reference stills | User-supplied screenshots from the linked 1982 sequence | 15 PNGs in `docs/references/images/` | Study references; not used as runtime art | Inspected |
 | Three.js | [Three.js](https://github.com/mrdoob/three), installed 0.186.0 | npm dependency, lockfile pinned | MIT; upstream license remains in package | Active |
@@ -120,3 +120,17 @@ The supplied `Recognizer Explosion.m4a` edit matches video time 113.207 seconds 
 ## Sound resource library
 
 [Open the sound library](../sounds/index.html) for downloaded Syna-Max recreation previews, existing film edits, cleanup candidates, verified stock-effect catalog IDs and vendor metadata exports. The shelf preserves inactive resources, author/source links and licensing notes for this personal-use project. `docs/sounds/catalog.json` is the editable inventory; `scripts/build-sound-library.mjs` regenerates its page during the docs build. Public MP3 previews are clearly distinguished from original downloads and unacquired commercial-library audio.
+
+### MCP closing dialog
+
+`docs/references/dialog/END OF LINE.mp3` is the user-supplied MCP “END OF LINE” film dialog (1.28-second MP3). It plays once as the terminal starts typing the final sign-off. Imported directly through Vite and decoded into Web Audio; no edits to the source recording. Source: Disney's 1982 TRON, supplied by the user for this fan tribute.
+
+### Embedded terminal raster font
+
+`public/fonts/InterfaceRaster-Regular.ttf` is a modified VT323 font, renamed **Interface Raster**. Each of 582 glyphs retains its original monochrome outline and adds COLRv0 layers: bright pixels plus 15-unit bands at 68% brightness within each 80-unit source pixel row. The two embedded palettes match terminal blue and sign-off red. This replaces the screen-space scanline mask, keeping the dim bands aligned through typing, resizing, and sentence fades. The CSS cursor receives a matching dim-band treatment.
+
+Based on Peter Hull's VT323 under SIL OFL 1.1; original notices remain in the font and `public/fonts/OFL-VT323.txt`. Rebuild with `uv run --with fonttools==4.65.0 --with skia-pathops==0.9.2 python scripts/build-terminal-font.py`. No extra dependencies are needed to run the game.
+
+## Debris physics
+
+Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The local npm package includes WebAssembly; no runtime CDN is required. Used for vehicle debris only. [Source and license](https://github.com/dimforge/rapier).

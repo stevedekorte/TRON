@@ -1,7 +1,7 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 const url=process.env.TRON_URL||'http://127.0.0.1:4187/fun/TRON/';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try {
  const page=await browser.newPage(),errors=[],assets=[];
  page.on('pageerror',e=>errors.push(e.message));

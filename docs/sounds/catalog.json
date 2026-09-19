@@ -446,6 +446,30 @@
       "license": "Project-generated audio",
       "playback": "../../audio/carrier-drone.wav",
       "disk": "public/audio/carrier-drone.wav"
+    },
+    {
+      "group": "Current game sounds",
+      "title": "Data transfer ring \u2014 forming",
+      "status": "Film-derived adaptation; listening review pending",
+      "use": "CLU data transfer surround",
+      "notes": "Sark and MCP.mp4, 52.75\u201354.25 s. Filtered mixed soundtrack, stretched to about three seconds with soft fades. Opening cue reverses the extract. Rebuild: scripts/extract-transfer-sfx.py. Residual soundtrack may remain.",
+      "disk": "public/audio/data-ring-close.wav",
+      "playback": "../../audio/data-ring-close.wav",
+      "source": "../references/videos/Sark%20and%20MCP.mp4",
+      "author": "TRON (1982) film soundtrack / Disney",
+      "license": "User-supplied film reference; unofficial personal fan project"
+    },
+    {
+      "group": "Current game sounds",
+      "title": "Data transfer ring \u2014 opening",
+      "status": "Film-derived adaptation; listening review pending",
+      "use": "CLU data transfer surround",
+      "notes": "Sark and MCP.mp4, 52.75\u201354.25 s. Filtered mixed soundtrack, stretched to about three seconds with soft fades. Opening cue reverses the extract. Rebuild: scripts/extract-transfer-sfx.py. Residual soundtrack may remain.",
+      "disk": "public/audio/data-ring-open.wav",
+      "playback": "../../audio/data-ring-open.wav",
+      "source": "../references/videos/Sark%20and%20MCP.mp4",
+      "author": "TRON (1982) film soundtrack / Disney",
+      "license": "User-supplied film reference; unofficial personal fan project"
     }
   ]
 }

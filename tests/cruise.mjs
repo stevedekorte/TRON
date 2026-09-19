@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage();await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
  await page.keyboard.press('Shift+KeyW');assert.ok(await page.evaluate(()=>__tron.state.cruiseThrottle));await page.waitForTimeout(500);assert.ok(await page.evaluate(()=>__tron.state.speed)>=22);

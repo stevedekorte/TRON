@@ -1,5 +1,5 @@
 import {createCarrierSearch,updateCarrierSearch} from './carrier-search.js';
-import {createDataBeams,collectData} from './data-beams.js';
+import {createDataBeams,beginDataTransfer,collectData} from './data-beams.js';
 import {applyPartDamage} from './part-damage.js';
 import {enemyHitPart,recordEnemyHit} from './hit-parts.js';
 import {randomSeed,seededRandom} from '../game/random.js';
@@ -14,22 +14,20 @@ import { createRecognizers, updateRecognizers, perceive } from './recognizers.js
 
 export function createRun(seed=randomSeed()) {
   const random=seededRandom(seed);
-  return {...SPAWN,seed,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:0,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random),dataCollected:0,enemyTanks:createGroundTanks(random),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
+  return {...SPAWN,seed,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+    carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random),dataCollected:0,enemyTanks:createGroundTanks(random),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
 }
 
-export function boostTank(run,requestedDirection=1){
-  if(run.crushed||run.turboCooldown>0)return false;
+export function boostTank(run){
+  if(run.crushed||run.transferActive||run.turboCooldown>0)return false;
   run.turboRemaining=TURBO.duration;run.turboCooldown=TURBO.rechargeSeconds;
-  const direction=Math.abs(run.speed)>.5?Math.sign(run.speed):Math.sign(requestedDirection)||1;
-  run.speed=direction*config.maxSpeed*TURBO.speedMultiplier*(direction<0?TURBO.reverseRatio:1);
   return true;
 }
 
 // Opening pursuit is a real initial sighting, not a scripted tracking target.
 export function startPursuit(run){
   const forward={x:-Math.sin(run.yaw),s:Math.cos(run.yaw)};
-  for(const [i,side,behind] of [[0,-85,300],[1,85,310]]){
+  for(const [i,side,behind] of [[0,-340,320],[1,-170,310],[2,0,300],[3,170,310],[4,340,320]]){
     const e=run.recognizers[i];
     Object.assign(e,{x:run.x-forward.x*behind+Math.cos(run.yaw)*side,
       s:run.s-forward.s*behind+Math.sin(run.yaw)*side,yaw:run.yaw,
@@ -103,8 +101,17 @@ export function updateWeapons(run,input,dt) {
     run.shotRest=0;
     const target=cannonTarget(run),pose=cannonPose(run),{x,s,y,yaw}=pose;
     const distance=target.lock?Math.max(1,target.distance):160;
-    const dx=(target.lock||target.manual)?target.x-x:-Math.sin(yaw)*distance,ds=(target.lock||target.manual)?target.s-s:Math.cos(yaw)*distance;
-    const dy=target.y-y;
+    let dx=(target.lock||target.manual)?target.x-x:-Math.sin(yaw)*distance,ds=(target.lock||target.manual)?target.s-s:Math.cos(yaw)*distance;
+    let dy=target.y-y;
+    if(!run.gunner){
+      // Independent per-shot randomness preserves seeded encounters. Spread never
+      // points below the horizon; an unassisted level shot stays exactly level.
+      const random=seededRandom((run.seed^Math.imul(run.shots+1,2654435761))>>>0);
+      const shotYaw=-Math.atan2(dx,ds)+(random()*2-1)*CLU_WEAPON.yawSpread;
+      const pitch=Math.atan2(dy,Math.hypot(dx,ds));
+      const shotPitch=Math.max(0,pitch+(Math.abs(pitch)>1e-8?(random()*2-1)*CLU_WEAPON.pitchSpread:0));
+      dx=-Math.sin(shotYaw)*Math.cos(shotPitch);ds=Math.cos(shotYaw)*Math.cos(shotPitch);dy=Math.sin(shotPitch);
+    }
     const length=Math.hypot(dx,ds,dy);
     // A muzzle poking into a wall cannot fire through it.
     if(lineOfSight({x:run.x,s:run.s,y},pose))run.projectiles.push({x,s,y,vx:dx/length*CLU_WEAPON.speed,vs:ds/length*CLU_WEAPON.speed,vy:dy/length*CLU_WEAPON.speed,life:CLU_WEAPON.lifetime});
@@ -143,6 +150,8 @@ export function updateWeapons(run,input,dt) {
 
 export function step(run,input,dt) {
   if(run.crushed){run.gunnerLeveling=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.cruiseThrottle=false;input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
+  beginDataTransfer(run);
+  if(run.transferActive&&!run.crushed){input={...input,throttle:0,steer:0};run.speed=0;run.steer=0;run.turboRemaining=0;run.cruiseThrottle=false;}
   run.turboCooldown=run.turboCooldown<=dt+1e-8?0:run.turboCooldown-dt;
   run.time+=dt;run.impact=Math.max(0,run.impact-dt*2.5);
   const hullYawBefore=run.yaw,aimScale=run.gunner?gunnerAimScale(run.gunnerZoom):1;
@@ -187,10 +196,11 @@ export function step(run,input,dt) {
   }
   const boosting=run.turboRemaining>0,previousSpeed=run.speed;
   const speedLimit=config.maxSpeed*(boosting?TURBO.speedMultiplier:1);
-  const throttle=input.throttle||(boosting?(Math.sign(run.speed)||1):0);
+  const throttle=input.throttle||0;
+  const acceleration=config.acceleration*(boosting?TURBO.accelerationMultiplier:1);
   run.turboRemaining=run.turboRemaining<=dt+1e-8?0:run.turboRemaining-dt;
-  if(throttle>0)run.speed+=(run.speed<0?config.braking:config.acceleration)*dt;
-  else if(throttle<0)run.speed-=(run.speed>0?config.braking:config.acceleration*.6)*dt;
+  if(throttle>0)run.speed+=(run.speed<0?config.braking:acceleration)*dt;
+  else if(throttle<0)run.speed-=(run.speed>0?config.braking:acceleration*.6)*dt;
   else run.speed=Math.sign(run.speed)*Math.max(0,Math.abs(run.speed)-config.drag*dt);
   // Ease back to cruise speed at the end instead of snapping downward.
   const limit=boosting?speedLimit:Math.max(speedLimit,previousSpeed-config.braking*dt);
@@ -213,7 +223,7 @@ export function step(run,input,dt) {
     // This also allows immediate reverse instead of braking stored wall pressure.
     if(travel<Math.abs(run.speed)*dt*.05)run.speed=0;
   }
-  updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run);
+  updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run,dt);
   if(run.crushed)run.health=0;
   else if(run.health>0&&run.health<CLU_HEALTH.max)run.health=Math.min(CLU_HEALTH.max,run.health+CLU_HEALTH.max*dt/CLU_HEALTH.rechargeSeconds);
 }

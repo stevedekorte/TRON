@@ -40,10 +40,12 @@ export async function loadCarrier(){
   mesh.material=mesh.material.clone();
   beacons.push({material:mesh.material,phase:(beacons.length%3)/3});
  });
+ ship.userData.armorMaterials=[...materials].filter(m=>m.name.startsWith('TxTC01')).map(material=>({material,color:material.color.clone()}));
  ship.userData.beacons=beacons;
  updateCarrier(ship,0);return ship;
 }
-export function updateCarrier(ship,time){ship.position.set(CARRIER.startX+CARRIER.speed*time,CARRIER.altitude,-CARRIER.s);
+export function updateCarrier(ship,time,health=100,hit=0){
+ for(const {material,color} of ship.userData.armorMaterials||[]){material.color.copy(color).multiplyScalar(.5+.5*health/100);material.emissiveIntensity=.28+hit*2;}ship.position.set(CARRIER.startX+CARRIER.speed*time,CARRIER.altitude,-CARRIER.s);
  // Approximation from the final moving shot: roughly one pulse per second,
  // with a short bright interval and groups out of phase. Outlines stay steady.
  for(const beacon of ship.userData.beacons||[]){

@@ -1,7 +1,7 @@
 // Regression coverage for replacing animated typing with immediate text.
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true,args:['--autoplay-policy=document-user-activation-required']});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--autoplay-policy=document-user-activation-required']});
 try{
  const page=await browser.newPage();
  await page.goto('http://127.0.0.1:5173');

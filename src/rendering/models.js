@@ -60,10 +60,12 @@ export async function createTank() {
     }
   }
   // A crisp projected silhouette gives the tank the grounded, graphic shadow
-  // in the film. Two shared batches follow hull and turret independently.
+  // in the film. Draw after the floor and before all opaque vehicles/walls.
+  // No depth comparison against the almost coplanar floor: precision varies
+  // greatly across this world and polygon offset alone cannot prevent flicker.
+  // Two shared batches follow hull and turret independently.
   const shadowMaterial=new THREE.ShaderMaterial({
-    transparent:true,depthWrite:false,blending:THREE.NoBlending,side:THREE.DoubleSide,
-    polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4,
+    transparent:false,depthTest:false,depthWrite:false,blending:THREE.NoBlending,side:THREE.DoubleSide,
     vertexShader:`void main(){vec4 world=modelMatrix*vec4(position,1.);world.xz+=vec2(.5,.5)*world.y;world.y=.025;gl_Position=projectionMatrix*viewMatrix*world;}`,
     fragmentShader:'void main(){gl_FragColor=vec4(0.,.001,.004,1.);}'
   });
@@ -74,7 +76,7 @@ export async function createTank() {
       if(g.index){const flat=g.toNonIndexed();g.dispose();return flat;}return g;
     });
     const geometry=mergeGeometries(pieces);pieces.forEach(g=>g.dispose());
-    const shadow=new THREE.Mesh(geometry,shadowMaterial);shadow.frustumCulled=false;shadow.renderOrder=1;shadow.userData.breakupExclude=true;parent.add(shadow);
+    const shadow=new THREE.Mesh(geometry,shadowMaterial);shadow.frustumCulled=false;shadow.renderOrder=-1;shadow.userData.breakupExclude=true;parent.add(shadow);
   }
   const flash = new THREE.Mesh(new THREE.SphereGeometry(.36,12,8),glow(0xe0faff));
   flash.position.set(...TANK.muzzle.map((v,i)=>v-TANK.pivot[i]));
@@ -142,6 +144,19 @@ export function createRecognizer(template) {
     mesh.material=materials.get(mesh.material);
     if(mesh.material.name==='Base') material=mesh.material;
   });
+  // Project the actual solid parts onto the floor, using the same light
+  // direction and draw ordering as the tanks. Parenting follows the folding rig.
+  const shadowMaterial=new THREE.ShaderMaterial({
+    transparent:false,depthTest:false,depthWrite:false,blending:THREE.NoBlending,side:THREE.DoubleSide,
+    vertexShader:`void main(){vec4 world=modelMatrix*vec4(position,1.);world.xz+=vec2(.5,.5)*max(0.,world.y);world.y=.025;gl_Position=projectionMatrix*viewMatrix*world;}`,
+    fragmentShader:'void main(){gl_FragColor=vec4(0.,.001,.004,1.);}'
+  });
+  const solids=[];root.traverse(mesh=>{if(mesh.isMesh&&mesh.material.name==='Base')solids.push(mesh);});
+  for(const mesh of solids){
+    const shadow=new THREE.Mesh(mesh.geometry,shadowMaterial);
+    shadow.name='recognizer-ground-shadow';shadow.frustumCulled=false;shadow.renderOrder=-1;
+    shadow.userData.breakupExclude=true;mesh.add(shadow);
+  }
   const legs=[root.getObjectByName('left-leg'),root.getObjectByName('right-leg')];
   function pose(fold) {
     const t=THREE.MathUtils.clamp(fold,0,1),smooth=t*t*(3-2*t);

@@ -1,12 +1,12 @@
-@font-face{font-family:FilmTerminal;src:url('/fonts/VT323-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
-body.terminal{background:#020204}
+@font-face{font-family:FilmTerminal;src:url('/fonts/InterfaceRaster-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+body.terminal{background:#020204;--terminal-top:27.5vh;--terminal-font-size:clamp(17px,2.8vw,56px)}
 body.terminal .masthead,body.terminal #footer,body.terminal #game{visibility:hidden}
 body.terminal .overlay{background:#020204;padding:0;display:block}
 body.terminal .grain{opacity:.035}
 .terminal .intro{position:absolute;inset:0;max-width:none;padding:0;overflow:hidden}
 .terminal-grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.terminal-content{position:absolute;top:27.5%;left:20.4%;width:75%;font-family:FilmTerminal,monospace;color:#159ddd;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566}
-.terminal .terminal-copy{font:400 clamp(17px,2.8vw,56px)/1.02 FilmTerminal,monospace;letter-spacing:.025em;margin:0;white-space:pre;min-height:1.9em;color:inherit;transform:rotate(.6deg);transform-origin:0 0}
+.terminal-content{position:absolute;z-index:1;top:var(--terminal-top);left:20.4%;width:75%;font-family:FilmTerminal,monospace;color:#159ddd;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566}
+.terminal .terminal-copy{font:400 var(--terminal-font-size)/1.04 FilmTerminal,monospace;letter-spacing:.025em;margin:0;white-space:pre;min-height:2.08em;color:inherit;transform:none;transform-origin:0 0}
 .terminal-cursor{display:inline-block;width:.48em;height:.78em;margin-left:.05em;vertical-align:-.04em;background:currentColor;box-shadow:0 0 5px #0a91db}
 .complete .terminal-cursor{animation:terminal-blink .85s steps(1) infinite}
 #terminal-actions{margin-top:clamp(32px,6vh,70px);animation:terminal-reveal .3s ease-out;color:#427d9f;text-shadow:0 0 6px #005b9540}
@@ -19,7 +19,7 @@ body.terminal .grain{opacity:.035}
 .terminal-notes:hover{color:#99d5f5}
 @keyframes terminal-blink{50%{opacity:0}}
 @keyframes terminal-reveal{from{opacity:0}to{opacity:1}}
-@media(max-width:700px){.terminal-content{left:7%;width:90%;top:28%}.terminal .terminal-copy{font-size:3.2vw}.terminal-controls,.terminal-objective{font-size:14px}.terminal-start{font-size:21px}}
+@media(max-width:700px){.terminal-content{left:7%;width:90%}body.terminal{--terminal-font-size:3.2vw;--terminal-top:28vh}.terminal-controls,.terminal-objective{font-size:14px}.terminal-start{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.complete .terminal-cursor{animation:none}#terminal-actions{animation:none}}
 
 body.entering #game{visibility:visible}
@@ -32,16 +32,26 @@ body.terminal #terminal-actions{display:none}
 
 body.entering .overlay *{pointer-events:none!important}
 
-/* CRT raster is confined to the access terminal and fades with its dissolve. */
-body.terminal .intro::after{
-  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
-  background:repeating-linear-gradient(to bottom,
-    rgba(54,135,180,.018) 0,rgba(54,135,180,.018) 1px,
-    transparent 1px,transparent 3px,rgba(0,0,0,.32) 3px,rgba(0,0,0,.32) 4px);
-  opacity:1;
-}
-body.entering .intro::after{opacity:var(--opening-fade,1)}
+/* The raster is inside each color-font glyph, so it scales and fades with
+   typing instead of drifting across the letters as a screen-space overlay. */
+@font-palette-values --terminal-red{font-family:FilmTerminal;base-palette:1;}
+.terminal-signoff{font-palette:--terminal-red;}
+.terminal-cursor{background:repeating-linear-gradient(to top,
+  color-mix(in srgb,currentColor 68%,transparent) 0,
+  color-mix(in srgb,currentColor 68%,transparent) .015em,
+  currentColor .015em,currentColor .08em);}
 
 /* Fade the complete message in; the parent still controls the game dissolve. */
 .terminal-copy{animation:terminal-reveal .5s ease-out both}
 @media(prefers-reduced-motion:reduce){.terminal-copy{animation:none}}
+
+.end-tribute{display:none;position:relative;width:93.333%;margin:2.08em 0 0;color:#159ddd;font:400 var(--terminal-font-size)/1.04 FilmTerminal,monospace;text-align:left;letter-spacing:.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9540;white-space:pre-wrap;}
+body.detached:not(.entering) .end-tribute{display:grid;}
+.tribute-measure,.tribute-typed{grid-area:1/1;}
+.tribute-measure{visibility:hidden;}
+body.detached .terminal-copy .terminal-cursor{display:none;}
+body.detached .terminal-copy{transform:none;}
+@media(max-width:700px){.end-tribute{width:95.555%;}}
+
+.terminal-signoff,.end-tribute.signing-off .terminal-cursor{color:#ff3025;text-shadow:0 0 3px #e92115,0 0 10px #a5121266;}
+.end-tribute.signing-off .terminal-cursor{box-shadow:0 0 5px #e92115;}

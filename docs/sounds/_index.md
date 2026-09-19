@@ -213,6 +213,30 @@ Synthesized 16-second stereo loop: stable bass harmonics and quiet diffuse machi
 
 [Source](undefined) · Project synthesis · Project-generated audio
 
+### Data transfer ring — forming
+
+**Film-derived adaptation; listening review pending** · CLU data transfer surround
+
+Sark and MCP.mp4, 52.75–54.25 s. Filtered mixed soundtrack, stretched to about three seconds with soft fades. Opening cue reverses the extract. Rebuild: scripts/extract-transfer-sfx.py. Residual soundtrack may remain.
+
+<audio controls preload="none" aria-label="Data transfer ring — forming" src="../../audio/data-ring-close.wav"></audio>
+
+[Open audio file](../../audio/data-ring-close.wav)
+
+[Source](../references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
+
+### Data transfer ring — opening
+
+**Film-derived adaptation; listening review pending** · CLU data transfer surround
+
+Sark and MCP.mp4, 52.75–54.25 s. Filtered mixed soundtrack, stretched to about three seconds with soft fades. Opening cue reverses the extract. Rebuild: scripts/extract-transfer-sfx.py. Residual soundtrack may remain.
+
+<audio controls preload="none" aria-label="Data transfer ring — opening" src="../../audio/data-ring-open.wav"></audio>
+
+[Open audio file](../../audio/data-ring-open.wav)
+
+[Source](../references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
+
 ## Experiments
 
 ### Carrier rumble — archived film candidate

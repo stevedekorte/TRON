@@ -1,3 +1,8 @@
+import {Horizon} from './horizon.js';
+import {CloudLayer} from './cloud-layer.js';
+import {CarrierShadows} from './carrier-shadows.js';
+import {MazeShadows} from './maze-shadows.js';
+import {RecognizerShadows} from './recognizer-shadows.js';
 import {DataBeams} from './data-beams.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import {gunnerSolution} from '../simulation/gunner-solution.js';
@@ -36,14 +41,15 @@ export class View {
     this.mouseLook.yaw-=dx*sensitivity;
     this.mouseLook.pitch=THREE.MathUtils.clamp(this.mouseLook.pitch-dy*sensitivity,GUNNER.minPitch,GUNNER.maxPitch);
   }
-  constructor(canvas, tank, recognizer, carrier=null) {
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  constructor(canvas, tank, recognizer, carrier=null,cloud=null) {
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, stencil: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(1);
     this.renderer.info.autoReset = false;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.24;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x03050c);
+    this.horizon=new Horizon(this.scene);
     this.scene.fog = new THREE.FogExp2(0x090d1d, config.fog);
     this.camera = new THREE.PerspectiveCamera(config.fov, 1, 0.15, 2500);
     this.scene.add(new THREE.HemisphereLight(0xaac8ff, 0x251829, 2));
@@ -51,11 +57,15 @@ export class View {
     const fill = new THREE.DirectionalLight(0x7b72ab, 0.9); fill.position.set(50, 15, -40); this.scene.add(fill);
     this.world = createWorld(this.scene);this.dataBeams=new DataBeams(this.scene);
     this.carrier=carrier;if(carrier)this.scene.add(carrier);
+    this.clouds=cloud?new CloudLayer(cloud,this.scene):null;
     this.tank = tank; this.scene.add(this.tank.root);
     this.muzzleFlash=createMuzzleFlash();this.scene.add(this.muzzleFlash);
     this.enemyTanks=Array.from({length:GROUND_TANK_COUNT},()=>{const craft=cloneEnemyTank(tank);this.scene.add(craft.root);return craft;});
     this.recognizers = RECOGNIZER_STARTS.map(() => { const craft=createRecognizer(recognizer); craft.root.scale.setScalar(RECOGNIZER_SCALE); this.scene.add(craft.root); return craft; });
     recognizer.traverse(o => o.material?.dispose());
+    this.recognizerShadows=new RecognizerShadows(this.recognizers,[this.world.slabs,this.world.seams,this.world.floor]);
+    this.mazeShadows=new MazeShadows(this.world,[this.tank.root,...this.enemyTanks.map(c=>c.root),...this.recognizers.map(c=>c.root),...(this.carrier?[this.carrier]:[])]);
+    this.carrierShadows=carrier?new CarrierShadows(carrier,this.world,[this.tank.root,...this.enemyTanks.map(c=>c.root),...this.recognizers.map(c=>c.root)]):null;
     this.breakups=new Breakups(this.scene);
     this.searchlights=new Searchlights(this.scene,this.recognizers.length);
     this.carrierLights=new Searchlights(this.scene,2,light=>({
@@ -68,7 +78,7 @@ export class View {
     this.debris = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xf67556).multiplyScalar(1.6) }), 140);
     this.debris.frustumCulled = false; this.debris.count = 0; this.scene.add(this.debris); this.particles = [];
     this.matrixObject = new THREE.Object3D();
-    const renderTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+    const renderTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4, stencilBuffer: true });
     this.composer = new EffectComposer(this.renderer, renderTarget);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.enemyOutline=new OutlinePass(new THREE.Vector2(1,1),this.scene,this.camera);
@@ -119,7 +129,7 @@ export class View {
     }
   }
 
-  render(run, previous, alpha, dt, mode, rear = false) {
+  render(run, previous, alpha, dt, mode) {
     this.elapsed += dt;
     const aerialTarget=this.aerial?1:0;
     if(this.reducedMotion)this.aerialBlend=aerialTarget;
@@ -135,7 +145,8 @@ export class View {
     }
     if(preview||run.crushed||this.reducedMotion)this.gunnerTransition=null;
 
-    if(this.carrier){this.carrier.visible=!preview;updateCarrier(this.carrier,run.time);}
+    this.clouds?.update(run.time,run.seed,!preview);
+    if(this.carrier){this.carrier.visible=!preview;updateCarrier(this.carrier,run.time,run.carrierHealth,Math.max(0,1-(run.time-run.carrierHitAt)/1.2));}
     const x = previous.x + (run.x - previous.x) * alpha;
     const s = previous.s + (run.s - previous.s) * alpha;
     const yaw = previous.yaw + angleDelta(previous.yaw, run.yaw) * alpha;
@@ -185,7 +196,7 @@ export class View {
       }
     }
 
-    if(particleDt>0)this.breakups.update(particleDt);
+
     this.particles = this.particles.filter(p => p.age < p.life);
     this.debris.count = this.particles.length;
     this.particles.forEach((p, i) => {
@@ -195,7 +206,7 @@ export class View {
     }); this.debris.instanceMatrix.needsUpdate = true;
 
     let overhead=null;
-    const cameraYaw=yaw+this.tank.turret.rotation.y+(rear?Math.PI:0);
+    const cameraYaw=yaw+this.tank.turret.rotation.y;
     if(!preview&&aerialMix===0&&this.opening==null&&!this.referenceCamera) {
       const fragments=this.breakups.bursts.filter(b=>b.age<3).map(b=>{
         const center=new THREE.Vector3();for(const p of b.pieces)center.add(p.group.position);center.multiplyScalar(1/b.pieces.length);
@@ -351,11 +362,13 @@ export class View {
       this.muzzleFlash.scale.setScalar(1);
     }
     for(const burst of this.breakups.bursts)burst.optical?.mesh.quaternion.copy(this.camera.quaternion);
-    this.renderer.info.reset(); this.composer.render(dt);
+    this.horizon.update(this.camera,!preview&&!this.referenceCamera);
+    this.renderer.info.reset();this.mazeShadows.update(this.renderer);this.recognizerShadows.update(this.renderer,this.breakups.bursts);this.carrierShadows?.update(this.renderer); this.composer.render(dt);
   }
 
   dispose() {
-    this.breakups.clear();
+    this.recognizerShadows.dispose();this.mazeShadows.dispose();this.carrierShadows?.dispose();
+    this.breakups.dispose();this.clouds?.dispose();
     const geometries = new Set(), materials = new Set();
     this.scene.traverse(o => { if (o.geometry) geometries.add(o.geometry); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => materials.add(m)); });
     geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose());

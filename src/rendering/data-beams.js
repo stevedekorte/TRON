@@ -1,36 +1,45 @@
 import * as THREE from 'three';
-import {DATA_BEAM} from '../simulation/data-beams.js';
+import {DATA_BEAM,dataRingSweep} from '../simulation/data-beams.js';
 import {MAZE_INSTANCES} from '../levels/maze.js';
-const SHUTDOWN={flareSeconds:.18,lift:1800,ringRadius:45};
+const RED=new THREE.Color(0xff2008),WHITE=new THREE.Color(0xffeeee),BLUE=new THREE.Color(0x168aff);
 const effectMaterial=color=>new THREE.MeshBasicMaterial({color,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,side:THREE.DoubleSide});
+// Project sky-reaching shafts against the far plane without visible clipped ends.
+function skyMaterial(material){
+ material.fog=false;
+ material.onBeforeCompile=shader=>{shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n gl_Position.z=min(gl_Position.z,gl_Position.w*.99999);');};
+ return material;
+}
 export class DataBeams{
  constructor(scene){
   this.beams=MAZE_INSTANCES.map(()=>{
    const group=new THREE.Group();
    for(const [radius,color,opacity] of [[1.3,0xff3210,.95],[3,0xff1805,.28],[7,0xff1000,.07]]){
     const material=new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,fog:false});
-    // Keep the open-ended column beyond the camera's ordinary far plane.
-    material.onBeforeCompile=shader=>{shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n gl_Position.z=min(gl_Position.z,gl_Position.w*.99999);');};
+    skyMaterial(material);
     material.userData.baseOpacity=opacity;
     const shaft=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,DATA_BEAM.height,12,1,true),material);
     shaft.position.y=DATA_BEAM.height/2;group.add(shaft);
    }
    const pool=new THREE.Mesh(new THREE.CircleGeometry(DATA_BEAM.radius,40),new THREE.MeshBasicMaterial({color:0xff2008,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+   // Draw the floor glow after floor/shadows, before solid vehicles/walls.
+   // Avoid near-coplanar depth comparisons at distant maze coordinates.
+   pool.material.transparent=false;pool.material.depthTest=false;pool.renderOrder=-.5;
    pool.material.userData.baseOpacity=.3;pool.rotation.x=-Math.PI/2;pool.position.y=.04;group.add(pool);
    const ring=new THREE.Mesh(new THREE.RingGeometry(.88,1,64),effectMaterial(0xff693b));
+   ring.material.transparent=false;ring.material.depthTest=false;ring.renderOrder=-.5;
    ring.rotation.x=-Math.PI/2;ring.position.y=.09;ring.visible=false;group.add(ring);
-   const pulse=new THREE.Mesh(new THREE.TorusGeometry(4,.6,8,48),effectMaterial(0xffb48a));
+   const pulse=new THREE.Mesh(new THREE.SphereGeometry(1,48,24,0,Math.PI*2,0,Math.PI/2),effectMaterial(0x49aaff));
    pulse.rotation.x=-Math.PI/2;pulse.visible=false;group.add(pulse);
    const flare=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),effectMaterial(0xffc2a3));
    flare.position.y=2;flare.visible=false;group.add(flare);
    const curtain=new THREE.Group();
    const shaftGeometry=new THREE.CylinderGeometry(.07,.07,1,6,1,true);
    const glowGeometry=new THREE.CylinderGeometry(.3,.3,1,8,1,true);
-   for(let j=0;j<32;j++){
-    const bar=new THREE.Group(),angle=j/32*Math.PI*2;
-    const core=new THREE.Mesh(shaftGeometry,effectMaterial(0x75cfff));
-    const halo=new THREE.Mesh(glowGeometry,effectMaterial(0x168aff));
-    bar.add(core,halo);bar.position.set(Math.cos(angle)*8.5,0,Math.sin(angle)*8.5);curtain.add(bar);
+   for(let j=0;j<DATA_BEAM.ringShafts;j++){
+    const bar=new THREE.Group(),angle=j/DATA_BEAM.ringShafts*Math.PI*2;
+    const core=new THREE.Mesh(shaftGeometry,skyMaterial(effectMaterial(0x75cfff)));
+    const halo=new THREE.Mesh(glowGeometry,skyMaterial(effectMaterial(0x168aff)));
+    bar.add(core,halo);bar.position.set(Math.cos(angle)*DATA_BEAM.ringRadius,DATA_BEAM.height/2,Math.sin(angle)*DATA_BEAM.ringRadius);bar.scale.y=DATA_BEAM.height;core.material.opacity=.32;halo.material.opacity=.045;curtain.add(bar);
    }
    group.add(curtain);
    group.userData.effects={pool,ring,pulse,flare,curtain};
@@ -41,34 +50,31 @@ export class DataBeams{
   this.beams.forEach((group,i)=>{
    const beam=run.dataBeams?.[i];
    const active=beam?.collectedAt!=null,age=active?Math.max(0,run.time-beam.collectedAt):0;
-   const progress=Math.min(1,age/DATA_BEAM.fadeSeconds),opacity=active?1-progress:1;
-   group.visible=!!beam&&visible&&opacity>0;
+   group.visible=!!beam&&visible;
    if(!beam)return;group.position.set(beam.x,0,-beam.s);
-   const flareAmount=active?Math.max(0,1-age/SHUTDOWN.flareSeconds):0;
+   const progress=active?1:beam.transferStartedAt===null?0:THREE.MathUtils.clamp((run.time-beam.transferStartedAt)/DATA_BEAM.transferSeconds,0,1);
+   const color=progress<.5?RED.clone().lerp(WHITE,progress*2):WHITE.clone().lerp(BLUE,(progress-.5)*2);
+   const flareAmount=active?Math.max(0,1-age/.4):0;
    for(const mesh of group.children.slice(0,3)){
-    mesh.material.opacity=mesh.material.userData.baseOpacity*opacity*(1+flareAmount);
-    mesh.scale.set(1-progress*.95+flareAmount*.6,1,1-progress*.95+flareAmount*.6);
-    mesh.position.y=DATA_BEAM.height/2+SHUTDOWN.lift*progress*progress;
+    mesh.material.color.copy(color);
+    mesh.material.opacity=mesh.material.userData.baseOpacity*(1+flareAmount);
    }
    const {pool,ring,pulse,flare,curtain}=group.userData.effects;
-   const transferAge=beam.transferStartedAt===null?-1:run.time-beam.transferStartedAt;
-   const end=DATA_BEAM.buildSeconds+DATA_BEAM.holdSeconds;
-   const sweep=transferAge<0||active?0:transferAge<end?Math.min(1,transferAge/DATA_BEAM.buildSeconds):Math.max(0,1-(transferAge-end)/DATA_BEAM.retractSeconds);
+   const sweep=dataRingSweep(beam,run.time);
    curtain.visible=sweep>0;
-   curtain.position.set((beam.transferX??beam.x)-beam.x,0,-((beam.transferS??beam.s)-beam.s));
+   curtain.position.set(0,0,0);
    curtain.children.forEach((bar,j)=>{
-    // Successive shafts descend around the tank; reversing sweep unwinds them.
-    const t=THREE.MathUtils.smoothstep(sweep,j/32*.65,j/32*.65+.35);
-    const height=22*t;bar.visible=t>0;bar.position.y=22-height/2;
-    bar.scale.y=Math.max(.001,height);
-    bar.children[0].material.opacity=.32*t;
-    bar.children[1].material.opacity=.045*t;
+    // Switch each entire shaft on in sequence; opening reverses that sequence.
+    bar.visible=sweep>(j/curtain.children.length);
    });
-   pool.material.opacity=.3*opacity*(1+flareAmount);pool.scale.setScalar(1+flareAmount);
-   ring.visible=pulse.visible=flare.visible=active&&opacity>0;
-   ring.scale.setScalar(DATA_BEAM.radius+SHUTDOWN.ringRadius*(1-(1-progress)**2));ring.material.opacity=opacity*.9;
-   pulse.position.y=2+SHUTDOWN.lift*progress*progress;pulse.scale.setScalar(1-progress*.7);pulse.material.opacity=opacity;
-   flare.scale.setScalar(2+flareAmount*7);flare.material.opacity=flareAmount*.7;
+   pool.material.color.copy(color);pool.material.opacity=.3*(1+flareAmount);
+   const wave=active&&age<DATA_BEAM.blastSeconds;
+   ring.visible=pulse.visible=wave;flare.visible=flareAmount>0;
+   const fade=Math.min(1,(DATA_BEAM.blastSeconds-age)/2);
+   const radius=Math.max(.01,beam.waveRadius||0);
+   ring.material.color.copy(BLUE);ring.scale.setScalar(radius);ring.material.opacity=wave?fade*.65:0;
+   pulse.rotation.x=0;pulse.scale.setScalar(radius);pulse.material.opacity=wave?fade*.035:0;
+   flare.material.color.copy(WHITE);flare.scale.setScalar(2+flareAmount*7);flare.material.opacity=flareAmount*.7;
   });
  }
 }

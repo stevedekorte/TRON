@@ -6,7 +6,7 @@ for(const kind of ['tank','recognizer'])for(const rate of [44100,48000])for(let 
  for(const channel of channels){assert.ok(channel[0]===0);assert.ok(Math.abs(channel.at(-1))<1e-5);for(const v of channel){assert.ok(Number.isFinite(v));peak=Math.max(peak,Math.abs(v));}}
  assert.ok(peak<=.821);assert.notDeepEqual(channels[0],channels[1]);
 }
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage();await page.route('**/src/main.js*',route=>route.fulfill({contentType:'application/javascript',body:''}));await page.goto('http://127.0.0.1:5174');
  const results=await page.evaluate(async()=>{

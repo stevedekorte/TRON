@@ -25,3 +25,29 @@ test('gotcha proximity has hysteresis and excludes inactive or destroyed aircraf
  r.recognizers[0].s=20;r.recognizers[0].state='wander';assert.equal(closeRecognizer(r,false),false);
  r.recognizers[0].state='pursue';r.crushed=true;assert.equal(closeRecognizer(r,true),false);
 });
+
+import {quietMazeExploration} from '../src/audio/music-selection.js';
+import {MAZE_INSTANCES,MAZE_LENGTH} from '../src/levels/maze.js';
+test('quiet exploration recognizes all rotated maze sites and excludes pursuit or death',()=>{
+ const r={recognizers:[],enemyTanks:[]};
+ for(const m of MAZE_INSTANCES){Object.assign(r,{x:m.x,s:m.s});assert.equal(quietMazeExploration(r),true);}
+ r.x=MAZE_LENGTH*100;assert.equal(quietMazeExploration(r),false);
+ Object.assign(r,{x:0,s:0});r.enemyTanks=[{state:'pursue'}];assert.equal(quietMazeExploration(r),false);
+ r.enemyTanks=[];r.crushed=true;assert.equal(quietMazeExploration(r),false);
+});
+
+import {mazeMusicCue,MAZE_MUSIC,beamBaseVisible} from '../src/audio/music-selection.js';
+import {PerspectiveCamera} from 'three';
+test('maze cues progress from general exploration to hidden approach, sighting and entry',()=>{
+ const r={x:0,s:0,recognizers:[],enemyTanks:[],dataBeams:[{id:0,x:MAZE_MUSIC.nearDistance+1,s:0,collectedAt:null}]};
+ assert.equal(mazeMusicCue(r,()=>true).category,'exploration');r.dataBeams[0].x=50;
+ assert.equal(mazeMusicCue(r,()=>false).category,'approaching');assert.equal(mazeMusicCue(r,()=>true).category,'spotted');
+ r.dataBeams[0].x=2;assert.equal(mazeMusicCue(r,()=>false).category,'enter');
+ r.dataBeams[0].collectedAt=0;assert.equal(mazeMusicCue(r,()=>true).category,'exploration');
+ r.enemyTanks=[{state:'pursue'}];assert.equal(mazeMusicCue(r,()=>true),null);
+});
+test('beam visibility requires the base inside the camera view',()=>{
+ const camera=new PerspectiveCamera(60,1,.1,1000);camera.position.set(10000,5,10000);camera.lookAt(10000,.25,9990);camera.updateMatrixWorld();
+ assert.equal(beamBaseVisible({x:10000,s:-9990},camera),true);
+ assert.equal(beamBaseVisible({x:10000,s:-10010},camera),false);
+});

@@ -50,14 +50,10 @@ test('maze patrol detects and fires at Clu close behind its hull',()=>{
  for(let i=0;i<360;i++)step(r,{},dt);
  assert.equal(e.canSee,true);assert.equal(e.state,'pursue');assert.ok(r.events.some(e=>e.type==='enemyShot'));
 });
-test('damage turns a maze patrol toward the incoming shot before visually acquiring the attacker',()=>{
- const r=createRun();Object.assign(r,{x:-5000,s:-5000,speed:0,health:100});r.recognizers=[];
- const e=r.enemyTanks.find(e=>e.role==='patrol');r.enemyTanks=[e];
- Object.assign(e,{x:r.x,s:r.s+140,yaw:0,speed:0,vx:0,vs:0});
- r.projectiles=[{x:e.x,s:e.s-1,y:2,vx:0,vs:165,vy:0,life:1}];updateWeapons(r,{},dt);
- assert.equal(e.health,2);assert.equal(e.memory,null);assert.ok(e.threatUntil>r.time);assert.equal(r.radio.length,0);
- for(let i=0;i<600;i++)step(r,{},dt);
- assert.equal(e.canSee,true);assert.ok(r.events.some(e=>e.type==='enemyShot'));
+test('a single turret hit destroys a maze patrol without reporting the hidden attacker',()=>{
+ const r=encounter(),e=r.enemyTanks[0];e.yaw=0;
+ r.projectiles=[{x:e.x,s:e.s,y:2,vx:0,vs:0,vy:0,life:1}];updateWeapons(r,{},dt);
+ assert.equal(e.health,0);assert.equal(e.state,'destroyed');assert.equal(e.memory,null);assert.equal(r.radio.length,0);
 });
 
 test('idle enemy turrets hold world direction while their hulls turn, within their motor limit',()=>{
@@ -90,16 +86,12 @@ test('idle enemy turrets hold world direction while their hulls turn, within the
   e.memory.seenAt=r.time-40;step(r,{},dt);assert.equal(e.state,'escort');
  });
 
-test('track damage reduces mobility, and two disabled tracks leave a live firing tank',async()=>{
- const {trackMobility}=await import('../src/simulation/part-damage.js');
- const r=encounter(),e=r.enemyTanks[0];e.yaw=0;
- const shoot=x=>{r.projectiles=[{x:e.x+x,s:e.s,y:1,vx:0,vs:0,vy:0,life:1}];updateWeapons(r,{},dt);};
- shoot(-3);assert.equal(e.health,2.5);assert.equal(trackMobility(e).speed,.65);
- shoot(-3);assert.equal(e.health,2);assert.equal(trackMobility(e).speed,.25);
- shoot(3);shoot(3);assert.equal(e.health,1);assert.equal(trackMobility(e).speed,0);
- const start={x:e.x,s:e.s,yaw:e.yaw};e.speed=0;e.vx=0;e.vs=0;Object.assign(r,{x:e.x,s:e.s+80,health:100});
- for(let i=0;i<240;i++)step(r,{},dt);
- assert.deepEqual({x:e.x,s:e.s,yaw:e.yaw},start);assert.ok(r.events.some(event=>event.type==='enemyShot'));assert.notEqual(e.state,'destroyed');
+test('one hit destroys an enemy tank through either track or its hull',()=>{
+ for(const x of [-3,0,3]){
+  const r=encounter(),e=r.enemyTanks[0];e.yaw=0;
+  r.projectiles=[{x:e.x+x,s:e.s,y:1,vx:0,vs:0,vy:0,life:1}];updateWeapons(r,{},dt);
+  assert.equal(e.health,0);assert.equal(e.state,'destroyed');assert.equal(r.kills,1);
+ }
 });
 
 test('enemy fire is slower, varied and reproducible, with bounded aim spread',async()=>{

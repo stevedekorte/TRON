@@ -46,4 +46,4 @@ September 15: A Recognizer already searching with its spotlight must aim the bea
 
 ## Expanded exploration — September 17
 
-Four separated maze sites now provide local data-collection destinations, each with a red vertical beam and its own dynamically deciding patrols. Entering a beam collects its data and triggers a shutdown animation. Preserve the open-ended atmosphere: no score panel or automatic victory screen.
+Four separated maze sites now provide local data-collection destinations, each with a red vertical beam and its own dynamically deciding patrols. Stopping in a red beam locks the drive, restores health and starts a 16-second transfer. The surround opens after nine seconds, the column changes red–white–blue and stays blue. Completion releases a spherical damaging wave with a final diameter of one maze width; blue beams never repeat the transfer. Preserve the open-ended atmosphere: no score panel or automatic victory screen.

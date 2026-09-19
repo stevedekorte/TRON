@@ -6,7 +6,7 @@ for(const rate of [44100,48000])for(let variant=0;variant<TANK_EXPLOSION.variant
  let peak=0;for(const channel of samples){for(const v of channel){assert.ok(Number.isFinite(v));peak=Math.max(peak,Math.abs(v));}assert.ok(channel[0]===0);assert.ok(Math.abs(channel.at(-1))<1e-5);}
  assert.ok(peak<=.841);assert.notDeepEqual(samples[0],samples[1]);
 }
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage();await page.goto(process.env.TRON_URL||'http://127.0.0.1:5174');
  const results=await page.evaluate(async()=>{

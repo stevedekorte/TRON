@@ -1,6 +1,6 @@
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try {
   const page=await browser.newPage({viewport:{width:1440,height:900}}), errors=[];
   page.on('pageerror',e=>errors.push(e.message));
@@ -43,7 +43,7 @@ try {
   assert.ok(moving.recognizers.some((e,i)=>Math.hypot(e.x-initial.recognizers[i].x,e.s-initial.recognizers[i].s)>.1));
   await page.waitForFunction(()=>window.__tron.state.mode==='running');
   await page.screenshot({path:'test-results/opening-clu.png'});
-  await page.keyboard.down('KeyC');await page.waitForTimeout(1000);await page.screenshot({path:'test-results/recognizer-starting-line.png'});await page.keyboard.up('KeyC');
+  await page.evaluate(()=>__tron.place({turretYaw:Math.PI}));await page.waitForTimeout(1000);await page.screenshot({path:'test-results/recognizer-starting-line.png'});await page.evaluate(()=>__tron.place({turretYaw:0}));
   await page.evaluate(()=>__tron.reset());
   await page.waitForTimeout(250);assert.equal(await page.evaluate(()=>window.__tron.state.speed),22);
   await page.keyboard.down('KeyW');await page.keyboard.up('KeyW');

@@ -21,7 +21,7 @@ if(process.argv.includes('--terminal')){await import('./terminal.mjs');process.e
 if(process.argv.includes('--soak')){await import('./soak.mjs');process.exit(0);}
 if(process.argv.includes('--compat')){await import('./compat.mjs');process.exit(0);}
 if(process.argv.includes('--lifecycle')){await import('./lifecycle.mjs');process.exit(0);}
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
 try {
@@ -65,7 +65,7 @@ try {
   await page.waitForTimeout(1200);
   const flock=await page.evaluate(()=>window.__tron.state.recognizers);
   for(let i=0;i<flock.length;i++)for(let j=i+1;j<flock.length;j++)assert.ok(Math.hypot(flock[i].x-flock[j].x,flock[i].s-flock[j].s)>=23.9);
-  await page.keyboard.down('KeyC');await page.waitForTimeout(1000);await page.screenshot({path:'test-results/recognizer-scale.png'});await page.keyboard.up('KeyC');
+  await page.evaluate(()=>__tron.place({turretYaw:Math.PI}));await page.waitForTimeout(1000);await page.screenshot({path:'test-results/recognizer-scale.png'});await page.evaluate(()=>__tron.place({turretYaw:0}));
   await page.evaluate(()=>__tron.reset());await page.waitForTimeout(100);
   await page.evaluate(async()=>{
     window.__tron.configure({enemySpeed:0});

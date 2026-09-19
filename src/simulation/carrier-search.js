@@ -19,7 +19,7 @@ export function updateCarrierSearch(run,dt){
  for(const light of sensor.lights){
   light.x=center.x+light.side*240;light.s=center.s+light.side*55;light.y=CARRIER.altitude-CARRIER_SEARCH.underside;
   const inRange=Math.hypot(run.x-center.x,run.s-center.s)<CARRIER_SEARCH.trackRadius;
-  const visible=!run.crushed&&inRange&&(beneath||light.tracking)&&lineOfSight(light,{x:run.x,s:run.s,y:2.8});
+  const visible=run.carrierHealth>0&&!run.crushed&&inRange&&(beneath||light.tracking)&&lineOfSight(light,{x:run.x,s:run.s,y:2.8});
   light.tracking=visible;light.lit=false;
   if(visible){
    light.target={x:run.x,s:run.s,vx:-Math.sin(run.yaw)*run.speed,vs:Math.cos(run.yaw)*run.speed,seenAt:run.time,source:'carrier'};

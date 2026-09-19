@@ -1,13 +1,13 @@
 export const PART_DAMAGE=Object.freeze({normal:1,limb:.5,disableHits:2,damagedTrack:.65,disabledTrack:.25});
 export function applyPartDamage(enemy,part){
- const critical=enemy.kind!=='ground'&&part==='crown';
+ const critical=enemy.kind!=='ground'&&['crown','crossbar'].includes(part);
  const limb=part.endsWith('-leg')||part.endsWith('-track');
- const damage=critical?enemy.health:limb?PART_DAMAGE.limb:PART_DAMAGE.normal;
+ const damage=critical||enemy.kind==='ground'?enemy.health:limb?PART_DAMAGE.limb:PART_DAMAGE.normal;
  enemy.health=Math.max(0,enemy.health-damage);
  if(part.endsWith('-leg')&&(enemy.partHits?.[part]||0)>=PART_DAMAGE.disableHits){
   enemy.stompDisabled=true;
   // Abort a committed strike safely into its normal climb/unfold recovery.
-  if(enemy.attack){enemy.attack.phase='rise';enemy.attack.impact=false;enemy.attack.velocity=0;enemy.vy=0;enemy.state='recover';}
+  if(enemy.attack){enemy.attack.phase='rise';enemy.attack.impact=false;enemy.state='recover';}
  }
  return {critical,damage};
 }

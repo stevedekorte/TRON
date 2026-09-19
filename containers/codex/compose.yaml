@@ -1,0 +1,38 @@
+name: tron-codex
+services:
+  codex:
+    build:
+      context: .
+      dockerfile: containers/codex/Dockerfile
+    image: tron-codex:local
+    init: true
+    user: node
+    working_dir: /workspace
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    shm_size: 1gb
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=2g,mode=1777
+    volumes:
+      - type: bind
+        source: .
+        target: /workspace
+      - type: volume
+        source: node_modules
+        target: /workspace/node_modules
+      - type: volume
+        source: home
+        target: /home/node
+    ports:
+      - '127.0.0.1:5183:5173'
+      - '127.0.0.1:5184:5174'
+    environment:
+      TRON_CONTAINER: '1'
+      TRON_BROWSER_CHANNEL: chromium
+      PLAYWRIGHT_BROWSERS_PATH: /opt/playwright
+      CODEX_HOME: /home/node/.codex
+      TERM: xterm-256color
+volumes:
+  node_modules:
+  home:

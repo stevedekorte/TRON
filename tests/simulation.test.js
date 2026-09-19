@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { createRun, step, moveTank, cannonTarget, cannonPose, updateWeapons, startPursuit, boostTank } from '../src/simulation/run.js';
 import { GRID, SIZE, CELL, HALF, OPEN_CELLS, SPAWN, cellCenter, gridToWorld, worldToGrid, freePosition, lineOfSight, wallIntersection, WALLS } from '../src/levels/maze.js';
 import { createRecognizers, perceive, canSeeClu, updateRecognizers, predict, SENSORS } from '../src/simulation/recognizers.js';
-import { config,RECOGNIZER_SCALE } from '../src/game/config.js';
+import { config,RECOGNIZER_SCALE,CLU_WEAPON,angleDelta } from '../src/game/config.js';
 const tick=(r,input={},seconds=1)=>{for(let i=0;i<Math.round(seconds*60);i++)step(r,input,1/60);};
 
 test('maze is connected with branches, cycles, dead ends and four exterior openings',()=>{
@@ -76,7 +76,7 @@ test('turret rotates independently and acquired shots lead while unassisted shot
   assert.equal(cannonTarget(r).lock,true);step(r,{fire:true},1/60);
   assert.ok(r.projectiles[0].vx>0);assert.ok(r.projectiles[0].vy>0);
   r.turretYaw=.6;r.turretHeading=null;r.cooldown=0;r.projectiles=[];step(r,{fire:true},1/60);
-  assert.equal(r.projectiles[0].vy,0);assert.ok(Math.abs(Math.atan2(-r.projectiles[0].vx,r.projectiles[0].vs)-.6)<1e-9);
+  assert.equal(r.projectiles[0].vy,0);assert.ok(Math.abs(Math.atan2(-r.projectiles[0].vx,r.projectiles[0].vs)-.6)<=CLU_WEAPON.yawSpread+1e-9);
 });
 
 test('walls block auto aim and a protruding muzzle cannot shoot through a wall',()=>{
@@ -87,9 +87,10 @@ test('walls block auto aim and a protruding muzzle cannot shoot through a wall',
 
 test('independent agents persist, simulation has no timed outcome, reset is clean',()=>{
   const r=createRun();for(const e of r.recognizers.slice(0,2))assert.ok(Math.abs(worldToGrid(e.x,e.s).u)>HALF||Math.abs(worldToGrid(e.x,e.s).v)>HALF);
-  const start=r.recognizers.map(e=>[e.x,e.s]);tick(r,{},100);
-  assert.equal(r.status,'running');assert.equal(r.recognizers.length,8);assert.ok(r.radio.length<40);
-  assert.ok(r.recognizers.every((e,i)=>Math.hypot(e.x-start[i][0],e.s-start[i][1])>50));
+  const travel=r.recognizers.map(()=>0);
+  for(let n=0;n<10;n++){const start=r.recognizers.map(e=>[e.x,e.s]);tick(r,{},10);r.recognizers.forEach((e,i)=>travel[i]+=Math.hypot(e.x-start[i][0],e.s-start[i][1]));}
+  assert.equal(r.status,'running');assert.equal(r.recognizers.length,11);assert.ok(r.radio.length<40);
+  assert.ok(travel.every(distance=>distance>50));
   const fresh=createRun();assert.equal(fresh.radio.length,0);assert.ok(fresh.recognizers.every(e=>e.memory===null));assert.equal(fresh.turretYaw,0);
 });
 
@@ -283,17 +284,17 @@ test('a fired round hits a crossing Recognizer rather than its old position',()=
  Object.assign(e,{x:muzzle.x,s:muzzle.s+150,y:40,yaw:0,vx:27,vs:0,vy:0,health:3,state:'pursue'});
  updateWeapons(r,{fire:true},1/60);assert.ok(r.projectiles[0].vx>20);
  for(let i=0;i<100;i++){e.x+=e.vx/60;updateWeapons(r,{},1/60);}
- assert.equal(e.health,2);
+ assert.equal(e.health,0);
 });
-test('two opening pursuers advance without collapsing into a crowd',()=>{
+test('five opening pursuers advance without collapsing into a crowd',()=>{
  const r=createRun();r.speed=22;startPursuit(r);
- const initial=r.recognizers.slice(0,2).map(e=>({...e})),yaw=r.yaw;
+ const initial=r.recognizers.slice(0,5).map(e=>({...e})),yaw=r.yaw;
  tick(r,{throttle:1},20);
- for(let i=0;i<2;i++){
+ for(let i=0;i<5;i++){
   const e=r.recognizers[i],dx=e.x-initial[i].x,ds=e.s-initial[i].s;
   assert.ok(-Math.sin(yaw)*dx+Math.cos(yaw)*ds>400);assert.ok(Number.isFinite(e.x));
  }
- for(let i=0;i<2;i++)for(let j=i+1;j<2;j++)assert.ok(Math.hypot(r.recognizers[i].x-r.recognizers[j].x,r.recognizers[i].s-r.recognizers[j].s)>23.9);
+ for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)assert.ok(Math.hypot(r.recognizers[i].x-r.recognizers[j].x,r.recognizers[i].s-r.recognizers[j].s)>23.9);
 });
 
 test('turret centering takes the short route without turning the body; manual input cancels',()=>{
@@ -308,9 +309,9 @@ test('turret centering takes the short route without turning the body; manual in
 
 test('turbo lasts ten simulated seconds, cannot stack, permits braking and clears on reset/crush',()=>{
  const r=createRun();Object.assign(r,{x:-5000,s:-5000,yaw:0,recognizers:[]});
- assert.equal(boostTank(r),true);assert.equal(r.speed,config.maxSpeed*2.5);
- tick(r,{},5);assert.equal(boostTank(r),false);assert.ok(Math.abs(r.turboRemaining-5)<1e-7);
- tick(r,{},5);assert.equal(r.turboRemaining,0);assert.equal(r.speed,config.maxSpeed*2.5);
+ assert.equal(boostTank(r),true);assert.equal(r.speed,0);
+ tick(r,{throttle:1},5);assert.equal(boostTank(r),false);assert.ok(Math.abs(r.turboRemaining-5)<1e-7);
+ tick(r,{throttle:1},5);assert.equal(r.turboRemaining,0);assert.equal(r.speed,config.maxSpeed*2.5);
  tick(r,{throttle:1},2);assert.equal(r.speed,config.maxSpeed);
  assert.equal(boostTank(r),false);tick(r,{},48);assert.equal(r.turboCooldown,0);assert.equal(boostTank(r),true);tick(r,{throttle:-1},.5);assert.ok(r.speed<config.maxSpeed*2.5-8);
  r.crushed=true;step(r,{},1/60);assert.equal(r.turboRemaining,0);assert.equal(boostTank(r),false);
@@ -359,7 +360,7 @@ test('Recognizer hit events distinguish surviving armor impacts from fatal hits'
  const r=createRun();r.x=-1800;r.s=-1800;r.enemyTanks=[];
  r.recognizers=[{...r.recognizers[0],x:-1800,s:-1720,y:80,health:2,state:'wander',fold:0}];
  for(const fatal of [false,true]){
-  r.events=[];r.projectiles=[{x:-1800,s:-1720,y:80,vx:0,vs:0,vy:0,life:1}];
+  r.recognizers[0].yaw=0;r.events=[];r.projectiles=[{x:-1800+12*RECOGNIZER_SCALE,s:-1720,y:80,vx:0,vs:0,vy:0,life:1}];
   updateWeapons(r,{},1/60);
   const hit=r.events.find(e=>e.type==='hit');assert.equal(hit.subject,'recognizer');assert.equal(hit.fatal,fatal);
   assert.equal(r.events.some(e=>e.type==='destroyed'),fatal);
@@ -392,16 +393,17 @@ test('enemy bullet events retain anatomical hit parts, location and per-part cou
  for(const yaw of [0,1.3]){
   const r=createRun(1982);r.recognizers=[];const e=r.enemyTanks[0];r.enemyTanks=[e];Object.assign(e,{x:-5000,s:-5000,yaw,health:100});
   for(const [part,x,y] of [['hull',0,1],['turret',0,2.5],['left-track',-3,1],['right-track',3,1]]){
+   e.health=100;e.state='wander';
    const p=localPoint(e,x,y,0,1);r.projectiles=[{...p,vx:0,vy:0,vs:0,life:1}];updateWeapons(r,{},1/60);assert.equal(e.lastHit.part,part);assert.equal(r.events.at(-1).hitPart,part);
   }
  }
 });
 
-test('one crown hit kills; repeated leg hits disable stomping and abort a drop',async()=>{
+test('one central core hit kills; repeated leg hits disable stomping and abort a drop',async()=>{
  const {beginCrush,resolveCrush}=await import('../src/simulation/crush.js');
  const r=createRun(1982);r.enemyTanks=[];const e=r.recognizers[0];r.recognizers=[e];Object.assign(e,{x:-5000,s:-5000,y:80,yaw:0,fold:0});
  const shoot=(x,y)=>{r.projectiles=[{x:e.x+x*RECOGNIZER_SCALE,s:e.s,y:e.y+y*RECOGNIZER_SCALE,vx:0,vs:0,vy:0,life:1}];updateWeapons(r,{},1/60);};
- shoot(0,6);assert.equal(e.health,0);assert.equal(e.state,'destroyed');assert.equal(r.events.at(-1).critical,true);assert.equal(r.kills,1);
+ shoot(0,0);assert.equal(e.lastHit.part,'crossbar');assert.equal(e.health,0);assert.equal(e.state,'destroyed');assert.equal(r.events.at(-1).critical,true);assert.equal(r.kills,1);
  Object.assign(e,{health:3,state:'wander',partHits:{},canSee:true,memory:{x:e.x,s:e.s,vx:0,vs:0,seenAt:0}});
  shoot(-14,-12);assert.equal(e.health,2.5);assert.equal(e.stompDisabled,undefined);
  e.attack={phase:'drop',altitude:80,impact:true,velocity:10};shoot(-14,-12);
@@ -409,4 +411,69 @@ test('one crown hit kills; repeated leg hits disable stomping and abort a drop',
  Object.assign(r,{x:e.x,s:e.s});e.attack.impact=true;resolveCrush(r,e);assert.equal(r.crushed,false);
  e.attack=null;beginCrush(e,0);assert.equal(e.attack,null);
  assert.equal(createRun().recognizers[0].stompDisabled,undefined);
+});
+
+
+test('turbo changes acceleration and speed limits without applying throttle or an impulse',()=>{
+ const fresh=speed=>Object.assign(createRun(),{x:-5000,s:-5000,yaw:0,speed,recognizers:[],enemyTanks:[]});
+ const stopped=fresh(0);boostTank(stopped);tick(stopped,{},2);
+ assert.equal(stopped.speed,0);assert.equal(stopped.x,-5000);assert.equal(stopped.s,-5000);
+ for(const direction of [-1,1]){
+  const normal=fresh(0),boosted=fresh(0);boostTank(boosted);
+  step(normal,{throttle:direction},1/60);step(boosted,{throttle:direction},1/60);
+  assert.ok(Math.abs(boosted.speed/normal.speed-2.5)<1e-10);
+  const moving=fresh(direction*5);boostTank(moving);assert.equal(moving.speed,direction*5);
+  step(moving,{},1/60);assert.ok(Math.abs(moving.speed)<5);
+  tick(moving,{},5);assert.equal(Math.abs(moving.speed),0);
+  tick(moving,{},1);assert.equal(Math.abs(moving.speed),0);
+  const braking=fresh(direction*5),ordinary=fresh(direction*5);boostTank(braking);
+  step(braking,{throttle:-direction},1/60);step(ordinary,{throttle:-direction},1/60);
+  assert.equal(braking.speed,ordinary.speed);
+ }
+});
+
+test('Recognizer yaw accelerates, carries through reversal and brakes without snapping',async()=>{
+ const {advanceYaw,FLIGHT}=await import('../src/simulation/flight.js');
+ const e={yaw:0,yawVelocity:0},dt=1/60;
+ advanceYaw(e,dt,Math.PI/2);assert.ok(e.yawVelocity>0&&e.yawVelocity<=FLIGHT.turnAcceleration*dt);
+ for(let i=0;i<60;i++)advanceYaw(e,dt,Math.PI/2);
+ const velocity=e.yawVelocity,yaw=e.yaw;advanceYaw(e,dt,-Math.PI/2);
+ assert.ok(e.yaw>yaw);assert.ok(e.yawVelocity>0&&e.yawVelocity<velocity);
+ let last=e.yawVelocity;
+ for(let i=0;i<180;i++){advanceYaw(e,dt);assert.ok(Math.abs(e.yawVelocity-last)<=FLIGHT.turnAcceleration*dt+1e-10);last=e.yawVelocity;}
+ assert.equal(e.yawVelocity,0);
+ for(let i=0;i<600;i++)advanceYaw(e,dt,-Math.PI/2);
+ assert.ok(Math.abs(angleDelta(e.yaw,-Math.PI/2))<.001);assert.ok(Math.abs(e.yawVelocity)<.001);
+});
+
+test('Recognizer lift retains momentum during reversal and settles without a velocity reset',async()=>{
+ const {advanceLift,FLIGHT}=await import('../src/simulation/flight.js');
+ const e={y:60,vy:8},dt=1/60;
+ advanceLift(e,dt,40);assert.ok(e.y>60);assert.ok(e.vy>0&&e.vy<8);
+ let last=e.vy;
+ for(let i=0;i<600;i++){advanceLift(e,dt,80);assert.ok(Math.abs(e.vy-last)<=FLIGHT.liftAcceleration*dt+1e-10);last=e.vy;}
+ assert.ok(Math.abs(e.y-80)<.01);assert.ok(Math.abs(e.vy)<.01);
+});
+
+test('spotlight, folding and aborted drops preserve angular and vertical velocity',async()=>{
+ const {navigate}=await import('../src/simulation/recognizers.js');
+ const {advanceCrush,CRUSH}=await import('../src/simulation/crush.js');
+ const {applyPartDamage}=await import('../src/simulation/part-damage.js');
+ const {FLIGHT}=await import('../src/simulation/flight.js');
+ const e={...createRecognizers()[0],x:-5000,s:-5000,y:80,yaw:0,yawVelocity:.5,vy:6,vx:8,vs:4,spotlight:{phase:'acquire'}};
+ navigate(e,0,1/60,[e]);assert.ok(e.y>80&&e.yaw>0&&e.vy>0&&e.yawVelocity>0);
+ e.spotlight=null;e.attack={phase:'fold',started:0,altitude:80};const before=e.vy;
+ advanceCrush(e,.1,1/60);assert.ok(Math.abs(e.vy-before)<=FLIGHT.liftAcceleration/60+1e-10);
+ e.attack.phase='drop';e.vy=-30;e.partHits={'left-leg':2};
+ applyPartDamage(e,'left-leg');assert.equal(e.vy,-30);assert.equal(e.attack.phase,'rise');
+ advanceCrush(e,.2,1/60);assert.ok(e.vy<0&&e.vy>-30);
+ for(let i=0;i<1200&&e.attack;i++){advanceCrush(e,.2+i/60,1/60);assert.ok(e.y>=CRUSH.soleHeight);}
+ assert.equal(e.attack,null);
+});
+
+test('Recognizer turn and lift controllers remain close across bounded timesteps',async()=>{
+ const {advanceYaw,advanceLift}=await import('../src/simulation/flight.js');
+ const advance=dt=>{const e={yaw:0,yawVelocity:0,y:60,vy:5};for(let i=0;i<3/dt;i++){advanceYaw(e,dt,1.5);advanceLift(e,dt,90);}return e;};
+ const a=advance(1/60),b=advance(1/120);
+ assert.ok(Math.abs(a.yaw-b.yaw)<.02);assert.ok(Math.abs(a.y-b.y)<.2);
 });

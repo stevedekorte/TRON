@@ -18,7 +18,7 @@ function path(from,to) {
 }
 const waypoints=[...path([12,0],[19,19]),...path([19,19],[1,1]).slice(1),...path([1,1],[23,23]).slice(1)];
 const duration=Number(process.argv.find(a=>a.startsWith('--duration='))?.split('=')[1]||180);
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[],snapshots=[];
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
 let steerKey=null,driveKey=null,index=0,distance=0;

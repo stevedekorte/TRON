@@ -5,7 +5,7 @@ import {beginSpotlight,updateSpotlight,spotlightOnTarget,SEARCHLIGHT} from './sp
 import {raiseAlert,searchlightStrength} from './alertness.js';
 import {formationTarget} from './formation.js';
 import {retireTarget} from './target-memory.js';
-import {advanceFlight,FLIGHT} from './flight.js';
+import {advanceFlight,advanceYaw,advanceLift,FLIGHT} from './flight.js';
 import {beginCrush,advanceCrush,resolveCrush,CRUSH,stompTarget,stompApproach} from './crush.js';
 import { OPEN_CELLS, MAZE_LENGTH, WALL_HEIGHT, freePosition, lineOfSight } from '../levels/maze.js';
 import { config, RECOGNIZER_SCALE, angleDelta, clamp } from '../game/config.js';
@@ -17,7 +17,7 @@ export function createRecognizers(rng=Math.random) {
     const cells=OPEN_CELLS.filter(p=>p.mazeId===(start.mazeId??0));
     const p=start.role==='patrol'?{...start,...cells[Math.floor(rng()*cells.length)]}:start;
     return {...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s),
-    alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.role==='escort'?CARRIER.speed:0,vs:0,vy:0,seed:Math.floor(rng()*4294967296),
+    alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.role==='escort'?CARRIER.speed:0,vs:0,vy:0,yawVelocity:0,seed:Math.floor(rng()*4294967296),
     targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0};});
 }
 export function canSeeClu(e,clu) {
@@ -91,7 +91,7 @@ function chooseSearch(e,now) {
 }
 // Navigation receives only the craft's own memory and the fixed map, never Clu.
 export function navigate(e,now,dt,others) {
-  if(e.spotlight?.phase==='acquire'){e.state='search';advanceFlight(e,dt,0,1);return;}
+  if(e.spotlight?.phase==='acquire'){e.state='search';advanceYaw(e,dt);advanceLift(e,dt,e.spotlight.hoverAltitude??=e.y);advanceFlight(e,dt,0,1);return;}
   if(advanceCrush(e,now,dt))return;
   beginCrush(e,now);if(e.attack){advanceCrush(e,now,dt);return;}
   if(e.memory&&now-e.memory.seenAt>SENSORS.memorySeconds){e.memory=null;e.goal=null;e.canSee=false;}
@@ -143,7 +143,7 @@ export function navigate(e,now,dt,others) {
     }
   }
   const desired=-Math.atan2(headingX,headingS);
-  if(!settling&&!yielding)e.yaw+=clamp(angleDelta(e.yaw,desired),-dt*FLIGHT.turnRate,dt*FLIGHT.turnRate);
+  advanceYaw(e,dt,settling||yielding?null:desired);
   const alignment=Math.max(0,Math.cos(angleDelta(e.yaw,desired)));
   const cruise=e.state==='escort'?CARRIER.speed+8:config.enemySpeed*(e.state==='pursue'?1.15:e.state==='wander'?.57:.7)*(formation?.speedScale??1);
   const targetSpeed=Math.min(cruise,distance*.6)*alignment*alignment;
@@ -155,7 +155,7 @@ export function navigate(e,now,dt,others) {
   advanceFlight(e,dt,hold?0:thrust,hold?1:braking);
   // Feet clear the slabs, so patrols can physically fly across the whole maze.
   const altitude=WALL_HEIGHT+22*RECOGNIZER_SCALE+7+(e.state==='wander'?7:0)+Math.sin(now*.4+e.id)*1.8;
-  e.vy=(altitude-e.y)*.65;e.y+=e.vy*dt;
+  advanceLift(e,dt,altitude);
 }
 export function updateRecognizers(run,dt) {
   const now=run.time,active=[...run.recognizers,...(run.enemyTanks||[])].filter(e=>e.state!=='destroyed');

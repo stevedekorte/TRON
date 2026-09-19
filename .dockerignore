@@ -1,0 +1,8 @@
+# The build receives dependencies and container setup only, not project assets,
+# local credentials, Git history, or host browser/cache directories.
+**
+!package.json
+!package-lock.json
+!containers/
+!containers/codex/
+!containers/codex/**
