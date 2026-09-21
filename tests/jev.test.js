@@ -32,6 +32,12 @@ test('timed-out provider produces explicit local fallback',async()=>{
  const result=await invoke(m);assert.equal(result.status,502);assert.match(result.body.error,/timed out/);
 });
 const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
+test('public client uses configured relay and retains server cooldown across resets',async()=>{
+ const before=config.aiMode;config.aiMode='jev';let calls=0,url;
+ const client=new JevClient(async target=>{calls++;url=target;return new Response(JSON.stringify({error:'Daily allowance reached'}),{status:429,headers:{'Retry-After':'3600'}});},'https://proxy.test/');
+ try{const {r}=scenario();client.update(r,true);await flush();assert.equal(url,'https://proxy.test/api/jev/decision');assert.match(client.status,/Local fallback/);client.reset();client.update(scenario().r,true);assert.equal(calls,1);}
+ finally{config.aiMode=before;client.dispose();}
+});
 function scenario(){const r=createRun(1982),e=r.recognizers[0];r.recognizers=[e];r.enemyTanks=[];Object.assign(e,{x:-5000,s:-5000,y:80,memory:{x:-5000,s:-4900,seenAt:0,vx:0,vs:0}});chooseManeuver(e,0,[e]);return {r,e};}
 test('client never calls API in classic/local mode and ignores answers after pause/reset',async()=>{
  const before=config.aiMode;let calls=0,resolve;

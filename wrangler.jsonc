@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tron-jev",
+  "main": "workers/jev/index.js",
+  "compatibility_date": "2026-09-21",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGINS": "https://dekorte.com,https://www.dekorte.com",
+    "TYPESAFE_MODEL": "jev-latest",
+    "JEV_ENABLED": "true",
+    "DAILY_REQUESTS": "1000",
+    "DAILY_INPUT_BYTES": "16000000",
+    "IP_DAILY_REQUESTS": "300",
+    "IP_MINUTE_REQUESTS": "60"
+  },
+  "durable_objects": {
+    "bindings": [{"name": "JEV_BUDGET", "class_name": "JevBudget"}]
+  },
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["JevBudget"]}],
+  "observability": {"enabled": false}
+}

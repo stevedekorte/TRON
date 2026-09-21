@@ -10,9 +10,11 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && npm run docs && node scripts/copy-docs.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/hearing.test.js tests/tactical.test.js tests/jev.test.js tests/teleporters.test.js tests/reinforcements.test.js tests/debris-inheritance.test.js tests/debris-damage.test.js tests/debris-physics.test.js tests/simulation.test.js tests/blueprint.test.js tests/ground-tanks.test.js tests/gunner.test.js tests/alertness.test.js tests/cannon-reserve.test.js tests/maze-patrol.test.js tests/maze-sites.test.js tests/carrier-search.test.js tests/mouse-raycast.test.js tests/music-selection.test.js",
+    "test": "node --test tests/worker.test.js tests/hearing.test.js tests/tactical.test.js tests/jev.test.js tests/teleporters.test.js tests/reinforcements.test.js tests/debris-inheritance.test.js tests/debris-damage.test.js tests/debris-physics.test.js tests/simulation.test.js tests/blueprint.test.js tests/ground-tanks.test.js tests/gunner.test.js tests/alertness.test.js tests/cannon-reserve.test.js tests/maze-patrol.test.js tests/maze-sites.test.js tests/carrier-search.test.js tests/mouse-raycast.test.js tests/music-selection.test.js",
     "test:browser": "node tests/browser.mjs",
-    "docs": "node scripts/trace-blueprint.mjs && node scripts/build-sound-library.mjs && node docs/colvmn/static-gen.js docs"
+    "docs": "node scripts/trace-blueprint.mjs && node scripts/build-sound-library.mjs && node docs/colvmn/static-gen.js docs",
+    "worker:check": "wrangler deploy --dry-run",
+    "worker:deploy": "wrangler deploy"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.20.0",
@@ -20,6 +22,7 @@
     "vite": "^8.3.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0"
+    "@playwright/test": "^1.63.0",
+    "wrangler": "^4.136.1"
   }
 }

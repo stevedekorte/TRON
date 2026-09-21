@@ -9,3 +9,7 @@ test-results/
 .env.*.local
 
 credentials/
+
+.wrangler/
+.dev.vars
+.dev.vars.*

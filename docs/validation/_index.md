@@ -3,6 +3,10 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Public Cloudflare Jev relay — September 21
+
+On macOS with Node 22.22 and headless Chrome, `npm test` passed 180 tests, including the new SQLite budget and public-client checks. `npm run worker:check` bundled successfully. A local `wrangler dev` instance with a dummy key and zero daily budget returned 429/Retry-After through the actual SQLite Durable Object without contacting Jev. The deployed Worker returned configured=true and a valid live choice. `node tests/public-relay.mjs --local` loaded the production build at the website origin, completed a browser CORS request and received m2 with confidence 0.72, with no asset/JavaScript errors. The initial run also produced a pacing 429; public clients now wait at least 1,200 ms between request starts against the Worker’s 750 ms minimum. The same opt-in smoke test without `--local` checks the live website and makes paid provider calls. Built files were scanned for the actual key with no matches. Quotas bound request/input volume, not exact dollar spend; long public load testing and cost tuning remain outstanding.
+
 ## Blueprint alternative — September 12
 
 The optional `?maze=blueprint` layout hand-traces 20 roof islands from Maze Blue Print.png. A top-down reference preset and source/trace SVG overlay make the geometry reviewable. The existing authored maze remains the default.
