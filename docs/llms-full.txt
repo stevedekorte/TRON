@@ -29,6 +29,10 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 
 ## Current direction — open-ended simulation
 
+### In-game service warnings — September 21
+
+- [x] Add a compact top-right warning area below the health/turbo meters, available in production as well as development. Show JEV OFF for deliberately selected Classic/local modes, JEV LIMIT for rate/budget failures, and JEV UNAVAILABLE for service/network failures. Explain the reason and continuing local AI. Keep warnings through pause, resets and retries until a successful response; normal idle/low-confidence decisions are not service failures. Allow other named warning/error notices to share this area, and announce changes politely to assistive technology.
+
 ### Public Jev hosting — September 21
 
 - [x] Keep the game/assets on GitHub Pages and add a Cloudflare Worker for the fixed Jev decision contract, with a server-side secret and public build-time API URL. Preserve the local Vite relay.
@@ -1238,6 +1242,8 @@ CORS allows only the two website origins, but public clients are anonymous and O
 
 ## Inspection, source files, and checks
 
+The production HUD shows a small top-right warning when Jev is deliberately off, unavailable, or rate limited. Service notices persist during pause/reset/retry and clear on a successful reply, even if its choice is too uncertain to apply. Normal idle or low-confidence decisions do not produce a service warning. Local enemies continue running. The keyed warning area can also display other explicitly reported warnings/errors.
+
 Shift+T shows AI mode, status and the latest decision details. The development state exposes up to 12 recent responses with unit ID, request snapshot, response, acceptance flag and measured wall-clock latency. This is in-memory diagnostic history, not a persistent replay log. Changing AI mode via Apply restarts the run.
 
 | Source | Responsibility |
@@ -1863,6 +1869,10 @@ Source: /validation/
 title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
+
+## HUD service warnings — September 21
+
+`node --test tests/jev.test.js` passed all seven checks, including warning persistence through pause/reset and clearing after a successful but low-confidence answer. `node tests/system-warnings.mjs` passed in headless Chrome on macOS against local Vite: mocked outage shown in the HUD, retained while paused, Classic mode labeled JEV OFF, and successful service recovery hidden. No paid requests or JavaScript errors. Capture: `test-results/system-warning.png`.
 
 ## Public Cloudflare Jev relay — September 21
 

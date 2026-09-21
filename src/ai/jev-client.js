@@ -10,7 +10,7 @@ function withinJevRange(e,now){
  return !!m&&!e.targetGone&&now-m.seenAt<=TACTICAL.jevMemoryMaxAgeSeconds&&Math.hypot(e.x-m.x,e.s-m.s)<=MAZE_LENGTH*TACTICAL.jevRangeMazeLengths;
 }
 export class JevClient{
- constructor(fetchImpl=fetch,apiBase=import.meta.env?.VITE_JEV_API_BASE||''){this.apiBase=apiBase.replace(/\/$/,'');this.retryUntilMs=0;this.nextRequestMs=0;this.fetch=(...args)=>fetchImpl(...args);this.epoch=0;this.status='Off';this.history=[];this.next=0;}
+ constructor(fetchImpl=fetch,apiBase=import.meta.env?.VITE_JEV_API_BASE||''){this.apiBase=apiBase.replace(/\/$/,'');this.warning=null;this.retryUntilMs=0;this.nextRequestMs=0;this.fetch=(...args)=>fetchImpl(...args);this.epoch=0;this.status='Off';this.history=[];this.next=0;}
  reset(){this.epoch++;this.pending?.abort();this.pending=null;this.run=null;this.next=0;this.history=[];this.status='Off';}
  update(run,playing){
   if(this.run!==run){this.reset();this.run=run;}
@@ -26,13 +26,14 @@ export class JevClient{
   if(this.apiBase)this.nextRequestMs=Date.now()+PUBLIC_REQUEST_INTERVAL_MS;
   const timeout=setTimeout(()=>controller.abort(),TACTICAL.requestTimeoutMs);
   this.fetch(this.apiBase+'/api/jev/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(snapshot),signal:controller.signal})
-   .then(async response=>{const value=await response.json();if(!response.ok){const error=new Error(value.error||'Jev unavailable');error.retryAfter=Number(response.headers?.get('Retry-After')||value.retryAfter)||0;throw error;}return value;})
+   .then(async response=>{const value=await response.json();if(!response.ok){const error=new Error(value.error||'Jev unavailable');error.httpStatus=response.status;error.retryAfter=Number(response.headers?.get('Retry-After')||value.retryAfter)||0;throw error;}return value;})
    .then(answer=>{
     if(epoch!==this.epoch||this.run!==run||config.aiMode!=='jev')return;
+    this.warning=null;
     const accepted=withinJevRange(e,run.time)&&applyTacticalChoice(e,answer,revision,at,run.time);
     this.status=accepted?'Jev active':'Local fallback (stale or uncertain answer)';
     this.history.push({unit:e.id,time:at,latencyMs:Math.round(performance.now()-sentAt),accepted,request:snapshot,response:answer});this.history=this.history.slice(-12);
-   }).catch(error=>{if(epoch!==this.epoch)return;this.status='Local fallback: '+(error.name==='AbortError'?'request timed out':error.message);this.next=run.time+10;this.retryUntilMs=Math.max(this.retryUntilMs,Date.now()+Math.min(86400,Math.max(0,error.retryAfter||0))*1000);})
+   }).catch(error=>{if(epoch!==this.epoch)return;const reason=error.name==='AbortError'?'Request timed out':error.message;this.warning={level:'warning',label:error.httpStatus===429?'JEV LIMIT':'JEV UNAVAILABLE',detail:reason+'. Local AI remains active.'};this.status='Local fallback: '+reason;this.next=run.time+10;this.retryUntilMs=Math.max(this.retryUntilMs,Date.now()+Math.min(86400,Math.max(0,error.retryAfter||0))*1000);})
    .finally(()=>{clearTimeout(timeout);if(this.pending===controller)this.pending=null;});
  }
  dispose(){this.reset();}

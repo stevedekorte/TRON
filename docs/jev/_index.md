@@ -305,6 +305,8 @@ CORS allows only the two website origins, but public clients are anonymous and O
 
 ## Inspection, source files, and checks
 
+The production HUD shows a small top-right warning when Jev is deliberately off, unavailable, or rate limited. Service notices persist during pause/reset/retry and clear on a successful reply, even if its choice is too uncertain to apply. Normal idle or low-confidence decisions do not produce a service warning. Local enemies continue running. The keyed warning area can also display other explicitly reported warnings/errors.
+
 Shift+T shows AI mode, status and the latest decision details. The development state exposes up to 12 recent responses with unit ID, request snapshot, response, acceptance flag and measured wall-clock latency. This is in-memory diagnostic history, not a persistent replay log. Changing AI mode via Apply restarts the run.
 
 | Source | Responsibility |
