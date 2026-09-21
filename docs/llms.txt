@@ -6,6 +6,10 @@
 
 - [Assets](/assets/): Model, sound, and dependency inventory
 
+## Jev enemy control
+
+- [Jev enemy control](/jev/): Current architecture, input/output contract, and limits
+
 ## Models
 
 - [Models](/models/): Imported vehicle sources and runtime adapters

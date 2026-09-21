@@ -1,3 +1,5 @@
+import {hearingGoal} from './hearing.js';
+import {tacticalEnabled,chooseManeuver} from './tactical.js';
 import {patrolChoices} from './patrol-decisions.js';
 import {enemyShot} from './enemy-fire.js';
 import {trackMobility} from './part-damage.js';
@@ -95,7 +97,7 @@ export function reactToGroundHit(e,projectile,now){
  e.nextRoute=0;
 }
 export function updateGroundTanks(run,dt,moveTank,cannonPose){
- const active=run.enemyTanks.filter(e=>e.state!=='destroyed');
+ const active=run.enemyTanks.filter(e=>!e.teleport&&e.state!=='destroyed');
  for(const e of active){
   if(e.turretHeading==null)e.turretHeading=e.yaw+e.turretYaw;
   e.cooldown=Math.max(0,e.cooldown-dt);e.recoil=Math.max(0,e.recoil-dt*4);e.hit=Math.max(0,e.hit-dt*4);
@@ -108,8 +110,12 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
    if(formation&&freePosition(formation.x,formation.s,config.tankRadius+1)&&clear(e,formation))goal=formation;
    e.leader=formation?.leader??e.id;
   }else{e.state=e.role==='patrol'?'patrol':'escort';e.leader=null;}
+  const heard=!e.memory&&hearingGoal(e,run.time);if(heard){goal=heard;e.state='investigate';}
   const reacting=!e.canSee&&run.time<(e.threatUntil||0);
   if(reacting){goal=e.threatGoal;e.state='investigate';}
+  const tactical=tacticalEnabled()?chooseManeuver(e,run.time,[...run.recognizers,...active]):null;
+  if(tactical)goal=tactical.goal;
+  const withdrawing=tactical&&['retreat','regroup'].includes(tactical.kind);
   e.goal=goal;
   if(run.time>=e.nextRoute){
    const route=groundRoute(e,goal);
@@ -127,7 +133,7 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
    e.yaw+=clamp(angleDelta(e.yaw,desired),-ESCORT.turnRate*mobility.turn*dt,ESCORT.turnRate*mobility.turn*dt);
    targetSpeed=Math.min(config.maxSpeed,Math.hypot(dx,ds)*.8)*Math.max(0,Math.cos(angleDelta(e.yaw,desired)))**4;
    if(!clear(e,goal)&&Math.abs(angleDelta(e.yaw,desired))>.2)targetSpeed=0;
-   if(e.canSee&&Math.hypot(e.x-e.memory.x,e.s-e.memory.s)<100)targetSpeed=0;
+   if(!withdrawing&&e.canSee&&Math.hypot(e.x-e.memory.x,e.s-e.memory.s)<100)targetSpeed=0;
    if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<12&&(-Math.sin(e.yaw)*(o.x-e.x)+Math.cos(e.yaw)*(o.s-e.s))>0))targetSpeed=0;
   }
   targetSpeed*=mobility.speed;
@@ -136,7 +142,7 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   // Steering must obey the same swept margin as pathfinding, including while turning.
   if(clear(e,{x:x+moveX,s:s+moveS}))moveTank(e,moveX,moveS);
   else {e.speed=0;e.nextRoute=Math.min(e.nextRoute,run.time+.25);}
-  if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<config.tankRadius*2)||!run.crushed&&Math.hypot(run.x-e.x,run.s-e.s)<config.tankRadius*2){e.x=x;e.s=s;e.speed=0;}
+  if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<config.tankRadius*2)||!run.crushed&&!run.teleport&&Math.hypot(run.x-e.x,run.s-e.s)<config.tankRadius*2){e.x=x;e.s=s;e.speed=0;}
   e.vx=(e.x-x)/dt;e.vs=(e.s-s)/dt;
   if(Math.hypot(e.vx,e.vs)<e.speed*.1)e.speed=0;
   if(e.role==='patrol'&&!e.memory){
@@ -149,13 +155,13 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   const desired=reacting?e.threatYaw:aim?-Math.atan2(aim.x-muzzle.x,aim.s-muzzle.s):e.turretHeading;
   e.turretHeading=desired;stabilizeTurret(e,desired,ESCORT.turretRate,dt);
   const pose=cannonPose(e);
-  if(!aim||!e.canSee||run.time-e.memory.seenAt>.3||e.cooldown>0||Math.hypot(aim.x-e.x,aim.s-e.s)>ESCORT.fireRange)continue;
+  if(withdrawing||!aim||!e.canSee||run.time-e.memory.seenAt>.3||e.cooldown>0||Math.hypot(aim.x-e.x,aim.s-e.s)>ESCORT.fireRange)continue;
   const bearing=-Math.atan2(aim.x-pose.x,aim.s-pose.s);
   if(Math.abs(angleDelta(pose.yaw,bearing))>.035||!clearShot(e,pose,aim,active))continue;
   const shot=enemyShot(e,pose,aim);
   if(!clearShot(e,pose,shot.target,active)){e.cooldown=.25;continue;}
   run.projectiles.push({...pose,vx:shot.vx,vs:shot.vs,vy:shot.vy,life:2.5,faction:'enemy',owner:e.id});
-  e.cooldown=shot.cooldown;e.recoil=1;run.events.push({type:'enemyShot',x:pose.x,y:pose.y,s:pose.s});
+  e.cooldown=shot.cooldown;e.recoil=1;run.events.push({type:'enemyShot',emitterId:e.id,x:pose.x,y:pose.y,s:pose.s});
  }
 }
 function clearShot(e,pose,aim,others){

@@ -1,3 +1,4 @@
+import {GROUND_GRID_METERS,GROUND_GRID_LINE_HALF_WIDTH,GROUND_GRID_AA_SCALE} from '../levels/ground-grid.js';
 import * as THREE from 'three';
 import { MAZE_INSTANCES, WALLS, WALL_HEIGHT, HALF, FLOOR_HALF, BASIS, wallAt } from '../levels/maze.js';
 
@@ -107,9 +108,9 @@ export function createWorld(scene) {
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       diffuseColor.rgb=mix(diffuseColor.rgb,floorHighTint,smoothstep(12.,40.,cameraPosition.y));
       float wash=.92+.08*sin(vGround.x*.004+vGround.z*.003);
-      vec2 cell=abs(fract(vGround.xz/24.+.5)-.5)*24.;
-      vec2 aa=fwidth(vGround.xz)*1.2;
-      float grid=1.-min(smoothstep(.10,.10+aa.x,cell.x),smoothstep(.10,.10+aa.y,cell.y));
+      vec2 cell=abs(fract(vGround.xz/${GROUND_GRID_METERS.toFixed(1)}+.5)-.5)*${GROUND_GRID_METERS.toFixed(1)};
+      vec2 aa=fwidth(vGround.xz)*${GROUND_GRID_AA_SCALE.toFixed(1)};
+      float grid=1.-min(smoothstep(${GROUND_GRID_LINE_HALF_WIDTH.toFixed(2)},${GROUND_GRID_LINE_HALF_WIDTH.toFixed(2)}+aa.x,cell.x),smoothstep(${GROUND_GRID_LINE_HALF_WIDTH.toFixed(2)},${GROUND_GRID_LINE_HALF_WIDTH.toFixed(2)}+aa.y,cell.y));
       float outside=1.;
       ${MAZE_INSTANCES.map(m=>`{
         vec2 delta=vec2(vGround.x,-vGround.z)-vec2(${m.x.toFixed(6)},${m.s.toFixed(6)});

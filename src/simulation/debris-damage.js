@@ -9,9 +9,9 @@ const tankBoxes=[{center:[0,1,0],half:[3.3,1,4.5]},{center:[0,2.2,0],half:[2.3,.
 export function debrisVehicleTargets(run){
  const target=(key,e,boxes,y=e.y||0)=>({key,x:e.x,y,z:-e.s,yaw:e.yaw||0,velocity:{x:e.vx||0,y:e.vy||0,z:-(e.vs||0)},boxes});
  const targets=[];
- if(!run.crushed)targets.push(target('clu',{...run,vx:-Math.sin(run.yaw)*run.speed,vs:Math.cos(run.yaw)*run.speed},tankBoxes,0));
+ if(!run.crushed&&!run.teleport)targets.push(target('clu',{...run,vx:-Math.sin(run.yaw)*run.speed,vs:Math.cos(run.yaw)*run.speed},tankBoxes,0));
  for(const e of [...run.recognizers,...run.enemyTanks]){
-  if(e.state==='destroyed'||e.health<=0)continue;
+  if(e.teleport||e.state==='destroyed'||e.state==='materializing'||e.health<=0)continue;
   if(e.kind==='ground'){targets.push(target(`enemy:${e.id}`,e,tankBoxes,0));continue;}
   const scale=RECOGNIZER_SCALE,box=(center,half)=>({center:center.map(v=>v*scale),half:half.map(v=>v*scale)});
   const legX=13.5-(e.fold||0)*13;
@@ -30,7 +30,7 @@ export function applyDebrisImpacts(run,impacts){
    run.events.push({type:'hit',subject:'carrier',x,y,s:-z,damage,source:'debris'});continue;
   }
   const clu=impact.target==='clu',e=clu?run:[...run.recognizers,...run.enemyTanks].find(e=>`enemy:${e.id}`===impact.target);
-  if(!e||clu&&run.crushed||e.state==='destroyed'||e.health<=0)continue;
+  if(!e||clu&&(run.crushed||run.teleport)||e.teleport||e.state==='destroyed'||e.state==='materializing'||e.health<=0)continue;
   e.health=Math.max(0,e.health-damage);if(clu)run.impact=1;else e.hit=1;
   const subject=clu?'tank':e.kind==='ground'?'enemyTank':'recognizer';
   run.events.push({type:'hit',subject,id:e.id,x,y,s:-z,damage,fatal:e.health===0,source:'debris'});

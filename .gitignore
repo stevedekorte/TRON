@@ -3,3 +3,9 @@ dist/
 test-results/
 .playwright-browsers/
 .DS_Store
+
+.env
+.env.local
+.env.*.local
+
+credentials/

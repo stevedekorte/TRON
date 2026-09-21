@@ -1,3 +1,4 @@
+import {aircraftSweepClear} from './maneuver-geometry.js';
 import {retireTarget} from './target-memory.js';
 import {advanceFlight,advanceYaw,advanceLift,FLIGHT} from './flight.js';
 import {freePosition, WALL_HEIGHT} from '../levels/maze.js';
@@ -54,7 +55,7 @@ export function advanceCrush(e,now,dt) {
   }
   return true;
 }
-export function beginCrush(e,now) {
+export function beginCrush(e,now,oriented=false) {
   if(e.stompDisabled||e.targetGone||e.attack||!e.canSee||!e.memory||now-e.memory.seenAt>.25||now<(e.nextAttack||0))return;
   const target=stompTarget(e,now),duration=stompDuration(e.y);
   const drift=(1-Math.exp(-(FLIGHT.drag+FLIGHT.brakeDrag)*duration))/(FLIGHT.drag+FLIGHT.brakeDrag);
@@ -64,7 +65,7 @@ export function beginCrush(e,now) {
   // target, the landing prediction already includes our braking drift.
   if(Math.hypot(e.memory.vx||0,e.memory.vs||0)<2&&Math.hypot(e.vx||0,e.vs||0)>1.2)return;
   // Conservative whole-craft clearance prevents a drop through a roof or wall.
-  if(!freePosition(e.x,e.s,CRUSH.clearance+1))return;
+  if(oriented?!aircraftSweepClear(e,{...e,x:landing.x,s:landing.s,y:CRUSH.soleHeight}):!freePosition(e.x,e.s,CRUSH.clearance+1))return;
   e.attack={phase:'fold',started:now,altitude:e.y,velocity:0,impact:false,target:{x:target.x,s:target.s},impactAt:now+duration};e.fold=0;e.state='fold';
 }
 export function resolveCrush(run,e) {
@@ -72,7 +73,7 @@ export function resolveCrush(run,e) {
   if(e.stompDisabled){e.attack.impact=false;return;}
   e.attack.impact=false;
   run.events.push({type:'hit',x:e.x,y:.2,s:e.s});
-  if(!run.crushed&&Math.hypot(run.x-e.x,run.s-e.s)<CRUSH.hitRadius) {
+  if(!run.crushed&&!run.teleport&&Math.hypot(run.x-e.x,run.s-e.s)<CRUSH.hitRadius) {
     const speed=run.speed;run.crushed=true;run.speed=0;run.impact=1;retireTarget(e);
     run.events.push({type:'destroyed',subject:'tank',x:run.x,y:0,s:run.s,yaw:run.yaw,turretYaw:run.turretYaw,vx:-Math.sin(run.yaw)*speed,vs:Math.cos(run.yaw)*speed,hit:{x:run.x,y:2,z:-run.s}});
   }

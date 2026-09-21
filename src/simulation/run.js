@@ -1,3 +1,6 @@
+import {updateHearing} from './hearing.js';
+import {TELEPORT_PADS,updateTeleporters} from './teleporters.js';
+import {updateReinforcements} from './reinforcements.js';
 import {createCarrierSearch,updateCarrierSearch} from './carrier-search.js';
 import {createDataBeams,beginDataTransfer,collectData} from './data-beams.js';
 import {applyPartDamage} from './part-damage.js';
@@ -14,12 +17,14 @@ import { createRecognizers, updateRecognizers, perceive } from './recognizers.js
 
 export function createRun(seed=randomSeed()) {
   const random=seededRandom(seed);
-  return {...SPAWN,seed,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+  const run={...SPAWN,seed,teleportPads:TELEPORT_PADS.map(p=>({...p})),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
     carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random),dataCollected:0,enemyTanks:createGroundTanks(random),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
+  if(config.aiMode!=='classic'&&config.aiSmallEncounter){run.recognizers=run.recognizers.slice(0,2);run.enemyTanks=run.enemyTanks.filter(e=>e.role==='patrol'&&e.mazeId===0).slice(0,1);if(run.enemyTanks[0])Object.assign(run.enemyTanks[0],{id:100,index:0});}
+  return run;
 }
 
 export function boostTank(run){
-  if(run.crushed||run.transferActive||run.turboCooldown>0)return false;
+  if(run.crushed||run.teleport||run.transferActive||run.turboCooldown>0)return false;
   run.turboRemaining=TURBO.duration;run.turboCooldown=TURBO.rechargeSeconds;
   return true;
 }
@@ -28,7 +33,7 @@ export function boostTank(run){
 export function startPursuit(run){
   const forward={x:-Math.sin(run.yaw),s:Math.cos(run.yaw)};
   for(const [i,side,behind] of [[0,-340,320],[1,-170,310],[2,0,300],[3,170,310],[4,340,320]]){
-    const e=run.recognizers[i];
+    const e=run.recognizers[i];if(!e)continue;
     Object.assign(e,{x:run.x-forward.x*behind+Math.cos(run.yaw)*side,
       s:run.s-forward.s*behind+Math.sin(run.yaw)*side,yaw:run.yaw,
       vx:forward.x*config.enemySpeed,vs:forward.s*config.enemySpeed,nextSense:0});
@@ -43,7 +48,7 @@ export function moveTank(run,dx,ds) {
   let hit=false;
   for(let i=0;i<steps;i++) {
     const oldX=run.x,oldS=run.s;run.x+=dx/steps;run.s+=ds/steps;
-    if(run.enemyTanks?.some(e=>e.state!=='destroyed'&&Math.hypot(e.x-run.x,e.s-run.s)<radius*2)){run.x=oldX;run.s=oldS;hit=true;continue;}
+    if(run.enemyTanks?.some(e=>!e.teleport&&e.state!=='destroyed'&&Math.hypot(e.x-run.x,e.s-run.s)<radius*2)){run.x=oldX;run.s=oldS;hit=true;continue;}
     for(let pass=0;pass<3;pass++)for(const w of nearbyWalls(run.x,run.s,radius)) {
       const point=closestWallPoint(w,run.x,run.s),inside=insideWall(w,run.x,run.s);
       if(!inside&&point.distance>=radius)continue;
@@ -72,7 +77,7 @@ export function cannonTarget(run) {
   if(run.gunner)return {manual:true,lock:false,id:null,distance:160,x:pose.x-Math.sin(pose.yaw)*Math.cos(run.aimPitch)*160,s:pose.s+Math.cos(pose.yaw)*Math.cos(run.aimPitch)*160,y:pose.y+Math.sin(run.aimPitch)*160};
   let best=null;
   for(const e of [...run.recognizers,...run.enemyTanks]) {
-    if(e.state==='destroyed')continue;
+    if(e.teleport||e.state==='destroyed'||e.state==='materializing')continue;
     const targetY=e.kind==='ground'?2.3:e.y+1;
     const dx=e.x-pose.x,ds=e.s-pose.s,distance=Math.hypot(dx,ds);
     const error=Math.abs(angleDelta(pose.yaw,-Math.atan2(dx,ds)));
@@ -96,7 +101,7 @@ export function updateWeapons(run,input,dt) {
   const pressed=input.firePressed??(input.fire&&!run.fireWasDown);
   run.fireWasDown=!!input.fire;
   const spendExtra=run.cooldown>0&&pressed&&run.extraShots>0;
-  if(!run.crushed&&input.fire&&(run.cooldown<=0||spendExtra)) {
+  if(!run.crushed&&!run.teleport&&input.fire&&(run.cooldown<=0||spendExtra)) {
     if(spendExtra)run.extraShots--;
     run.shotRest=0;
     const target=cannonTarget(run),pose=cannonPose(run),{x,s,y,yaw}=pose;
@@ -115,7 +120,7 @@ export function updateWeapons(run,input,dt) {
     const length=Math.hypot(dx,ds,dy);
     // A muzzle poking into a wall cannot fire through it.
     if(lineOfSight({x:run.x,s:run.s,y},pose))run.projectiles.push({x,s,y,vx:dx/length*CLU_WEAPON.speed,vs:ds/length*CLU_WEAPON.speed,vy:dy/length*CLU_WEAPON.speed,life:CLU_WEAPON.lifetime});
-    run.cooldown=CLU_WEAPON.recharge;run.recoil=1;run.shots++;run.events.push({type:'shot'});
+    run.cooldown=CLU_WEAPON.recharge;run.recoil=1;run.shots++;run.events.push({type:'shot',x,y,s});
   }
   for(const p of run.projectiles) {
     const steps=Math.max(1,Math.ceil(Math.hypot(p.vx,p.vs,p.vy)*dt/.8));
@@ -124,15 +129,15 @@ export function updateWeapons(run,input,dt) {
       if(wallIntersection(p,next)!==null||next.y<0){p.life=0;break;}
       Object.assign(p,next);
       if(p.faction==='enemy'){
-        if(run.enemyTanks.some(e=>e.id!==p.owner&&e.state!=='destroyed'&&Math.hypot(p.x-e.x,p.s-e.s)<3.5&&p.y<3.5)){p.life=0;continue;}
-        if(!run.crushed&&Math.hypot(p.x-run.x,p.s-run.s)<3.5&&p.y<3.5){
+        if(run.enemyTanks.some(e=>e.id!==p.owner&&!e.teleport&&e.state!=='destroyed'&&Math.hypot(p.x-e.x,p.s-e.s)<3.5&&p.y<3.5)){p.life=0;continue;}
+        if(!run.crushed&&!run.teleport&&Math.hypot(p.x-run.x,p.s-run.s)<3.5&&p.y<3.5){
           p.life=0;run.health=Math.max(0,run.health-1);run.impact=1;run.events.push({type:'hit',subject:'tank',fatal:run.health<=0,x:p.x,y:p.y,s:p.s});
           if(run.health<=0){const speed=run.speed;run.crushed=true;run.speed=0;run.events.push({type:'destroyed',subject:'tank',x:run.x,y:0,s:run.s,yaw:run.yaw,turretYaw:run.turretYaw,vx:-Math.sin(run.yaw)*speed,vs:Math.cos(run.yaw)*speed,hit:{x:p.x,y:p.y,z:-p.s}});}
         }
         continue;
       }
       for(const e of [...run.recognizers,...run.enemyTanks]) {
-        if(e.state==='destroyed')continue;
+        if(e.teleport||e.state==='destroyed'||e.state==='materializing')continue;
         const hitPart=enemyHitPart(e,p);
         if(hitPart) {
           recordEnemyHit(e,p,hitPart,run.time);
@@ -150,7 +155,9 @@ export function updateWeapons(run,input,dt) {
 
 export function step(run,input,dt) {
   if(run.crushed){run.gunnerLeveling=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.cruiseThrottle=false;input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
-  beginDataTransfer(run);
+  updateTeleporters(run);updateHearing(run);
+  if(run.teleport){input={};run.speed=0;run.steer=0;run.cruiseThrottle=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.turretCentering=false;run.turretLocked=false;}
+  if(!run.teleport)beginDataTransfer(run);
   if(run.transferActive&&!run.crushed){input={...input,throttle:0,steer:0};run.speed=0;run.steer=0;run.turboRemaining=0;run.cruiseThrottle=false;}
   run.turboCooldown=run.turboCooldown<=dt+1e-8?0:run.turboCooldown-dt;
   run.time+=dt;run.impact=Math.max(0,run.impact-dt*2.5);
@@ -223,7 +230,7 @@ export function step(run,input,dt) {
     // This also allows immediate reverse instead of braking stored wall pressure.
     if(travel<Math.abs(run.speed)*dt*.05)run.speed=0;
   }
-  updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run,dt);
+  updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateReinforcements(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run,dt);updateTeleporters(run);updateHearing(run);
   if(run.crushed)run.health=0;
   else if(run.health>0&&run.health<CLU_HEALTH.max)run.health=Math.min(CLU_HEALTH.max,run.health+CLU_HEALTH.max*dt/CLU_HEALTH.rechargeSeconds);
 }

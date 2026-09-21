@@ -1,3 +1,6 @@
+import {createTeleporters} from './teleporters.js';
+import {teleportEffectAge} from '../simulation/teleporters.js';
+import {Materialization} from './materialization.js';
 import {Horizon} from './horizon.js';
 import {CloudLayer} from './cloud-layer.js';
 import {CarrierShadows} from './carrier-shadows.js';
@@ -34,6 +37,7 @@ const TURBO_GLOW=Object.freeze({base:1.8,pulse:1.2,hz:2,response:10});
 const IMPACT_SHAKE=Object.freeze({pitch:.012,yaw:.009,roll:.006});
 
 const GUNNER_ZOOM_SECONDS=.35;
+const AIRCRAFT_SHADOWS=Object.freeze({maxCasters:12});
 export class View {
   moveMouseAim(dx,dy,run){
     if(!this.mouseLook)this.mouseLook={yaw:run.yaw+run.turretYaw,pitch:run.aimPitch};
@@ -55,15 +59,16 @@ export class View {
     this.scene.add(new THREE.HemisphereLight(0xaac8ff, 0x251829, 2));
     const key = new THREE.DirectionalLight(0xc4d9ff, 2.4); key.position.set(-35, 70, -35); this.scene.add(key);
     const fill = new THREE.DirectionalLight(0x7b72ab, 0.9); fill.position.set(50, 15, -40); this.scene.add(fill);
-    this.world = createWorld(this.scene);this.dataBeams=new DataBeams(this.scene);
+    this.world = createWorld(this.scene);this.dataBeams=new DataBeams(this.scene);this.teleportPads=createTeleporters(this.world.floor.material);
     this.carrier=carrier;if(carrier)this.scene.add(carrier);
     this.clouds=cloud?new CloudLayer(cloud,this.scene):null;
     this.tank = tank; this.scene.add(this.tank.root);
     this.muzzleFlash=createMuzzleFlash();this.scene.add(this.muzzleFlash);
     this.enemyTanks=Array.from({length:GROUND_TANK_COUNT},()=>{const craft=cloneEnemyTank(tank);this.scene.add(craft.root);return craft;});
-    this.recognizers = RECOGNIZER_STARTS.map(() => { const craft=createRecognizer(recognizer); craft.root.scale.setScalar(RECOGNIZER_SCALE); this.scene.add(craft.root); return craft; });
-    recognizer.traverse(o => o.material?.dispose());
-    this.recognizerShadows=new RecognizerShadows(this.recognizers,[this.world.slabs,this.world.seams,this.world.floor]);
+    this.recognizers = RECOGNIZER_STARTS.map((_,i) => { const craft=createRecognizer(recognizer);craft.id=i;craft.rez=new Materialization(craft.root); craft.root.scale.setScalar(RECOGNIZER_SCALE); this.scene.add(craft.root); return craft; });
+    for(const craft of [this.tank,...this.enemyTanks])craft.rez=new Materialization(craft.root);
+    this.recognizerTemplate=recognizer;
+    this.recognizerShadows=new RecognizerShadows(this.recognizers,[this.world.slabs,this.world.seams,this.world.floor],5,{maxCrafts:AIRCRAFT_SHADOWS.maxCasters});
     this.mazeShadows=new MazeShadows(this.world,[this.tank.root,...this.enemyTanks.map(c=>c.root),...this.recognizers.map(c=>c.root),...(this.carrier?[this.carrier]:[])]);
     this.carrierShadows=carrier?new CarrierShadows(carrier,this.world,[this.tank.root,...this.enemyTanks.map(c=>c.root),...this.recognizers.map(c=>c.root)]):null;
     this.breakups=new Breakups(this.scene);
@@ -120,7 +125,7 @@ export class View {
     if (!['hit', 'destroyed'].includes(event.type)) return;
     if(event.type==='destroyed'&&event.subject==='tank'){this.tank.turret.rotation.y=event.turretYaw;this.breakups.spawn(this.tank,event);return;}
     if(event.type==='destroyed'&&event.subject==='enemyTank'){const craft=this.enemyTanks[event.id-100];if(craft){craft.turret.rotation.y=event.turretYaw;this.breakups.spawn(craft,event);}return;}
-    if(event.type==='destroyed'&&this.recognizers[event.id]){this.breakups.spawn(this.recognizers[event.id],event);return;}
+    if(event.type==='destroyed'){const craft=this.recognizers.find(c=>c.id===event.id);if(craft){this.breakups.spawn(craft,event);return;}}
     const count = event.type === 'destroyed' ? 80 : 12;
     for (let i = 0; i < count && this.particles.length < 140; i++) {
       this.particles.push({ x: event.x, y: event.y, z: -event.s,
@@ -131,6 +136,8 @@ export class View {
 
   render(run, previous, alpha, dt, mode) {
     this.elapsed += dt;
+    if(this.teleportRevision!==run.teleportRevision){this.freshCamera=true;this.teleportRevision=run.teleportRevision;previous={...run};}
+    this.teleportPads.visible=mode!=='ready';
     const aerialTarget=this.aerial?1:0;
     if(this.reducedMotion)this.aerialBlend=aerialTarget;
     else this.aerialBlend+=THREE.MathUtils.clamp(aerialTarget-this.aerialBlend,-dt/AERIAL_CAMERA.transitionSeconds,dt/AERIAL_CAMERA.transitionSeconds);
@@ -147,6 +154,7 @@ export class View {
 
     this.clouds?.update(run.time,run.seed,!preview);
     if(this.carrier){this.carrier.visible=!preview;updateCarrier(this.carrier,run.time,run.carrierHealth,Math.max(0,1-(run.time-run.carrierHitAt)/1.2));}
+    if(run.teleport)previous={...run};
     const x = previous.x + (run.x - previous.x) * alpha;
     const s = previous.s + (run.s - previous.s) * alpha;
     const yaw = previous.yaw + angleDelta(previous.yaw, run.yaw) * alpha;
@@ -157,6 +165,7 @@ export class View {
     this.tank.barrel.rotation.x = 0;
     this.tank.barrel.position.z = run.recoil * 0.35;
     this.tank.flash.visible = false;
+    this.tank.rez.update(teleportEffectAge(run,run.time));
     const turboTarget=run.turboRemaining>0&&!run.crushed?1:0;
     this.turboGlow=THREE.MathUtils.damp(this.turboGlow||0,turboTarget,TURBO_GLOW.response,mode==='paused'?0:dt);
     const pulse=this.reducedMotion ? .5 : (.5+.5*Math.sin(run.time*Math.PI*2*TURBO_GLOW.hz));
@@ -166,13 +175,17 @@ export class View {
 
     this.world.floor.position.set(x,-.06,-s);
     this.world.floor.scale.setScalar(aerialMix>0?Math.max(1,this.aerialZoom):1);
+    this.ensureRecognizers(run.recognizers.length);
+    this.recognizers.forEach((c,i)=>{if(!run.recognizers[i]){c.root.visible=false;c.rez?.update();}});
     run.recognizers.forEach((e,i)=>{
-      const craft=this.recognizers[i];craft.root.visible=e.state!=='destroyed';
+      const craft=this.recognizers[i];craft.id=e.id;craft.root.visible=e.state!=='destroyed';
       craft.root.position.set(e.x,e.y,-e.s);craft.root.rotation.set(0,e.yaw,0);
       craft.pose(e.fold||0);
+      craft.rez?.update(e.teleport?teleportEffectAge(e,run.time):e.state==='materializing'?run.time-e.rezStarted:null);
       craft.material.emissive.setRGB(e.hit*.65,e.hit*.16,e.hit*.08);
     });
-    run.enemyTanks.forEach((e,i)=>{const craft=this.enemyTanks[i];craft.root.visible=!preview&&e.state!=='destroyed';craft.root.position.set(e.x,0,-e.s);craft.root.rotation.set(0,e.yaw,0);craft.turret.rotation.y=e.turretYaw;craft.barrel.position.z=e.recoil*.35;craft.flash.visible=e.recoil>.75;});
+    this.enemyTanks.forEach((c,i)=>{if(!run.enemyTanks[i]){c.root.visible=false;c.rez.update();}});
+    run.enemyTanks.forEach((e,i)=>{const craft=this.enemyTanks[i];craft.root.visible=!preview&&e.state!=='destroyed';craft.root.position.set(e.x,0,-e.s);craft.root.rotation.set(0,e.yaw,0);craft.turret.rotation.y=e.turretYaw;craft.barrel.position.z=e.recoil*.35;craft.flash.visible=!e.teleport&&e.recoil>.75;craft.rez.update(teleportEffectAge(e,run.time));});
     this.shots.count = Math.min(80, run.projectiles.length);
     run.projectiles.slice(0, 80).forEach((p, i) => {
       this.matrixObject.position.set(p.x, p.y, -p.s); this.matrixObject.rotation.set(0, 0, 0);
@@ -363,11 +376,29 @@ export class View {
     }
     for(const burst of this.breakups.bursts)burst.optical?.mesh.quaternion.copy(this.camera.quaternion);
     this.horizon.update(this.camera,!preview&&!this.referenceCamera);
-    this.renderer.info.reset();this.mazeShadows.update(this.renderer);this.recognizerShadows.update(this.renderer,this.breakups.bursts);this.carrierShadows?.update(this.renderer); this.composer.render(dt);
+    this.renderer.info.reset();this.mazeShadows.update(this.renderer);this.recognizerShadows.update(this.renderer,this.breakups.bursts,this.camera.position);this.carrierShadows?.update(this.renderer); this.composer.render(dt);
+  }
+
+  ensureRecognizers(count){
+    if(count<=this.recognizers.length)return;
+    // Undo shader wrappers in reverse order before rebuilding receiver lists.
+    this.carrierShadows?.dispose();this.mazeShadows.dispose();this.recognizerShadows.dispose();
+    const extra=count-this.recognizers.length;
+    while(this.recognizers.length<count){
+      const craft=createRecognizer(this.recognizerTemplate);craft.rez=new Materialization(craft.root);
+      craft.root.scale.setScalar(RECOGNIZER_SCALE);this.scene.add(craft.root);this.recognizers.push(craft);
+    }
+    this.searchlights.beams.push(...new Searchlights(this.scene,extra).beams);
+    this.recognizerShadows=new RecognizerShadows(this.recognizers,[this.world.slabs,this.world.seams,this.world.floor],5,{maxCrafts:AIRCRAFT_SHADOWS.maxCasters});
+    const vehicles=[this.tank.root,...this.enemyTanks.map(c=>c.root),...this.recognizers.map(c=>c.root)];
+    this.mazeShadows=new MazeShadows(this.world,[...vehicles,...(this.carrier?[this.carrier]:[])]);
+    this.carrierShadows=this.carrier?new CarrierShadows(this.carrier,this.world,vehicles):null;
   }
 
   dispose() {
-    this.recognizerShadows.dispose();this.mazeShadows.dispose();this.carrierShadows?.dispose();
+    this.carrierShadows?.dispose();this.mazeShadows.dispose();this.recognizerShadows.dispose();
+    for(const craft of [this.tank,...this.enemyTanks,...this.recognizers])craft.rez?.dispose();
+    this.recognizerTemplate.traverse(o=>o.material?.dispose());
     this.breakups.dispose();this.clouds?.dispose();
     const geometries = new Set(), materials = new Set();
     this.scene.traverse(o => { if (o.geometry) geometries.add(o.geometry); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => materials.add(m)); });

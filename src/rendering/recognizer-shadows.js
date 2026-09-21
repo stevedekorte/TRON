@@ -1,9 +1,11 @@
 import * as T from 'three';
 // One compact light-space tile per aircraft: stable detail across distant mazes.
 export class RecognizerShadows {
- constructor(crafts,receivers,maxBursts=5,{size=512,prefix='recShadow',darkness=.78,excludeSelf=false}={}){
+ constructor(crafts,receivers,maxBursts=5,{size=512,prefix='recShadow',darkness=.78,excludeSelf=false,maxCrafts=Infinity,filterEdges=false,depthBias=.0002}={}){
+  const soft=filterEdges==='soft',tapWidth=soft?6:2;
   const named=code=>code.replaceAll('recShadow',prefix);
-  this.size=size;this.columns=Math.min(4,crafts.length+maxBursts);this.rows=Math.ceil((crafts.length+maxBursts)/this.columns);
+  const count=Math.min(crafts.length,maxCrafts);
+  this.size=size;this.columns=Math.min(4,count+maxBursts);this.rows=Math.ceil((count+maxBursts)/this.columns);
   this.target=new T.WebGLRenderTarget(this.size*this.columns,this.size*this.rows,{minFilter:T.NearestFilter,magFilter:T.NearestFilter});
   this.depth=new T.MeshDepthMaterial({depthPacking:excludeSelf?T.RGDepthPacking:T.RGBADepthPacking,side:T.DoubleSide,blending:T.NoBlending});
   // Maze maps store 16-bit depth plus a 16-bit slab identity. Zero denotes
@@ -18,17 +20,19 @@ export class RecognizerShadows {
   this.entries=crafts.map(craft=>{
    const scene=new T.Scene(),pairs=[];
    const sources=craft.casters||[];if(!craft.casters)craft.root.traverse(o=>{if(o.isMesh&&o.material.name==='Base'&&!o.userData.breakupExclude)sources.push(o);});
-   for(const source of sources){const mesh=new T.Mesh(source.geometry,this.depth);mesh.matrixAutoUpdate=false;mesh.frustumCulled=false;scene.add(mesh);pairs.push({source,mesh});}
+   for(const source of sources){const mesh=new T.Mesh(source.geometry,source.userData.rezDepthMaterial||this.depth);mesh.matrixAutoUpdate=false;mesh.frustumCulled=false;scene.add(mesh);pairs.push({source,mesh});}
    const radius=craft.radius||25;const camera=new T.OrthographicCamera(-radius,radius,radius,-radius,.1,craft.distance?craft.distance*2.5:900);
    return {craft,scene,pairs,camera,matrix:new T.Matrix4()};
   });
+  this.available=this.entries.map(e=>({...e}));this.entries=this.entries.slice(0,count);
   this.craftCount=this.entries.length;
   for(let i=0;i<maxBursts;i++)this.entries.push({scene:new T.Scene(),pairs:[],camera:new T.OrthographicCamera(-25,25,25,-25,.1,2000),matrix:new T.Matrix4().makeTranslation(1e9,1e9,1e9),burst:null});
   this.strengths=new Float32Array(this.entries.length).fill(1);
-  const patched=new Set();
+  this.patches=[];const patched=new Set();
   for(const receiver of receivers){
    const material=receiver.material;if(patched.has(material))continue;patched.add(material);
    const previous=material.onBeforeCompile,previousKey=material.customProgramCacheKey();
+   this.patches.push({material,compile:previous,key:material.customProgramCacheKey});
    material.onBeforeCompile=shader=>{
     previous?.(shader);
     if(excludeSelf){
@@ -50,30 +54,44 @@ export class RecognizerShadows {
      float det=px.x*py.y-px.y*py.x;
      vec2 slope=abs(det)>1e-20?vec2(px.z*py.y-py.z*px.y,py.z*px.x-px.z*py.x)/det:vec2(0.);
      if(all(greaterThan(p,vec3(0.)))&&all(lessThan(p,vec3(1.)))){
-      vec2 local=(clamp(floor(p.xy*${this.size}.),vec2(0.),vec2(${this.size-1}.))+.5)/${this.size}.;
-      vec2 uv=(local+vec2(${i%this.columns}.,${Math.floor(i/this.columns)}.))/vec2(${this.columns}.,${this.rows}.);
-      float receiverDepth=p.z+dot(slope,local-p.xy);
-      float depthBias=.0002+.75*(abs(slope.x)+abs(slope.y))/${this.size}.;
-      vec4 sampleDepth=texture2D(recShadowAtlas,uv);
-      float cover=step(${excludeSelf?'unpackRGToDepth(sampleDepth.rg)':'unpackRGBAToDepth(sampleDepth)'}+depthBias,receiverDepth);
-      ${excludeSelf?`float casterId=floor(sampleDepth.b*255.+.5)+256.*floor(sampleDepth.a*255.+.5);
-      if(receiverWallId>.5&&abs(casterId-receiverWallId)<.5)cover=0.;`:''}
+      float cover=0.;
+      ${filterEdges?`vec2 texel=p.xy*${this.size}.-.5;vec2 base=floor(texel);vec2 fraction=fract(texel);`:''}
+      ${soft?Array.from({length:6},(_,k)=>`vec2 w${k}=exp(-.5*pow((vec2(${k-2}.)-fraction)/1.1,vec2(2.)));`).join('\n')+'\nvec2 weightSum=w0+w1+w2+w3+w4+w5;':''}
+      ${Array.from({length:soft?36:filterEdges?4:1},(_,tap)=>`{
+       vec2 local=(clamp(${filterEdges?`base+vec2(${tap%tapWidth-(soft?2:0)}.,${Math.floor(tap/tapWidth)-(soft?2:0)}.)`:`floor(p.xy*${this.size}.)`},vec2(0.),vec2(${this.size-1}.))+.5)/${this.size}.;
+       vec2 uv=(local+vec2(${i%this.columns}.,${Math.floor(i/this.columns)}.))/vec2(${this.columns}.,${this.rows}.);
+       float receiverDepth=p.z+dot(slope,local-p.xy);
+       float depthBias=${depthBias.toFixed(7)}+.75*(abs(slope.x)+abs(slope.y))/${this.size}.;
+       vec4 sampleDepth=texture2D(recShadowAtlas,uv);
+       float sampleCover=step(${excludeSelf?'unpackRGToDepth(sampleDepth.rg)':'unpackRGBAToDepth(sampleDepth)'}+depthBias,receiverDepth);
+       ${excludeSelf?`float casterId=floor(sampleDepth.b*255.+.5)+256.*floor(sampleDepth.a*255.+.5);
+       if(receiverWallId>.5&&abs(casterId-receiverWallId)<.5)sampleCover=0.;`:''}
+       cover+=sampleCover${soft?`*w${tap%6}.x*w${Math.floor(tap/6)}.y/(weightSum.x*weightSum.y)`:filterEdges?`*${tap%2?'fraction.x':'(1.-fraction.x)'}*${tap>1?'fraction.y':'(1.-fraction.y)'}`:''};
+      }`).join('\n')}
       recShadowShade=min(recShadowShade,1.-${darkness.toFixed(3)}*cover*recShadowStrength[${i}]);
      }
     }`).join('\n');
     const emissive=shader.fragmentShader.includes('totalEmissiveRadiance')?' + totalEmissiveRadiance*(1.-recShadowShade)':'';
     shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>',named(`float recShadowShade=1.;\n${tests}\ngl_FragColor.rgb=gl_FragColor.rgb*recShadowShade${emissive};\n#include <tonemapping_fragment>`));
    };
-   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v3:${excludeSelf}:${this.entries.length}`;
-   material.needsUpdate=true;
+   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v5:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}`;
+   // A rebuilt atlas can reuse the same shader source/key. Evict the old
+   // material program bindings so Three invokes onBeforeCompile again with
+   // this atlas and its current matrices instead of a disposed texture.
+   material.dispose();material.needsUpdate=true;
   }
  }
- update(renderer,bursts=[]){
+ update(renderer,bursts=[],focus=null){
+  if(focus&&this.available.length>this.craftCount){
+   const selected=this.available.filter(e=>e.craft.root.visible).sort((a,b)=>a.craft.root.position.distanceToSquared(focus)-b.craft.root.position.distanceToSquared(focus)).slice(0,this.craftCount);
+   for(let i=0;i<this.craftCount;i++){const entry=selected[i]||this.available.find(e=>!e.craft.root.visible)||this.available[i];Object.assign(this.entries[i],{craft:entry.craft,scene:entry.scene,pairs:entry.pairs,camera:entry.camera});}
+  }
   const oldTarget=renderer.getRenderTarget(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),color=renderer.getClearColor(new T.Color()),alpha=renderer.getClearAlpha(),autoClear=renderer.autoClear;
   renderer.setRenderTarget(this.target);renderer.setScissorTest(false);renderer.setClearColor(0xffffff,1);renderer.clear();renderer.autoClear=false;renderer.setScissorTest(true);
   this.entries.forEach((e,i)=>{
    const center=new T.Vector3();
    if(e.craft){
+    this.strengths[i]=e.craft.rez?.opacity??1;
     e.craft.root.updateWorldMatrix(true,true);e.craft.root.getWorldPosition(center);
     if(!e.craft.root.visible){e.matrix.makeTranslation(1e9,1e9,1e9);return;}
     const distance=e.craft.distance||400;e.camera.position.copy(center).add(new T.Vector3(-distance*.5,distance,-distance*.5));
@@ -83,7 +101,7 @@ export class RecognizerShadows {
      e.scene.clear();e.pairs=[];e.burst=burst;
      for(const piece of burst?.pieces||[])piece.group.traverse(source=>{
       if(!source.isMesh||source.userData.breakupExclude)return;
-      const mesh=new T.Mesh(source.geometry,this.depth);mesh.matrixAutoUpdate=false;mesh.frustumCulled=false;e.scene.add(mesh);e.pairs.push({source,mesh});
+      const mesh=new T.Mesh(source.geometry,source.userData.rezDepthMaterial||this.depth);mesh.matrixAutoUpdate=false;mesh.frustumCulled=false;e.scene.add(mesh);e.pairs.push({source,mesh});
      });
     }
     if(!burst){e.matrix.makeTranslation(1e9,1e9,1e9);return;}
@@ -105,5 +123,5 @@ export class RecognizerShadows {
   });
   renderer.setRenderTarget(oldTarget);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.setClearColor(color,alpha);renderer.autoClear=autoClear;
  }
- dispose(){this.target.dispose();this.depth.dispose();}
+ dispose(){for(const p of this.patches){p.material.onBeforeCompile=p.compile;p.material.customProgramCacheKey=p.key;p.material.needsUpdate=true;}this.target.dispose();this.depth.dispose();}
 }

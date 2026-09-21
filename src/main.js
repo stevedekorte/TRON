@@ -1,3 +1,6 @@
+import {HEARING,HEARING_DEFAULTS} from './game/hearing.js';
+import {JevClient} from './ai/jev-client.js';
+import {AI_MODES} from './game/tactical.js';
 import creditsText from '../docs/credits.txt?raw';
 import {debrisVehicleTargets,applyDebrisImpacts} from './simulation/debris-damage.js';
 import {debrisPhysicsReady} from './rendering/debris-physics.js';
@@ -15,6 +18,12 @@ import { config, defaults, TURBO, CLU_HEALTH, GUNNER } from './game/config.js';
 
 const $ = id => document.getElementById(id);
 const sound = new Sound();
+const jev=new JevClient();
+// Browser defaults supersede the earlier experimental preference once.
+const AI_PREFERENCE_VERSION=3;
+config.aiMode='jev';config.aiSmallEncounter=false;
+try{const saved=JSON.parse(localStorage.getItem('tron-enemy-ai')||'null');if(saved&&[2,AI_PREFERENCE_VERSION].includes(saved.version)&&AI_MODES.includes(saved.mode)){config.aiMode=saved.mode;config.aiSmallEncounter=saved.version===AI_PREFERENCE_VERSION&&saved.small===true;}}catch{}
+
 const terminal = new Terminal($('terminal-text'), $('terminal-actions'));
 const tribute = new TerminalTribute($('end-tribute'),creditsText);
 let view, run = createRun(), previous = { ...run }, mode = 'loading';
@@ -64,7 +73,7 @@ async function start() {
   try{audioReady=sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));}catch(e){console.warn('Audio unavailable; continuing silently.',e.message);}
   if (disposed || mode === 'error') return;
   tribute.reset();outroFade=0;controlsFirstKey=null;idleReminderArmed=false;deathElapsed=0;$('death-fade').hidden=true;
-  run = createRun();run.speed=config.maxSpeed;startPursuit(run);startingThrottle=true; previous = { ...run }; view.reset(); sound.reset();view.aerial=false;view.aerialZoom=1;openingTime=0;view.opening=opening?0:null;
+  jev.reset();run = createRun(config.aiMode==='classic'?undefined:1982);run.speed=config.maxSpeed;startPursuit(run);startingThrottle=true; previous = { ...run }; view.reset(); sound.reset();view.aerial=false;view.aerialZoom=1;openingTime=0;view.opening=opening?0:null;
   document.body.style.setProperty('--opening-fade','1');
   setMode(opening?'entering':'running');sound.startMusic();
   await audioReady;
@@ -191,6 +200,8 @@ function updateHud() {
   document.body.classList.toggle('impact',run.impact>.6&&!view.reducedMotion);
   if(showSurvey)drawMap();
   if(import.meta.env.DEV&&!$('tuning').hidden) {
+    $('ai-status').textContent=jev.status;
+    $('ai-decision').textContent=JSON.stringify(jev.history.at(-1)||{mode:config.aiMode,units:[...run.recognizers,...run.enemyTanks].map(e=>({id:e.id,maneuver:e.tactical?.plan?.kind,source:e.tactical?.source,blocked:e.tactical?.blocked}))},null,2);
     $('perception').textContent=run.recognizers.map(e=>`R${e.id+1} ${e.state} | ${e.canSee?'visual':e.memory?`last seen ${(run.time-e.memory.seenAt).toFixed(1)}s ago via R${e.memory.source+1}`:'no sighting'}`).join('\n');
   }
 }
@@ -261,6 +272,7 @@ function frame(ms) {
       for (const event of run.events.splice(0)) { view.event(event); sound.effect(event.type,event); }
     }
   }
+  jev.update(run,mode==='running'||mode==='entering');
   if(view&&mode!=='error')updateDeathTerminal(dt);
   if (view && mode !== 'error') {
     view.render(run, previous, mode === 'running' ? accumulator / fixedStep : 1, dt, mode);
@@ -288,19 +300,26 @@ try {
 }
 
 if (import.meta.env.DEV) {
-  const ranges = { acceleration:[4,20,.5], braking:[8,35,1], maxSpeed:[15,40,1], steering:[.4,2.5,.05], cameraDistance:[10,30,1], cameraHeight:[4,14,.5], cameraLag:[2,15,.5], fov:[45,85,1], enemySpeed:[10,45,1], bloom:[0,1,.05], fog:[.001,.009,.0002], renderScale:[.5,1,.1] };
+  $('enemy-ai').value=config.aiMode;$('ai-small-encounter').checked=config.aiSmallEncounter;
+  listen($('apply-ai'),'click',()=>{
+    config.aiMode=$('enemy-ai').value;config.aiSmallEncounter=$('ai-small-encounter').checked;
+    try{localStorage.setItem('tron-enemy-ai',JSON.stringify({version:AI_PREFERENCE_VERSION,mode:config.aiMode,small:config.aiSmallEncounter}));}catch{}
+    jev.reset();start();
+  });
+  const ranges = { aiConfidence:[0,1,.05], acceleration:[4,20,.5], braking:[8,35,1], maxSpeed:[15,40,1], steering:[.4,2.5,.05], cameraDistance:[10,30,1], cameraHeight:[4,14,.5], cameraLag:[2,15,.5], fov:[45,85,1], enemySpeed:[10,45,1], bloom:[0,1,.05], fog:[.001,.009,.0002], renderScale:[.5,1,.1] };
   const flightRanges={turnRate:[.1,1.2,.02,'rad/s'],turnAcceleration:[.1,2,.05,'rad/s²'],liftAcceleration:[2,30,1,'m/s²'],liftSpeed:[5,35,1,'m/s']};
-  const tuningFields=[...Object.entries(ranges).map(([key,range])=>({key,range,target:config,title:key})),...Object.entries(flightRanges).map(([key,range])=>({key,range,target:FLIGHT,title:`Recognizer ${key} (${range[3]})`}))];
+  const hearingRanges={engineMovingRangeMeters:[40,200,5],cannonRangeMeters:[200,1200,25],explosionRangeMeters:[300,1600,25]};
+  const tuningFields=[...Object.entries(hearingRanges).map(([key,range])=>({key,range,target:HEARING,title:`Hearing ${key} (m)`})),...Object.entries(ranges).map(([key,range])=>({key,range,target:config,title:key})),...Object.entries(flightRanges).map(([key,range])=>({key,range,target:FLIGHT,title:`Recognizer ${key} (${range[3]})`}))];
   for (const {key,range:[min,max,stepSize],target,title} of tuningFields) {
     const label = document.createElement('label'); label.innerHTML = `<span>${title}</span><output>${target[key]}</output><input type="range" min="${min}" max="${max}" step="${stepSize}" value="${target[key]}">`;
     listen(label.querySelector('input'), 'input', e => { target[key] = Number(e.target.value); label.querySelector('output').value = target[key]; if(key === 'renderScale') view.resize(); });
     $('sliders').append(label);
   }
-  listen($('reset-tuning'), 'click', () => { Object.assign(config, defaults); Object.assign(FLIGHT,FLIGHT_DEFAULTS); view.resize(); [...$('sliders').children].forEach((label,i) => { const {target,key}=tuningFields[i],v=target[key];label.querySelector('input').value=v;label.querySelector('output').value=v; }); });
+  listen($('reset-tuning'), 'click', () => { Object.assign(config, defaults,{aiMode:config.aiMode,aiSmallEncounter:config.aiSmallEncounter}); Object.assign(FLIGHT,FLIGHT_DEFAULTS);Object.assign(HEARING,HEARING_DEFAULTS); view.resize(); [...$('sliders').children].forEach((label,i) => { const {target,key}=tuningFields[i],v=target[key];label.querySelector('input').value=v;label.querySelector('output').value=v; }); });
   listen($('export-tuning'), 'click', () => navigator.clipboard.writeText(JSON.stringify({...config,recognizerFlight:FLIGHT},null,2)));
   // Development-only observability/scenario placement; outcomes still run through step().
   window.__tron = {
-    get state() { return { ...run, recognizerFlight:{...FLIGHT}, mode, opening:view.opening, carrier:view.carrier?.position.toArray(),tankVisible:view.tank.root.visible,enemyTankVisuals:view.enemyTanks.map(c=>({visible:c.root.visible,turretYaw:c.turret.rotation.y,barrelPitch:c.barrel.rotation.x})),searchlights:view.searchlights.beams.map(b=>({visible:b.mesh.visible,length:b.length,strength:b.strength})), gunnerHit:view.gunnerHit,enemyOutlines:view.enemyOutline.enabled,camera:{rotation:view.camera.quaternion.toArray(),gunnerTransition:!!view.gunnerTransition,gunnerOpacity:view.gunnerOpacity,fov:view.camera.fov,x:view.camera.position.x,y:view.camera.position.y,z:view.camera.position.z}, maze:MAZE_KIND,carrierBeamVisuals:view.carrierLights.beams.map(b=>({visible:b.mesh.visible,length:b.length,strength:b.strength})),beamVisuals:view.dataBeams.beams.map(b=>({visible:b.visible,opacity:b.children[0].material.opacity,color:b.children[0].material.color.getHex(),curtain:b.userData.effects.curtain.visible,waveRadius:b.userData.effects.ring.scale.x})), recognizers: run.recognizers.map(e=>({...e,memory:e.memory?{...e.memory}:null})), renderer: { pixelRatio:view.renderer.getPixelRatio(),smaa:view.smaa.enabled,samples:view.composer.renderTarget1.samples,...view.renderer.info.memory, calls: view.renderer.info.render.calls }, weaponVisual: {turboTrimIntensity:view.tank.turboTrim?.[0]?.emissiveIntensity||0,muzzleFlashVisible:view.muzzleFlash.visible,muzzleFlashAge:view.muzzleFlash.material.uniforms.age.value,source:view.tank.source,turretYaw:view.tank.turret.rotation.y,barrelPitch:view.tank.barrel.rotation.x,recognizerScale:view.recognizers[0].root.scale.x}, breakups:view.breakups.bursts.map(b=>({age:b.age,subject:b.subject,hitPart:b.hitPart,pieces:b.pieces.map(p=>({part:p.part,fragmented:p.fragmented,x:p.group.position.x,y:p.group.position.y,z:p.group.position.z}))})),music:sound.music?{transition:sound.musicTransition?.category||null,category:sound.musicCategory,loop:sound.music.loop,track:sound.musicMode,src:sound.music.currentSrc,gain:sound.musicGain.gain.value,time:sound.music.currentTime,paused:sound.music.paused,ended:sound.music.ended,error:sound.musicError||null}:null,audioSamples:Object.keys(sound.samples),audioSampleErrors:[...sound.sampleErrors],audioNodes:sound.sources.size,terminalSamples:Object.keys(sound.keySamples),terminalClicks:sound.terminalClicks||0,audioState:sound.context?.state,audioOutput:sound.outputLevel(),audioContexts: sound.context ? 1 : 0, audioSources: sound.voices?.length || 0, aerial: view.aerial,aerialZoom:view.aerialZoom }; },
+    get state() { return { ...run,aiMode:config.aiMode,aiStatus:jev.status,aiHistory:jev.history, recognizerFlight:{...FLIGHT}, mode, opening:view.opening, carrier:view.carrier?.position.toArray(),tankVisible:view.tank.root.visible,enemyTankVisuals:view.enemyTanks.map(c=>({visible:c.root.visible,turretYaw:c.turret.rotation.y,barrelPitch:c.barrel.rotation.x})),searchlights:view.searchlights.beams.map(b=>({visible:b.mesh.visible,length:b.length,strength:b.strength})), gunnerHit:view.gunnerHit,enemyOutlines:view.enemyOutline.enabled,camera:{rotation:view.camera.quaternion.toArray(),gunnerTransition:!!view.gunnerTransition,gunnerOpacity:view.gunnerOpacity,fov:view.camera.fov,x:view.camera.position.x,y:view.camera.position.y,z:view.camera.position.z}, maze:MAZE_KIND,carrierBeamVisuals:view.carrierLights.beams.map(b=>({visible:b.mesh.visible,length:b.length,strength:b.strength})),beamVisuals:view.dataBeams.beams.map(b=>({visible:b.visible,opacity:b.children[0].material.opacity,color:b.children[0].material.color.getHex(),curtain:b.userData.effects.curtain.visible,waveRadius:b.userData.effects.ring.scale.x})), recognizers: run.recognizers.map(e=>({...e,memory:e.memory?{...e.memory}:null})), renderer: { pixelRatio:view.renderer.getPixelRatio(),smaa:view.smaa.enabled,samples:view.composer.renderTarget1.samples,...view.renderer.info.memory, calls: view.renderer.info.render.calls }, weaponVisual: {turboTrimIntensity:view.tank.turboTrim?.[0]?.emissiveIntensity||0,muzzleFlashVisible:view.muzzleFlash.visible,muzzleFlashAge:view.muzzleFlash.material.uniforms.age.value,source:view.tank.source,turretYaw:view.tank.turret.rotation.y,barrelPitch:view.tank.barrel.rotation.x,recognizerScale:view.recognizers[0].root.scale.x}, breakups:view.breakups.bursts.map(b=>({age:b.age,subject:b.subject,hitPart:b.hitPart,pieces:b.pieces.map(p=>({part:p.part,fragmented:p.fragmented,x:p.group.position.x,y:p.group.position.y,z:p.group.position.z}))})),music:sound.music?{transition:sound.musicTransition?.category||null,category:sound.musicCategory,loop:sound.music.loop,track:sound.musicMode,src:sound.music.currentSrc,gain:sound.musicGain.gain.value,time:sound.music.currentTime,paused:sound.music.paused,ended:sound.music.ended,error:sound.musicError||null}:null,audioSamples:Object.keys(sound.samples),audioSampleErrors:[...sound.sampleErrors],audioNodes:sound.sources.size,terminalSamples:Object.keys(sound.keySamples),terminalClicks:sound.terminalClicks||0,audioState:sound.context?.state,audioOutput:sound.outputLevel(),audioContexts: sound.context ? 1 : 0, audioSources: sound.voices?.length || 0, aerial: view.aerial,aerialZoom:view.aerialZoom }; },
     place(data) { if('yaw' in data||'turretYaw' in data)run.turretHeading=null;Object.assign(run, data); previous = { ...run }; view.reset(); },
     project({x,y,s}) {const p=view.camera.position.clone().set(x,y,-s).project(view.camera);return {x:p.x,y:p.y,z:p.z};},
     configure(values) { Object.assign(config, values); view.resize(); },
@@ -309,7 +328,7 @@ if (import.meta.env.DEV) {
   };
 }
 
-function dispose() { disposed = true; cancelAnimationFrame(frameId); cleanups.forEach(fn=>fn()); view?.dispose(); sound.dispose(); }
+function dispose() { disposed = true;jev.dispose(); cancelAnimationFrame(frameId); cleanups.forEach(fn=>fn()); view?.dispose(); sound.dispose(); }
 if (import.meta.hot) import.meta.hot.dispose(dispose);
 listen(window, 'pagehide', event => { if (!event.persisted) dispose(); else pause(); });
 

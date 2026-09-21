@@ -57,7 +57,7 @@ CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="
   </div>
 
   <footer id="footer"><span>A DIGITAL FRONTIER STUDY</span><a href="./docs/index.html" target="_blank" rel="noopener">PROJECT NOTES ↗</a><span>DESKTOP / KEYBOARD + MOUSE</span></footer>
-  <aside id="tuning" hidden><h3>Development tuning</h3><pre id="perception"></pre><div id="sliders"></div><button id="reset-tuning">Reset defaults</button><button id="export-tuning">Copy settings</button></aside>
+  <aside id="tuning" hidden><h3>Development tuning</h3><label>Enemy AI <select id="enemy-ai"><option value="classic">Classic</option><option value="local">Tactical — local</option><option value="jev">Tactical + Jev</option></select></label><label><input id="ai-small-encounter" type="checkbox"> Small tactical encounter (2 aircraft, 1 tank)</label><button id="apply-ai">Apply AI and restart</button><p id="ai-status">Classic</p><details><summary>Latest AI decision</summary><pre id="ai-decision"></pre></details><pre id="perception"></pre><div id="sliders"></div><button id="reset-tuning">Reset defaults</button><button id="export-tuning">Copy settings</button></aside>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

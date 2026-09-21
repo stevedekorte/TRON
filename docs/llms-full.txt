@@ -29,6 +29,63 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 
 ## Current direction — open-ended simulation
 
+### Carrier shadow edge correction — September 21
+
+- [x] Increase the moving carrier's shadow tile from 1024 to 4096 pixels over its 1500 m light-space span (about 0.37 m per texel). Use a compact 6×6 Gaussian-weighted depth-comparison filter at texel centers, retaining receiver-plane correction; never interpolate packed depth values. This supersedes the first four-tap refinement and softens the remaining fine edge serrations. Reduce the carrier-specific depth bias for its long depth range. Keep maze/Recognizer tile sizes unchanged and preserve the floor grid and emissive materials.
+- [x] Compare shadow edges against independent ray/box intersections for stationary and translated casters, check the actual carrier on walls/floor, and inspect before/after captures. This remains a finite-resolution filtered dynamic shadow, not exact vector geometry; the larger tile increases GPU memory/render cost. See validation for browser results.
+
+
+### Optional tactical movement and Jev — September 21
+
+See [Jev enemy control](jev/index.html) for the implemented architecture, input/output examples, scheduling, validation, and current limits.
+
+- [x] Start the browser in Tactical + Jev with the full enemy population (small encounter disabled), and retain Classic/local tactical modes in Shift+T tuning, with an explicit Apply/restart button and persisted preference. Optional comparison roster: two Recognizers and one ground tank. Tactical modes suppress pursuit reinforcements; Classic restores the original roster/controller. Tactical run seed is 1982; page-local maze layout remains stable for comparisons.
+- [x] Replace the tactical stomp's circular clearance rejection with conservative oriented aircraft bounds, triangle-level wall checks, and bounded swept tests for translation, rotation and descent. Generate staged climb/turn/travel/align approaches and orientation-aware low-corridor routes. Follow them with the existing inertial forward-thrust/lift/yaw dynamics. Recheck movement and separation corrections against geometry; a blocked maneuver replans rather than driving through walls.
+- [x] Give airborne and ground units choices for withdrawal, regrouping, pressure, cover/ambush and attacks. Wounded units prefer retreat; ground units cease firing while withdrawing. Preserve committed movement, but invalidate stale routes and react to injury. Coordinated choices see nearby allies' intentions within radio range; no hidden live Clu state enters planning or requests.
+- [x] Use Jev only for units with a fresh recorded Clu position within one maze length (horizontal distance); distant or unaware units use local tactics. Never gate using hidden live Clu coordinates. Send structured self state, dated target memory, nearby allies, local static wall geometry and candidate pose sequences to Jev. Include precomputed travel distance, visibility relative to the last known target and supporting-unit counts. Jev chooses only a supplied candidate ID; local collision/controller code remains authoritative. Inspect recent requests, probabilities and real elapsed latency in the tuning panel.
+- [x] Connect the ignored server-side credential file or environment key through a local Vite dev/preview endpoint. Bound request size/rate/hourly total and timeout; label fallback explicitly. Abort/discard stale answers on pause/reset/mode changes and reject invalid IDs or low-confidence choices. Protect credential files from Vite static serving and Git.
+- [x] Check provider browser access: CORS preflights from local origins are rejected, so direct browser calls are not viable in the tested setup. Keep the same-machine relay; initial real end-to-end calls measured 317 ms and 292 ms. This is a local optional service, not a change to the static production deployment.
+- [x] Replan on sight loss/reacquisition, newly received or expired contact, an observed velocity change of at least 8 m/s, or target displacement of at least 45 m. These events bypass the normal commitment gate with a 0.65-second event cooldown. Preserve momentum and committed attack phases; reject Jev answers based on superseded observations/revisions. Healthy units actively follow the bounded last-known path, then inspect nearby branches instead of favoring passive ambush. Search hypotheses never become sightings or authorize blind attacks. Ground route refresh follows a new tactical plan.
+- [ ] Human comparison of encounter quality, retreat behavior and longer Jev sessions. The planner is bounded and conservative, not a globally optimal flight/attack planner. A geometry-valid maneuver is not a guaranteed successful strike on a moving target; some narrow spaces remain inaccessible. Choosing better actions than the local policy remains an experimental question.
+
+September 21 hearing: aircraft and ground enemies receive bounded, expiring acoustic observations for engines, cannon fire, impacts and explosions. Use distance attenuation, wall muffling and deterministic bearing/range error; never copy a sound into confirmed sighting memory. Unknown sounds permit local investigation and nearby Jev requests with `target: null`; friendly sounds are context only. Hearing is independent of player audio volume and pauses with simulation. Range controls are available in development tuning. See [Jev enemy control](jev/index.html#hearing-input) for the report format and limits.
+
+September 21 connected-search follow-up: persist whether the last-known location has been checked, so moving into a branch cannot re-enable a return-to-origin maneuver. Build a bounded graph of tank-passable corridors from the predicted contact point (8 m steps, 160 m path budget, swept wall checks); use its reachable locations instead of nearby open cells across arbitrary walls. Retain completed checks for the search episode, advance both ground and air units on arrival, and share `search` progress plus each candidate's `searchPath` with Jev. Aircraft already above the roof search from above instead of descending at every checkpoint; feasible low search routes remain available to settled low aircraft. Regression checks cover an L-shaped route, disconnected pockets, continuous aircraft search and ground progression.
+
+September 21 opening-pursuit correction: above-roof aircraft proceed toward the travel waypoint while turning/climbing, rather than returning to the route origin after inertial drift. Healthy units receive a pursuit/support maneuver and no longer prefer regrouping simply because allies are spread out. Reserve attack spacing only for a nearby strike or active stomp; retain local swept collision checks and knowledge-limited target prediction. A moving-opening regression requires all five pursuers to close distance and exceed Clu’s normal speed.
+
+Design references: the [Tetris example](https://github.com/Yasserbhb/Agent-JEV-Tetris) measures reachable action outcomes and avoids conflicting directional hints; the [Doom example](https://github.com/lukaske/jev-doom-agent) uses structured observations, selected maneuvers and local motor control. This implementation is independently written; no external game code or assets were copied. API shape follows the [TypeSafe quick start](https://docs.typesafe.ai/introduction/quickstart).
+
+
+September 21 grid alignment: maze-site origins now snap to the 24 m world grid, with seeded rotations restricted to 0°, 90°, 180° or 270°. The initial maze stays at the origin and unrotated. Rendering, collision, patrol locations, data beams and teleport pads derive from the same site transforms. Preserve the authored diagonal wall ends and blueprint shapes within each site.
+
+### Exterior teleport pads — September 20
+
+- [x] Place four glowing red 2×2-grid-cell (48 m) square borders around every maze, clear of exterior walls. Each has a stable link to a pad at another maze; together the links reach all other sites. The latest revision snaps every border to the 24 m world grid and uses exactly two cells per side, superseding the earlier 64 m size. Snap away from the maze to preserve exterior clearance. There is no fill. Render borders directly in the floor shader to eliminate competing coplanar surfaces. Share the grid’s 0.10 m half-width and derivative antialiasing calculation; vehicles and walls naturally occlude the floor. This supersedes the separate plane and depth-bias attempt. Apply border color to the shader’s outgoing light (not the already-consumed diffuse input); browser captures confirm visible grid-width borders. Pads are authored in `src/levels/teleporters.js`.
+- [x] Trigger only when the complete horizontal vehicle footprint is contained in the square, including a tank's rotated turret. The activation column has no altitude limit. Clu, enemy tanks and Recognizers share the simulation path; the enormous carrier cannot fit inside these pads.
+- [x] Freeze propulsion and interactions during a 2.75-second reverse materialization effect, relocate, then play the normal 2.75-second materialization effect. Preserve heading and aircraft altitude; resume at rest. Snap Clu's camera to the destination rather than traversing the intervening world. Pause freezes effects and reset clears transit state.
+- [x] Reserve destinations to prevent simultaneous arrivals; defer a transfer if occupied, including a vehicle entering during dematerialization. Require the arriving vehicle to leave the pad completely before it can trigger another trip. Enemy perception, weapons, collision damage and audio exclude vehicles in transit without inventing a remote sighting.
+- [x] Verify whole-footprint entry, rotated turrets, altitude, departure/arrival phases, occupied destinations, reentry locks and reset in simulation checks. Drive Clu onto a pad in headless Chrome; verify both effects, pause, arrival, ground-tank/Recognizer transfers and reset, with rendered captures and no browser errors. See [Validation](validation/index.html).
+
+### Wireframe rezzing and pursuit reinforcements — September 20
+
+September 21 awareness correction: on completing reinforcement materialization or an enemy teleport arrival, synchronize with active airborne and ground allies within the existing 304.8 m three-dimensional radio radius. Copy the freshest recorded sighting and alert state, retain observation timestamps, and share confirmed target destruction. Exclude unconfirmed spotlight acquisitions. Fresh pursuit knowledge suppresses searching spotlights; arriving units still need their own visual observation to set `canSee`.
+
+- [x] Reveal a vehicle with one front-to-back wireframe sweep. The rectangle starts as a horizontal line and expands vertically for 0.6 seconds, then travels for 1.8 seconds from 6 m ahead of the nose to 6 m beyond the tail. After the wireframe sweep, fade the whole solid vehicle in over 0.35 seconds while the rectangle and temporary edge overlay fade out. Activate the vehicle immediately when that fade finishes (2.75 seconds total). This supersedes the earlier two-pass design at the user's request. Animation follows simulation time, including pause. The supplied Homeworld Hyperspace clip is a motion reference, not a shipped game asset.
+- [x] Use one shared continuous-pursuit clock for airborne Recognizers. Every twenty seconds in Classic mode, create exactly one reinforcement near one of the pursuers, regardless of pursuer count. Continue repeating while pursuit persists; reset the clock when no Recognizer is actively spotting/pursuing Clu or Clu is destroyed. Choose a clear nearby air position above the maze and copy only the summoning observer's recorded sighting.
+- [x] Hold the incoming vehicle stationary, silent and intangible during materialization. After completion it independently senses, navigates, reports and attacks. Give new aircraft IDs separate from ground tanks; extend visual, spotlight and audio pools and reuse them after reset.
+- [x] Hide shadows during the wireframe sweep, then fade ground shadows and dynamic atlas attenuation with the solid vehicle. Rebuild shadow receiver bindings without stacking shader hooks. Keep the dynamic aircraft atlas bounded to the twelve nearest visible aircraft; other aircraft retain projected floor shadows. There is no reinforcement-count cap; very long uninterrupted pursuits still increase simulation, geometry and audio work.
+
+September 21 interval follow-up: the shared reinforcement period is now 20 seconds (previously 15). Tactical modes continue to suppress reinforcements. The browser now defaults to Tactical + Jev with the full enemy population; earlier experimental preferences are superseded once, and subsequent explicit selections persist.
+
+- [x] Fix phantom square/diamond shadows after reinforcement shadow-atlas rebuilds. Evict the receiver material's cached GPU program bindings when attaching replacement shadow uniforms, even when the generated shader key stays the same. Otherwise Three can retain uniforms pointing at a disposed atlas. This preserves the actual vehicle silhouettes on roofs and ground; the materialization rectangle remains excluded from casting.
+
+Tuning lives in `src/game/materialization.js` and `src/simulation/reinforcements.js`. The reusable materialization presenter is first connected to incoming Recognizers; starting vehicles still appear normally. The user endorsed carrier launches, data-beam arrivals and reverse-sweep recalls as further uses; those remain future work.
+
+September 20 moving-target interception: add the observed target velocity along the approach direction to the Recognizer's distance-based arrival speed. Previously, an aircraft approaching from behind settled into speed-matched pursuit short of a valid landing prediction. It now continues closing until folding/fall time and residual braking drift permit a committed stomp. Navigation still uses only its own sighting memory; the committed drop does not track subsequent evasive movement.
+
+September 20 tuning: increase Recognizer cruise speed by 10%, from 27 to 29.7 m/s. The existing pursuit multiplier requests 34.155 m/s, compared with Clu's normal 22 m/s and turbo 55 m/s. Raise forward thrust authority from 22 to 24.2 m/s² so drag does not cap flight below the new pursuit speed. Turning, lift, drag and braking settings remain unchanged; carrier formation speed retains its carrier-relative setting. Verification: `npm test` passes all 132 checks; a 60-second fixed-step straight-flight calculation reaches 34.155 m/s. Browser driving feel has not been rechecked for this tuning change.
+
 The user's latest direction supersedes the structured chase roadmap below. The purpose is the feeling of being in the 1982 maze: free exploration and independently simulated Recognizers, without an assigned objective or tuned encounter sequence. [Goal](../Goal.md) and `../AGENTS.md` record the active requirements.
 
 ### Maze and shared geometry
@@ -716,6 +773,8 @@ Use `scripts/codex-container login` once, then `scripts/codex-container` for fut
 - [x] Default Vite to manual refresh (`server.hmr: false`) so source edits do not interrupt play. `TRON_HMR=1 npm run dev` opts into automatic reload. Browser verification confirms a source edit preserves the running page and a manual refresh loads the update.
 - [x] Verify exact wall edges against independent ray/box intersections and inspect the authored-maze capture. User confirms the wall shadows look right after this change.
 
+September 20 teleporter flyover check: added a fixed-step moving-Recognizer regression at pursuit speed, with multiple headings and high altitude. All seven teleporter checks pass. Full-containment activation is unchanged: a 23.4 m wide aircraft has only 4.3 m of lateral center tolerance on an axis-aligned 32 m pad. A visually overlapping edge pass or an occupied destination can therefore produce no transfer; the reported flyover has not been reproduced as a trigger defect.
+
 
 ---
 
@@ -858,6 +917,333 @@ Based on Peter Hull's VT323 under SIL OFL 1.1; original notices remain in the fo
 ## Debris physics
 
 Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The local npm package includes WebAssembly; no runtime CDN is required. Used for vehicle debris only. [Source and license](https://github.com/dimforge/rapier).
+
+
+---
+
+<!-- Page: jev -->
+Source: /jev/
+
+---
+title: Jev enemy control
+subtitle: Current architecture, input/output contract, and limits
+---
+
+## What Jev controls
+
+Jev selects one maneuver for one enemy vehicle from a list generated by the game. The game supplies the vehicle's recorded knowledge, nearby allies, local wall geometry, and candidate destinations/routes. Jev returns a candidate ID and confidence. Local simulation executes the selected maneuver using inertial movement, collision checks, and existing weapon/attack rules.
+
+This describes the implementation as of September 21, 2026. Jev does **not** currently invent routes, set throttle/yaw each frame, coordinate a whole squad in one request, or generate game content. Those would be extensions of this design.
+
+The browser defaults to **Tactical + Jev** with the full enemy population. Shift+T provides Classic, Tactical — local, and Tactical + Jev modes. The optional small encounter is off by default. Tactical modes disable repeating pursuit reinforcements; Classic retains the 20-second reinforcement interval.
+
+## Decision flow
+
+1. Existing perception and radio systems update each vehicle's observations and target memory.
+2. The local tactical planner generates feasible maneuvers and immediately starts its highest-scoring choice. Simulation never waits for an API call.
+3. The browser scheduler selects an eligible unit and posts its planning snapshot to the local Vite relay.
+4. The relay builds a typed choice question and calls TypeSafe's System One endpoint using the server-held key.
+5. The relay validates the answer's ID and confidence range; the client checks whether it is still applicable.
+6. An accepted answer replaces the local choice and restarts that maneuver's route progression. Otherwise the local planner continues.
+7. The fixed-step simulation drives the vehicle and continuously checks movement against geometry.
+
+There is no persistent provider conversation or shared Jev session. Each request contains its own snapshot, including recent acoustic observations. Persistent memory, maneuver revisions, and execution state belong to the game.
+
+## When a unit can request Jev
+
+A unit must have a recorded Clu position no older than 38 simulation seconds, or an unknown sound report no older than 10 simulation seconds, within one maze length horizontally of its current position. A fresh target memory takes precedence over sound for this gate. This uses a sighting/radio memory or an estimated sound location, **never Clu's hidden live position**. `MAZE_LENGTH` is the larger transformed dimension of the base maze, not the distance across all maze sites. Its multiplier is `TACTICAL.jevRangeMazeLengths`, currently 1.
+
+The unit must also be alive, outside materialization/teleport, not in a committed aircraft attack, and have a fresh maneuver revision that has not already been requested. The game must be running in Jev mode and Clu must not be destroyed. Distant or unaware enemies still move and make decisions using local tactics.
+
+The scheduler scans Recognizers first, then ground tanks, taking the first eligible unit. It is currently **not round-robin**. Under load, later units may miss their request window and remain on local decisions.
+
+## Input: game snapshot
+
+The browser sends this object as JSON to `POST /api/jev/decision`. The values below are illustrative, not a recorded encounter. Routes/facts are shortened for readability; actual requests contain all generated candidates and their route poses.
+
+```json
+{
+  "time": 12,
+  "units": "meters, seconds, radians; x/s horizontal, y up; forward=(-sin(yaw),cos(yaw))",
+  "self": {
+    "id": 2,
+    "kind": "recognizer",
+    "x": -5000,
+    "s": -5000,
+    "y": 80,
+    "yaw": 0,
+    "vx": 0,
+    "vs": 30,
+    "vy": 0,
+    "yawVelocity": 0,
+    "fold": 0,
+    "health": 3,
+    "canSee": true
+  },
+  "target": {
+    "x": -5000,
+    "s": -4800,
+    "vx": 0,
+    "vs": 22,
+    "seenAt": 11.8,
+    "source": 2,
+    "age": 0.2
+  },
+  "allies": [],
+  "map": [],
+  "current": "pursue",
+  "options": [
+    {
+      "id": "m0",
+      "kind": "pursue",
+      "goal": {"x": -5000, "s": -4780, "y": 80, "yaw": 0},
+      "route": [{"x": -5000, "s": -4780, "y": 80, "yaw": 0}],
+      "facts": {
+        "travelMeters": 220,
+        "goalDistanceToLastKnownTarget": 15.6,
+        "occludedFromLastKnownTarget": false,
+        "nearbySupport": 0
+      },
+      "localScore": 88
+    },
+    {
+      "id": "m1",
+      "kind": "hold",
+      "goal": {"x": -5000, "s": -5000, "y": 80, "yaw": 0},
+      "route": [{"x": -5000, "s": -5000, "y": 80, "yaw": 0}],
+      "facts": {
+        "travelMeters": 0,
+        "goalDistanceToLastKnownTarget": 204.4,
+        "occludedFromLastKnownTarget": false,
+        "nearbySupport": 0
+      },
+      "localScore": 10
+    }
+  ]
+}
+```
+
+| Field | Meaning and source |
+| --- | --- |
+| `time` | Simulation time when the candidate set was generated, not necessarily the time the request is sent. |
+| `self` | Own position, heading, velocity, angular velocity, leg fold, health, and current visual-contact flag. Ground tanks use `kind: "ground"`; undefined properties may be omitted by JSON serialization. |
+| `target` | Copy of recorded target memory plus its age. Position/velocity refer to the observation, not current hidden Clu state. `source` identifies the observer when present. No target orientation is explicitly sent; velocity provides travel direction. |
+| `sounds` | Recent acoustic reports, with sound type, noisy bearing and amplitude-derived distance. See Hearing input below. |
+| `allies` | Active friendly units within 304.8 m in three dimensions. Each entry includes `id`, `kind`, `x`, `s`, `y`, `yaw`, `vx`, `vs`, `health`, `state`, `intention`, and its own dated `memory` or null. |
+| `map` | Up to 48 nearby wall polygons selected within a 240 m query radius. Each entry has `height` and `points: [{x,s}, ...]`. This is static map knowledge, not a camera image or the full world map. |
+| `search` | Search origin, whether it has been checked, and inspected locations; null outside an active lost-contact search. |
+| `replanReason` | Why this candidate revision was generated: sight loss/reacquisition, reported/expired contact, target maneuver/displacement, injury, or ordinary scheduling. |
+| `current` | Locally selected maneuver kind at snapshot construction. |
+| `options` | Candidate IDs, kinds, destinations, route poses, precomputed facts, and local scores. Search candidates also carry `searchPath`, a tank-passable corridor hypothesis from the search origin (distinct from the aircraft execution route). IDs such as `m0` are meaningful only within this candidate revision. |
+
+The simulation uses horizontal coordinates `x/s`, altitude `y`, meters, seconds and radians. Its forward direction is `(-sin(yaw), cos(yaw))` in `x/s`; rendering converts to Three.js coordinates. Route poses are `{x,s,y,yaw}`. Ground candidates normally have `route: null`; the ground controller supplies its existing route handling.
+
+Candidate facts are measurements, not predictions of success. `goalDistanceToLastKnownTarget` and occlusion use the planner's bounded extrapolation of recorded memory. `nearbySupport` counts known allies within 150 m horizontally of the destination. `travelMeters` sums route segments; for ground candidates without a route it is a direct-distance estimate. `localScore` is a hand-authored preference, not a probability.
+
+Snapshots contain no screenshots, unrestricted live player object, or global enemy knowledge. Ally reports keep original observation ages. The aircraft planner can consult local static geometry beyond the subset sent in `map`; the supplied routes carry the resulting movement choices.
+
+## Hearing input
+
+`sounds` is an array on the snapshot, empty when nothing recent was audible. Each report is an observation made at `heardAt`, not a continuous tracker. The following example is illustrative:
+
+```json
+{
+  "type": "cannon fire",
+  "heardAt": 12,
+  "age": 0.5,
+  "bearing": -1.52,
+  "relativeBearing": -0.52,
+  "elevation": -0.2,
+  "amplitude": 0.03,
+  "estimatedDistance": 230,
+  "distanceUncertainty": 69,
+  "affiliation": "unknown",
+  "estimatedPosition": {"x": -4775, "s": -4988}
+}
+```
+
+Bearing and elevation are radians. `bearing` is in world heading coordinates; `relativeBearing` uses the listener's heading **at hearing time**. `estimatedDistance` is a slant distance in meters; `estimatedPosition` projects that noisy range/bearing onto the horizontal plane from the receiver's position at hearing time. No exact emitting position, source ID, or target velocity is sent. `amplitude` is normalized perceived pressure, not calibrated decibels. `distanceUncertainty` is a heuristic radius, not a statistical confidence interval.
+
+| Sound | Unobstructed starting range |
+| --- | --- |
+| Clu's engine | 35 m at rest, rising to 100 m at normal maximum speed |
+| Friendly ground engine | 100 m |
+| Aircraft engine | 150 m |
+| Cannon fire | 650 m |
+| Impact | 200 m |
+| Explosion/destruction or data-wave release | 950 m |
+
+Engines emit sensor samples once per simulation second. Impulses come from simulation events and are consumed once even if rendering retains the event array. Pressure falls with inverse distance. A blocked line between source and listener multiplies pressure by 0.25, reducing detectable range to one quarter and increasing the inferred distance. The estimator uses nominal engine loudness, so a quiet idle engine can seem farther away. Deterministic per-listener noise perturbs bearing/elevation and range without altering gameplay random seeds.
+
+This is a lightweight gameplay approximation: no sound-speed travel delay, echoes, multiple-wall attenuation, diffraction/path tracing, frequency spectrum, Doppler, or background-noise masking is simulated. The sensor operates independently of Web Audio and the player's mute/volume setting.
+
+Each unit keeps at most six reports, expiring after 10 simulation seconds. New reports replace earlier reports of the same type and affiliation. Known friendly vehicle engines and cannon fire are labeled `friendly`; their listener's own engine/shot is ignored. Destruction and impacts are unidentified acoustic events. Friendly sounds stay in the input but do not trigger investigation or qualify a unit for Jev by themselves.
+
+The local controller investigates an unknown sound only when it lacks target memory. Ground units use a nearby free map opening when the estimate falls inside a wall. Hearing does not set `canSee`, populate visual `memory`, reveal Clu's identity, broadcast a false sighting, or authorize cannon/stomp attacks. A hearing-only Jev request has `target: null`, `sounds`, and an `investigate-sound` candidate. The prompt explicitly describes these as uncertain cues. Sound reports expire with simulation time; teleport departure clears them, and a fresh run has none.
+
+Constants live in `src/game/hearing.js`; Shift+T exposes moving-engine, cannon and explosion range controls. Sound collection and estimation live in `src/simulation/hearing.js`. `tests/hearing.test.js` verifies audibility, muffling, estimation, expiry, event deduplication, information separation and investigation. `tests/hearing-browser.mjs` checks an actual player cannon event through local and mocked Jev selection without making a paid API call.
+
+## Candidate maneuvers and execution
+
+| Maneuver | Intended behavior |
+| --- | --- |
+| `pursue` | Close on recorded/predicted contact above the roof; offset supporting aircraft when another unit is preparing a nearby strike. |
+| `search-track` | Move toward the bounded predicted last-known path after losing visual contact. |
+| `search-branch` | Inspect a plausible nearby opening, preferring the last observed travel direction and avoiding recently checked locations. |
+| `strike` | Reach an oriented overhead attack pose, then attempt the existing crush attack. |
+| `low-approach` | Follow a checked low-altitude corridor route toward an attack pose. |
+| `low-cover` | Descend into a reachable broad opening near the target memory. |
+| `pressure` | Ground-tank movement toward recorded contact. |
+| `retreat` | Move away from known danger; favored at health 1 or lower. |
+| `regroup` | Move toward a known ally farther from the recorded target. |
+| `ambush` | Move toward a nearby opening, preferring occlusion from the target memory. This is a positioning heuristic, not a full coordinated ambush state machine. |
+| `investigate-sound` | Inspect the estimated location of an unknown sound without treating it as a sighting or authorizing an attack. |
+| `patrol` | Move toward an opening in the unit's maze when there is no valid target memory. Normally handled locally unless an unknown sound enables a request. |
+| `hold` | Remain near the current location at safe altitude. |
+
+Only candidates valid for the unit and current geometry are included. Aircraft use conservative oriented hull checks and swept translation/rotation tests. The overhead planner generates climb/turn/travel/align stages; the bounded low-flight search includes heading in its state. Above the roof, execution skips obsolete stationary starting poses so momentum does not send a pursuing unit back to its route origin.
+
+Candidate generation remains a substantial local decision layer: it chooses destinations, offsets, landing orientations, and the routes Jev can select. Jev can override the local ranking, but cannot choose a destination or tactic absent from the candidate set. It also sees that ranking through `current` and `localScore`, so this is not an independent, unbiased comparison of two planners.
+
+The aircraft controller applies acceleration, drag, yaw acceleration and lift at the fixed simulation timestep. Swept collision validation remains authoritative after Jev selects a route. A strike still requires the attack system's own fresh visual/geometry conditions. Ground tanks retain local navigation and weapon logic; retreat/regroup suppresses their firing. Jev does not directly press the fire button.
+
+## Provider request
+
+The relay calls `POST https://api.typesafe.ai/v1/systemone` with server-side bearer authorization. The default model is `jev-latest`, overridable with `TYPESAFE_MODEL`.
+
+The following is JavaScript describing the actual JSON envelope; `snapshot` is the object above:
+
+```js
+{
+  model: 'jev-latest',
+  state: JSON.stringify(snapshot),
+  questions: {
+    maneuver: {
+      type: 'choice',
+      instructions: '...tactical instructions...',
+      criteria: Object.fromEntries(snapshot.options.map(option => [
+        option.id,
+        JSON.stringify({
+          maneuver: option.kind,
+          destination: option.goal,
+          route: option.route,
+          localScore: option.localScore
+        })
+      ]))
+    }
+  }
+}
+```
+
+`state` and each criterion value are **strings containing JSON**, inside the outer request JSON. The instructions ask the unit to use recorded observations and their ages, favor survival/positioning/coordination, withdraw when wounded, exploit feasible low approaches, and commit rather than oscillate. The full prompt is in `server/jev.js`.
+
+The relay accepts 1–12 candidates with unique IDs matching `m` followed by one or two digits, short maneuver names, and finite horizontal goal coordinates. This is deliberately a bounded choice interface, not a generated-code or arbitrary-action interface. It validates these required fields rather than applying an exhaustive schema to every snapshot property.
+
+## Output and acceptance
+
+An illustrative provider response is:
+
+```json
+{
+  "answers": {
+    "maneuver": {
+      "choice": "m0",
+      "confidence": 0.72,
+      "probabilities": {"m0": 0.72, "m1": 0.28}
+    }
+  },
+  "usage": null
+}
+```
+
+The relay checks that `choice` belongs to this request and confidence is finite and between 0 and 1. It then returns:
+
+```json
+{
+  "id": "m0",
+  "confidence": 0.72,
+  "probabilities": {"m0": 0.72, "m1": 0.28},
+  "usage": null
+}
+```
+
+`probabilities` and `usage` are passed through for diagnostics; they do not control movement and are not fully schema-validated. No explanation or free-form plan is requested. Confidence is provider-reported, not an established probability that the maneuver will succeed.
+
+The browser accepts the choice only if its run/mode/request epoch is still current, the unit is active and still has nearby fresh knowledge, the maneuver revision matches, the request is at most 2.5 simulation seconds old, confidence meets `aiConfidence` (default 0.25), and the target memory has not moved more than 45 m from the planning target. Wounded units may accept only retreat, regroup, or ambush. Teleport clears the maneuver state; pause/reset/mode changes invalidate pending work.
+
+An accepted response restarts the chosen route at index zero, marks its source `jev`, and extends its earliest replanning time to at least three simulation seconds after acceptance. A rejected response leaves local execution in place.
+
+## Timing, limits, and fallback
+
+| Setting | Current behavior |
+| --- | --- |
+| Simulation | Fixed 1/60-second steps; independent of network latency. |
+| Local replanning | Nominally every 4 simulation seconds. Significant perception events bypass this gate with a 0.65-second event cooldown; injury also interrupts. With no such event, an unfinished route may be retained for up to 20 seconds. |
+| Request eligibility | Candidate set less than 2.5 simulation seconds old; one request per unit/revision. |
+| Browser scheduling | One request in flight across all units; at least 0.6 simulation seconds between starts. |
+| Relay scheduling | One upstream request at a time; at least 600 wall-clock milliseconds between starts. |
+| Timeout | Relay 2,200 ms; browser 2,500 ms, both wall-clock timers. |
+| Request body | Maximum 65,536 bytes. Oversized snapshots are rejected rather than automatically shrunk. |
+| Provider budget | 1,200 requests per server process per one-hour window; shared by tabs using that process and reset by server restart. |
+| Errors | Local control continues; network/HTTP/timeout failures delay the next client request by 10 simulation seconds. |
+| Uncertain/stale answer | Local control continues; ordinary scheduling resumes without the error backoff. |
+
+These limits mean Jev does not make a fresh decision for every unit every frame, or even necessarily at every local replan. The client does not retry the same candidate revision after a failed request. A snapshot may already be some simulation time old when scheduled; the response-age test uses send time, while revision and target-shift checks provide additional protection.
+
+### Replanning when Clu changes behavior
+
+Local replanning now reacts to meaningful observation changes. Perception updates roughly every 0.2 simulation seconds. A first qualifying change can replace the maneuver on the next planning update; subsequent event interruptions are limited to one per 0.65 simulation seconds. The planner compares current knowledge to the observations used for its last plan, so a change during the cooldown remains eligible afterward.
+
+| Event | Response |
+| --- | --- |
+| Lose or regain visual contact | Generate fresh search or pursuit candidates. |
+| Observe a turn, stop or acceleration changing the target velocity vector by at least 8 m/s | Recompute the maneuver from that observed velocity. |
+| Recorded target position shifts at least 45 m from the planning observation | Recompute the approach without waiting for the normal four-second gate. |
+| Gain contact through radio or lose it to expiry/confirmed destruction | Reconsider the plan from the new knowledge state. |
+| No significant event, route still unfinished | May retain the maneuver for up to 20 seconds from planning time. |
+| Health reaches the retreat threshold | Interrupt a non-retreat/non-regroup plan when the tactical planner next runs. |
+| Movement fails swept collision validation | Stop invalid motion and clear the plan for replacement. |
+| Hear an unknown sound without target memory | Clear the plan subject to the separate four-second hearing interruption cooldown. |
+
+These changes preserve velocity and yaw momentum. An aircraft already executing its committed attack follows the existing attack state machine rather than switching tactics mid-drop. Ground units refresh their route when they receive a new tactical plan.
+
+When a healthy unit loses sight, local scoring favors `search-track` and `search-branch` over waiting or regrouping. Track prediction uses the recorded velocity, a two-second search lead, and at most five seconds of total extrapolation. It stops at mapped obstructions. Once near that estimate, it marks the origin checked and does not reinstate the return-to-origin maneuver merely because the unit moves away. Candidate locations come from a bounded corridor graph: cardinal 8 m steps, a 160 m path-length budget and at most 1,800 nodes, with every edge swept against walls using the tank footprint. This excludes nearby but disconnected spaces. Choices favor nearby unchecked locations and the recorded travel direction, and penalize destinations already selected by nearby allies. Both aircraft and ground units record completed checks for this search episode. A new visual contact or materially displaced recorded contact resets the search; expired knowledge ends it.
+
+Aircraft already above the roofs inspect these corridor locations from above without descending at every checkpoint. A settled low aircraft may use a feasible low route. The graph describes where Clu could travel; the aircraft execution route is separately checked against its own hull. `searchPath` exposes the hypothesis to Jev, while `route` remains the actual vehicle maneuver. Arrival advances the search without waiting for exact final yaw or a full stop. The planner omits stale attack-pose candidates when visual contact is absent and stops offering direct pursuit back to an already checked origin. No hidden Clu position enters this search, and searching alone never authorizes a stomp or cannon attack. Wounded units still favor withdrawal.
+
+A new candidate revision becomes eligible for Jev under the existing range/rate rules. Replies are rejected if sight/contact state or the observed velocity/position has materially changed, even before the event cooldown allows another plan. Revision checks also reject answers to superseded plans. Network scheduling remains serial; local reactions do not wait for a provider reply.
+
+## Relay, credentials, and deployment
+
+The Vite dev/preview plugin reads `TYPESAFE_API_KEY`, including Vite's environment loading, or falls back to the raw key in `credentials/Typesafe.txt`. Credentials stay server-side; those files are ignored by Git and denied by Vite file serving. Restart the server after changing the key. No key is stored in browser preferences, snapshots, or the built JavaScript.
+
+`GET /api/jev/status` returns `{configured, model, remaining}` without the key. `POST /api/jev/decision` accepts the snapshot. The relay rejects mismatched Origin hosts when that header is present; it is a local development service, not a complete authenticated public gateway.
+
+Earlier direct-browser tests found TypeSafe rejecting localhost CORS preflights, so the client uses the same-machine relay. That is an observed integration constraint, not a claim about all future provider configurations. Static-only hosting has no relay; local tactics continue but Jev calls cannot succeed without a separately provisioned service.
+
+## Inspection, source files, and checks
+
+Shift+T shows AI mode, status and the latest decision details. The development state exposes up to 12 recent responses with unit ID, request snapshot, response, acceptance flag and measured wall-clock latency. This is in-memory diagnostic history, not a persistent replay log. Changing AI mode via Apply restarts the run.
+
+| Source | Responsibility |
+| --- | --- |
+| `src/simulation/recognizers.js` | Perception, dated radio sharing, aircraft updates. |
+| `src/simulation/tactical.js` | Candidate generation, local choice, snapshots, acceptance and aircraft execution. |
+| `src/simulation/search-routes.js` | Connected corridor hypotheses for lost-contact search. |
+| `src/simulation/maneuver-geometry.js` | Hull checks, swept clearance, overhead and corridor routes. |
+| `src/simulation/ground-tanks.js` | Ground tactical goals and weapon behavior. |
+| `src/ai/jev-client.js` | Proximity gate, scheduling, HTTP, cancellation and diagnostic history. |
+| `server/jev.js` | Credential loading, typed provider request, validation and service limits. |
+| `src/game/tactical.js` | Named tactical/request tunables. |
+| `src/main.js` | Browser defaults, persisted settings, lifecycle and development UI. |
+
+Run `node --test tests/tactical.test.js tests/jev.test.js` for geometry, pursuit, hidden-information invariants, range gating, answer acceptance and relay/client behavior. `tests/tactical-browser.mjs` covers mode switching, wall-side attack, fallback and lifecycle; its optional `--live` mode permits one provider request. See [Validation](../validation/index.html) for commands, recorded results and unresolved human review.
+
+## Where to give Jev more authority
+
+The current boundary gives Jev tactical selection but leaves much tactical creativity inside candidate generation. A useful next experiment is to let it request an intent plus a bounded destination/heading/altitude, then ask the local planner to find a feasible route and report failure. Squad-level assignments, explicit timing/coordination, and fair scheduling would be additional extensions. These are proposals, not implemented behavior.
+
+Keep movement integration and collision enforcement local in those experiments. The opening-pursuit defect demonstrated why: a correct tactical choice cannot compensate for an executor that brakes and returns to an obsolete waypoint. Compare decision quality separately from route execution, and measure latency, rejection rates and per-unit service coverage before attributing behavior to the model.
 
 
 ---
@@ -2084,8 +2470,115 @@ Browser evidence uses isolated headless Chrome on the development Mac. This does
 
 ## Exact wall shadows and manual refresh — September 19
 
+### Two-pass materialization and recurring reinforcements — September 20
+
+- `npm test`: all 137 simulation checks pass. Added coverage for a shared ten-second timer with three pursuers, repeated single spawns, loss-of-pursuit reset, Clu destruction, fresh-run reset, copied observations, hidden-player independence, inert/intangible materialization and ordered wire/solid phases. Updated the persistence test to track the original aircraft while allowing the newly requested reinforcements.
+- `node tests/materialization.mjs`: native headless Chrome on the development Mac passes. Rendered captures show a transparent red edge model after pass one, partial solid fill during pass two, and the original solid model afterward. Wire-only capture has zero blue solid pixels; completed capture has 40,469. Inspected standalone phase captures and the full-game glowing rectangle capture in `test-results/materialization-*.png`.
+- The browser check also triggers two consecutive reinforcements through the live simulation, verifies audio pool growth, freezes simulation/rez time on pause, renders fifteen aircraft with bounded wall-shadow atlas slots, and resets to the initial simulation roster without browser/shader errors. Visual/audio pools are reused after reset rather than appended again.
+- `node tests/recognizer-shadows.mjs`: 5,660 roof / 13,063 wall shadow pixels, with debris receiving coverage retained. The test now uses port 5173 by default and accepts `TRON_URL`; the first attempt used its old hardcoded port 5174 and failed to import the current modules.
+- `node tests/recognizer-audio.mjs`: sample playback, explosion/impact lifecycle and stereo energy checks pass. `npm run build` passes.
+
+Follow-up: each pass now opens from a horizontal line over 0.6 seconds, with 6 m of world-space clearance at both ends of its sweep. The materialization animation now lasts 5.45 simulation seconds. All 137 simulation tests and `node tests/materialization.mjs` pass again, including the new opening-phase assertions. Inspected the initial line and half-expanded rectangle captures; both contain no solid vehicle pixels. Reinforcements are unbounded while pursuit continues, so long-session crowd/performance tuning and Safari-specific visual review remain separate from these checks. Distant aircraft beyond the nearest twelve still cast projected ground shadows but omit dynamic wall-shadow atlas tiles.
+
+### Moving-target interception — September 20
+
+`npm test` passes all 132 checks after adding rear-approach cases to the autonomous cruise interception regression. On the clear grid with seed 1982 and Clu driving at 22 m/s, aircraft starting 60, 160 and 300 m behind successfully crush Clu after approximately 11.1, 19.4 and 30.8 seconds. Existing committed-miss, stationary-target, momentum and hidden-player independence checks pass. Previously, rear approaches settled into speed matching about 40 m ahead without attacking.
+
+`node tests/recognizer-intercept.mjs` passes in native headless Chrome on the development Mac: a Recognizer beginning 60 m behind overtakes, folds about 39.4 m ahead, and its braking drift carries the committed strike onto steadily moving Clu. Inspected rendered fold/impact captures in `test-results/recognizer-intercept-*.png`; no browser or shader errors. This establishes the controlled straight-line encounter, not guaranteed hits against turning or turbo movement.
+
 The exact geometric wall overlay supersedes the filtered atlas above; moving vehicles retain a 1024-pixel maze atlas. `node tests/wall-shadow-edges.mjs` compares rendered pixels with independent ray/box intersections: native Chrome reports zero mismatches for geometric shadows versus 5,959 for the old nearest atlas. Docker Chromium/SwiftShader reports 17 versus 5,957 (raster-edge precision differences). The actual maze capture `test-results/wall-edge-maze.png` was inspected and shows straight, crisp inter-wall boundaries. The user also confirms the wall shadows look great. Native `tests/maze-shadow-receivers.mjs` preserves tank receiving and ground-shadow layering.
 
 Vite now disables HMR by default. An isolated Chromium check changed an imported source module while keeping a page-state marker: the page and old module value remained intact, then manual refresh loaded the new value. `TRON_HMR=1` remains the opt-in native development setting. The Recognizer reset regression now reads velocities in the same browser task as reset, avoiding accidental measurement after subsequent simulation frames.
 
 `scripts/codex-container test` passed on Docker Desktop on the development Mac: Linux ARM64, Node 22.23.2, Codex 0.155.1, Chromium 153.0.8010.12 and ANGLE/SwiftShader Vulkan. It verified unprivileged UID 1000, absent host home and Docker socket, denied root-filesystem writes, permitted project writes, WebGL 2 pixel output, all 132 simulation tests, 30 roof-edge poses, grid retention/overlap uniformity/full-game startup, Recognizer momentum/pause/reset/tuning and the production build. `test-results/container-check.json` records the run. Container software rendering is substantially slower than native GPU rendering; native driving feel and Safari-specific behavior are separate checks. Device login remains an interactive user step.
+
+
+### Single-sweep materialization revision — September 20
+
+The user replaced the two-pass sequence with one wireframe sweep and a 0.35-second whole-body solid fade. Opening and clearance are retained; activation now occurs at 2.75 seconds. `node tests/materialization.mjs` passes in native headless Chrome, including zero solid pixels at the end of the wireframe sweep, whole-body visibility during the fade, and increased blue-channel energy at full opacity. Inspected the mid-fade capture. Repeated reinforcements, the fifteen-aircraft render, pause and reset also pass without browser/shader errors. Temporary transparency/depth-writing settings return to their original values when the fade completes, and dynamic shadow attenuation follows solid opacity.
+
+### Phantom shadow tiles after reinforcement spawning — September 20
+
+Reproduced square shadow-map footprints after replacing an aircraft atlas with one using the same shader key. Receiver material program caches retained stale atlas/matrix uniforms; evicting those bindings before recompilation fixes the ghost patches. The materialization rectangle itself was already excluded from shadow casting.
+
+`node tests/materialization-shadows.mjs` passes in native headless Chrome with fifteen aircraft and twelve active atlas slots: ordinary and fully materialized aircraft produce identical roof/ground pixels after an atlas rebuild (zero differences), the wire-only phase produces zero ghost-shadow pixels, and 10,122 real silhouette pixels remain. Inspected the oblique roof/ground capture. The initial ground-only reproduction differed at 128,488 pixels before the fix and showed square shadow-tile footprints. `node tests/materialization.mjs` also passes repeated live spawning, fifteen-aircraft rendering, phase captures, pause and reset without browser/shader errors.
+
+### Exterior teleport pads — September 20
+
+`npm test` passes all 143 simulation checks, including six new teleporter checks: exterior pad clearance and cross-maze links, whole-footprint entry with rotated turret, complete departure/arrival and exit-before-reentry, ground/aircraft altitude and heading preservation, occupied destinations and reset. `npm run build` completes; the existing large-chunk advisory remains.
+
+Native macOS headless Google Chrome via `node tests/teleporters.mjs` passes actual W-key entry, all 16 pads, reverse and forward materialization, pause, arrival lock, an existing Recognizer and ground tank transferring, and reset with no console/page errors. Inspected `test-results/teleporter-dematerialize.png` and `teleporter-arrived.png`: glowing square, receding tank wireframe/rectangle, and solid Clu at the destination are visible. Other captures cover the approach, incoming sweep and aircraft. The first native browser attempt was blocked by the workspace sandbox; the approved external launch succeeded. Safari and human driving review remain unrun for this feature.
+
+Recognizer flyover follow-up: `node --test tests/teleporters.test.js` passes all seven checks. The added fixed-step flight regression crosses pads at 34.155 m/s from multiple headings, including a high-altitude diagonal approach. Centered and 4 m offset approaches trigger; a 6 m offset approach correctly does not. An axis-aligned Recognizer footprint is 23.4 m wide on a 32 m pad, leaving only 4.3 m of center offset on either side for full containment. Occupied/reserved destinations can also defer departure. The reported play-session flyover has not been reproduced as a trigger failure; no activation rule changed.
+
+Pad-size follow-up: doubled each side from 32 m to 64 m and removed the surface fill, retaining the glowing border at its previous world-space thickness. All seven targeted teleporter simulation checks pass; moving Recognizers now enter successfully at 20 m lateral offset, while 22 m remains outside full containment. No further browser reproduction was run, at the user's request.
+
+Grid-alignment follow-up: pads now span exactly 2×2 floor-grid cells (48×48 m), with all four edges on multiples of the shared 24 m grid spacing. Outward snapping preserves wall clearance. All seven targeted teleporter tests pass, including edge alignment and moving-aircraft containment at the revised size. The border also has a small polygon depth bias and derivative-based smoothing to address reported flicker; JavaScript syntax checks pass, but no browser reproduction/visual confirmation was run for these follow-ups.
+
+Pad-flicker follow-up: removed the separate pad planes and paint red borders directly into the existing floor shader. There is no independent pad depth surface; the border uses the same 0.10 m half-width and 1.2× derivative antialiasing as the grid. Syntax checks and shader-injection checks pass for all 16 borders and preview visibility. This supersedes the polygon-offset attempt. Browser/human confirmation of the reported flicker remains unrun for this revision.
+
+September 21 invisible-pad correction: the floor border was changing `diffuseColor` after Three had already computed `outgoingLight`. Mix the border into outgoing light before the opaque output instead. `node tests/teleporters.mjs` passes in native headless Chrome with no browser errors; inspected the newly generated arrival capture and confirmed visible thin perimeter lines, unfilled interior, grid alignment and vehicle occlusion. Transfer, pause, ground/aircraft and reset checks also pass. This confirms restored visibility; it does not establish Safari motion/flicker behavior.
+
+September 21 maze grid alignment: `npm test` passes all 144 checks after snapping site origins to 24 m and restricting seeded rotations to quarter turns. Site tests assert aligned coordinates and allowed angles while retaining collision, clear-space and transform round-trip checks; teleporter clearance and links also pass. No browser visual check was run for this placement-only revision.
+
+September 21 materialization awareness: the full simulation suite passed 146 checks; after adding a destination-arrival integration case, all 15 targeted reinforcement/teleporter checks pass. Coverage confirms fresh pursuit memory suppresses the arrival search beam, ground/air knowledge sharing, copied rather than aliased reports, three-dimensional range limits, confirmed neutralization and destination-side knowledge on enemy teleport completion. No browser/audio visual check was run for this simulation-only correction.
+
+### Optional tactical enemies and live Jev — September 21
+
+`npm test` passes all **159** checks. New checks cover oriented versus circular wall clearance, swept rotation/translation, bounded low-corridor routing, inertial low-altitude trajectory following, a real maze wall-side stomp, wounded-unit withdrawal selection, hidden-Clu counterfactuals, mode/roster isolation, stale/invalid/uncertain decisions, server limits/timeouts/key isolation, and client pause/reset cancellation. `npm run build` passes with the existing chunk-size advisory. A scan confirms that the private credential is absent from built JavaScript, HTML, JSON and text outputs; Git ignores the credentials directory.
+
+Native macOS headless Chrome: `node tests/tactical-browser.mjs --live` passes UI switching, the 2-aircraft/1-tank roster, the actual wall-side descent/crush, missing-provider fallback, pause, reset and return to Classic without further requests. Inspected `test-results/tactical-controls.png`, `tactical-wall-descent.png` and `tactical-live-jev.png`. The aerial capture shows the aircraft descending beside the slab; the final panel shows a real accepted Jev decision. The credential-file URL returns HTTP 403. Each `--live` invocation allows at most one real model call; normal browser runs mock the unavailable-provider branch.
+
+Three bounded live calls were made in total: a server smoke at **317 ms** with confidence **0.59**; a browser call at **292 ms** with confidence **0.36**, correctly rejected under the initial 0.55 threshold; and a final browser call at **467 ms** with confidence **0.46**, accepted with the now-adjustable default threshold **0.25**. Calls used roughly 4,000 input tokens each. These are individual smoke measurements, not a latency distribution or evidence of better gameplay. A native browser fetch binding issue found by the first browser test was corrected before the passing checks.
+
+Direct browser preflights to TypeSafe returned HTTP 400 without `Access-Control-Allow-Origin` for `http://127.0.0.1:5175` and `http://localhost:5173`. The game therefore uses the same-machine relay; disabling browser security is not part of setup. The main server was restarted on port 5173 with the credential connected. The local planner remains usable without the service; Classic is still the default. Human driving/encounter review, Safari behavior and long-session Jev quality/performance remain open.
+
+
+### September 21 — Jev startup and reinforcement interval
+
+Browser startup now selects Jev with the small encounter, replacing earlier experimental saved preferences once; future explicit mode choices persist. Headless simulation fixtures retain their Classic baseline. Classic reinforcements now materialize once per 20 continuous pursuit seconds; tactical modes still suppress them. `node --test tests/reinforcements.test.js tests/tactical.test.js tests/jev.test.js` passed all 19 checks, including threshold and repeat timing. `node --check src/main.js` and `npm run build` passed (existing bundle-size advisory). Browser startup was not rerun for this default/timing change.
+
+
+### September 21 — full roster and nearby Jev decisions
+
+Restored the full enemy population by disabling the optional small encounter at startup. Version-2 preferences retain their AI mode but migrate to the full roster; subsequent explicit small-encounter choices persist. Verified Jev and Classic produce identical initial vehicle populations. Jev requests now require a recorded target position within one maze length horizontally and a memory at most 38 seconds old. Unaware and distant units use local tactics, without inspecting live hidden Clu coordinates; replies are rejected if the unit has since left that range or lost valid knowledge. `npm test` passed all 160 tests, including nearby/distant/stale/unknown contact and hidden-position checks. `npm run build` passed with the existing bundle-size advisory; `git diff --check` passed. Browser play and live API calls were not rerun for these changes.
+
+
+### September 21 — opening pursuit executor correction
+
+Reproduced four opening Recognizers braking and returning toward initial route poses without any Jev requests. Above-roof travel now bypasses those stationary preparation poses; healthy units have pursuit/support candidates, and distant allies no longer trigger premature regroup/hold scoring. After 12 seconds chasing a moving Clu in the seeded simulation, all five aircraft close at least 40 m and maintain speed above Clu's normal maximum. `npm test`: 161 passed. `npm run build`: passed (existing size advisory). Native headless Chrome, `TRON_URL=http://127.0.0.1:5173 node tests/tactical-browser.mjs`: first attempt lost `__tron` after a wall-side descent; rerun passed mode switching, wall-side drop/crush, fallback, pause and Classic isolation. No live Jev call was made. Human review of pursuit feel remains pending.
+
+
+### September 21 — enemy hearing
+
+Added simulation-owned acoustic observations for ground/air units, independent of player audio mute. Engine samples use short ranges; cannon fire, impacts and destruction/data-wave events use larger ranges. Walls reduce pressure to 0.25; deterministic estimation noise and nominal engine loudness keep reports approximate. Reports expire after 10 seconds and remain separate from visual memory, radio target fixes and attack permissions. Local investigation and Jev now accept hearing-only context.
+
+`npm test`: all 167 tests passed. After the final nominal-engine-range refinement and tuning controls, `node --test tests/hearing.test.js tests/jev.test.js tests/tactical.test.js` passed all 20 targeted checks. `npm run build` passed with the existing bundle-size advisory; `git diff --check` passed. Native headless Chrome via `node tests/hearing-browser.mjs` passed: an actual cannon shot outside an aircraft's view produced a sound report, local investigation and a mocked accepted Jev choice with `target: null`; pause froze simulation and no page errors occurred. No paid API calls were made. Human review of stealth balance and range tuning remains pending.
+
+
+### September 21 — carrier shadow edge filtering
+
+The carrier's 1024-pixel map covered 1500 m, producing roughly 1.46 m steps. Its map is now 4096 pixels with four-tap bilinear comparison filtering and a smaller carrier-specific depth bias. Receiver-plane slope correction applies independently to every sample; packed depth stays nearest-sampled. Other shadow maps retain their sizes/default sampling.
+
+Native headless Chrome checks: `node tests/carrier-shadows.mjs` passed actual hull shadows on walls (15,954 changed pixels), floor shadows (17,884) and visible grid under the shadow (1,934). Independent ray/box edge tests, both stationary and translated, require the new incorrect-pixel count below 45% of the old count and nonzero filtered edge coverage; both passed. Inspected `test-results/carrier-edge-old.png` and `carrier-edge-filtered.png`: large sawtooth steps are substantially reduced. Finite-resolution edge texture remains under close magnification.
+
+`node tests/maze-shadow-receivers.mjs` passed (30,015 changed tank pixels). `node tests/recognizer-shadows.mjs` passed roof, wall and debris shadows after making that fixture explicitly use Classic mode; its initial run passed rendering assertions but failed on an unrelated Jev HTTP 429 console error. `npm run build` passed with the existing bundle-size advisory. Safari and GPU memory/frame-time impact have not been profiled; the single carrier map now has sixteen times the texel count.
+
+
+### September 21 — active lost-contact search and event replanning
+
+Added observation-driven tactical interruptions for sight loss/reacquisition, contact acquisition/expiry, velocity-vector changes of at least 8 m/s and recorded position shifts of at least 45 m. A 0.65-second event cooldown limits oscillation while bypassing the older four-second commitment gate. Obsolete Jev answers are rejected even during the cooldown. Momentum is retained, ground routes refresh, and committed aircraft attacks retain their state machine. Healthy units prioritize bounded last-known-track investigation and nearby branch inspection over passive ambush; wounded withdrawal is preserved. Prediction stops at mapped walls and never reads hidden Clu state.
+
+`npm test`: 171 tests passed. New checks cover sight interruption/debounce, stale reply rejection, observed turns/stops/displacement, radio contact, continued lost-contact movement without inventing sightings or attacks, nearby branch selection and wounded retreat. Existing opening pursuit, wall-side crush, collision, hearing and hidden-information checks also passed. `TRON_URL=http://127.0.0.1:5173 node tests/tactical-browser.mjs` passed native headless Chrome mode switching, wall-side drop/crush, mocked-provider fallback, pause/reset and Classic isolation. `npm run build` passed with the existing bundle-size advisory. No live Jev requests were used in this verification. Human assessment of aggression and long-run search quality remains pending.
+
+
+### September 21 — connected search after reaching last contact
+
+Corrected repeated return-to-contact behavior: search origin completion and visited checkpoints now persist across maneuver choices for both aircraft and tanks. Search candidates derive from a bounded, swept tank-corridor graph rather than spatially nearby open cells. The graph can turn corners while excluding disconnected pockets. Jev receives the checked locations and candidate corridor hypotheses; no new target fix is fabricated. High aircraft inspect from above without repeatedly descending at each checkpoint, preserving low routes for settled low craft.
+
+`npm test`: all 174 tests passed. New regressions cover an L-shaped corridor and disconnected pocket, a 35-second aircraft search that checks multiple destinations without returning to `search-track`, and ground-unit arrival advancing the search. The inspected seeded aircraft run checked eight locations in 35 seconds. `TRON_URL=http://127.0.0.1:5173 node tests/tactical-browser.mjs` passed native headless Chrome attack/lifecycle/fallback checks. `npm run build` passed with the existing bundle-size advisory; `git diff --check` passed. No live Jev calls were made. Human review of corner-search behavior remains pending; the search graph is bounded and does not cover the entire maze.
+
+
+### September 21 — remaining carrier shadow roughness
+
+Refined only the carrier to a 6×6 Gaussian-weighted coverage filter, retaining the 4096-pixel map and receiver-plane comparison per tap. Texture allocation is unchanged; this trades additional texture samples and a slightly softer boundary for less edge variation. Native headless Chrome `node tests/carrier-shadows.mjs` passed the real carrier wall/floor/grid checks. On a straight edge, fitted contour roughness fell from about 1.37 pixels with the previous four-tap filter to 0.80 pixels, both before and after translating the caster (about 42% lower). The softened contour differs more from a binary ray mask inside the transition, so the new acceptance check bounds that difference to a 1.8 m boundary band; no mismatches remained outside it. Before/after captures were inspected. `npm run build` passed with the existing size advisory. Safari and frame-time impact remain unmeasured.
