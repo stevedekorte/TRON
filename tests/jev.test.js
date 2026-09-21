@@ -35,7 +35,7 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
 test('public client uses configured relay and retains server cooldown across resets',async()=>{
  const before=config.aiMode;config.aiMode='jev';let calls=0,url;
  const client=new JevClient(async target=>{calls++;url=target;return new Response(JSON.stringify({error:'Daily allowance reached'}),{status:429,headers:{'Retry-After':'3600'}});},'https://proxy.test/');
- try{const {r}=scenario();client.update(r,true);await flush();assert.equal(url,'https://proxy.test/api/jev/decision');assert.match(client.status,/Local fallback/);client.reset();client.update(scenario().r,true);assert.equal(calls,1);}
+ try{const {r}=scenario();client.update(r,true);await flush();assert.equal(url,'https://proxy.test/api/jev/decision');assert.match(client.status,/Local fallback/);assert.equal(client.warning.label,'JEV LIMIT');client.update(r,false);assert.equal(client.warning.label,'JEV LIMIT');client.reset();client.update(scenario().r,true);assert.equal(calls,1);assert.equal(client.warning.label,'JEV LIMIT');}
  finally{config.aiMode=before;client.dispose();}
 });
 function scenario(){const r=createRun(1982),e=r.recognizers[0];r.recognizers=[e];r.enemyTanks=[];Object.assign(e,{x:-5000,s:-5000,y:80,memory:{x:-5000,s:-4900,seenAt:0,vx:0,vs:0}});chooseManeuver(e,0,[e]);return {r,e};}
@@ -54,6 +54,7 @@ test('client accepts current valid answer and labels errors as local fallback',a
  const {r,e}=scenario(),client=new JevClient(async()=>({ok:true,json:async()=>({id:e.tactical.options[0].id,confidence:1})}));
  try{client.update(r,true);await flush();assert.equal(e.tactical.source,'jev');assert.equal(client.history.length,1);
   client.reset();client.fetch=async()=>({ok:false,json:async()=>({error:'No key'})});e.tactical.requested=null;client.update(r,true);await flush();assert.match(client.status,/Local fallback: No key/);
+  assert.equal(client.warning.label,'JEV UNAVAILABLE');client.reset();e.tactical.requested=null;client.fetch=async()=>({ok:true,json:async()=>({id:e.tactical.options[0].id,confidence:0})});client.update(r,true);await flush();assert.equal(client.warning,null);assert.match(client.status,/uncertain/);
  }finally{config.aiMode=before;client.dispose();}
 });
 

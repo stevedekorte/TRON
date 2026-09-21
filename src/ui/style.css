@@ -1,5 +1,11 @@
 @import url('./ui.css');
 @import url('./terminal.css');
+#system-warnings{position:fixed;top:104px;right:24px;width:min(240px,calc(100vw - 48px));z-index:5;pointer-events:none;display:grid;gap:10px;font:10px/1.5 monospace;text-align:right;visibility:visible}
+.system-notice{color:#e8b56e;text-shadow:0 1px 4px #000}
+.system-notice strong{display:block;font-weight:normal;letter-spacing:1px}
+.system-notice span{display:block;margin-top:3px;color:#aab8c9;font-size:9px}
+.system-notice[data-level="error"]{color:#f17878}
+@media(max-width:800px){#system-warnings{top:140px}}
 .sim-hint{position:fixed;top:24px;bottom:auto;left:20px;right:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 4px;text-align:center;font:9px/1.8 monospace;letter-spacing:.6px;color:#8699b2;pointer-events:none;transition:opacity .45s}.sim-hint span{white-space:nowrap}.sim-hint.faded{opacity:0}.sim-survey{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);padding:20px;background:#020710ed;border:1px solid #273b55;font:10px monospace;color:#8ca1be;letter-spacing:2px;text-align:center}.sim-survey canvas{display:block;width:min(500px,75vw);height:auto;margin:10px 0}.sim-survey small{font-size:8px}body.playing .brand,body.playing .edition{display:none}body.playing .masthead{justify-content:flex-end;opacity:.35}body.playing .masthead:hover{opacity:1}#perception{font:10px/1.6 monospace;color:#93a4ba;white-space:pre-wrap;margin-bottom:20px}
 
 body.playing .masthead,body.paused .masthead{display:none}

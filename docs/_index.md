@@ -16,6 +16,10 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 
 ## Current direction — open-ended simulation
 
+### In-game service warnings — September 21
+
+- [x] Add a compact top-right warning area below the health/turbo meters, available in production as well as development. Show JEV OFF for deliberately selected Classic/local modes, JEV LIMIT for rate/budget failures, and JEV UNAVAILABLE for service/network failures. Explain the reason and continuing local AI. Keep warnings through pause, resets and retries until a successful response; normal idle/low-confidence decisions are not service failures. Allow other named warning/error notices to share this area, and announce changes politely to assistive technology.
+
 ### Public Jev hosting — September 21
 
 - [x] Keep the game/assets on GitHub Pages and add a Cloudflare Worker for the fixed Jev decision contract, with a server-side secret and public build-time API URL. Preserve the local Vite relay.

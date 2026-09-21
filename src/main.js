@@ -1,5 +1,6 @@
 import {HEARING,HEARING_DEFAULTS} from './game/hearing.js';
 import {JevClient} from './ai/jev-client.js';
+import {SystemWarnings} from './ui/system-warnings.js';
 import {AI_MODES} from './game/tactical.js';
 import creditsText from '../docs/credits.txt?raw';
 import {debrisVehicleTargets,applyDebrisImpacts} from './simulation/debris-damage.js';
@@ -19,6 +20,7 @@ import { config, defaults, TURBO, CLU_HEALTH, GUNNER } from './game/config.js';
 const $ = id => document.getElementById(id);
 const sound = new Sound();
 const jev=new JevClient();
+const systemWarnings=new SystemWarnings($('system-warnings'));
 // Browser defaults supersede the earlier experimental preference once.
 const AI_PREFERENCE_VERSION=3;
 config.aiMode='jev';config.aiSmallEncounter=false;
@@ -187,6 +189,7 @@ function updateHud() {
   $('gunner-zoom').textContent=['1×','2×','4×','8×'][run.gunnerZoom];
   $('zoom-hint').hidden=!(view.aerial||(GUNNER.mouseEnabled&&run.gunner));
   $('survey').hidden=!showSurvey;
+  systemWarnings.set('jev',config.aiMode==='jev'?jev.warning:{level:'warning',label:'JEV OFF',detail:config.aiMode==='classic'?'Classic enemy AI selected.':'Local tactical AI selected.'});
   const healthFraction=run.crushed?0:Math.max(0,Math.min(1,run.health/CLU_HEALTH.max)),healthPercent=Math.ceil(healthFraction*100);
   $('health-fill').style.transform=`scaleX(${healthFraction})`;
   $('health-meter').setAttribute('aria-valuenow',String(healthPercent));
