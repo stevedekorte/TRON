@@ -1,3 +1,6 @@
+import {hearingGoal} from './hearing.js';
+import {tacticalEnabled,navigateTactical} from './tactical.js';
+import {aircraftSweepClear} from './maneuver-geometry.js';
 import {patrolChoices} from './patrol-decisions.js';
 import {CARRIER,airEscortSlot} from '../game/carrier.js';
 import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
@@ -21,7 +24,7 @@ export function createRecognizers(rng=Math.random) {
     targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0};});
 }
 export function canSeeClu(e,clu) {
-  if(clu.crushed)return false;
+  if(clu.crushed||clu.teleport)return false;
   const dx=clu.x-e.x,ds=clu.s-e.s,distance=Math.hypot(dx,ds);
   if(Math.hypot(distance,e.y-2.8)>SENSORS.range)return false;
   // Downward vision includes the area immediately under the craft.
@@ -37,7 +40,25 @@ function remember(e,sighting,now) {
   if(e.kind==='ground'&&(!e.memory||Math.hypot(sighting.x-e.memory.x,sighting.s-e.memory.s)>12))e.nextRoute=0;
   raiseAlert(e,sighting.seenAt);e.memory={...sighting};e.goal=null;e.goalUntil=0;e.searchIndex=0;
 }
-// This is the only function allowed to inspect the live tank state.
+// Synchronize at activation, after the arrival animation has finished. These
+// are peer observations, not permission to read the hidden live target.
+export function inheritNearbyAwareness(e,run){
+  const nearby=[...run.recognizers,...(run.enemyTanks||[])].filter(other=>other!==e&&other.health>0&&!other.teleport&&other.state!=='destroyed'&&other.state!=='materializing'
+    &&Math.hypot(other.x-e.x,other.s-e.s,(other.y||0)-(e.y||0))<=SENSORS.radioRange);
+  e.canSee=false;e.spotlight=null;
+  if(e.targetGone){e.state='wander';return;}
+  if(nearby.some(other=>other.targetGone)){retireTarget(e);return;}
+  for(const other of nearby){
+    e.alertUntil=Math.max(e.alertUntil||0,other.alertUntil||0);
+    // Unconfirmed spotlight acquisitions are not shared target fixes.
+    if(other.spotlight&&other.spotlight.confirmedAt==null)continue;
+    if(other.memory)remember(e,other.memory,run.time);
+  }
+  if(e.memory&&run.time-e.memory.seenAt>SENSORS.memorySeconds)e.memory=null;
+  e.goal=null;e.goalUntil=0;e.nextSense=run.time;
+  e.state=e.memory?'investigate':e.kind==='ground'?(e.role==='escort'?'escort':'patrol'):'wander';
+}
+// Visual sensor boundary; acoustic source sampling lives separately in hearing.js.
 export function perceive(e,clu,now) {
   if(e.targetGone)return;
   if(now<e.nextSense)return;
@@ -103,6 +124,8 @@ export function navigate(e,now,dt,others) {
     if(!e.canSee&&(Math.hypot(e.goal.x-e.x,e.goal.s-e.s)<24||now>e.goalUntil||age>16&&e.state==='investigate')) {
       e.state='search';e.goal=chooseSearch(e,now);e.goalUntil=now+8;
     }
+  } else if(hearingGoal(e,now)){
+    e.state='investigate';e.goal=hearingGoal(e,now);e.goalUntil=now+1;
   } else if(e.role==='escort'){
     e.state='escort';e.goal=airEscortSlot(e.escortIndex,now+2);e.goalUntil=now+3;
   } else {
@@ -146,7 +169,11 @@ export function navigate(e,now,dt,others) {
   advanceYaw(e,dt,settling||yielding?null:desired);
   const alignment=Math.max(0,Math.cos(angleDelta(e.yaw,desired)));
   const cruise=e.state==='escort'?CARRIER.speed+8:config.enemySpeed*(e.state==='pursue'?1.15:e.state==='wander'?.57:.7)*(formation?.speedScale??1);
-  const targetSpeed=Math.min(cruise,distance*.6)*alignment*alignment;
+  // A visible moving intercept point needs velocity matching plus closure.
+  // Distance-only arrival settles behind it at the target's cruising speed.
+  const targetMotion=e.canSee&&e.memory&&distance>0
+    ?Math.max(0,((e.memory.vx||0)*dx+(e.memory.vs||0)*ds)/distance):0;
+  const targetSpeed=Math.min(cruise,targetMotion+distance*.6)*alignment*alignment;
   const speed=Math.hypot(e.vx,e.vs),forward=-Math.sin(e.yaw)*e.vx+Math.cos(e.yaw)*e.vs;
   const braking=clamp((speed-targetSpeed)/8,0,1);
   const thrust=alignment*(FLIGHT.drag*targetSpeed+Math.max(0,targetSpeed-forward)*1.2);
@@ -158,7 +185,7 @@ export function navigate(e,now,dt,others) {
   advanceLift(e,dt,altitude);
 }
 export function updateRecognizers(run,dt) {
-  const now=run.time,active=[...run.recognizers,...(run.enemyTanks||[])].filter(e=>e.state!=='destroyed');
+  const now=run.time,active=[...run.recognizers,...(run.enemyTanks||[])].filter(e=>!e.teleport&&e.state!=='destroyed'&&e.state!=='materializing');
   // Deliver immutable, delayed observations. Relays never refresh their timestamps.
   const waiting=[];
   for(const message of run.radio) {
@@ -180,7 +207,7 @@ export function updateRecognizers(run,dt) {
     }
     e.lastBroadcast=e.memory.seenAt;e.nextRadio=now+SENSORS.radioInterval;
   }
-  for(const e of active.filter(e=>e.kind!=='ground')){navigate(e,now,dt,active);resolveCrush(run,e);}
+  for(const e of active.filter(e=>e.kind!=='ground')){(tacticalEnabled()?navigateTactical:navigate)(e,now,dt,active);resolveCrush(run,e);}
   // Physical clearance backs up steering avoidance when several observers converge.
   // Shoulder width and physical spacing grow together with model scale.
   const separation=48*RECOGNIZER_SCALE;
@@ -189,7 +216,7 @@ export function updateRecognizers(run,dt) {
     if(d>=separation||Math.abs(a.y-b.y)>20||a.attack&&b.attack)continue;
     const nx=d>1e-8?dx/d:Math.cos(i*17+j*7),ns=d>1e-8?ds/d:Math.sin(i*17+j*7);
     const correction=(separation-d+.001)/2;
-    if(!a.attack){const weight=b.attack?2:1;a.x+=nx*correction*weight;a.s+=ns*correction*weight;}
-    if(!b.attack){const weight=a.attack?2:1;b.x-=nx*correction*weight;b.s-=ns*correction*weight;}
+    if(!a.attack){const weight=b.attack?2:1;const p={...a,x:a.x+nx*correction*weight,s:a.s+ns*correction*weight};if(!tacticalEnabled()||aircraftSweepClear(a,p)){a.x=p.x;a.s=p.s;}}
+    if(!b.attack){const weight=a.attack?2:1;const p={...b,x:b.x-nx*correction*weight,s:b.s-ns*correction*weight};if(!tacticalEnabled()||aircraftSweepClear(b,p)){b.x=p.x;b.s=p.s;}}
   }
 }

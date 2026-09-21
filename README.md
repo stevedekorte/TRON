@@ -158,3 +158,25 @@ preserve the folder-only host-file boundary.
 References: [Codex containers](https://learn.chatgpt.com/docs/agent-approvals-security#run-codex-in-dev-containers),
 [device authentication](https://learn.chatgpt.com/docs/auth),
 [Playwright containers](https://playwright.dev/docs/docker).
+
+### Optional tactical enemies and Jev
+
+Design and API contract: [Jev enemy control](docs/jev/_index.md).
+
+The game now starts in **Tactical + Jev** with the full enemy population (small encounter disabled). To change modes, press **Shift+T**, choose **Enemy AI**, then click **Apply AI and restart**. Your selection persists; earlier experimental preferences are reset once for this new default:
+
+- **Classic** restores the original controller, roster and pursuit reinforcements. It makes no AI requests.
+- **Tactical — local** uses oriented, swept aircraft clearance, staged turns/descents and a bounded corridor planner. Units choose withdrawal, regrouping, pressure, wall-side strikes or cover from local scores. It needs no key.
+- **Tactical + Jev** gives the same maneuver options, explicit routes and outcome measurements to Jev. The local controller still executes movement and checks collisions. Network failures, expired replies and answers below the confidence threshold retain local control and are labeled in the panel.
+
+The **Small tactical encounter** checkbox starts two Recognizers and one ground tank. Tactical modes disable repeating pursuit reinforcements regardless of roster size. Applying a mode starts a fresh run; the choice persists in local browser settings. Tactical restarts use simulation seed 1982; maze placement remains the layout established for that page session. The expanded **Latest AI decision** panel shows the observation snapshot, route choice, probabilities, acceptance and wall-clock latency. `aiConfidence` is adjustable in tuning (default 0.25); detailed movement constants are in `src/game/tactical.js`.
+
+The local Vite server reads the key from `TYPESAFE_API_KEY` (including `.env.local`) or, if absent, the single raw key in `credentials/Typesafe.txt`. Restart Vite after changing credentials. Both locations are ignored by Git and denied by the development file server. Never put the key in a `VITE_` variable. `.env.example` documents the optional model setting. The existing credential file has been connected; no key needs to be pasted into the game.
+
+Only units whose fresh sighting/radio memory or unknown sound estimate is within one maze length request Jev decisions. Distant or unaware units use local tactics. Enemies hear nearby engines and more distant cannon fire, impacts and explosions; walls muffle sounds and reports carry uncertain bearing/range estimates. Hearing permits investigation, not a confirmed target fix. Range controls are in Shift+T.
+
+Requests go through the same local server at `/api/jev/decision`. Direct browser access was checked: TypeSafe rejected CORS preflights for the tested localhost/127.0.0.1 origins. The relay is therefore required for this browser setup; it sends requests directly to TypeSafe without an additional AI layer. There is one in-flight request, at least 600 ms between starts, a 2.2-second server timeout, and a 1,200-request/hour server budget. The browser retries failures with backoff. No calls are made while paused or in Classic/local mode. Late replies after pause, restart or teleport cannot change a vehicle's active maneuver.
+
+`npm run dev` and `npm run preview` provide the local relay. A static-only deployment keeps local tactical AI but has no Jev backend; this change does not publish or provision a hosted service.
+
+Verification: `node --test tests/tactical.test.js tests/jev.test.js`; `node tests/tactical-browser.mjs` uses a mocked unavailable-provider response and defaults to the isolated server at port 5175 (`TRON_URL` overrides it). `node tests/tactical-browser.mjs --live` additionally permits exactly one real provider request and requires the configured server key. Neither browser test prints or reads the key.

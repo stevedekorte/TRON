@@ -36,7 +36,7 @@ export function damageRingContacts(run){
  for(const beam of run.dataBeams){
   const sweep=dataRingSweep(beam,run.time);if(!sweep)continue;
   for(const e of run.recognizers){
-   if(e.state==='destroyed')continue;
+   if(e.teleport||e.state==='materializing'||e.state==='destroyed')continue;
    for(let i=0;i<DATA_BEAM.ringShafts&&sweep>i/DATA_BEAM.ringShafts;i++){
     const angle=i/DATA_BEAM.ringShafts*Math.PI*2;
     const dx=beam.x+Math.cos(angle)*DATA_BEAM.ringRadius-e.x;
@@ -58,7 +58,7 @@ export function updateDataWaves(run){
    beam.waveHits.push(id);return true;
   }
   for(const e of [...run.recognizers,...run.enemyTanks]){
-   if(e.state==='destroyed')continue;
+   if(e.teleport||e.state==='materializing'||e.state==='destroyed')continue;
    const distance=Math.max(0,Math.hypot(e.x-beam.x,e.s-beam.s,e.kind==='ground'?2:e.y)-(e.kind==='ground'?3.5:12));
    if(!touches(e.id,distance))continue;
    destroyEnemy(run,e);

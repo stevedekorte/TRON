@@ -47,3 +47,13 @@ September 15: A Recognizer already searching with its spotlight must aim the bea
 ## Expanded exploration — September 17
 
 Four separated maze sites now provide local data-collection destinations, each with a red vertical beam and its own dynamically deciding patrols. Stopping in a red beam locks the drive, restores health and starts a 16-second transfer. The surround opens after nine seconds, the column changes red–white–blue and stays blue. Completion releases a spherical damaging wave with a final diameter of one maze width; blue beams never repeat the transfer. Preserve the open-ended atmosphere: no score panel or automatic victory screen.
+
+September 20: sustained Recognizer pursuit now brings one additional Recognizer every fifteen seconds, globally rather than per pursuer. The reinforcement materializes near a pursuer using a single rectangular sweep inspired by the supplied Homeworld clip to draw the glowing red wireframe, followed by a quick whole-vehicle solid fade. It becomes active only once fully materialized and receives the summoning observer's recorded sighting, never hidden live Clu coordinates.
+
+September 20 exploration: four glowing red teleport pads outside each maze connect to other maze sites. Full-footprint entry by a tank or aircraft starts dematerialization, transfer and materialization. Preserve altitude and heading, resume at rest, and require complete exit before reuse.
+
+September 21: maze-site positions align to the world grid and whole-maze rotations use only 90-degree increments. Preserve the blueprint geometry and its diagonal wall ends within each site.
+
+September 21 experimental direction: provide switchable tactical enemy control aimed at fewer, more capable and self-preserving units. Geometric movement planning enables oriented wall-side attacks and low flight in suitable corridors; an optional Jev decision layer chooses among feasible maneuvers using each unit's knowledge and nearby reports. Keep Classic available and local tactics usable without a network service.
+
+September 21 hearing: sound is another bounded source of knowledge. Engines are audible only nearby; cannon fire, impacts and explosions carry farther. Walls attenuate sound, and enemies receive noisy bearing/distance estimates. They may investigate an unidentified noise without seeing Clu, but hearing never creates an exact sighting or authorizes an unseen attack.

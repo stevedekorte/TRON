@@ -1,3 +1,4 @@
+import {GROUND_GRID_METERS} from '../src/levels/ground-grid.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as blueprint from '../src/levels/blueprint-maze.js';
@@ -11,6 +12,8 @@ test('rotated sites preserve wall collisions and local clear spaces',()=>{
  const w=createMazeWorld(blueprint,42);
  assert.equal(w.instances.length,4);assert.equal(w.walls.length,blueprint.WALLS.length*4);
  for(const m of w.instances){
+  assert.ok([0,Math.PI/2,Math.PI,3*Math.PI/2].includes(m.angle));
+  assert.equal(Math.abs(m.x%GROUND_GRID_METERS),0);assert.equal(Math.abs(m.s%GROUND_GRID_METERS),0);
   for(const p of blueprint.OPEN_CELLS.slice(0,30)){const world=w.toWorld(p,m);assert.equal(w.freePosition(world.x,world.s,4),true);const local=w.toLocal(world,m);assert.ok(Math.hypot(local.x-p.x,local.s-p.s)<1e-8);}
   const e=blueprint.WALLS[0].edges[0],mid={x:(e.a.x+e.b.x)/2,s:(e.a.s+e.b.s)/2};
   const a={...w.toWorld({x:mid.x+e.nx*5,s:mid.s+e.ns*5},m),y:10},b={...w.toWorld({x:mid.x-e.nx*5,s:mid.s-e.ns*5},m),y:10};

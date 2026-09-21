@@ -1,3 +1,4 @@
+import {GROUND_GRID_METERS} from './ground-grid.js';
 import {seededRandom} from '../game/random.js';
 
 // Maze-local coordinates become world x/s with a rigid planar transform.
@@ -5,7 +6,8 @@ export function createMazeWorld(base,seed=1982,count=4){
  const random=seededRandom(seed),floorHalf=base.FLOOR_HALF||[base.HALF,base.HALF];
  const length=Math.max(2*floorHalf[0]*Math.hypot(base.BASIS.a,base.BASIS.c),2*floorHalf[1]*Math.hypot(base.BASIS.b,base.BASIS.d));
  const sites=[[0,0],[3.3,.7],[-2.8,2.2],[.5,4.1]].slice(0,count);
- const instances=sites.map(([x,s],id)=>({id,x:x*length,s:s*length,angle:id?random()*Math.PI*2:0}));
+ const snap=value=>Math.round(value/GROUND_GRID_METERS)*GROUND_GRID_METERS;
+ const instances=sites.map(([x,s],id)=>({id,x:snap(x*length),s:snap(s*length),angle:id?Math.floor(random()*4)*Math.PI/2:0}));
  const toWorld=(p,m)=>({x:m.x+Math.cos(m.angle)*p.x-Math.sin(m.angle)*p.s,s:m.s+Math.sin(m.angle)*p.x+Math.cos(m.angle)*p.s});
  const toLocal=(p,m)=>({x:Math.cos(m.angle)*(p.x-m.x)+Math.sin(m.angle)*(p.s-m.s),s:-Math.sin(m.angle)*(p.x-m.x)+Math.cos(m.angle)*(p.s-m.s)});
  const edge=(e,m)=>({...e,a:toWorld(e.a,m),b:toWorld(e.b,m),nx:Math.cos(m.angle)*e.nx-Math.sin(m.angle)*e.ns,ns:Math.sin(m.angle)*e.nx+Math.cos(m.angle)*e.ns});

@@ -74,15 +74,21 @@ export class Sound {
     const noise=c.createBuffer(1,c.sampleRate*2,c.sampleRate),data=noise.getChannelData(0);let last=0;
     for(let i=0;i<data.length;i++){last=(last+(Math.random()*2-1)*.04)/1.04;data[i]=last*3;}
     this.noiseBuffer=noise;
-    this.voices=RECOGNIZER_STARTS.map((_,i)=>{
-      const emitter=stereoEmitter(c,this.master),filter=c.createBiquadFilter();filter.type='lowpass';filter.frequency.value=5800;filter.connect(emitter.input);
-      // Duplicate fallback mono to both channels before the stereo emitter.
-      const merger=c.createChannelMerger(2),rotor=this.source(noise,merger,true,i*.31);
-      rotor.disconnect();rotor.connect(merger,0,0);rotor.connect(merger,0,1);merger.connect(filter);
-      const flightGain=c.createGain(),attackGain=c.createGain();flightGain.connect(filter);attackGain.connect(filter);attackGain.gain.value=0;
-      return {...emitter,filter,merger,rotor,flightGain,attackGain};
-    });
+    this.voices=RECOGNIZER_STARTS.map((_,i)=>this.createRecognizerVoice(i));
     this.loading=this.loadSamples();
+  }
+  createRecognizerVoice(i){
+    const c=this.context,emitter=stereoEmitter(c,this.master),filter=c.createBiquadFilter();filter.type='lowpass';filter.frequency.value=5800;filter.connect(emitter.input);
+    emitter.gain.gain.value=0;
+    const merger=c.createChannelMerger(2),rotor=this.source(this.noiseBuffer,merger,true,i*.31);
+    rotor.disconnect();rotor.connect(merger,0,0);rotor.connect(merger,0,1);merger.connect(filter);
+    const flightGain=c.createGain(),attackGain=c.createGain();flightGain.connect(filter);attackGain.connect(filter);attackGain.gain.value=0;
+    const v={...emitter,filter,merger,rotor,flightGain,attackGain};
+    this.loadRecognizerVoice(v,i);return v;
+  }
+  loadRecognizerVoice(v,i){
+    if(this.samples['recognizer-flight']&&!v.flight){v.rotor.stop();v.merger.disconnect();v.flight=this.source(this.samples['recognizer-flight'],v.flightGain,true,i*.29);}
+    if(this.samples['recognizer-approach']&&!v.attack)v.attack=this.source(this.samples['recognizer-approach'],v.attackGain,true,i*.37);
   }
   async loadSamples() {
     await Promise.all([...files,...keyFiles,'end-of-line'].map(async name=>{
@@ -96,14 +102,9 @@ export class Sound {
     if(this.disposed)return;
     if(this.samples['tank-drive']){this.engine.stop();this.engine.disconnect();this.engineSample=this.source(this.samples['tank-drive'],this.engineFilter,true);}
     if(this.samples['carrier-drone'])this.carrierSample=this.source(this.samples['carrier-drone'],this.carrierFilter,true);
-    this.voices.forEach((v,i)=>{
-      if(this.samples['recognizer-flight']) {
-        v.rotor.stop();v.merger.disconnect();
-        v.flight=this.source(this.samples['recognizer-flight'],v.flightGain,true,i*.29);
-      }
-      if(this.samples['recognizer-approach'])v.attack=this.source(this.samples['recognizer-approach'],v.attackGain,true,i*.37);
-    });
+    this.voices.forEach((v,i)=>this.loadRecognizerVoice(v,i));
   }
+
   update(run,camera,playing) {
     if(!this.context)return;
     const c=this.context,now=c.currentTime;
@@ -114,7 +115,7 @@ export class Sound {
     const speed=Math.abs(run.speed),turn=Math.min(1,Math.abs(run.steer||0));
     if(this.engineSample)this.engineSample.playbackRate.setTargetAtTime(.8+speed*.018+turn*.07,now,.15);
     else this.engine.frequency.setTargetAtTime(33+speed*2.8+turn*5,now,.08);
-    this.engineGain.gain.setTargetAtTime(run.crushed||run.transferActive?0:((this.engineSample?.12:.025)+speed*(this.engineSample?.008:.0015))*.7*(1+turn*.12),now,.15);
+    this.engineGain.gain.setTargetAtTime(run.crushed||run.teleport||run.transferActive?0:((this.engineSample?.12:.025)+speed*(this.engineSample?.008:.0015))*.7*(1+turn*.12),now,.15);
     this.engineFilter.frequency.setTargetAtTime(700+speed*45+turn*180,now,.15);
     const l=c.listener,forward=camera.getWorldDirection(this.forward||(this.forward=camera.position.clone()));
     const up=(this.up||(this.up=camera.position.clone())).set(0,1,0).applyQuaternion(camera.quaternion);
@@ -137,14 +138,16 @@ export class Sound {
       l.forwardX.value=forward.x;l.forwardY.value=forward.y;l.forwardZ.value=forward.z;
       l.upX.value=up.x;l.upY.value=up.y;l.upZ.value=up.z;
     }else{l.setPosition(ear.x,ear.y,-ear.s);l.setOrientation(forward.x,forward.y,forward.z,up.x,up.y,up.z);}
+    while(this.voices.length<run.recognizers.length)this.voices.push(this.createRecognizerVoice(this.voices.length));
+    this.voices.forEach((v,i)=>{if(!run.recognizers[i])v.gain.gain.setTargetAtTime(0,now,.1);});
     run.recognizers.forEach((e,i)=>{
-      const v=this.voices[i],distance=Math.hypot(e.x-ear.x,e.s-ear.s,e.y-ear.y),present=e.state!=='destroyed';
+      const v=this.voices[i],distance=Math.hypot(e.x-ear.x,e.s-ear.s,e.y-ear.y),present=!e.teleport&&e.state!=='destroyed'&&e.state!=='materializing';
       const clear=present&&distance<900&&lineOfSight({x:e.x,s:e.s,y:e.y},ear);
       const attacking=['fold','drop','recover'].includes(e.state),mix=attacking?.85:e.state==='pursue'?.35:0;
       v.gain.gain.setTargetAtTime(present&&distance<900?(v.flight?.65:.25)*(clear?1:.4):0,now,.12);
       v.filter.frequency.setTargetAtTime(clear?6500:550,now,.2);
       v.flightGain.gain.setTargetAtTime(v.attack?1-mix*.6:1,now,.2);v.attackGain.gain.setTargetAtTime(mix,now,.2);
-      const rate=doppler(e,ear)*(1+i*.009);
+      const rate=doppler(e,ear)*(1+(i%12)*.009);
       v.flight?.playbackRate.setTargetAtTime(rate,now,.12);v.attack?.playbackRate.setTargetAtTime(rate*(e.state==='drop'?1.08:1),now,.12);
       v.position(e.x,e.y,-e.s,e.yaw);
     });

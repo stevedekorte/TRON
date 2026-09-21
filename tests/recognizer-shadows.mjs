@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1000,height:800}}),errors=[];
+ await page.addInitScript(()=>localStorage.setItem('tron-enemy-ai',JSON.stringify({version:3,mode:'classic',small:false})));
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.route('**/shadow-inspection',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0"></body>'}));await page.goto('http://127.0.0.1:5174/shadow-inspection');
+ await page.route('**/shadow-inspection',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0"></body>'}));await page.goto(new URL('/shadow-inspection',process.env.TRON_URL||'http://127.0.0.1:5173').href);
  const result=await page.evaluate(async()=>{
  await (await import('/src/rendering/debris-physics.js')).debrisPhysicsReady;
   const T=await import('/node_modules/three/build/three.module.js'),{loadRecognizer,createRecognizer}=await import('/src/rendering/models.js'),{RecognizerShadows}=await import('/src/rendering/recognizer-shadows.js'),{Breakups}=await import('/src/rendering/breakup.js');
@@ -30,5 +31,5 @@ try{
   }
   craft.root.visible=true;roof.visible=wall.visible=true;shadows.update(renderer);renderer.render(scene,camera);return counts;
  });assert.ok(result.every(n=>n>100),JSON.stringify(result));await page.screenshot({path:'test-results/recognizer-wall-shadows.png'});assert.deepEqual(errors,[]);console.log({shadowPixels:{roof:result[0],wall:result[1],debrisRoof:result[2],debrisWall:result[3]}});
- await page.goto('http://127.0.0.1:5174');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);await page.waitForFunction(()=>window.__tron.state.mode==='ready');await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');await page.waitForTimeout(500);assert.deepEqual(errors,[]);
+ await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);await page.waitForFunction(()=>window.__tron.state.mode==='ready');await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');await page.waitForTimeout(500);assert.deepEqual(errors,[]);
 }finally{await browser.close();}

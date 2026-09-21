@@ -2,7 +2,8 @@ import {clamp,angleDelta,RECOGNIZER_SCALE} from '../game/config.js';
 
 // Thrust/lift acceleration: m/s²; yaw rate: rad/s; yaw acceleration: rad/s²;
 // response and drag: inverse seconds; vertical speed: m/s.
-export const FLIGHT_DEFAULTS=Object.freeze({acceleration:22,turnRate:.62,turnAcceleration:.8,turnResponse:1.8,liftAcceleration:14,liftSpeed:22,liftResponse:1.4,drag:.7,brakeDrag:2.4,avoidanceRadius:130*RECOGNIZER_SCALE});
+// Thrust authority supports the 10% higher cruise/pursuit speeds against drag.
+export const FLIGHT_DEFAULTS=Object.freeze({acceleration:24.2,turnRate:.62,turnAcceleration:.8,turnResponse:1.8,liftAcceleration:14,liftSpeed:22,liftResponse:1.4,drag:.7,brakeDrag:2.4,avoidanceRadius:130*RECOGNIZER_SCALE});
 export const FLIGHT={...FLIGHT_DEFAULTS};
 export function advanceFlight(e,dt,thrust=0,braking=0) {
   const drag=FLIGHT.drag+clamp(braking,0,1)*FLIGHT.brakeDrag;

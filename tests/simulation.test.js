@@ -86,10 +86,10 @@ test('walls block auto aim and a protruding muzzle cannot shoot through a wall',
 });
 
 test('independent agents persist, simulation has no timed outcome, reset is clean',()=>{
-  const r=createRun();for(const e of r.recognizers.slice(0,2))assert.ok(Math.abs(worldToGrid(e.x,e.s).u)>HALF||Math.abs(worldToGrid(e.x,e.s).v)>HALF);
+  const r=createRun(1982);for(const e of r.recognizers.slice(0,2))assert.ok(Math.abs(worldToGrid(e.x,e.s).u)>HALF||Math.abs(worldToGrid(e.x,e.s).v)>HALF);
   const travel=r.recognizers.map(()=>0);
-  for(let n=0;n<10;n++){const start=r.recognizers.map(e=>[e.x,e.s]);tick(r,{},10);r.recognizers.forEach((e,i)=>travel[i]+=Math.hypot(e.x-start[i][0],e.s-start[i][1]));}
-  assert.equal(r.status,'running');assert.equal(r.recognizers.length,11);assert.ok(r.radio.length<40);
+  for(let n=0;n<10;n++){const start=r.recognizers.map(e=>[e.x,e.s]);tick(r,{},10);r.recognizers.slice(0,travel.length).forEach((e,i)=>travel[i]+=Math.hypot(e.x-start[i][0],e.s-start[i][1]));}
+  assert.equal(r.status,'running');assert.equal(r.recognizers.length,travel.length+r.reinforcementsSpawned);assert.ok(r.radio.length<40);
   assert.ok(travel.every(distance=>distance>50));
   const fresh=createRun();assert.equal(fresh.radio.length,0);assert.ok(fresh.recognizers.every(e=>e.memory===null));assert.equal(fresh.turretYaw,0);
 });
@@ -335,10 +335,10 @@ test('moving-target stomp includes folding and falling time, then commits withou
 });
 
 test('autonomous Recognizers intercept a tank moving at cruise speed',()=>{
- for(const lead of [60,100,160]){
-  const r=createRun();Object.assign(r,{x:-1800,s:-1800,yaw:0,speed:22});
-  r.recognizers=r.recognizers.slice(0,1);Object.assign(r.recognizers[0],{x:r.x,s:r.s+lead,y:80,yaw:Math.PI});
-  for(let i=0;i<1200&&!r.crushed;i++)step(r,{throttle:1},1/60);
+ for(const lead of [-300,-160,-60,0,60,100,160]){
+  const r=createRun(1982);Object.assign(r,{x:-5000,s:-5000,yaw:0,speed:22});r.enemyTanks=[];
+  r.recognizers=r.recognizers.slice(0,1);Object.assign(r.recognizers[0],{x:r.x,s:r.s+lead,y:80,yaw:lead<=0?0:Math.PI,vx:0,vs:lead<=0?config.enemySpeed:0});
+  for(let i=0;i<3600&&!r.crushed;i++)step(r,{throttle:1},1/60);
   assert.equal(r.crushed,true,`initial separation ${lead}`);
  }
 });

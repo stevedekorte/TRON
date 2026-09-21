@@ -8,7 +8,7 @@ const columns=32,rows=8;
 // Presentation reads only each observer's goal/memory, never live Clu coordinates.
 export function beamPose(e,time){
  const strength=searchlightStrength(e,time);
- if(strength<=0)return null;
+ if(strength<=0||e.teleport||e.state==='materializing')return null;
  const {yaw,pitch}=e.spotlight||e.scanBeam||scanAngles(e,time),source=projectorOrigin(e);
  const origin=new THREE.Vector3(source.x,source.y,-source.s);
  const direction=new THREE.Vector3(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
