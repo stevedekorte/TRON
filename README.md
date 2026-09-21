@@ -177,6 +177,19 @@ Only units whose fresh sighting/radio memory or unknown sound estimate is within
 
 Requests go through the same local server at `/api/jev/decision`. Direct browser access was checked: TypeSafe rejected CORS preflights for the tested localhost/127.0.0.1 origins. The relay is therefore required for this browser setup; it sends requests directly to TypeSafe without an additional AI layer. There is one in-flight request, at least 600 ms between starts, a 2.2-second server timeout, and a 1,200-request/hour server budget. The browser retries failures with backoff. No calls are made while paused or in Classic/local mode. Late replies after pause, restart or teleport cannot change a vehicle's active maneuver.
 
-`npm run dev` and `npm run preview` provide the local relay. A static-only deployment keeps local tactical AI but has no Jev backend; this change does not publish or provision a hosted service.
+`npm run dev` and `npm run preview` provide the local relay. Public builds set `VITE_JEV_API_BASE` to the Cloudflare Worker URL below. Without that build setting, static hosting falls back to local tactics.
 
 Verification: `node --test tests/tactical.test.js tests/jev.test.js`; `node tests/tactical-browser.mjs` uses a mocked unavailable-provider response and defaults to the isolated server at port 5175 (`TRON_URL` overrides it). `node tests/tactical-browser.mjs --live` additionally permits exactly one real provider request and requires the configured server key. Neither browser test prints or reads the key.
+
+
+### Public Jev relay (Cloudflare)
+
+The public game is served at https://dekorte.com/fun/TRON/. Its build sets `VITE_JEV_API_BASE=https://tron-jev.tron-canyon-run.workers.dev`; this is a public address, never a credential. Local Vite still uses its own relay by default.
+
+Worker source lives in `workers/jev/`, with configuration in `wrangler.jsonc`. Authenticate with `npx wrangler login --device`, validate with `npm run worker:check`, and deploy with `npm run worker:deploy`. Store or rotate the provider key using `npx wrangler secret put TYPESAFE_API_KEY < credentials/Typesafe.txt`. Subsequent deployments preserve the secret. Cloudflare credentials stay outside the repository; local `.dev.vars` and `.wrangler` files are ignored and denied by Vite.
+
+The website Pages workflow must set the public API base during its Build TRON step. Push this repository, update the website's `fun/TRON` pinned revision, then push the website to publish a new client. Worker changes are deployed separately.
+
+Anonymous access is intentional. Allowed browser origins are dekorte.com and www.dekorte.com. Origin checks are not authentication: a non-browser caller can imitate them. One persistent SQLite Durable Object enforces the spending guard across Worker instances: 1,000 requests and 16 MB of serialized provider input per UTC day, 300 requests per IP per day, 60 per IP per minute, at least 750 ms between requests, one in-flight request per IP and four globally. Failed provider calls consume budget. Daily keyed IP hashes are retained instead of raw addresses; shared networks share an allowance. Client snapshots and secrets are not stored by the budget object.
+
+These are request/byte caps, not a guaranteed dollar cap. Limits are intentionally conservative for an initial public trial. Change the named variables in `wrangler.jsonc` and redeploy to tune them. Set `JEV_ENABLED` to `false` to disable public provider calls. The client honors Retry-After and runs local tactics during errors, rate limits and exhausted allowances. Quotas persist across deploys; do not delete the Durable Object to reset them accidentally.

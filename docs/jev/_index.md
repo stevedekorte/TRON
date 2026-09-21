@@ -293,7 +293,15 @@ The Vite dev/preview plugin reads `TYPESAFE_API_KEY`, including Vite's environme
 
 `GET /api/jev/status` returns `{configured, model, remaining}` without the key. `POST /api/jev/decision` accepts the snapshot. The relay rejects mismatched Origin hosts when that header is present; it is a local development service, not a complete authenticated public gateway.
 
-Earlier direct-browser tests found TypeSafe rejecting localhost CORS preflights, so the client uses the same-machine relay. That is an observed integration constraint, not a claim about all future provider configurations. Static-only hosting has no relay; local tactics continue but Jev calls cannot succeed without a separately provisioned service.
+Earlier direct-browser tests found TypeSafe rejecting localhost CORS preflights, so the client uses the same-machine relay. That is an observed integration constraint, not a claim about all future provider configurations. The public GitHub Pages build now uses the Cloudflare relay described below; local development retains the same-machine relay.
+
+### Public Cloudflare relay
+
+Public builds set `VITE_JEV_API_BASE=https://tron-jev.tron-canyon-run.workers.dev`. The browser sends the same snapshot contract to `/api/jev/decision` there. The fixed model and question are assembled on the server using shared `server/jev-protocol.js`; the client cannot supply an upstream URL, credential or question template. The Worker bounds incoming JSON to 32 KiB and serialized provider input to 64 KiB, enforces a 2.2-second provider timeout, validates the returned candidate/confidence, and never returns the key. `/api/jev/status` exposes only configured/model. See README for deploy and key rotation commands.
+
+`workers/jev/budget.js` uses a single globally named SQLite Durable Object and synchronous transactions to reserve requests before calling the provider. The initial limits are 1,000 calls and 16 MB of submitted input per UTC day globally; 300 calls/day and 60/minute per IP; 750 ms minimum spacing; one pending call per IP and four globally. Failed calls count. Reservations expire after ten seconds if release fails. Limits survive Worker restarts/deployments; the next UTC day starts a fresh allowance. Missing or failed budget storage denies the request without contacting Jev. Only counters, daily keyed IP hashes and short-lived leases are stored, not snapshots or raw IP addresses. These bounds limit request volume, not exact dollar spend.
+
+CORS allows only the two website origins, but public clients are anonymous and Origin is not authentication. Non-browser abuse can still exhaust the shared budget; the persistent caps bound provider usage. Players behind the same IP share limits. Public clients space request starts by at least 1,200 ms of wall time. The browser honors the exposed Retry-After header using wall time, even across simulation resets, and continues local tactics. Provider failure also retains local control. Disable calls with `JEV_ENABLED=false` or adjust the named quota variables and redeploy. The game remains static on GitHub Pages; only Jev decisions use Cloudflare.
 
 ## Inspection, source files, and checks
 
@@ -307,7 +315,9 @@ Shift+T shows AI mode, status and the latest decision details. The development s
 | `src/simulation/maneuver-geometry.js` | Hull checks, swept clearance, overhead and corridor routes. |
 | `src/simulation/ground-tanks.js` | Ground tactical goals and weapon behavior. |
 | `src/ai/jev-client.js` | Proximity gate, scheduling, HTTP, cancellation and diagnostic history. |
-| `server/jev.js` | Credential loading, typed provider request, validation and service limits. |
+| `server/jev.js` | Local credential loading, relay and development service limits. |
+| `server/jev-protocol.js` | Shared validated provider question. |
+| `workers/jev/index.js`, `workers/jev/budget.js` | Public proxy, CORS and persistent usage budget. |
 | `src/game/tactical.js` | Named tactical/request tunables. |
 | `src/main.js` | Browser defaults, persisted settings, lifecycle and development UI. |
 
