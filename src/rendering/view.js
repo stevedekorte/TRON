@@ -1,3 +1,4 @@
+import { occludeProjectedShadow } from './maze-light-visibility.js';
 import { disposeSceneResources } from './scene-resources.js';
 import { CameraRig } from './camera-rig.js';
 import { DEFAULT_WORLD } from '../levels/scenario.js';
@@ -120,6 +121,7 @@ export class View {
         ])
       : null;
     this.breakups = new Breakups(this.scene, map, physics);
+    this.connectMazeOcclusion();
     this.searchlights = new Searchlights(this.scene, this.recognizers.length, undefined, this.map);
     this.carrierLights = new Searchlights(
       this.scene,
@@ -501,6 +503,18 @@ export class View {
     this.composer.render(dt);
   }
 
+  connectMazeOcclusion() {
+    this.recognizerShadows.setOcclusion(this.mazeShadows);
+    this.carrierShadows?.setOcclusion(this.mazeShadows);
+    const patched = new Set();
+    for (const craft of this.recognizers) craft.root.traverse(mesh => {
+      if (mesh.name === 'recognizer-ground-shadow' && !patched.has(mesh.material)) {
+        patched.add(mesh.material);occludeProjectedShadow(mesh.material,this.mazeShadows);
+      }
+    });
+    this.breakups.mazeOcclusion = this.mazeShadows;
+    for (const burst of this.breakups.bursts) occludeProjectedShadow(burst.groundShadow,this.mazeShadows);
+  }
   ensureRecognizers(count) {
     if (count <= this.recognizers.length) return;
     // Undo shader wrappers in reverse order before rebuilding receiver lists.
@@ -535,6 +549,7 @@ export class View {
     this.carrierShadows = this.carrier
       ? new CarrierShadows(this.carrier, this.world, vehicles)
       : null;
+    this.connectMazeOcclusion();
   }
 
   dispose() {

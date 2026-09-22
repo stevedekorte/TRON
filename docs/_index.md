@@ -17,6 +17,11 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 
 ## Current direction — open-ended simulation
 
+### Aircraft shadow occlusion — September 22
+
+- [x] Gate Recognizer, carrier and detached-part shadows against the existing static maze light-depth atlas. Preserve shadows on exposed roofs while preventing additional dark silhouettes on obscured wall faces and covered ground.
+- [x] Apply the same visibility test to projected Recognizer/debris ground silhouettes and rebind it when reinforcement growth rebuilds the atlases. Verify pixel coverage, materialization and restart resource stability.
+
 ### Gravity, aerial zoom and attack coordination — September 22
 
 - [x] Remove vertical damping from production debris; retain horizontal drag, angular damping and contact friction. Regression now measures actual production free-fall velocity/displacement for four seconds without disabling damping in the test.

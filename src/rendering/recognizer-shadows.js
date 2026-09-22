@@ -1,3 +1,4 @@
+import {mazeLightVisibility} from './maze-light-visibility.js';
 import * as T from 'three';
 // One compact light-space tile per aircraft: stable detail across distant mazes.
 export class RecognizerShadows {
@@ -45,6 +46,8 @@ export class RecognizerShadows {
     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',named('#include <begin_vertex>\n recShadowWorld=(modelMatrix*vec4(position,1.)).xyz;'));
     shader.fragmentShader=named(`uniform sampler2D recShadowAtlas;uniform mat4 recShadowMatrices[${this.entries.length}];uniform float recShadowStrength[${this.entries.length}];varying vec3 recShadowWorld;\n`)+shader.fragmentShader;
     if(!shader.fragmentShader.includes('#include <packing>'))shader.fragmentShader='#include <packing>\n'+shader.fragmentShader;
+    const occlusion=this.occlusion?mazeLightVisibility(this.occlusion,prefix+'Maze',prefix+'World'):null;
+    if(occlusion){Object.assign(shader.uniforms,occlusion.uniforms);shader.fragmentShader=occlusion.declarations+'\n'+shader.fragmentShader;}
     const tests=this.entries.map((_,i)=>`{
      vec4 projected=recShadowMatrices[${i}]*vec4(recShadowWorld,1.);vec3 p=projected.xyz/projected.w;
      // Compare depth at the actual sampled texel center on the receiver plane.
@@ -72,15 +75,16 @@ export class RecognizerShadows {
      }
     }`).join('\n');
     const emissive=shader.fragmentShader.includes('totalEmissiveRadiance')?' + totalEmissiveRadiance*(1.-recShadowShade)':'';
-    shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>',named(`float recShadowShade=1.;\n${tests}\ngl_FragColor.rgb=gl_FragColor.rgb*recShadowShade${emissive};\n#include <tonemapping_fragment>`));
+    shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>',named(`float recShadowShade=1.;\n${occlusion?.code||''}\n${tests}\n${occlusion?`recShadowShade=mix(1.,recShadowShade,${occlusion.visible});`:''}\ngl_FragColor.rgb=gl_FragColor.rgb*recShadowShade${emissive};\n#include <tonemapping_fragment>`));
    };
-   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v5:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}`;
+   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v6:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}:occlusion${this.occlusion?.entries.length||0}`;
    // A rebuilt atlas can reuse the same shader source/key. Evict the old
    // material program bindings so Three invokes onBeforeCompile again with
    // this atlas and its current matrices instead of a disposed texture.
    material.dispose();material.needsUpdate=true;
   }
  }
+ setOcclusion(atlas){this.occlusion=atlas;for(const p of this.patches){p.material.dispose();p.material.needsUpdate=true;}}
  update(renderer,bursts=[],focus=null){
   if(focus&&this.available.length>this.craftCount){
    const selected=this.available.filter(e=>e.craft.root.visible).sort((a,b)=>a.craft.root.position.distanceToSquared(focus)-b.craft.root.position.distanceToSquared(focus)).slice(0,this.craftCount);
