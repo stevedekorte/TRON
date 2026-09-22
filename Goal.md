@@ -57,3 +57,10 @@ September 21: maze-site positions align to the world grid and whole-maze rotatio
 September 21 experimental direction: provide switchable tactical enemy control aimed at fewer, more capable and self-preserving units. Geometric movement planning enables oriented wall-side attacks and low flight in suitable corridors; an optional Jev decision layer chooses among feasible maneuvers using each unit's knowledge and nearby reports. Keep Classic available and local tactics usable without a network service.
 
 September 21 hearing: sound is another bounded source of knowledge. Engines are audible only nearby; cannon fire, impacts and explosions carry farther. Walls attenuate sound, and enemies receive noisy bearing/distance estimates. They may investigate an unidentified noise without seeing Clu, but hearing never creates an exact sighting or authorizes an unseen attack.
+
+September 21 portal refinement: vehicle fragments inside an invisible four-wall-height pad volume appear as wireframe. Whole containment causes an instantaneous momentum-preserving transfer; wireframe persists spatially until exit. The earlier timed dematerialization/arrival sequence is superseded for teleport pads only.
+
+September 21 optional autoplay: U enables Jev maneuver selection for Clu, using visible enemies and the static map. Local controls execute routes and aim/fire checks; manual inputs temporarily override their channels without disabling autoplay. Keep this optional and independent of enemy AI selection.
+
+
+September 22 corrections supersede earlier timing/physics notes: debris from every vehicle uses Earth gravity (9.81 m/s²). Beam panel formation/retraction now take 0.5/~1.167 seconds around the unchanged eleven-second hold. The damage wave remains disabled. Session, route, JEV transport, camera and audio ownership have been separated; see the current refactoring and JEV documents for architecture and validation.

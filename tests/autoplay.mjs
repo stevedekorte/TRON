@@ -1,0 +1,54 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:'reduce'}),errors=[];let calls=0,unavailable=false;
+ page.setDefaultTimeout(90000);page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>localStorage.setItem('tron-enemy-ai',JSON.stringify({version:3,mode:'classic',small:false})));
+ await page.route('**/api/jev/decision',r=>{calls++;if(unavailable)return r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Test service outage'})});const q=r.request().postDataJSON();assert.equal(q.controller,'clu');return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:q.options[0].id,confidence:1})});});
+ await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);
+ await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
+ // Real browser-default blueprint opening, after the pursuers are gone.
+ await page.evaluate(()=>__tron.place({recognizers:[],enemyTanks:[]}));
+ const opening=await page.evaluate(()=>({x:__tron.state.x,s:__tron.state.s}));
+ await page.keyboard.press('u');await page.waitForFunction(()=>__tron.state.autoplay.plan?.kind==='collect-data');
+ await page.waitForFunction(p=>Math.hypot(__tron.state.x-p.x,__tron.state.s-p.s)>40,opening);
+ assert.equal(await page.evaluate(()=>__tron.state.autoplay.plan.kind),'collect-data');
+ await page.keyboard.press('u');
+ await page.evaluate(()=>__tron.place({x:-5000,s:-5000,yaw:0,turretYaw:Math.PI/2,speed:0,recognizers:[],enemyTanks:[],dataBeams:[]}));
+ assert.equal(await page.locator('#autoplay-toggle').getAttribute('aria-pressed'),'false');
+ await page.keyboard.press('u');await page.waitForFunction(()=>__tron.state.autoplay.source==='jev');
+ const before=await page.evaluate(()=>__tron.state.s);await page.waitForFunction(s=>__tron.state.s>s+12,before);assert(calls>0);assert.equal(await page.evaluate(()=>__tron.state.jevStats.requests),calls);assert.match(await page.locator('#jev-stats').innerText(),/REQUESTS.*\/s/);assert.match(await page.locator('#jev-stats').innerText(),/USD/);
+ await page.waitForFunction(()=>__tron.state.time>8&&Math.abs(__tron.state.turretYaw)<.03);
+ const samples=[];for(let i=0;i<12;i++){samples.push(await page.evaluate(()=>__tron.state.speed));await page.waitForTimeout(250);}
+ assert(Math.min(...samples)>19,`Cruise speed dropped: ${samples}`);
+ await page.screenshot({path:'test-results/autoplay-jev.png'});
+ await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.time),count=calls;await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.time),paused);assert.equal(calls,count);
+ await page.keyboard.press('w');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
+ const position=await page.evaluate(()=>__tron.state.s);
+ await page.keyboard.down('Space');await page.waitForTimeout(300);await page.keyboard.up('Space');
+ assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
+ assert(await page.evaluate(s=>__tron.state.s>s,position));
+ await page.keyboard.down('s');await page.waitForTimeout(700);await page.keyboard.up('s');
+ assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
+ const slow=await page.evaluate(()=>__tron.state.speed);await page.waitForTimeout(1000);
+ assert(await page.evaluate(speed=>__tron.state.speed>speed,slow));
+ await page.keyboard.press('Shift+W');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
+ await page.keyboard.press('u');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),false);
+ await page.click('#autoplay-toggle');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
+ await page.evaluate(()=>{window.dispatchEvent(new Event('blur'));Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
+ const backgroundStart=await page.evaluate(()=>({time:__tron.state.time,s:__tron.state.s}));
+ await page.waitForTimeout(1800);
+ const backgroundEnd=await page.evaluate(()=>__tron.state);
+ assert.equal(backgroundEnd.mode,'running');assert(backgroundEnd.time>backgroundStart.time+1);assert(backgroundEnd.s>backgroundStart.s);
+ await page.keyboard.press('Escape');const frozen=await page.evaluate(()=>__tron.state.time);await page.waitForTimeout(600);assert.equal(await page.evaluate(()=>__tron.state.time),frozen);
+ await page.keyboard.press('Escape');
+ await page.keyboard.press('u');await page.waitForFunction(()=>__tron.state.mode==='paused');
+ await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});window.dispatchEvent(new Event('focus'));document.dispatchEvent(new Event('visibilitychange'));});
+ await page.keyboard.press('Escape');await page.keyboard.press('u');
+ unavailable=true;await page.waitForFunction(()=>!__tron.state.autoplay.enabled);
+ assert.equal(await page.locator('#autoplay-toggle').getAttribute('aria-pressed'),'false');
+ await page.waitForFunction(()=>document.body.textContent.includes('Autoplay disengaged'));
+ await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),false);
+ assert.deepEqual(errors,[]);console.log('Autoplay: U/button, accepted player decision, driving, pause, temporary manual override and U disable, background simulation, manual/pause behavior, service outage disengagement and visible warning, no JavaScript errors or paid requests.');
+}finally{await browser.close();}

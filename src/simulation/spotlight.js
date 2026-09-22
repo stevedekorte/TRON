@@ -1,5 +1,6 @@
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
 import {RECOGNIZER_SCALE,angleDelta,clamp} from '../game/config.js';
-import {lineOfSight,MAZE_LENGTH} from '../levels/maze.js';
+const {MAZE_LENGTH}=DEFAULT_WORLD;
 
 export const SEARCHLIGHT=Object.freeze({range:MAZE_LENGTH,scanRange:260,halfWidth:14,sweepPeriod:11,sweepAngle:.32,yawRate:.5,pitchRate:.4,acquireYawRate:1.2,acquirePitchRate:.9,trackYawRate:1.8,trackPitchRate:1.2,lockAngle:.025,minimumAcquire:.25,closeRange:120,fadeSeconds:.8});
 export function projectorOrigin(e){return {x:e.x-Math.sin(e.yaw)*3*RECOGNIZER_SCALE,y:e.y+7*RECOGNIZER_SCALE,s:e.s+Math.cos(e.yaw)*3*RECOGNIZER_SCALE};}
@@ -13,10 +14,11 @@ export function beginSpotlight(e,observation,now){
  e.spotlight={yaw:angles.yaw,pitch:angles.pitch,phase:'acquire',started:now,target:{...observation}};
 }
 export function spotlightOnTarget(e,target){
+ const {lineOfSight,MAZE_LENGTH}=worldFor(e);
  const beam=e.spotlight;if(!beam)return false;
  const origin=projectorOrigin(e),dx=target.x-origin.x,ds=target.s-origin.s,dy=2.8-origin.y,distance=Math.hypot(dx,ds,dy);
  const yaw=-Math.atan2(dx,ds),pitch=Math.atan2(dy,Math.hypot(dx,ds));
- return distance<=SEARCHLIGHT.range&&Math.abs(angleDelta(beam.yaw,yaw))*Math.cos(pitch)<SEARCHLIGHT.lockAngle&&Math.abs(beam.pitch-pitch)<SEARCHLIGHT.lockAngle&&lineOfSight(origin,{x:target.x,s:target.s,y:2.8});
+ return distance<=MAZE_LENGTH&&Math.abs(angleDelta(beam.yaw,yaw))*Math.cos(pitch)<SEARCHLIGHT.lockAngle&&Math.abs(beam.pitch-pitch)<SEARCHLIGHT.lockAngle&&lineOfSight(origin,{x:target.x,s:target.s,y:2.8});
 }
 // Only stored visual observations steer the projector. Hidden Clu state never enters here.
 export function updateSpotlight(e,now,dt){

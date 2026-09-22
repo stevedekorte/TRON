@@ -1,7 +1,8 @@
+import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import carrierUrl from '../../docs/models/tron_1982_carrier.glb?url';
-import {CARRIER} from '../game/carrier.js';
+import {CARRIER,carrierFor} from '../game/carrier.js';
 export async function loadCarrier(){
  const {scene:root}=await new GLTFLoader().loadAsync(carrierUrl);
  root.position.sub(new THREE.Box3().setFromObject(root).getCenter(new THREE.Vector3()));
@@ -44,7 +45,8 @@ export async function loadCarrier(){
  ship.userData.beacons=beacons;
  updateCarrier(ship,0);return ship;
 }
-export function updateCarrier(ship,time,health=100,hit=0){
+export function updateCarrier(ship,time,health=100,hit=0,world=DEFAULT_WORLD){
+ const CARRIER=carrierFor(world);
  for(const {material,color} of ship.userData.armorMaterials||[]){material.color.copy(color).multiplyScalar(.5+.5*health/100);material.emissiveIntensity=.28+hit*2;}ship.position.set(CARRIER.startX+CARRIER.speed*time,CARRIER.altitude,-CARRIER.s);
  // Approximation from the final moving shot: roughly one pulse per second,
  // with a short bright interval and groups out of phase. Outlines stay steady.

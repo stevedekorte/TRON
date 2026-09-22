@@ -5,9 +5,9 @@ try{
  const page=await browser.newPage({viewport:{width:1200,height:800}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/debris-test',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0"></body>'}));
- await page.goto('http://127.0.0.1:5174/debris-test');
+ await page.goto((process.env.TRON_URL||'http://127.0.0.1:5173')+'/debris-test');
  const result=await page.evaluate(async()=>{
- await (await import('/src/rendering/debris-physics.js')).debrisPhysicsReady;
+ await (await import('/src/simulation/debris-physics.js')).debrisPhysicsReady;
   const T=await import('/node_modules/three/build/three.module.js');
   const {Breakups}=await import('/src/rendering/breakup.js'),{createRecognizer,loadRecognizer,createTank}=await import('/src/rendering/models.js');
   const {RECOGNIZER_SCALE}=await import('/src/game/config.js'),{WALLS}=await import('/src/levels/maze.js');

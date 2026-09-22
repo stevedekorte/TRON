@@ -5,6 +5,7 @@ import {CARRIER} from '../src/game/carrier.js';
 import {CARRIER_SEARCH,updateCarrierSearch} from '../src/simulation/carrier-search.js';
 import {updateRecognizers} from '../src/simulation/recognizers.js';
 import {WALLS} from '../src/levels/maze.js';
+test.beforeEach(t=>{const previous=CARRIER.searchlightsEnabled;CARRIER.searchlightsEnabled=true;t.after(()=>{CARRIER.searchlightsEnabled=previous;});});
 function encounter(){
  const r=createRun(1982);Object.assign(r,{x:CARRIER.startX,s:CARRIER.s,yaw:0,speed:0});
  r.recognizers=r.recognizers.slice(0,2);r.enemyTanks=r.enemyTanks.slice(0,1);
@@ -12,7 +13,7 @@ function encounter(){
  return r;
 }
 function advance(r,seconds){for(let i=0;i<seconds*60;i++){r.time+=1/60;updateCarrierSearch(r,1/60);}}
-test('carrier lights acquire smoothly before broadcasting to air and ground units within a one-width diameter',()=>{
+test('carrier lights acquire smoothly before broadcasting to air and ground units within a one-maze-width radius',()=>{
  const r=encounter();advance(r,.2);assert.equal(r.radio.length,0);assert.equal(r.carrierSearch.illuminated,false);
  advance(r,2);assert.ok(r.carrierSearch.illuminated);assert.ok(r.radio.some(m=>m.to===r.recognizers[0].id));assert.ok(r.radio.some(m=>m.to===r.enemyTanks[0].id));assert.ok(r.radio.every(m=>m.to!==r.recognizers[1].id));
  assert.ok(r.carrierSearch.lights.every(l=>l.dy<0&&l.strength>.9));
@@ -30,4 +31,11 @@ test('hidden or destroyed CLU cannot produce fresh carrier reports',()=>{
 });
 test('carrier has no knowledge before CLU enters its detection footprint',()=>{
  const r=encounter();r.s+=CARRIER_SEARCH.detectHalfWidth+50;advance(r,2);assert.equal(r.radio.length,0);assert.ok(r.carrierSearch.lights.every(l=>l.target===null));
+});
+
+test('disabled carrier lights clear illumination and stop observations',()=>{
+ const r=encounter();advance(r,2);assert(r.carrierSearch.illuminated);r.radio=[];
+ CARRIER.searchlightsEnabled=false;advance(r,1);
+ assert.equal(r.carrierSearch.illuminated,false);assert.equal(r.radio.length,0);
+ assert(r.carrierSearch.lights.every(l=>l.strength===0&&!l.lit&&!l.tracking&&l.target===null));
 });

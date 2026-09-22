@@ -13,3 +13,6 @@ credentials/
 .wrangler/
 .dev.vars
 .dev.vars.*
+
+# Local rolling JEV spend ledger (no credentials).
+.local/

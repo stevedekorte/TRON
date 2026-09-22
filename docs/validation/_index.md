@@ -3,6 +3,59 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Production gravity, aerial wheel and coordinated attacks — September 22
+
+Final combined validation: `npm test` passed all 237 tests; production/documentation build and Worker dry-run packaging passed. Browser checks below used headless Chrome on macOS.
+
+The previous free-fall test explicitly disabled damping and missed the production difference: at four seconds, vertical speed was 31.15 m/s rather than the undamped 39.24 m/s. Production now applies damping only to horizontal velocity. The revised test uses actual production settings, checks one through four seconds of velocity/displacement, and bounds the rendered interpolation lag. Sleeping-body position comparison allows floating-point epsilon.
+
+`node tests/aerial-transition.mjs` passed in Chrome on macOS: aerial transition/heading, wheel zoom while running, wheel zoom while paused with frozen simulation, and return to the follow camera. Classic mode prevents provider calls. The bug was an obsolete `view.aerial` guard after camera ownership moved to `view.cameraRig`.
+
+Additional simulation checks verify scenario-specific radio boundaries including vertical distance, a stable lead after relative distances cross, forbidden supporter strikes, destruction/blocked/expired-lease handoff, and a two-Recognizer tactical encounter where exactly one aircraft commits and completes a stomp. Existing opening pursuit and close-pursuer anti-spinning checks also pass. `node tests/breakup.mjs` passed rendered 15-block breakup, falling, pause and geometry cleanup in Chrome with Classic mode (no provider calls).
+
+## Carrier escort and debris regression — September 22
+
+On macOS/Node 22.22.0, `npm test` passed all 232 tests. `tests/escort-debris.test.js` exercises a 240-second blueprint crossing in JEV mode: both ground escorts stay clear of walls, take perimeter detours and return within 70 m of their formation slots; both airborne escorts return within 90 m. It also checks fresh versus stale target memory, visibility filtering, detached JEV debris snapshots, physics observation removal, settled/crossing/falling trajectories and turbo-aware stopping.
+
+A real Rapier/session comparison reproduces lethal collisions against settled and falling debris with ordinary forward input. Applying the avoidance guard preserves full health in both fixtures. This establishes those reproducible cases, not invulnerability to tumbling debris or unavoidable close impacts.
+
+`node tests/autoplay.mjs` passed in headless Chrome with mocked JEV responses: accepted decisions, movement, pause, manual overrides, background continuation and failure disengagement; no page errors or paid requests. The new simulation tests verify geometry/behavior rather than rendered escort aesthetics. Longer live encounters and avoidance feel remain subject to play review.
+
+## Ownership cleanup, browser fetch, gravity and panels — September 22
+
+Environment: macOS, Node 22.22.0, headless Chrome 153.0.8010.53 on this workstation. No new physical-device benchmark or Safari listening review was performed.
+
+- `npm test`: all 224 tests passed after integrating the ownership/fetch, Earth-gravity and faster-panel changes. Timing assertions now use the configured transfer duration.
+- `npm run test:browser -- --refactor`: passed seeded blueprint startup, detached debug state, pause, follow/aerial/gunner capture and three resets. Counts remained 97 geometries, 28 textures and one AudioContext. These counts do not prove complete leak freedom or visual fidelity.
+- `node tests/autoplay.mjs`: passed mocked accepted decisions, movement, temporary manual override, pause/background lifecycle and service-failure disengagement, without paid calls. Native fetch/timer receiver regressions encountered during extraction were corrected and covered by a receiver contract test.
+- `node tests/beam-camera.mjs`: passed again after faster panels: half-speed camera rise/orbit/return, pause and unchanged turret. Camera returns before opening.
+- `node tests/teleporters.mjs`: passed partial entry, moving transfer, exit lock, pause and aircraft shaders; horizon/portal captures saved in ignored `test-results/`.
+- `node tests/recognizer-audio.mjs`: passed offline sample metadata, stereo energy, hit/explosion routing and source cleanup.
+- `node tests/maze-music.mjs`: passed exploration/approach/visibility/entry/afterglow/pursuit transitions and quiet fade, after updating the fixture to call the extracted music director.
+- `node tests/debris-collision.mjs`: passed at the current 5173 dev server with 69 pieces, minimum visible bottom within floating-point epsilon of zero, 10 sleeping pieces after 4.5 seconds and zero remaining bodies after cleanup. The rendered capture was inspected.
+- `npm run build`: passed production and generated documentation build.
+- `npm run worker:check`: passed dry-run packaging; no deployment.
+
+The enemy-free replay (`node scripts/replay-autoplay.mjs`, blueprint/layoutSeed/runSeed 1982) captured three beams at approximately 110, 335 and 665 seconds, then held until the 20-second stall cutoff at 706 seconds. This predates the panel speed change. It preserves the known later navigation defect; it is not a full-game success or a live-JEV quality test.
+
+The gravity check measures one-second free-fall velocity and displacement of different-sized bodies at 9.81 m/s² with damping disabled for that measurement. Production keeps its existing mild damping, blast impulse and vehicle momentum. Recognizer parts previously used 14.7 m/s². Panel timing is now 0.5 s build + 11 s hold + 3.5/3 s retract; the faster sweep shares the same collision and display function.
+
+Remaining human checks: Safari audio unlock/listening, driving feel and side-by-side visual comparison. Chrome regression results do not substitute for those checks. No new deployment was performed.
+
+## Beam hold, autoplay objective and pad audio — September 21
+
+Node checks passed: 30 across autoplay, maze sites, local/public Jev contracts; then 27 across teleporter, maze-site and autoplay checks after adding sound events. They verify the eleven-second hold, unchanged sweeps, sixteen-second completion, explicit player objective/progress, and exactly two spatial events per completed transfer with none during partial entry. `node tests/teleport-audio.mjs` passed offline Web Audio rendering in headless Chrome on macOS: departure/arrival/player cues produced finite, non-clipping samples; mute/reset rendered silence; all one-shot sources were released. The generated listening preview is `test-results/teleport-preview.wav`. Artistic sound balance still awaits the user's listening review.
+
+## Autoplay cruise and turret continuity — September 21
+
+`node --test tests/autoplay.test.js tests/jev.test.js` passed all 15 checks. Added regressions keep speed above 19 m/s throughout a clear 20-second cruise after acceleration, preserve speed through collinear route points while still stopping within the data-beam radius, and bring a turret initially pointing 90 degrees sideways back within 0.03 radians of travel direction. `node tests/autoplay.mjs` passed in headless Chrome with mocked Jev selections: samples over several route handoffs stayed above 19 m/s, turret direction recovered, pause and W/Shift+W takeover still worked, and no JavaScript errors occurred. No paid provider calls were made for this correction. These are clear-route checks; complex combat maneuver changes still intentionally slow/turn the tank and remain subject to play review.
+
+## Spatial teleporters and Clu autoplay — September 21
+
+`npm test` passed all 185 tests. On macOS/Node 22.22 with headless Chrome, `node tests/teleporters.mjs` passed driven partial entry, stationary wireframe clipping, pause, instantaneous moving transfer, whole exit/rearming and aircraft shader checks. Captures `teleporter-partial.png`, `teleporter-wire-arrival.png` and `teleporter-solid-exit.png` were inspected. The first arrival capture exposed interpolation across the world jump; preserving post-transfer interpolation history fixed it and the repeat check passed. Full-wireframe arrival no longer casts the solid tank floor shadow. Reinforcement `node tests/materialization.mjs` passed its rendered wire/solid phases, growing render/audio/shadow pools and reset after updating its stale fixture to Classic mode and the current 20-second reinforcement interval. Its initial old-mode run timed out; that timeout was not a successful regression check.
+
+`node tests/autoplay.mjs` passed U/button switching, an accepted mocked player Jev response, actual movement, pause, and W/Shift+W takeover without JavaScript errors or paid browser requests. Node tests cover off-by-default behavior, real movement, line-of-sight information isolation, stale/disabled/pre-teleport rejection and shared serial player/enemy scheduling. One live player snapshot through the local Vite relay returned m0, confidence 0.64, accepted, in 456 ms (1,974-byte snapshot). This establishes the protocol integration, not strong autonomous play. Longer combat/maze exploration quality and wall/aircraft shadow clipping across all approach angles remain human review items. `npm run build` and the Worker dry-run succeeded. No public deployment of these features was performed in this change.
+
 ## HUD service warnings — September 21
 
 `node --test tests/jev.test.js` passed all seven checks, including warning persistence through pause/reset and clearing after a successful but low-confidence answer. `node tests/system-warnings.mjs` passed in headless Chrome on macOS against local Vite: mocked outage shown in the HUD, retained while paused, Classic mode labeled JEV OFF, and successful service recovery hidden. No paid requests or JavaScript errors. Capture: `test-results/system-warning.png`.
@@ -746,3 +799,71 @@ Corrected repeated return-to-contact behavior: search origin completion and visi
 ### September 21 — remaining carrier shadow roughness
 
 Refined only the carrier to a 6×6 Gaussian-weighted coverage filter, retaining the 4096-pixel map and receiver-plane comparison per tap. Texture allocation is unchanged; this trades additional texture samples and a slightly softer boundary for less edge variation. Native headless Chrome `node tests/carrier-shadows.mjs` passed the real carrier wall/floor/grid checks. On a straight edge, fitted contour roughness fell from about 1.37 pixels with the previous four-tap filter to 0.80 pixels, both before and after translating the caster (about 42% lower). The softened contour differs more from a binary ray mask inside the transition, so the new acceptance check bounds that difference to a 1.8 m boundary band; no mismatches remained outside it. Before/after captures were inspected. `npm run build` passed with the existing size advisory. Safari and frame-time impact remain unmeasured.
+
+### Beam camera and persistent autoplay — September 21
+
+- `node --test tests/beam-camera.test.js tests/autoplay-input.test.js tests/autoplay.test.js`: 14 passed. Half-speed timing, pause stability, interruption/reduced motion, channel overrides and existing planner invariants.
+- `node tests/beam-camera.mjs`: passed in headless Chrome on macOS, local Vite. Aerial orbit exceeds 590 m, turret unchanged, camera freezes on pause and returns below 15 m by ring opening. Captures: `test-results/beam-camera-orbit.png`, `test-results/beam-camera-return.png`; return capture inspected.
+- `node tests/autoplay.mjs`: passed with mocked Jev, no paid requests. Manual Space and braking preserve autoplay, release restores acceleration, U/button toggle still works; no page errors. Camera feel still needs human play review.
+
+### Autoplay service loss — September 21
+
+- `node --test tests/autoplay.test.js tests/jev.test.js`: 18 passed, including network errors, timeout, HTTP failures, provider cooldown, explicit re-enable and pause cancellation. Service failures clear the pilot plan and cruise throttle without changing manual held inputs.
+- `node tests/autoplay.mjs`: headless Chrome on macOS passed with mocked 503 outage; autopilot disengages, its button switches off, warning remains visible, and it stays off. No paid requests or JavaScript errors.
+
+### Local relay pacing — September 21
+
+- `node --test tests/autoplay.test.js tests/jev.test.js`: 19 passed. Verify wall-clock pacing between player/enemy requests, separate hourly/spacing messages, retry delays and expiry reset on status reads. Production build passed. Provider credit balance was not queried.
+
+### Local dollar budget — September 21
+
+- `node --test tests/jev-spend.test.js tests/jev.test.js tests/autoplay.test.js`: 21 passed. Covers reported cost, free output, unknown outcomes, pre-dispatch rejection, rolling expiry, restart persistence and existing disengagement behavior. No paid requests used.
+
+### Autoplay beam navigation — September 21
+
+- `node --test tests/autoplay.test.js tests/ground-tanks.test.js`: 32 passed. Includes persistent distant destination, all-beam color/distance/bearing input, capture handoff, transfer hold and two captures across authored mazes in 600 simulated seconds without enemies. Build passed. These are local-controller checks, not a claim that live JEV completes the full game under attack. Human play review pending.
+
+### Background autoplay — September 21
+
+- `node tests/autoplay.mjs`: headless Chrome/macOS passed with mocked JEV and synthetic blur/hidden visibility transitions. Simulation time and position advance while hidden; explicit pause freezes time; disabling autoplay while hidden pauses; returning visible restores the ordinary loop. Existing controls and outage checks pass, no paid requests or page errors. This verifies application lifecycle behavior, not long-duration Safari/OS throttling.
+- `npm run build`: passed.
+
+### Autoplay corners, nearby objectives and turbo — September 21
+
+- `node --test tests/autoplay.test.js`: 18 passed, including preserving waypoint progress on JEV confirmation, replacing distant objectives with nearby red beams, safe turbo acceleration/short-leg rejection, a room-to-beam route with repeated mocked confirmations, and two captures in separate authored mazes. Five additional room starts were probed without enemies; each captured the local beam within 90 simulated seconds.
+- `node --test tests/autoplay-input.test.js tests/ground-tanks.test.js tests/simulation.test.js`: 64 passed.
+- `node tests/autoplay.mjs`: headless Chrome/macOS passed existing driving, temporary overrides, background lifecycle, pause and mocked service-failure checks. No paid requests. `npm run build` passed. Live combat behavior and the user’s exact room scenario still need play review.
+
+### Post-combat mission handoff — September 22
+
+- `node --test tests/autoplay.test.js`: 21 passed. New regression creates five pursuers, accepts an escape choice, destroys all five, rejects the late escape reply, and verifies immediate beam routing plus subsequent approach. Additional checks cover a distant observed enemy moving away and route-failure hold/retry without unrestricted exploration.
+- `npm run build` and `git diff --check`: passed. No paid requests. These are deterministic controller regressions; the user’s exact live session was not captured or reproduced.
+
+### Actual blueprint opening navigation — September 22
+
+- Reproduced the bug before the fix: with blueprint layout selected, no enemies and the actual opening coordinates, autoplay returned hold. The historic authored-layout fixture did not reproduce it.
+- `node --test tests/autoplay-blueprint.test.js tests/autoplay.test.js tests/ground-tanks.test.js`: 40 passed. The blueprint test checks every swept route segment and actually captures the local beam within 300 simulated seconds.
+- `node tests/autoplay.mjs`: headless Chrome/macOS passed. Starts on the browser-default blueprint, removes enemies, enables autopilot and verifies a collect-data plan plus movement exceeding 40 m before continuing the existing controls/background/outage checks. Mocked JEV; no paid requests or page errors.
+- `npm run build` and `git diff --check`: passed. The user’s particular saved encounter remains unavailable, but the same hold symptom was reproduced on the actual layout.
+
+### Intermediate corner stall — September 22
+
+- Reproduced on blueprint at t≈146.8 s: x≈−283.17, s≈−262.70, an intermediate waypoint about 0.5 m away, next leg occluded, speed/throttle/steer zero. Manual rotation was unnecessary after distinguishing intermediate corner steering/creep from final stopping.
+- `node --test tests/autoplay-blueprint.test.js tests/autoplay.test.js`: 22 passed. Blueprint coverage now leaves the first maze and captures a second beam, rejecting three seconds of motionless/no-steering behavior outside transfers. `npm run build` and `git diff --check` passed. No live API calls.
+- Longer 800-second probe passed the original location but encountered a distinct hold/route failure near the third maze at about 689 seconds; remains unresolved.
+
+### Damage bubble disabled — September 22
+
+- `node --test tests/maze-sites.test.js`: 10 passed. Default-disabled wave leaves nearby enemies/carrier intact and radius/hit list empty; optional enabled-wave regressions and transfer timing still pass. Renderer sphere/ring visibility uses the same flag. Build and diff checks passed; no browser visual check performed for this flag change.
+
+### Pad horizon and carrier lights — September 22
+
+- `node --test tests/carrier-search.test.js`: 4 passed, including disabled lights clearing tracking/illumination and producing no new radio reports.
+- `node tests/teleporters.mjs`: Chrome/macOS passed transfers and clipping, captures inspected at horizon and beside a pad. No continuous red horizon stripe; nearby borders remain visible. Carrier beam visuals hidden.
+
+### Beam panels, retries and stats — September 22
+
+- `node --test tests/jev-stats.test.js tests/jev-spend.test.js tests/maze-sites.test.js tests/autoplay.test.js tests/jev.test.js`: 43 passed. Covers timeout retries/recovery/exhaustion, counts across client resets/new rounds, trailing rates, reported/estimated costs, panel contacts and disabled blast.
+- `node tests/data-beams.mjs`: Chrome/macOS completed all four beam transfers, blue states and reset without errors. Panel shell capture inspected from aerial view; close-view review run uses `--preview` and reduced motion.
+- `node tests/autoplay.mjs`: Chrome/macOS passed HUD count/rate/cost assertions plus existing controls, background and outage coverage, with mocked JEV and no paid requests.
+- `npm run build` and `git diff --check`: passed.

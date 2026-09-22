@@ -1,4 +1,5 @@
-import {nearbyWalls,WALL_HEIGHT} from '../levels/maze.js';
+import {worldFor,DEFAULT_WORLD} from '../levels/scenario.js';
+const {WALL_HEIGHT}=DEFAULT_WORLD;
 import {RECOGNIZER_SCALE,angleDelta} from '../game/config.js';
 import {TACTICAL} from '../game/tactical.js';
 export const AIR_HULL=Object.freeze({halfWidth:18*RECOGNIZER_SCALE,halfDepth:6.5*RECOGNIZER_SCALE,bottom:22*RECOGNIZER_SCALE,top:8*RECOGNIZER_SCALE});
@@ -19,7 +20,8 @@ function overlap(a,b){
  }
  return true;
 }
-export function aircraftPoseClear(p,walls=null,margin=TACTICAL.clearance){
+export function aircraftPoseClear(p,walls=null,margin=TACTICAL.clearance,world=worldFor(p)){
+ const {nearbyWalls}=world;
  if(p.y<AIR_HULL.bottom-.001)return false;
  const footprint=corners(p,margin),radius=Math.hypot(AIR_HULL.halfWidth+margin,AIR_HULL.halfDepth+margin);
  for(const wall of walls||nearbyWalls(p.x,p.s,radius)){
@@ -29,26 +31,28 @@ export function aircraftPoseClear(p,walls=null,margin=TACTICAL.clearance){
  }
  return true;
 }
-export function aircraftSweepClear(a,b,walls=null){
+export function aircraftSweepClear(a,b,walls=null,world= a.world || b.world || DEFAULT_WORLD){
+ const {WALL_HEIGHT}=world;
  const roof=walls?Math.max(0,...walls.map(w=>w.height)):WALL_HEIGHT;
  if(Math.min(a.y,b.y)-AIR_HULL.bottom>roof+TACTICAL.clearance)return true;
  const yaw=angleDelta(a.yaw,b.yaw),distance=Math.hypot(b.x-a.x,b.s-a.s,b.y-a.y);
  const steps=Math.max(1,Math.ceil(distance/TACTICAL.sweepStep),Math.ceil(Math.abs(yaw)/TACTICAL.yawStep));
- for(let i=0;i<=steps;i++){const t=i/steps;if(!aircraftPoseClear({x:a.x+(b.x-a.x)*t,s:a.s+(b.s-a.s)*t,y:a.y+(b.y-a.y)*t,yaw:a.yaw+yaw*t},walls))return false;}
+ for(let i=0;i<=steps;i++){const t=i/steps;if(!aircraftPoseClear({x:a.x+(b.x-a.x)*t,s:a.s+(b.s-a.s)*t,y:a.y+(b.y-a.y)*t,yaw:a.yaw+yaw*t},walls,TACTICAL.clearance,world))return false;}
  return true;
 }
 const pose=(e,y=e.y,yaw=e.yaw)=>({x:e.x,s:e.s,y,yaw});
 // Stop/turn/travel/align stages keep the forward-only flight dynamics executable.
-export function overheadRoute(e,goal,walls=null){
+export function overheadRoute(e,goal,walls=null,world=worldFor(e)){
+ const SAFE_ALTITUDE=world.WALL_HEIGHT+AIR_HULL.bottom+8;
  const altitude=Math.max(SAFE_ALTITUDE,e.y,goal.y),heading=-Math.atan2(goal.x-e.x,goal.s-e.s);
  const points=[pose(e,altitude),pose(e,altitude,heading),{...goal,y:altitude,yaw:heading},{...goal,y:altitude},goal];
- let previous=pose(e);for(const p of points){if(!aircraftSweepClear(previous,p,walls))return null;previous=p;}
+ let previous=pose(e);for(const p of points){if(!aircraftSweepClear(previous,p,walls,world))return null;previous=p;}
  return points;
 }
 // Bounded orientation-aware search for flying within broad corridors. Every
 // edge checks the whole swept aircraft, including rotations, not a point agent.
-export function corridorRoute(e,goal,walls=null){
- const start=pose(e),height=goal.y,first={...start,y:height};if(!aircraftSweepClear(start,first,walls))return null;
+export function corridorRoute(e,goal,walls=null,world=worldFor(e)){
+ const start=pose(e),height=goal.y,first={...start,y:height};if(!aircraftSweepClear(start,first,walls,world))return null;
  const step=TACTICAL.routeStep,open=[{x:0,s:0,h:0,cost:0,pose:first,parent:null}],visited=new Map();
  const key=n=>`${n.x},${n.s},${n.h}`;
  for(let iterations=0;open.length&&iterations<TACTICAL.routeNodes;iterations++){
@@ -56,7 +60,7 @@ export function corridorRoute(e,goal,walls=null){
   const n=open.shift(),k=key(n);if((visited.get(k)??Infinity)<=n.cost)continue;visited.set(k,n.cost);
   if(Math.hypot(n.pose.x-goal.x,n.pose.s-goal.s)<step*1.5){
    const heading=-Math.atan2(goal.x-n.pose.x,goal.s-n.pose.s),turn={...n.pose,yaw:heading},end={...goal,yaw:heading};
-   if(aircraftSweepClear(n.pose,turn,walls)&&aircraftSweepClear(turn,end,walls)&&aircraftSweepClear(end,goal,walls)){
+   if(aircraftSweepClear(n.pose,turn,walls,world)&&aircraftSweepClear(turn,end,walls,world)&&aircraftSweepClear(end,goal,walls,world)){
     const path=[turn,end,goal];for(let p=n;p;p=p.parent)path.unshift(p.pose);return path;
    }
   }
@@ -64,7 +68,7 @@ export function corridorRoute(e,goal,walls=null){
   const choices=[{x:n.x,s:n.s,h:(n.h+1)%8,pose:{...n.pose,yaw:angle+Math.PI/4},cost:5},
    {x:n.x,s:n.s,h:(n.h+7)%8,pose:{...n.pose,yaw:angle-Math.PI/4},cost:5},
    {x:Math.round((n.x+dx)*1000)/1000,s:Math.round((n.s+ds)*1000)/1000,h:n.h,pose:{...n.pose,x:n.pose.x+dx*step,s:n.pose.s+ds*step},cost:step}];
-  for(const next of choices){if(Math.hypot(next.pose.x-e.x,next.pose.s-e.s)>TACTICAL.routeRadius||!aircraftSweepClear(n.pose,next.pose,walls))continue;open.push({...next,cost:n.cost+next.cost,parent:n});}
+  for(const next of choices){if(Math.hypot(next.pose.x-e.x,next.pose.s-e.s)>TACTICAL.routeRadius||!aircraftSweepClear(n.pose,next.pose,walls,world))continue;open.push({...next,cost:n.cost+next.cost,parent:n});}
  }
  return null;
 }

@@ -5,6 +5,7 @@ await mkdir('test-results',{recursive:true});
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1000,height:700},reducedMotion:'reduce'}),errors=[];
+ await page.addInitScript(()=>localStorage.setItem('tron-enemy-ai',JSON.stringify({version:3,mode:'classic',small:false})));
  page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.route('**/rez-fixture',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0;background:black"></body>'}));
  await page.goto(new URL('/rez-fixture',process.env.TRON_URL||'http://127.0.0.1:5173').href);
@@ -27,7 +28,7 @@ try{
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
  const initial=await page.evaluate(()=>__tron.state.recognizers.length);
  for(let n=1;n<=2;n++){
-  await page.evaluate(()=>{const r=__tron.state;for(const [i,e] of r.recognizers.entries())Object.assign(e,{x:-5000+i*80,s:-5000,y:85,yaw:0,stompDisabled:true,canSee:true,state:'pursue',nextSense:Infinity,memory:{x:-5000,s:-4900,vx:0,vs:22,seenAt:r.time,source:e.id}});__tron.place({x:-5000,s:-4900,speed:0,cruiseThrottle:false,enemyTanks:[],recognizers:r.recognizers,pursuitSeconds:14.98});});
+  await page.evaluate(()=>{const r=__tron.state;for(const [i,e] of r.recognizers.entries())Object.assign(e,{x:-5000+i*80,s:-5000,y:85,yaw:0,stompDisabled:true,canSee:true,state:'pursue',nextSense:Infinity,memory:{x:-5000,s:-4900,vx:0,vs:22,seenAt:r.time,source:e.id}});__tron.place({x:-5000,s:-4900,speed:0,cruiseThrottle:false,enemyTanks:[],recognizers:r.recognizers,pursuitSeconds:19.98});});
   await page.waitForFunction(count=>__tron.state.recognizers.length===count,initial+n);
   await page.waitForFunction(count=>__tron.state.audioSources===count,initial+n);
  }

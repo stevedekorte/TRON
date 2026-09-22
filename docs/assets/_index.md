@@ -134,3 +134,7 @@ Based on Peter Hull's VT323 under SIL OFL 1.1; original notices remain in the fo
 ## Debris physics
 
 Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The local npm package includes WebAssembly; no runtime CDN is required. Used for vehicle debris only. [Source and license](https://github.com/dimforge/rapier).
+
+## Procedural pad teleport cue
+
+`src/audio/teleport.js` generates original deterministic stereo PCM buffers at the browser sample rate. Authored in this project; no external recording, model or asset was used. A descending FM sweep collapses into a short digital transient, followed by a rising inharmonic shimmer and short stereo echo. Departure lasts 0.28 seconds, arrival 0.62 seconds; Clu's combined transition lasts 0.78 seconds. Buffers are cached and reused; one-shot nodes disconnect on completion/reset. This is an original game sound, not a claimed recreation of a film sample. `node tests/teleport-audio.mjs` writes a standalone listening preview to `test-results/teleport-preview.wav`.

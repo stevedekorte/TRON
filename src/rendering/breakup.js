@@ -1,18 +1,18 @@
+import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as THREE from 'three';
-import {nearbyWalls} from '../levels/maze.js';
-import {DEBRIS_PHYSICS,DebrisPhysics} from './debris-physics.js';
+import {DEBRIS_PHYSICS,DebrisPhysics} from '../simulation/debris-physics.js';
 import {createBlast} from './blast.js';
 
-// Seconds and meters/second²; keep ground-tank destruction at its existing pace.
+// Blast impulses and effect lifetimes; all detached parts use shared Earth gravity.
 const BREAKUP_MOTION={
- recognizer:{impulseScale:18,spinScale:2.2,lift:1,liftVariation:2,delay:.04,flash:.1,gravity:14.7,life:5,lifeVariation:1,fade:1},
- tank:{impulseScale:1,spinScale:1,lift:3,liftVariation:5,delay:.12,flash:.22,gravity:9.81,life:10,lifeVariation:2,fade:2},
+ recognizer:{impulseScale:18,spinScale:2.2,lift:1,liftVariation:2,delay:.04,flash:.1,life:5,lifeVariation:1,fade:1},
+ tank:{impulseScale:1,spinScale:1,lift:3,liftVariation:5,delay:.12,flash:.22,life:10,lifeVariation:2,fade:2},
 };
 
 // Recognizers detach as intact blocks; tanks retain their fractured impact effect.
 // Preserve posed surfaces and trim, with fresh impulses for each explosion.
 export class Breakups {
- constructor(scene){this.scene=scene;this.bursts=[];this.physics=new DebrisPhysics(nearbyWalls);}
+ constructor(scene,world=DEFAULT_WORLD,physics=null){const {nearbyWalls}=world;this.scene=scene;this.bursts=[];this.ownsPhysics=!physics;this.physics=physics||new DebrisPhysics(nearbyWalls);}
  spawn(craft,event){
   const motion=BREAKUP_MOTION[['tank','enemyTank'].includes(event.subject)?'tank':'recognizer'];
   const fracture=motion===BREAKUP_MOTION.tank;
@@ -141,7 +141,7 @@ export class Breakups {
    const delay=motion===BREAKUP_MOTION.recognizer&&!fragmented?.03+Math.random()*.12:Math.random()*motion.delay;
    return {group,part:parts[index],fragmented,inheritedVelocity:inheritedVelocity.clone(),velocity:direction.multiplyScalar(impulse).add(inheritedVelocity).add(new THREE.Vector3(0,motion.lift+Math.random()*motion.liftVariation,0)),spin,delay};
   });
-  for(const piece of pieces)this.physics.add(piece,motion.gravity);
+  for(const piece of pieces)this.physics.add(piece);
   while(this.bursts.length&&this.bursts.reduce((n,b)=>n+b.pieces.length,0)+pieces.length>DEBRIS_PHYSICS.maxPieces)this.remove(this.bursts[0]);
   const flash=new THREE.Mesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshBasicMaterial({color:new THREE.Color(5,4.4,1.7),transparent:true,depthWrite:false}));
   flash.position.copy(impact);this.scene.add(flash);
@@ -150,7 +150,7 @@ export class Breakups {
   this.bursts.push({pieces,materials,flash,optical,hitPart,motion,subject:event.subject||'recognizer',age:0,life:motion.life+Math.random()*motion.lifeVariation});
  }
  update(dt){
-  this.physics.update(dt);
+  if(this.ownsPhysics)this.physics.update(dt);
   for(const burst of [...this.bursts]){
    burst.age+=dt;
    const flash=Math.max(0,1-burst.age/burst.motion.flash);burst.flash.visible=!burst.optical&&flash>0;
@@ -170,5 +170,5 @@ export class Breakups {
   this.bursts=this.bursts.filter(b=>b!==burst);
  }
  clear(){for(const burst of [...this.bursts])this.remove(burst);this.physics.clear();}
- dispose(){this.clear();this.physics.dispose();}
+ dispose(){this.clear();if(this.ownsPhysics)this.physics.dispose();}
 }

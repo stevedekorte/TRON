@@ -1,9 +1,10 @@
+import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as T from 'three';
-import {SPAWN} from '../levels/maze.js';
 
 // A fixed world-space dawn direction, independent of camera position/heading.
 export class Horizon {
- constructor(scene){
+ constructor(scene,world=DEFAULT_WORLD){
+  const {SPAWN}=world;
   this.material=new T.ShaderMaterial({depthTest:false,depthWrite:false,fog:false,
    uniforms:{inverseProjection:{value:new T.Matrix4()},cameraWorld:{value:new T.Matrix4()},
     direction:{value:new T.Vector3(-Math.sin(SPAWN.yaw),0,-Math.cos(SPAWN.yaw))},

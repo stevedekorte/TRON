@@ -15,6 +15,10 @@
 - [Models](/models/): Imported vehicle sources and runtime adapters
 - [Carrier escape shuttle](/models/carrier-shuttle/): Reference reconstruction of the carrier escape pod
 
+## Refactoring review and design
+
+- [Refactoring review and design](/refactoring/): Explicit ownership, reproducible worlds and composed controllers
+
 ## References
 
 - [References](/references/): Visual direction and source images

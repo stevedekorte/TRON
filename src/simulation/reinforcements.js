@@ -1,14 +1,16 @@
+import {attachSettings} from '../game/config.js';
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
 import {tacticalEnabled} from './tactical.js';
 import {createRecognizers,inheritNearbyAwareness} from './recognizers.js';
 import {materializationDuration} from '../game/materialization.js';
 import {RECOGNIZER_SCALE} from '../game/config.js';
-import {WALL_HEIGHT} from '../levels/maze.js';
 export const REINFORCEMENTS=Object.freeze({pursuitSeconds:20,spawnDistance:65,clearance:40,attempts:16});
 export function updateReinforcements(run,dt){
+ const {WALL_HEIGHT}=worldFor(run);
  for(const e of run.recognizers)if(e.state==='materializing'&&run.time-e.rezStarted>=materializationDuration()){
   inheritNearbyAwareness(e,run);
  }
- if(tacticalEnabled()){run.pursuitSeconds=0;return;}
+ if(tacticalEnabled(run)){run.pursuitSeconds=0;return;}
  const pursuers=run.recognizers.filter(e=>e.health>0&&!e.targetGone&&!e.teleport&&e.state!=='destroyed'&&e.state!=='materializing'&&e.memory&&(e.canSee||e.state==='pursue'));
  if(run.crushed||!pursuers.length){run.pursuitSeconds=0;return;}
  run.pursuitSeconds=(run.pursuitSeconds||0)+dt;
@@ -22,8 +24,9 @@ export function updateReinforcements(run,dt){
   if(run.recognizers.every(e=>e.teleport||e.state==='destroyed'||Math.hypot(e.x-p.x,e.s-p.s,e.y-p.y)>=REINFORCEMENTS.clearance)){position=p;break;}
  }
  if(!position)return;
- const e=createRecognizers(()=>.5)[0];
+ const e=createRecognizers(()=>.5,worldFor(run))[0];
  Object.assign(e,position,{id:1000+count,role:'reinforcement',mazeId:source.mazeId??0,yaw:source.yaw,state:'materializing',rezStarted:run.time,vx:0,vs:0,vy:0,yawVelocity:0,seed:(source.seed+count+1)>>>0,
   memory:{...source.memory},canSee:false,nextSense:run.time+materializationDuration(),alertUntil:source.alertUntil});
+ if(run.settings)attachSettings(e,run.settings);
  run.recognizers.push(e);run.reinforcementsSpawned=count+1;run.pursuitSeconds=0;
 }

@@ -1,28 +1,31 @@
+import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import {SEARCHLIGHT,scanAngles,projectorOrigin} from '../simulation/spotlight.js';
 export {SEARCHLIGHT} from '../simulation/spotlight.js';
 import {searchlightStrength} from '../simulation/alertness.js';
 import * as THREE from 'three';
-import {wallIntersection} from '../levels/maze.js';
 
 const columns=32,rows=8;
 // Presentation reads only each observer's goal/memory, never live Clu coordinates.
 export function beamPose(e,time){
+ const rangeLimit=worldFor(e).MAZE_LENGTH;
  const strength=searchlightStrength(e,time);
  if(strength<=0||e.teleport||e.state==='materializing')return null;
  const {yaw,pitch}=e.spotlight||e.scanBeam||scanAngles(e,time),source=projectorOrigin(e);
  const origin=new THREE.Vector3(source.x,source.y,-source.s);
  const direction=new THREE.Vector3(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
  const target=e.spotlight?.target;
- const range=target?Math.min(SEARCHLIGHT.range,Math.hypot(target.x-source.x,target.s-source.s,2.8-source.y)+30):SEARCHLIGHT.scanRange;
+ const range=target?Math.min(rangeLimit,Math.hypot(target.x-source.x,target.s-source.s,2.8-source.y)+30):SEARCHLIGHT.scanRange;
  return {origin,direction,strength,range};
 }
-export function clippedBeamEnd(origin,end){
+export function clippedBeamEnd(origin,end,world=DEFAULT_WORLD){
+ const {wallIntersection}=world;
  let t=wallIntersection({x:origin.x,y:origin.y,s:-origin.z},{x:end.x,y:end.y,s:-end.z})??1;
  if(end.y<.04)t=Math.min(t,(origin.y-.04)/(origin.y-end.y));
  return origin.clone().lerp(end,Math.max(0,t));
 }
 export class Searchlights {
- constructor(scene,count,poseFor=beamPose){
+ constructor(scene,count,poseFor=beamPose,world=DEFAULT_WORLD){
+  this.world=world;
   this.poseFor=poseFor;
   this.beams=Array.from({length:count},()=>{
    const geometry=new THREE.BufferGeometry(),positions=new Float32Array((columns+1)*(rows+1)*3),uv=[] ,indices=[];
@@ -60,7 +63,7 @@ export class Searchlights {
    for(let x=0;x<=columns;x++){
     const lateral=x/columns*2-1;
     const start=origin.clone().addScaledVector(side,lateral*(pose?.sourceRadius||1.0));
-    const end=clippedBeamEnd(start,origin.clone().addScaledVector(direction,range).addScaledVector(side,lateral*(beam.pose.halfWidth||SEARCHLIGHT.halfWidth)));
+    const end=clippedBeamEnd(start,origin.clone().addScaledVector(direction,range).addScaledVector(side,lateral*(beam.pose.halfWidth||SEARCHLIGHT.halfWidth)),this.world);
     shortest=Math.min(shortest,start.distanceTo(end));
     for(let y=0;y<=rows;y++){
      const p=start.clone().lerp(end,y/rows);position.setXYZ(y*(columns+1)+x,p.x,p.y,p.z);

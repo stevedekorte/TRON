@@ -1,6 +1,8 @@
-import {CARRIER} from '../game/carrier.js';
-import {MAZE_LENGTH,lineOfSight} from '../levels/maze.js';
-export const CARRIER_SEARCH=Object.freeze({radioRadius:MAZE_LENGTH/2,radioInterval:1,radioDelay:.45,detectHalfLength:650,detectHalfWidth:180,trackRadius:800,turnRate:.8,lockAngle:.02,underside:102});
+import {radioRangeFor} from '../game/communication.js';
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
+import {CARRIER,carrierFor} from '../game/carrier.js';
+const {MAZE_LENGTH}=DEFAULT_WORLD;
+export const CARRIER_SEARCH=Object.freeze({radioRadius:radioRangeFor(null),radioInterval:1,radioDelay:.45,detectHalfLength:650,detectHalfWidth:180,trackRadius:800,turnRate:.8,lockAngle:.02,underside:102});
 export function createCarrierSearch(){return {nextRadio:0,illuminated:false,lights:[-1,1].map(side=>({side,x:0,s:0,y:0,dx:0,dy:-1,ds:0,strength:0,target:null,tracking:false,lit:false}))};}
 function turnToward(light,target,dt){
  const dx=target.x-light.x,dy=2.8-light.y,ds=target.s-light.s,length=Math.hypot(dx,dy,ds);
@@ -13,7 +15,9 @@ function turnToward(light,target,dt){
  return Math.max(0,angle-CARRIER_SEARCH.turnRate*dt);
 }
 export function updateCarrierSearch(run,dt){
+ const {lineOfSight,MAZE_LENGTH}=worldFor(run),CARRIER=carrierFor(worldFor(run));
  const sensor=run.carrierSearch,center={x:CARRIER.startX+CARRIER.speed*run.time,s:CARRIER.s};
+ if(!CARRIER.searchlightsEnabled){sensor.illuminated=false;for(const light of sensor.lights){light.strength=0;light.lit=false;light.tracking=false;light.target=null;}return;}
  const beneath=Math.abs(run.x-center.x)<=CARRIER_SEARCH.detectHalfLength&&Math.abs(run.s-center.s)<=CARRIER_SEARCH.detectHalfWidth;
  sensor.illuminated=false;
  for(const light of sensor.lights){
@@ -32,9 +36,9 @@ export function updateCarrierSearch(run,dt){
  }
  if(!sensor.illuminated||run.time<sensor.nextRadio)return;
  const sighting=sensor.lights.find(l=>l.lit).target;
- // Diameter is one maze width: use half that width as a horizontal radius.
+ // The same one-maze-width radio radius applies to carrier reports.
  for(const e of [...run.recognizers,...run.enemyTanks]){
-  if(e.teleport||e.state==='destroyed'||e.targetGone||Math.hypot(e.x-center.x,e.s-center.s)>CARRIER_SEARCH.radioRadius)continue;
+  if(e.teleport||e.state==='destroyed'||e.targetGone||Math.hypot(e.x-center.x,e.s-center.s,(e.y||0)-CARRIER.altitude)>radioRangeFor(run))continue;
   run.radio.push({to:e.id,deliverAt:run.time+CARRIER_SEARCH.radioDelay,sighting:{...sighting}});
  }
  sensor.nextRadio=run.time+CARRIER_SEARCH.radioInterval;

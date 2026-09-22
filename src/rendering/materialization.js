@@ -1,5 +1,19 @@
 import * as T from 'three';
 import {MATERIALIZATION,materializationPhase} from '../game/materialization.js';
+import {TELEPORTERS} from '../levels/teleporters.js';
+
+// Clip against the original caster position, also for projected ground shadows.
+function portalClip(material,uniforms,wire=false){
+ const previous=material.onBeforeCompile,key=material.customProgramCacheKey();
+ material.onBeforeCompile=shader=>{
+  previous?.(shader);Object.assign(shader.uniforms,uniforms);
+  shader.vertexShader='varying vec3 portalWorld;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace(/void main\s*\(\s*\)\s*\{/,m=>m+'portalWorld=(modelMatrix*vec4(position,1.)).xyz;');
+  shader.fragmentShader='varying vec3 portalWorld;uniform float portalActive;uniform vec3 portalMin;uniform vec3 portalMax;\n'+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace(/void main\s*\(\s*\)\s*\{/,m=>m+`if(portalActive>.5){bool inside=all(greaterThanEqual(portalWorld,portalMin))&&all(lessThanEqual(portalWorld,portalMax));if(${wire?'!inside':'inside'})discard;}`);
+ };
+ material.customProgramCacheKey=()=>key+'|portal-volume-v1:'+wire;material.needsUpdate=true;
+}
 
 // Reveal existing geometry without changing its topology or material shading.
 function reveal(material,uniforms){
@@ -20,6 +34,7 @@ function reveal(material,uniforms){
 export class Materialization{
  constructor(root){
   this.root=root;this.inverse={value:new T.Matrix4()};
+  this.portal={portalActive:{value:0},portalMin:{value:new T.Vector3()},portalMax:{value:new T.Vector3()}};
   this.solid={rezInverse:this.inverse,rezCut:{value:1e6},rezAlpha:{value:1}};
   this.materials=[];this.opacity=1;
   this.wire={rezInverse:this.inverse,rezCut:{value:-1e6}};
@@ -31,13 +46,14 @@ export class Materialization{
   const patched=new Set();
   root.traverse(o=>{
    if(!o.isMesh)return;
-   for(const m of Array.isArray(o.material)?o.material:[o.material])if(!patched.has(m)){this.materials.push({material:m,transparent:m.transparent,depthWrite:m.depthWrite,blending:m.blending});reveal(m,this.solid);patched.add(m);}
+   for(const m of Array.isArray(o.material)?o.material:[o.material])if(!patched.has(m)){this.materials.push({material:m,transparent:m.transparent,depthWrite:m.depthWrite,blending:m.blending});reveal(m,this.solid);portalClip(m,this.portal);patched.add(m);}
   });
   const lineMaterial=new T.LineBasicMaterial({color:new T.Color(4,.015,.005),toneMapped:false,transparent:true,opacity:1,depthWrite:false});reveal(lineMaterial,this.wire);this.lineMaterial=lineMaterial;
+  portalClip(lineMaterial,this.portal,true);
   for(const mesh of sources){
    if(sources.some(o=>o.material.name==='Base')&&mesh.material.name!=='Base')continue;
    const lines=new T.LineSegments(new T.EdgesGeometry(mesh.geometry,25),lineMaterial);lines.userData.breakupExclude=true;lines.visible=false;mesh.add(lines);this.wires.push(lines);
-   const depth=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,side:T.DoubleSide,blending:T.NoBlending});reveal(depth,{rezInverse:this.inverse,rezCut:this.solid.rezCut});mesh.userData.rezDepthMaterial=depth;this.depthMaterials.push(depth);
+   const depth=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,side:T.DoubleSide,blending:T.NoBlending});reveal(depth,{rezInverse:this.inverse,rezCut:this.solid.rezCut});portalClip(depth,this.portal);mesh.userData.rezDepthMaterial=depth;this.depthMaterials.push(depth);
   }
   const size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());
   const material=new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending,toneMapped:false,
@@ -45,7 +61,10 @@ export class Materialization{
    fragmentShader:'varying vec2 uvRez;uniform float strength;uniform float lineStrength;void main(){vec2 edge=min(uvRez,1.-uvRez);float border=1.-smoothstep(.003,.009,min(edge.x,edge.y));gl_FragColor=vec4(vec3(3.,.025,.005),strength*(.025+max(border,lineStrength)*.8));}'});
   this.rectangle=new T.Mesh(new T.PlaneGeometry(size.x+4,size.y+4),material);this.rectangle.position.set(center.x,center.y,0);this.rectangle.userData.breakupExclude=true;this.rectangle.visible=false;root.add(this.rectangle);
  }
- update(age=null){
+ update(age=null,pad=null){
+  if(age!==null)pad=null;
+  this.portal.portalActive.value=pad?1:0;
+  if(pad){const h=pad.size/2;this.portal.portalMin.value.set(pad.x-h,0,-pad.s-h);this.portal.portalMax.value.set(pad.x+h,pad.height??TELEPORTERS.height,-pad.s+h);}
   this.root.updateWorldMatrix(true,false);this.inverse.value.copy(this.root.matrixWorld).invert();
   const phase=age===null?{complete:true}:materializationPhase(age),active=!phase.complete;
   const scale=new T.Vector3().setFromMatrixScale(this.root.matrixWorld);
@@ -61,9 +80,9 @@ export class Materialization{
    m.depthWrite=fading?false:original.depthWrite;
    m.blending=fading?T.NormalBlending:original.blending;
   }
-  this.lineMaterial.opacity=1-this.opacity;
-  this.wire.rezCut.value=active?T.MathUtils.lerp(from,to,phase.wire):-1e6;
-  for(const wire of this.wires)wire.visible=active;
+  this.lineMaterial.opacity=pad?1:1-this.opacity;
+  this.wire.rezCut.value=pad?1e6:active?T.MathUtils.lerp(from,to,phase.wire):-1e6;
+  for(const wire of this.wires)wire.visible=active||!!pad;
   this.rectangle.visible=active;this.rectangle.material.uniforms.strength.value=active?phase.opacity:0;
   this.rectangle.material.uniforms.lineStrength.value=active?Math.max(0,1-phase.height/.06):0;
   if(active){

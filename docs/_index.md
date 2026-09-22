@@ -11,10 +11,125 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 <a class="card" href="models/index.html"><h3>Models</h3><p>Imported tank and Recognizer files, scales and material adapters.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="references/index.html"><h3>References</h3><p>Film stills and visual targets for the maze and vehicles.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="sounds/index.html"><h3>Sound library</h3><p>Listen to sound candidates, compare current effects, and browse future resources.</p><span class="arrow">View &rarr;</span></a>
+<a class="card" href="refactoring/index.html"><h3>Refactoring design</h3><p>Code review, object ownership and an incremental cleanup plan.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="validation/index.html"><h3>Validation</h3><p>Browser checks, measured results and remaining review.</p><span class="arrow">View &rarr;</span></a>
 </div>
 
 ## Current direction — open-ended simulation
+
+### Gravity, aerial zoom and attack coordination — September 22
+
+- [x] Remove vertical damping from production debris; retain horizontal drag, angular damping and contact friction. Regression now measures actual production free-fall velocity/displacement for four seconds without disabling damping in the test.
+- [x] Restore scroll-wheel aerial zoom through `CameraRig`; verify both running and paused operation.
+- [x] Use one active-maze-width radio radius for enemy observations, neutralization, materialization awareness and tactical ally information. Preserve observation age/delivery delay and vertical-distance checks.
+- [x] Reserve one attack lead among nearby aircraft with compatible recorded target knowledge. Retain that lead for a bounded twelve-second approach; supporters use separated 90 m flank positions and cannot initiate a stomp. Reassign on destruction, blocked approach, lost visual contact, injury/cooldown or lease expiration. Coordination uses radio-visible allies, never unseen live Clu coordinates.
+
+### Carrier escorts and debris avoidance — September 22
+
+- [x] Preserve carrier escort duty in Classic, local and JEV modes when no current target/sound investigation interrupts it. Air escorts match a moving carrier slot above roof clearance; ground escorts retain separate perimeter detours, then use a bounded catch-up speed (1.4× ordinary tank speed) to regain formation. Combat movement retains its existing speed cap.
+- [x] Publish detached physical debris poses/velocities/bounds to the session. Player perception filters these by 160 m range and wall visibility; JEV receives up to 24 nearest observed pieces, never hidden wreckage.
+- [x] Autoplay checks visible falling/crossing/settled debris every tick against a 2.5-second predicted path, including turbo and braking. It can brake or steer using normal inputs and wall clearance, independent of API latency. Manual input overrides remain intact; damage remains real.
+- [x] Verify carrier rejoining after blueprint traversal, visibility isolation, turbo prediction, physics observation cleanup, and otherwise-lethal settled/falling debris encounters. Full suite: 232 passed; Chrome autoplay regression passed without provider calls. Prediction is approximate and cannot guarantee escape from unavoidable impacts.
+
+### Refactoring roadmap — September 22
+
+Design review: [Refactoring review and design](refactoring/index.html). The ownership refactor is implemented locally. Keep this checklist as the plan source; the linked review now records the implementation, compatibility boundaries and remaining human checks. No deployment was performed.
+
+- [x] Review current world selection, simulation/control boundaries, application lifecycle, rendering/audio ownership, and JEV transport/accounting. Document composition-based OOP recommendations grounded in the code.
+- [x] **0 — Baseline:** explicit blueprint/authored scenarios and seeds, failure captures and boundary contracts; preserve known unresolved third-maze navigation as a tracked defect.
+- [x] **1 — World:** explicit scenario/world construction, including derived pads/beams/rosters, shared by browser and tests; support independently constructed worlds without browser globals.
+- [x] **2 — Navigation:** extract route execution/cursor/arrival behavior from mission/JEV selection, preserve controller behavior and expose blocked/progress diagnostics.
+- [x] **3 — Lifecycle:** compose application, session, loop, input and HUD owners; preserve fixed-step ordering and isolate debris physics from presentation ownership.
+- [x] **4 — JEV:** separate typed transport, scheduling/application policy and shared protocol/cost contracts; preserve retry, quota, privacy and lifetime behavior.
+- [x] **5 — Presentation:** extract camera coordination, then clarify effect/resource ownership with captures and lifecycle checks; retain current shader ordering.
+- [x] **6 — Audio/cleanup:** isolate music and voice responsibilities, remove competing implementations and reconcile documentation; retain explicit default-world adapters for standalone fixtures.
+
+
+Remaining acceptance work: Safari audio-unlock/listening and side-by-side visual review on the user’s hardware. Automated results are recorded in [Validation](validation/index.html); these checks do not establish artistic fidelity. The seeded replay captures three beams, then holds near 686 seconds; full multi-maze completion remains unresolved.
+
+### Debris gravity and faster panels — September 22
+
+- [x] Use shared Earth gravity (9.81 m/s²) for every detached vehicle part; remove the Recognizer-specific 14.7 m/s² override. Preserve inherited velocity, blast impulse, damping and collisions.
+- [x] Divide only panel formation and retraction durations by three: 0.5 s closing, 11 s enclosed hold, approximately 1.167 s opening. Total transfer is approximately 12.667 s. Camera movement rates, blast settings and animation ordering are unchanged.
+
+### Beam panels, timeout retries and request stats — September 22
+
+- [x] Replace transfer shafts with 16 translucent blue polygon panels, bright vertical edges and 0.2 m corner gaps. Preserve sequential closing/opening, height, timing and disabled blast. Match Recognizer contact damage to panel segments.
+- [x] Retry JEV timeouts twice (three consecutive attempts total), with 0.5/1 second minimum backoff and existing pacing. Continue local piloting during retries, reset the failure streak on a response, and disengage after exhaustion. Non-timeout errors/budgets still disengage immediately. Pause cancellation is not a timeout.
+- [x] Display this round’s total player/enemy request attempts, rolling 10-second requests/sec and USD cost in a bordered box beneath the top-left U / autoplay control. Count retries, preserve totals across pause/autoplay toggles, reset for a new run. Reported billable input usage replaces conservative request estimates; prefix cost with ~ while estimates remain. This round’s display is separate from the persistent hourly relay budget.
+
+### Pad horizon and carrier spotlights — September 22
+
+- [x] Bound pad-border shader anti-aliasing footprint and fade unresolved pads instead of letting grazing floor derivatives expand red borders across the horizon. Keep borders on the floor surface.
+- [x] Default `CARRIER.searchlightsEnabled` to false, clearing light tracking/illumination and stopping spotlight-derived radio reports. Recognizer spotlights remain independent.
+
+### Post-transfer damage bubble disabled — September 22
+
+- [x] Default `DATA_BEAM.blastEnabled` to false. Skip post-capture wave damage and hide its expanding sphere/ring. Keep capture, healing, color transition, camera sequence and transfer-shaft contact behavior. Retain the effect behind this flag for later re-enabling.
+
+### Corner arrival stall — September 22
+
+- [x] Reproduce a motionless stall at about 147 seconds after the first blueprint beam: waypoint distance about 0.5 m, next segment occluded, throttle and steer both zero.
+- [x] Distinguish intermediate corners from final destinations. Keep steering to 2 cm at intermediate points and creep at up to 2 m/s within 2 m, instead of applying final-stop/steering dead zones. Preserve final beam stopping behavior.
+- [x] Extend the actual-blueprint regression through departure and capture of a second beam, rejecting prolonged motionless/no-steering stalls between transfers.
+- [ ] A longer exploratory run encountered a separate hold/route-failure near the third maze around 689 seconds. Full multi-maze completion remains unverified.
+
+### Blueprint route correction — September 22
+
+- [x] Reproduce hold at the enemy-free browser-default blueprint spawn. Prior autoplay simulation fixtures used the historic authored layout and missed this failure.
+- [x] Search outward from the constrained beam destination using an 8 m grid and larger bounded search/detour allowance, then reverse the swept route for Clu. Keep coarse open-grid routing as fallback. Default enemy route-search settings remain unchanged.
+- [x] Add permanent blueprint coverage asserting a collision-clear route from the actual spawn and capture of its local beam. Browser autoplay coverage now begins at the blueprint opening before the separate empty-grid control fixture.
+
+### Post-combat autoplay — September 22
+
+- [x] Distinguish visible contacts from maneuver threats: enemies within 100 m, or within 250 m approaching Clu faster than 2 m/s. Include both visible contacts and threat IDs in player snapshots; no private enemy pursuit state is read.
+- [x] Replan immediately when threats appear/disappear, clear route-failure cooldowns on that transition, and reject delayed escape choices once threats are gone. Resume the beam mission after destroying pursuers.
+- [x] While red beams remain and no threat is present, a missing route permits maze-entry recovery or hold/retry, never unrestricted open-grid exploration. Verify five destroyed pursuers, nonapproaching distant contacts and temporary route failure.
+
+### Autoplay cornering and turbo — September 21
+
+- [x] Preserve waypoint progress when JEV confirms the current option. Consume visible route waypoints continuously and brake/turn in place for sharp headings; approach occluded corners closely enough to see the next segment instead of stopping at the waypoint acceptance radius.
+- [x] Prioritize uncollected beams within 2 km over previously selected distant destinations. Once local beams are blue, travel to the next maze remains intentional.
+- [x] Activate turbo through normal simulation input only when aligned, moving, and a clear route segment exceeds the full boosted run plus braking distance. Regulate boosted speed; avoid automatic activation during manual driving overrides. Expose turbo cooldown and duration in player snapshots.
+
+### Background autoplay — September 21
+
+- [x] Keep autoplay running on window blur or hidden-tab transitions. Clear held manual inputs on focus loss. Preserve explicit pause and pause unattended play when autoplay is disabled or JEV fails.
+- [x] Use one scheduled loop: animation frames while visible, a 250 ms timer while hidden. Retain fixed 60 Hz simulation steps with bounded one-second catch-up; skip hidden rendering. Cancel both scheduling paths on disposal. Browser/OS suspension can still reduce background progress.
+
+### Autoplay beam navigation — September 21
+
+- [x] Expose all beam colors with distance in meters and hull-relative bearing in radians (positive right), plus the active destination. Remove the 500 m objective cutoff.
+- [x] Retain a selected uncollected beam across replans; advance when it becomes blue. Without visible enemies, offer the mission route rather than unrelated short wandering moves. Preserve combat maneuver options and hold during transfer.
+- [x] Connect local swept maze routes with long open-grid legs around maze bounds; retain route waypoints across replans and recheck clearance. Retry failed objectives after a bounded delay. Verify two captures in different authored mazes during a 600-second enemy-free simulation. Full combat completion remains unverified.
+
+### Local JEV request pacing — September 21
+
+- [x] Pace local client calls at least 650 ms apart in wall time, including across restarts, to respect the relay’s 600 ms minimum. Distinguish busy, short-interval and hourly-cap warnings; include retry delays. These limits are independent of purchased provider credits. Replace the request-count allowance with a $1 USD rolling-hour local spend budget. Configure server-only `JEV_HOURLY_BUDGET_USD` in `.env.local`; restart Vite after changes. Persist reservations and settled usage in ignored `.local/jev-spend.json`. Public Worker quotas remain separate.
+
+### Beam camera and persistent autoplay — September 21
+
+- [x] Animate a presentation-only aerial rise and L-direction orbit during beam transfer, at half keyboard speed. Rise and descent each take 2.4 seconds; descent starts at 10.1 seconds and reaches Clu at 12.5 seconds as the ring opens. The beam continues its color transition during opening. Freeze with simulation pause, skip automatic motion for reduced-motion users, and allow V/P to cancel. Do not turn the weapon.
+- [x] Keep autoplay selected until U or its HUD toggle is used, or JEV becomes unavailable. Service errors/timeouts/rate limits disengage the pilot and clear its plan; no automatic re-enabling after recovery. Retain the warning while off. Held driving/aim controls override their own channels, and Space/mouse fire combines with automatic firing without interrupting navigation. Release returns held channels to the pilot; existing cruise/aim-lock modes retain their normal behavior.
+- [x] Verify camera timing/pause/return and persistent manual overrides in simulation and headless Chrome.
+
+### Beam objective, longer hold and teleport audio — September 21
+
+- [x] Make turning every red data beam blue explicit in the player Jev prompt and snapshot. Include remaining/total counts, red/transitioning/blue state, remaining transfer time and the stop-and-wait activation rules. Keep survival and the open-ended simulation; no win screen. Candidate routes remain bounded, so successful completion of all sites is not guaranteed.
+- [x] Extend the closed ring hold from 6 to 11 seconds without changing the 1.5-second closing or 3.5-second opening sweeps. Total transfer is now 16 seconds. Visual color progress, healing and release use the same total; only the hold duration is extended.
+- [x] Add original synthesized teleport audio: descending phase collapse and rising resonant reassembly, with a short digital snap and stereo echo. Trigger only on completed relocation. Nearby vehicles produce spatial cues at departure/arrival; Clu hears one continuous 0.78-second cue at arrival. Master mute/pause and reset cleanup apply. Source: `src/audio/teleport.js`.
+
+### Autoplay driving continuity — September 21
+
+- [x] Treat temporary route endpoints as handoffs: request a new feasible route before the braking zone, roll through straight intermediate waypoints, and skip already-passed waypoints after delayed decisions. Use a turn/distance speed target instead of an all-or-nothing angular throttle cutoff; retain braking at obstacles and data destinations.
+- [x] Steer the turret toward the active visible target or along the driving route when there is no contact. Retain a tracked target across replans unless another is substantially nearer, to reduce camera swings. Keep the ordinary turret motor limits and temporary manual overrides.
+- [x] Verify sustained cruising above 19 m/s after acceleration in a clear 20-second route, momentum through collinear waypoints, stopping at a data destination and reorienting a sideways turret. Browser/build validation is recorded in Validation.
+
+### Optional Clu autoplay — September 21
+
+- [x] Add an off-by-default U key and HUD button to let Jev choose Clu maneuvers. Keep the enemy AI mode independent. Movement/turret/fire input temporarily overrides the corresponding pilot controls; pause suspends requests and motion. Label Jev/local fallback on the button.
+- [x] Supply Clu's own pose, health, heading/speed, nearby visible enemies, static walls/data destinations, recent positions and bounded feasible maneuver routes. Use a distinct server-owned player prompt. No hidden enemy positions, memories or tactical plans enter its snapshot. Local motor code steers/brakes and only fires through the existing observed target/aim-cone checks.
+- [x] Share one serial Jev client, rate/cooldown budget and alternating player/enemy opportunities. Reject stale or pre-teleport replies; local tactics continue during failures. Check moving inputs, information isolation, selection, pause and temporary manual overrides. A live local-relay player request returned an accepted decision; encounter quality and long autonomous runs still need human review.
 
 ### In-game service warnings — September 21
 
@@ -57,13 +172,13 @@ Design references: the [Tetris example](https://github.com/Yasserbhb/Agent-JEV-T
 
 September 21 grid alignment: maze-site origins now snap to the 24 m world grid, with seeded rotations restricted to 0°, 90°, 180° or 270°. The initial maze stays at the origin and unrotated. Rendering, collision, patrol locations, data beams and teleport pads derive from the same site transforms. Preserve the authored diagonal wall ends and blueprint shapes within each site.
 
-### Exterior teleport pads — September 20
+### Spatial teleport pads — September 21 (supersedes the timed transfer)
 
-- [x] Place four glowing red 2×2-grid-cell (48 m) square borders around every maze, clear of exterior walls. Each has a stable link to a pad at another maze; together the links reach all other sites. The latest revision snaps every border to the 24 m world grid and uses exactly two cells per side, superseding the earlier 64 m size. Snap away from the maze to preserve exterior clearance. There is no fill. Render borders directly in the floor shader to eliminate competing coplanar surfaces. Share the grid’s 0.10 m half-width and derivative antialiasing calculation; vehicles and walls naturally occlude the floor. This supersedes the separate plane and depth-bias attempt. Apply border color to the shader’s outgoing light (not the already-consumed diffuse input); browser captures confirm visible grid-width borders. Pads are authored in `src/levels/teleporters.js`.
-- [x] Trigger only when the complete horizontal vehicle footprint is contained in the square, including a tank's rotated turret. The activation column has no altitude limit. Clu, enemy tanks and Recognizers share the simulation path; the enormous carrier cannot fit inside these pads.
-- [x] Freeze propulsion and interactions during a 2.75-second reverse materialization effect, relocate, then play the normal 2.75-second materialization effect. Preserve heading and aircraft altitude; resume at rest. Snap Clu's camera to the destination rather than traversing the intervening world. Pause freezes effects and reset clears transit state.
-- [x] Reserve destinations to prevent simultaneous arrivals; defer a transfer if occupied, including a vehicle entering during dematerialization. Require the arriving vehicle to leave the pad completely before it can trigger another trip. Enemy perception, weapons, collision damage and audio exclude vehicles in transit without inventing a remote sighting.
-- [x] Verify whole-footprint entry, rotated turrets, altitude, departure/arrival phases, occupied destinations, reentry locks and reset in simulation checks. Drive Clu onto a pad in headless Chrome; verify both effects, pause, arrival, ground-tank/Recognizer transfers and reset, with rendered captures and no browser errors. See [Validation](validation/index.html).
+- [x] Preserve four grid-aligned 48 m square borders outside each maze and their links to other sites. Extend each invisible portal volume from the floor to four maze-wall heights; aircraft above that volume do not transfer.
+- [x] Clip vehicle solids and their shadows inside the volume, drawing glowing edge wireframe only on those portions. Partial entry/exit is spatial, independent of time. Clu, ground tanks, folding aircraft, turrets, projected floor shadows and aircraft depth-atlas shadows share the same clipping planes. No sweeping rectangle or fade is used for teleportation; reinforcement materialization remains unchanged.
+- [x] On full conservative hull/turret/vertical containment, transfer instantly with the same local pad offset, altitude, heading, linear/angular motion, turbo and player controls. Continue driving normally while entering/leaving. Block an occupied destination without freezing the vehicle; process transfers atomically to avoid overlapping arrivals. Require complete 3D exit before rearming. Pulse the source/destination borders briefly; snap camera/interpolation history at transfer.
+- [x] Replan arriving enemies and synchronize nearby recorded awareness immediately, without inventing live Clu coordinates. Vehicles remain subject to ordinary movement, visibility and weapon/collision rules during the spatial effect.
+- [x] Verify partial/complete entry, turret and ceiling bounds, altitude exit, offset/momentum, occupied/simultaneous arrivals and awareness in simulation. Drive through in Chrome; inspect half-wireframe entry, full-wireframe arrival and solid exit, with paused simulation and no browser errors. Preserve separate reinforcement animation checks.
 
 ### Wireframe rezzing and pursuit reinforcements — September 20
 

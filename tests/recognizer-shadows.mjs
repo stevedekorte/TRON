@@ -7,7 +7,7 @@ try{
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.route('**/shadow-inspection',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0"></body>'}));await page.goto(new URL('/shadow-inspection',process.env.TRON_URL||'http://127.0.0.1:5173').href);
  const result=await page.evaluate(async()=>{
- await (await import('/src/rendering/debris-physics.js')).debrisPhysicsReady;
+ await (await import('/src/simulation/debris-physics.js')).debrisPhysicsReady;
   const T=await import('/node_modules/three/build/three.module.js'),{loadRecognizer,createRecognizer}=await import('/src/rendering/models.js'),{RecognizerShadows}=await import('/src/rendering/recognizer-shadows.js'),{Breakups}=await import('/src/rendering/breakup.js');
   const craft=createRecognizer(await loadRecognizer());craft.root.scale.setScalar(.65);craft.root.position.set(0,55,0);
   const scene=new T.Scene();scene.background=new T.Color(0x03050c);
