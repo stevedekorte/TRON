@@ -3,6 +3,12 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Aircraft shadows blocked by maze geometry — September 22
+
+Headless Chrome 153.0.8010.53 on macOS: `node tests/recognizer-shadow-occlusion.mjs` reproduced aircraft shadow leakage onto the far wall and covered floor, then verified the maze-depth mask. Exposed-roof shadow pixels remained 8,694; far-wall shadow pixels fell from 15,312 to zero and covered-floor pixels from 1,069 to zero. Detached-part wall leakage was zero. The separate projected ground silhouette fell from 941 leaked pixels to zero. The resulting fixture capture was inspected. These measurements cover the controlled geometry, not every possible viewing angle.
+
+`node tests/recognizer-shadows.mjs` passed roof/wall coverage for intact aircraft and debris plus game shader compilation. Its debris capture now occurs at 0.2 seconds, before the blast can randomly scatter pieces beyond the small receivers. `node tests/materialization.mjs` passed wire/solid phases, two reinforcements, atlas growth, pause and reset. `npm run test:browser -- --refactor` passed combined game shaders and three restarts with stable counts of 97 geometries, 28 textures and one audio context. `npm test` passed all 237 tests. No provider calls were needed for these checks.
+
 ## Production gravity, aerial wheel and coordinated attacks — September 22
 
 Final combined validation: `npm test` passed all 237 tests; production/documentation build and Worker dry-run packaging passed. Browser checks below used headless Chrome on macOS.

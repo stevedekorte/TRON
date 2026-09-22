@@ -23,7 +23,8 @@ try{
   }
   craft.root.visible=false;
   const breakups=new Breakups(new T.Scene());breakups.spawn(craft,{x:0,y:55,s:0,yaw:0,fold:0});
-  for(let i=0;i<90;i++)breakups.update(1/60);
+  // Inspect early debris before the strong blast carries it beyond these small receivers.
+  for(let i=0;i<12;i++)breakups.update(1/60);
   const burst=breakups.bursts[0];
   for(const receiver of [roof,wall]){
    roof.visible=receiver===roof;wall.visible=receiver===wall;shadows.update(renderer,[]);const before=pixels();shadows.update(renderer,[burst]);const after=pixels();let darker=0;

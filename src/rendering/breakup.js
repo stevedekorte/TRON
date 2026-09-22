@@ -1,3 +1,4 @@
+import {occludeProjectedShadow} from './maze-light-visibility.js';
 import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as THREE from 'three';
 import {DEBRIS_PHYSICS,DebrisPhysics} from '../simulation/debris-physics.js';
@@ -119,6 +120,7 @@ export class Breakups {
    vertexShader:`void main(){vec4 world=modelMatrix*vec4(position,1.);world.xz+=vec2(.5)*max(0.,world.y);world.y=.025;gl_Position=projectionMatrix*viewMatrix*world;}`,
    fragmentShader:`uniform float fade;void main(){gl_FragColor=vec4(mix(vec3(0.,.001,.004),vec3(1.),pow(1.-fade,2.)),1.);}`
   });materials.push(groundShadow);
+  if(this.mazeOcclusion)occludeProjectedShadow(groundShadow,this.mazeOcclusion);
   for(const group of groups)for(const mesh of [...group.children]){
    if(!mesh.isMesh)continue;
    const shadow=new THREE.Mesh(mesh.geometry,groundShadow);shadow.name='debris-ground-shadow';shadow.frustumCulled=false;shadow.renderOrder=-1;shadow.userData.breakupExclude=true;mesh.add(shadow);
@@ -147,7 +149,7 @@ export class Breakups {
   flash.position.copy(impact);this.scene.add(flash);
   const optical=motion===BREAKUP_MOTION.recognizer?createBlast(impact):null;
   if(optical)this.scene.add(optical.mesh,optical.sparks);
-  this.bursts.push({pieces,materials,flash,optical,hitPart,motion,subject:event.subject||'recognizer',age:0,life:motion.life+Math.random()*motion.lifeVariation});
+  this.bursts.push({pieces,materials,groundShadow,flash,optical,hitPart,motion,subject:event.subject||'recognizer',age:0,life:motion.life+Math.random()*motion.lifeVariation});
  }
  update(dt){
   if(this.ownsPhysics)this.physics.update(dt);
