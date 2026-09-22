@@ -1,6 +1,8 @@
+import {configFor} from '../game/config.js';
 import {GUNNER,config,angleDelta,clamp} from '../game/config.js';
 export const MOUSE_AIM=Object.freeze({slowdownSeconds:.22,acceleration:6});
 export function updateMouseAim(run,input,scale){
+ const config=configFor(run);
  if(!run.gunner||run.crushed||input.turret||input.aimPitch||run.turretCentering||run.gunnerLeveling){run.mouseAim=null;return;}
  const heading=run.yaw+run.turretYaw;
  if(input.mouseTarget)run.mouseAim={yaw:input.mouseTarget.yaw,pitch:clamp(input.mouseTarget.pitch,GUNNER.minPitch,GUNNER.maxPitch)};

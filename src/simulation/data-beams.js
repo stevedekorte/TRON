@@ -1,9 +1,11 @@
-import {MAZE_INSTANCES,MAZE_LENGTH,OPEN_CELLS,freePosition} from '../levels/maze.js';
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
+const {MAZE_LENGTH}=DEFAULT_WORLD;
 import {CLU_HEALTH,RECOGNIZER_SCALE} from '../game/config.js';
-import {CARRIER} from '../game/carrier.js';
-// Faster ring sweeps retain the six-second enclosed hold.
-export const DATA_BEAM={radius:7,ringRadius:8.5,ringShafts:32,height:100000,wallClearance:20,stopSpeed:.3,buildSeconds:1.5,holdSeconds:6,retractSeconds:3.5,transferSeconds:11,blastSeconds:4,blastRadius:MAZE_LENGTH/2,carrierDamage:25};
-export function createDataBeams(random){
+import {CARRIER,carrierFor} from '../game/carrier.js';
+// Only panel formation/retraction are accelerated; the enclosed hold stays eleven seconds.
+export const DATA_BEAM={radius:7,ringRadius:8.5,ringPanels:16,ringPanelGap:.2,ringPanelOpacity:.16,ringEdgeOpacity:.55,ringEdgeWidth:.035,height:100000,wallClearance:20,stopSpeed:.3,buildSeconds:1.5/3,holdSeconds:11,retractSeconds:3.5/3,get transferSeconds(){return this.buildSeconds+this.holdSeconds+this.retractSeconds;},blastEnabled:false,blastSeconds:4,blastRadius:MAZE_LENGTH/2,carrierDamage:25};
+export function createDataBeams(random,world=DEFAULT_WORLD){
+ const {MAZE_INSTANCES,MAZE_LENGTH,OPEN_CELLS,freePosition}=world;
  const used=new Set();
  return MAZE_INSTANCES.map(m=>{
   const candidates=OPEN_CELLS.filter(p=>p.mazeId===m.id&&Math.hypot(p.x-m.x,p.s-m.s)<MAZE_LENGTH*.28&&freePosition(p.x,p.s,DATA_BEAM.wallClearance)&&!used.has(`${p.c},${p.r}`));
@@ -26,7 +28,7 @@ export function beginDataTransfer(run){
 export function dataRingSweep(beam,time){
  if(beam.collectedAt!==null||beam.transferStartedAt===null)return 0;
  const age=time-beam.transferStartedAt,end=DATA_BEAM.buildSeconds+DATA_BEAM.holdSeconds;
- return age<0?0:age<end?Math.min(1,age/DATA_BEAM.buildSeconds):Math.max(0,1-(age-end)/DATA_BEAM.retractSeconds);
+ return age<0||age>=DATA_BEAM.transferSeconds?0:age<end?Math.min(1,age/DATA_BEAM.buildSeconds):Math.max(0,1-(age-end)/DATA_BEAM.retractSeconds);
 }
 function destroyEnemy(run,e){
  e.health=0;e.state='destroyed';e.canSee=false;e.memory=null;run.kills++;
@@ -37,21 +39,31 @@ export function damageRingContacts(run){
   const sweep=dataRingSweep(beam,run.time);if(!sweep)continue;
   for(const e of run.recognizers){
    if(e.teleport||e.state==='materializing'||e.state==='destroyed')continue;
-   for(let i=0;i<DATA_BEAM.ringShafts&&sweep>i/DATA_BEAM.ringShafts;i++){
-    const angle=i/DATA_BEAM.ringShafts*Math.PI*2;
+   for(let i=0;i<DATA_BEAM.ringPanels&&sweep>i/DATA_BEAM.ringPanels;i++){
+    const angle=i/DATA_BEAM.ringPanels*Math.PI*2;
     const dx=beam.x+Math.cos(angle)*DATA_BEAM.ringRadius-e.x;
     const dz=-(beam.s-e.s)+Math.sin(angle)*DATA_BEAM.ringRadius;
     const x=Math.cos(e.yaw)*dx-Math.sin(e.yaw)*dz,z=Math.sin(e.yaw)*dx+Math.cos(e.yaw)*dz;
-    // An infinite shaft intersects the broad horizontal body at its flight height.
-    if(Math.abs(x)<18*RECOGNIZER_SCALE+.07&&Math.abs(z)<4.35*RECOGNIZER_SCALE+.07){destroyEnemy(run,e);break;}
+    // Clip the panel's horizontal segment against the aircraft footprint.
+    const halfWidth=(2*DATA_BEAM.ringRadius*Math.tan(Math.PI/DATA_BEAM.ringPanels)-DATA_BEAM.ringPanelGap)/2;
+    const tx=-Math.sin(angle),tz=Math.cos(angle);
+    const ux=Math.cos(e.yaw)*tx-Math.sin(e.yaw)*tz,uz=Math.sin(e.yaw)*tx+Math.cos(e.yaw)*tz;
+    let lo=-halfWidth,hi=halfWidth;
+    for(const [p,v,extent] of [[x,ux,18*RECOGNIZER_SCALE],[z,uz,4.35*RECOGNIZER_SCALE]]){
+     if(Math.abs(v)<1e-8){if(Math.abs(p)>extent){lo=1;hi=0;break;}}
+     else{const a=(-extent-p)/v,b=(extent-p)/v;lo=Math.max(lo,Math.min(a,b));hi=Math.min(hi,Math.max(a,b));}
+    }
+    if(lo<=hi){destroyEnemy(run,e);break;}
    }
   }
  }
 }
 export function updateDataWaves(run){
+ const CARRIER=carrierFor(worldFor(run));
+ if(!DATA_BEAM.blastEnabled)return;
  for(const beam of run.dataBeams){
   if(beam.collectedAt===null||run.time-beam.collectedAt>DATA_BEAM.blastSeconds+.2)continue;
-  const previous=beam.waveRadius,radius=DATA_BEAM.blastRadius*Math.min(1,Math.max(0,(run.time-beam.collectedAt)/DATA_BEAM.blastSeconds));
+  const previous=beam.waveRadius,radius=(worldFor(run).MAZE_LENGTH/2)*Math.min(1,Math.max(0,(run.time-beam.collectedAt)/DATA_BEAM.blastSeconds));
   function touches(id,distance){
    const last=beam.waveDistances[id]??distance;beam.waveDistances[id]=distance;
    if(beam.waveHits.includes(id)||last<previous||distance>radius)return false;

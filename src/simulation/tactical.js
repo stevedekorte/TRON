@@ -1,17 +1,21 @@
+import {supportingAttack,attackSupportGoal} from './attack-coordination.js';
+import {radioRangeFor} from '../game/communication.js';
+import {configFor} from '../game/config.js';
+import {worldFor} from '../levels/scenario.js';
 import {connectedSearchRoutes} from './search-routes.js';
 import {hearingReports,hearingTarget,hearingGoal} from './hearing.js';
-import {HEARING} from '../game/hearing.js';
+import {HEARING,hearingFor} from '../game/hearing.js';
 import {config,angleDelta,clamp} from '../game/config.js';
 import {TACTICAL} from '../game/tactical.js';
-import {nearbyWalls,OPEN_CELLS,freePosition,lineOfSight} from '../levels/maze.js';
-import {advanceFlight,advanceYaw,advanceLift,FLIGHT} from './flight.js';
+import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor} from './flight.js';
 import {beginCrush,advanceCrush,stompTarget,CRUSH} from './crush.js';
 import {aircraftPoseClear,aircraftSweepClear,overheadRoute,corridorRoute,SAFE_ALTITUDE,AIR_HULL} from './maneuver-geometry.js';
-export const tacticalEnabled=()=>config.aiMode==='local'||config.aiMode==='jev';
+export const tacticalEnabled=e=>['local','jev'].includes(configFor(e).aiMode);
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.s-b.s);
 const active=e=>e.health>0&&!e.teleport&&!e.targetGone&&!['destroyed','materializing'].includes(e.state);
-export function knownAllies(e,others){return others.filter(o=>o!==e&&active(o)&&Math.hypot(o.x-e.x,o.s-e.s,(o.y||0)-(e.y||0))<=TACTICAL.radioRange);}
+export function knownAllies(e,others){return others.filter(o=>o!==e&&active(o)&&Math.hypot(o.x-e.x,o.s-e.s,(o.y||0)-(e.y||0))<=radioRangeFor(e));}
 function targetMemory(e,now){
+ const {freePosition,lineOfSight}=worldFor(e);
  if(!e.memory||e.targetGone||now-e.memory.seenAt>38)return null;
  const age=Math.min(5,Math.max(0,now-e.memory.seenAt)+(e.canSee?0:TACTICAL.searchLeadSeconds)),m=e.memory;
  const end={x:m.x+(m.vx||0)*age,s:m.s+(m.vs||0)*age};
@@ -23,11 +27,14 @@ function targetMemory(e,now){
 }
 // No live player object enters candidate generation or the API snapshot.
 export function maneuverOptions(e,now,others){
+ const config=configFor(e),HEARING=hearingFor(e);
+ const world=worldFor(e),{OPEN_CELLS,freePosition,lineOfSight}=world,SAFE_ALTITUDE=world.WALL_HEIGHT+AIR_HULL.bottom+8;
+ const poseClear=p=>aircraftPoseClear(p,null,TACTICAL.clearance,world);
  const target=targetMemory(e,now),allies=knownAllies(e,others),air=e.kind!=='ground';
  const options=[];
  const add=(kind,goal,score,route=null)=>{
   if(!goal||!Number.isFinite(goal.x+goal.s))return;
-  if(air){if(!aircraftPoseClear(goal))return;route??=overheadRoute(e,goal);if(!route)return;}
+  if(air){if(!poseClear(goal))return;route??=overheadRoute(e,goal);if(!route)return;}
   else if(!freePosition(goal.x,goal.s,config.tankRadius+1))return;
   const travel=(route||[goal]).reduce((result,p,i,points)=>result+Math.hypot(p.x-(i?points[i-1].x:e.x),p.s-(i?points[i-1].s:e.s),(p.y||0)-(i?points[i-1].y||0:e.y||0)),0);
   const facts={travelMeters:travel,goalDistanceToLastKnownTarget:target?distance(goal,target):null,occludedFromLastKnownTarget:target?!lineOfSight({...goal,y:goal.y||3},{...target,y:2.8}):null,nearbySupport:allies.filter(a=>distance(a,goal)<150).length};
@@ -40,12 +47,15 @@ export function maneuverOptions(e,now,others){
   add('patrol',{...hover,...(patrol||{})},30);add('hold',hover,0);return options;
  }
  const dx=e.x-target.x,ds=e.s-target.s,norm=Math.hypot(dx,ds)||1;
- const wounded=e.health<=TACTICAL.retreatHealth,occupied=allies.some(a=>a.attack||a.tactical?.plan?.kind==='strike'&&distance(a,target)<TACTICAL.attackApproachMeters&&distance(a.tactical.plan.goal,target)<30);
+ const wounded=e.health<=TACTICAL.retreatHealth,occupied=supportingAttack(e)||!e.attackAssignment&&allies.some(a=>a.attack||a.tactical?.plan?.kind==='strike'&&distance(a,target)<TACTICAL.attackApproachMeters&&distance(a.tactical.plan.goal,target)<30);
  const retreat={x:e.x+dx/norm*TACTICAL.retreatDistance,s:e.s+ds/norm*TACTICAL.retreatDistance,y:SAFE_ALTITUDE,yaw:e.yaw};
  add('retreat',retreat,wounded?120:5);
  const ally=allies.sort((a,b)=>distance(b,target)-distance(a,target))[0];
  if(ally)add('regroup',{x:ally.x+dx/norm*35,s:ally.s+ds/norm*35,y:SAFE_ALTITUDE,yaw:e.yaw},wounded?110:25);
  if(air){
+  if(supportingAttack(e)&&e.canSee){
+   const p=attackSupportGoal(e,target);add('support',{...p,y:SAFE_ALTITUDE,yaw:-Math.atan2(target.x-p.x,target.s-p.s)},wounded?0:95);return options;
+  }
   // Find room for the actual oriented silhouette beside a wall, rather than
   // rejecting every site inside a single large circular clearance radius.
   const predicted=stompTarget(e,now)||target,poses=[];
@@ -56,7 +66,7 @@ export function maneuverOptions(e,now,others){
   if(e.canSee||!e.tactical?.search?.originChecked)add('pursue',pursuit,wounded?-20:distance(e,target)>TACTICAL.attackApproachMeters?88:occupied?78:40);
   for(const offset of [[0,0],[4,0],[-4,0],[0,4],[0,-4]])for(let i=0;i<8;i++){
    const p={x:predicted.x+offset[0],s:predicted.s+offset[1],y:CRUSH.soleHeight,yaw:i*Math.PI/4};
-   if(aircraftPoseClear(p))poses.push(p);
+   if(poseClear(p))poses.push(p);
   }
   poses.sort((a,b)=>distance(a,predicted)-distance(b,predicted)+Math.abs(angleDelta(e.yaw,a.yaw))-Math.abs(angleDelta(e.yaw,b.yaw)));
   const landing=poses[0];
@@ -69,7 +79,7 @@ export function maneuverOptions(e,now,others){
   const openings=OPEN_CELLS.filter(p=>distance(p,target)<100&&distance(e,p)<TACTICAL.routeRadius).sort((a,b)=>distance(a,target)-distance(b,target));
   for(const p of openings.slice(0,8)){
    const low={...p,y:TACTICAL.lowAltitude,yaw:-Math.atan2(target.x-p.x,target.s-p.s)};
-   if(!aircraftPoseClear(low))continue;
+   if(!poseClear(low))continue;
    const route=corridorRoute(e,low)||overheadRoute(e,low);if(route){add('low-cover',low,wounded?0:55,route);break;}
   }
  }else if(e.canSee||!e.tactical?.search?.originChecked)add('pressure',{...target,y:0,yaw:e.yaw},wounded?-20:75);
@@ -81,7 +91,7 @@ export function maneuverOptions(e,now,others){
   const visited=search?.visited||[];
   const rank=p=>distance(p,e)*.6+p.cost*.2-((p.x-target.x)*(m.vx||0)+(p.s-target.s)*(m.vs||0))/speed*.25
     +allies.filter(a=>a.tactical?.plan?.kind==='search-branch'&&distance(a.tactical.plan.goal,p)<40).length*100;
-  const branches=(search?.routes||connectedSearchRoutes(target)).filter(p=>distance(p,e)>TACTICAL.searchVisitMeters&&!visited.some(v=>distance(p,v)<TACTICAL.searchCheckedRadiusMeters)).sort((a,b)=>rank(a)-rank(b));
+  const branches=(search?.routes||connectedSearchRoutes(target,{world:worldFor(e),vehicleConfig:configFor(e)})).filter(p=>distance(p,e)>TACTICAL.searchVisitMeters&&!visited.some(v=>distance(p,v)<TACTICAL.searchCheckedRadiusMeters)).sort((a,b)=>rank(a)-rank(b));
   let offered=0;
   for(const p of branches){
    if(offered>=2)break;
@@ -89,7 +99,7 @@ export function maneuverOptions(e,now,others){
    if(distance(p,e)<TACTICAL.searchArrivalMeters)continue;
    const goal={x:p.x,s:p.s,y:air?SAFE_ALTITUDE:0,yaw:-Math.atan2(p.x-e.x,p.s-e.s)};
    let route=null;
-   if(air&&e.y<=TACTICAL.lowAltitude+.3&&Math.hypot(e.vx,e.vs)<.7&&distance(e,p)<TACTICAL.routeRadius){const low={...goal,y:TACTICAL.lowAltitude};if(aircraftPoseClear(low)){route=corridorRoute(e,low);if(route)goal.y=low.y;}}
+   if(air&&e.y<=TACTICAL.lowAltitude+.3&&Math.hypot(e.vx,e.vs)<.7&&distance(e,p)<TACTICAL.routeRadius){const low={...goal,y:TACTICAL.lowAltitude};if(poseClear(low)){route=corridorRoute(e,low);if(route)goal.y=low.y;}}
    const before=options.length;add('search-branch',goal,wounded?0:94-offered,route);
    if(options.length>before){options.at(-1).searchPath=p.path;offered++;}
   }
@@ -117,7 +127,7 @@ function updateSearch(e,now){
  const t=e.tactical,target=targetMemory(e,now);
  if(e.canSee||!target){t.search=null;return;}
  if(!t.search||distance(t.search.memory,e.memory)>=TACTICAL.targetShiftMeters){
-  t.search={memory:{...e.memory},origin:target,originChecked:false,visited:[],routes:connectedSearchRoutes(target)};
+  t.search={memory:{...e.memory},origin:target,originChecked:false,visited:[],routes:connectedSearchRoutes(target,{world:worldFor(e),vehicleConfig:configFor(e)})};
  }
  const search=t.search;
  if(!search.originChecked&&distance(e,search.origin)<=TACTICAL.searchArrivalMeters){
@@ -146,6 +156,7 @@ export function chooseManeuver(e,now,others){
  t.snapshot=tacticalSnapshot(e,now,others);return t.plan;
 }
 export function tacticalSnapshot(e,now,others){
+ const {nearbyWalls}=worldFor(e);
  const t=e.tactical,allies=knownAllies(e,others);
  return {time:now,units:'meters, seconds, radians; x/s horizontal, y up; forward=(-sin(yaw),cos(yaw))',
   self:{id:e.id,kind:e.kind||'recognizer',x:e.x,s:e.s,y:e.y,yaw:e.yaw,vx:e.vx,vs:e.vs,vy:e.vy,yawVelocity:e.yawVelocity,fold:e.fold||0,health:e.health,canSee:!!e.canSee},
@@ -154,9 +165,10 @@ export function tacticalSnapshot(e,now,others){
   allies:allies.map(a=>({id:a.id,kind:a.kind||'recognizer',x:a.x,s:a.s,y:a.y,yaw:a.yaw,vx:a.vx,vs:a.vs,health:a.health,state:a.state,intention:a.tactical?.plan?.kind||null,memory:a.memory?{...a.memory,age:now-a.memory.seenAt}:null})),
   map:nearbyWalls(e.x,e.s,TACTICAL.mapRadius).slice(0,48).map(w=>({height:w.height,points:w.points})),
   search:t?.search?{origin:t.search.origin,originChecked:t.search.originChecked,checked:t.search.visited}:null,
-  replanReason:t?.reason||null,current:t?.plan?.kind||null,options:(t?.options||[]).map(({id,kind,goal,route,score,facts,searchPath})=>({id,kind,goal,route,facts,searchPath,localScore:score}))};
+  replanReason:t?.reason||null,current:t?.plan?.kind||null,attackAssignment:e.attackAssignment||null,options:(t?.options||[]).map(({id,kind,goal,route,score,facts,searchPath})=>({id,kind,goal,route,facts,searchPath,localScore:score}))};
 }
 export function applyTacticalChoice(e,choice,revision,requestedAt,now){
+ const config=configFor(e);
  const t=e.tactical;if(!active(e)||e.attack||observationChange(e,now)||!t||t.revision!==revision||now-requestedAt>TACTICAL.requestMaxAge||!Number.isFinite(choice.confidence)||choice.confidence<(config.aiConfidence??TACTICAL.confidence))return false;
  const option=t.options.find(o=>o.id===choice.id);if(!option||option.kind==='investigate-sound'&&!hearingTarget(e,now))return false;
  if(e.health<=TACTICAL.retreatHealth&&!['retreat','regroup','ambush'].includes(option.kind))return false;
@@ -164,6 +176,9 @@ export function applyTacticalChoice(e,choice,revision,requestedAt,now){
  t.plan=option;t.index=0;t.source='jev';t.nextPlan=Math.max(t.nextPlan,now+TACTICAL.commitSeconds);return true;
 }
 export function navigateTactical(e,now,dt,others){
+ const FLIGHT=flightFor(e);
+ const config=configFor(e);
+ const SAFE_ALTITUDE=worldFor(e).WALL_HEIGHT+AIR_HULL.bottom+8;
  const before={x:e.x,s:e.s,y:e.y,yaw:e.yaw};
  if(e.attack){advanceCrush(e,now,dt);}
  else{

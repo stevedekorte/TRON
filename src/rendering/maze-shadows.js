@@ -1,10 +1,11 @@
+import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as T from 'three';
-import {MAZE_INSTANCES,MAZE_LENGTH,WALL_HEIGHT} from '../levels/maze.js';
 import {createStaticWallShadowGeometry} from './static-wall-shadows.js';
 import {RecognizerShadows} from './recognizer-shadows.js';
 // The maze is static: render its depth maps once, independently of moving casters.
 export class MazeShadows extends RecognizerShadows{
- constructor(world,vehicles=[]){
+ constructor(world,vehicles=[],map=DEFAULT_WORLD){
+  const {MAZE_INSTANCES,MAZE_LENGTH,WALL_HEIGHT}=map;
   // The shallow decorative ledges are smaller than a shadow texel. Casting
   // them into the slab's own map creates alternating triangle-shaped patches.
   // Use the shared solid wall prisms for casting, retain relief as receivers.

@@ -1,3 +1,4 @@
+if(process.argv.includes('--refactor')){await import('./refactor-browser.mjs');process.exit(0);}
 if(process.argv.includes('--death-terminal')){await import('./death-terminal.mjs');process.exit(0);}
 if(process.argv.includes('--cruise')){await import('./cruise.mjs');process.exit(0);}
 if(process.argv.includes('--gunner')){await import('./gunner.mjs');process.exit(0);}

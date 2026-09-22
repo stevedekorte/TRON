@@ -1,6 +1,6 @@
+import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import {DATA_BEAM} from '../simulation/data-beams.js';
 import {Vector3} from 'three';
-import {MAZE_INSTANCES,BASIS,FLOOR_HALF,lineOfSight} from '../levels/maze.js';
 export function musicCategory(path){
  const name=decodeURIComponent(path).split('/').pop().toLowerCase();
  if(/\b(recognized|recongized)\b/.test(name))return 'recognized';
@@ -25,6 +25,7 @@ export function closeRecognizer(run,wasClose){
 }
 
 export function quietMazeExploration(run){
+ const {MAZE_INSTANCES,BASIS,FLOOR_HALF}=worldFor(run);
  if(run.crushed||activelyPursued(run))return false;
  const determinant=BASIS.a*BASIS.d-BASIS.b*BASIS.c;
  return MAZE_INSTANCES.some(m=>{
@@ -37,7 +38,8 @@ export function quietMazeExploration(run){
 
 export const MAZE_MUSIC={nearDistance:120,fadeSeconds:1.8};
 export const MAZE_CUE_RANK={approaching:1,spotted:2,enter:3,afterglow:4};
-export function beamBaseVisible(beam,camera){
+export function beamBaseVisible(beam,camera,world=DEFAULT_WORLD){
+ const {lineOfSight}=world;
  const point=new Vector3(beam.x,.25,-beam.s).project(camera);
  return point.z>=-1&&point.z<=1&&Math.abs(point.x)<=1&&Math.abs(point.y)<=1&&lineOfSight({x:camera.position.x,s:-camera.position.z,y:camera.position.y},{x:beam.x,s:beam.s,y:.25});
 }

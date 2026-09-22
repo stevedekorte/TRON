@@ -1,15 +1,19 @@
-import {HEARING} from '../game/hearing.js';
+import {configFor} from '../game/config.js';
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
+import {HEARING,hearingFor} from '../game/hearing.js';
 import {angleDelta,config} from '../game/config.js';
-import {lineOfSight,freePosition,OPEN_CELLS} from '../levels/maze.js';
 const contexts=new WeakMap();
 const active=e=>e.health>0&&!e.teleport&&!['destroyed','materializing'].includes(e.state);
 const noise=(seed,salt)=>{let n=Math.imul(seed^salt,1597334677);n=Math.imul(n^(n>>>16),2246822519);return ((n^(n>>>13))>>>0)/4294967295*2-1;};
-export function hearingReports(e,now){return (e.hearing||[]).filter(h=>now-h.heardAt<=HEARING.memorySeconds).map(h=>({...h,age:now-h.heardAt}));}
+export function hearingReports(e,now){
+ const HEARING=hearingFor(e);return (e.hearing||[]).filter(h=>now-h.heardAt<=HEARING.memorySeconds).map(h=>({...h,age:now-h.heardAt}));}
 export function hearingTarget(e,now){
  if(e.targetGone)return null;
  return hearingReports(e,now).filter(h=>h.affiliation!=='friendly').sort((a,b)=>b.amplitude/(1+b.age)-a.amplitude/(1+a.age))[0]||null;
 }
 export function hearingGoal(e,now){
+ const config=configFor(e);
+ const {freePosition,OPEN_CELLS}=worldFor(e);
  const h=hearingTarget(e,now);if(!h)return null;
  const p=h.estimatedPosition;
  if(e.kind!=='ground'||freePosition(p.x,p.s,config.tankRadius+1))return {...p};
@@ -18,7 +22,8 @@ export function hearingGoal(e,now){
  const cell=OPEN_CELLS.reduce((best,c)=>!best||Math.hypot(c.x-p.x,c.s-p.s)<Math.hypot(best.x-p.x,best.s-p.s)?c:best,null);
  return cell?{x:cell.x,s:cell.s}:null;
 }
-export function hearSound(e,sound,now,serial=0,visible=lineOfSight){
+export function hearSound(e,sound,now,serial=0,visible=worldFor(e).lineOfSight){
+ const HEARING=hearingFor(e);
  if(!active(e)||sound.emitter===e)return null;
  const dy=sound.y-e.y,dx=sound.x-e.x,ds=sound.s-e.s,distance=Math.hypot(dx,ds,dy);
  if(distance>sound.range)return null;
@@ -48,6 +53,8 @@ export function hearSound(e,sound,now,serial=0,visible=lineOfSight){
 // Sensor boundary: only this stage reads emitting source positions. Controllers
 // and Jev receive noisy reports, never the true coordinates or source identity.
 export function updateHearing(run){
+ const HEARING=hearingFor(run);
+ const config=configFor(run);
  let context=contexts.get(run);if(!context){context={seen:new WeakSet(),nextEngine:0,serial:0};contexts.set(run,context);}
  const units=[...run.recognizers,...run.enemyTanks],listeners=units.filter(active);
  for(const e of units)e.hearing=(e.hearing||[]).filter(h=>run.time-h.heardAt<=HEARING.memorySeconds);

@@ -5,7 +5,7 @@ try{
  const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/debris-shadow-fade',r=>r.fulfill({contentType:'text/html',body:'<body></body>'}));await page.goto('http://127.0.0.1:5174/debris-shadow-fade');
  const result=await page.evaluate(async()=>{
-  const T=await import('/node_modules/three/build/three.module.js');await (await import('/src/rendering/debris-physics.js')).debrisPhysicsReady;
+  const T=await import('/node_modules/three/build/three.module.js');await (await import('/src/simulation/debris-physics.js')).debrisPhysicsReady;
   const {Breakups}=await import('/src/rendering/breakup.js'),fx=new Breakups(new T.Scene()),root=new T.Group();root.add(new T.Mesh(new T.BoxGeometry(2,2,2),new T.MeshBasicMaterial()));
   fx.spawn({root},{x:0,y:5,s:0,yaw:0});const material=fx.bursts[0].materials.find(m=>m.uniforms?.fade);material.uniforms.fade.value=.6;
   const scene=new T.Scene(),floor=new T.Mesh(new T.PlaneGeometry(100,100),new T.MeshBasicMaterial({color:0x6688aa}));floor.rotation.x=-Math.PI/2;floor.renderOrder=-2;scene.add(floor);

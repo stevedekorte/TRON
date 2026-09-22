@@ -175,7 +175,7 @@ The local Vite server reads the key from `TYPESAFE_API_KEY` (including `.env.loc
 
 Only units whose fresh sighting/radio memory or unknown sound estimate is within one maze length request Jev decisions. Distant or unaware units use local tactics. Enemies hear nearby engines and more distant cannon fire, impacts and explosions; walls muffle sounds and reports carry uncertain bearing/range estimates. Hearing permits investigation, not a confirmed target fix. Range controls are in Shift+T.
 
-Requests go through the same local server at `/api/jev/decision`. Direct browser access was checked: TypeSafe rejected CORS preflights for the tested localhost/127.0.0.1 origins. The relay is therefore required for this browser setup; it sends requests directly to TypeSafe without an additional AI layer. There is one in-flight request, at least 600 ms between starts, a 2.2-second server timeout, and a 1,200-request/hour server budget. The browser retries failures with backoff. No calls are made while paused or in Classic/local mode. Late replies after pause, restart or teleport cannot change a vehicle's active maneuver.
+Requests go through the same local server at `/api/jev/decision`. Direct browser access was checked: TypeSafe rejected CORS preflights for the tested localhost/127.0.0.1 origins. The relay is therefore required for this browser setup; it sends requests directly to TypeSafe without an additional AI layer. There is one in-flight request, at least 600 ms between starts, a 2.2-second server timeout, and a $1 USD rolling-hour local spending budget (set server-only `JEV_HOURLY_BUDGET_USD` in `.env.local` and restart Vite to change it). Local clients space calls by at least 650 ms of wall time. This game-owned cap is separate from purchased JEV credits. The browser retries failures with backoff. No calls are made while paused or in Classic/local mode. Late replies after pause, restart or teleport cannot change a vehicle's active maneuver.
 
 `npm run dev` and `npm run preview` provide the local relay. Public builds set `VITE_JEV_API_BASE` to the Cloudflare Worker URL below. Without that build setting, static hosting falls back to local tactics.
 
@@ -193,3 +193,22 @@ The website Pages workflow must set the public API base during its Build TRON st
 Anonymous access is intentional. Allowed browser origins are dekorte.com and www.dekorte.com. Origin checks are not authentication: a non-browser caller can imitate them. One persistent SQLite Durable Object enforces the spending guard across Worker instances: 1,000 requests and 16 MB of serialized provider input per UTC day, 300 requests per IP per day, 60 per IP per minute, at least 750 ms between requests, one in-flight request per IP and four globally. Failed provider calls consume budget. Daily keyed IP hashes are retained instead of raw addresses; shared networks share an allowance. Client snapshots and secrets are not stored by the budget object.
 
 These are request/byte caps, not a guaranteed dollar cap. Limits are intentionally conservative for an initial public trial. Change the named variables in `wrangler.jsonc` and redeploy to tune them. Set `JEV_ENABLED` to `false` to disable public provider calls. The client honors Retry-After and runs local tactics during errors, rate limits and exhausted allowances. Quotas persist across deploys; do not delete the Durable Object to reset them accidentally.
+
+### Clu autoplay and spatial teleporters
+
+Press **U** or click the top-left autoplay button to let Jev choose Clu's maneuvers. Autoplay stays enabled until U or the button is toggled again. Held driving/turret inputs temporarily override those channels; manual firing leaves automatic driving active. Camera/aerial controls remain available for watching. The button shows Jev versus local control; service failures disengage autoplay until explicitly re-enabled. Player and enemy decisions share the same request limits. Public deployment of this feature requires both the updated Worker protocol and website client.
+
+Teleport pads now act as invisible boxes four maze-wall heights tall: parts inside become wireframe, full entry transfers immediately with momentum/heading/relative offset intact, and parts regain solidity as they exit the destination. Full exit rearms the destination pad. Reinforcements keep their original materialization sweep.
+
+Autoplay continues when the window loses focus or its tab is hidden. Manual play still pauses on focus loss, and Escape pauses either mode. Hidden tabs skip rendering and use a timer for fixed-step simulation; browsers or the OS can still throttle/suspend background tabs. JEV budget and failure disengagement remain active.
+
+The top-right JEV readout shows requests this round, requests/sec over the last ten seconds and USD cost (~ means some usage is estimated). Timeout failures get two retries before autoplay disengages; quota and other service errors still disengage immediately.
+
+
+## Reproducible scenarios and cleanup checks
+
+Use `/?maze=blueprint&layoutSeed=1982&runSeed=1982` (or `maze=authored`) to replay the same layout and encounter. Restart reuses that scenario seed. Browser preferences still select the AI mode.
+
+`node scripts/replay-autoplay.mjs` runs an enemy-free local-controller replay without JEV calls and writes route diagnostics to `test-results/autoplay-replay.json`. Optional flags: `--layout`, `--layout-seed`, `--seed`, `--seconds`, `--output`. The later-maze hold remains a known issue.
+
+`npm run test:browser -- --refactor` checks pause, view modes, detached debug state and restart resource counts. See `docs/refactoring/_index.md` for current ownership and `docs/validation/_index.md` for measured coverage and remaining human checks.

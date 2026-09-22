@@ -35,7 +35,7 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
 test('public client uses configured relay and retains server cooldown across resets',async()=>{
  const before=config.aiMode;config.aiMode='jev';let calls=0,url;
  const client=new JevClient(async target=>{calls++;url=target;return new Response(JSON.stringify({error:'Daily allowance reached'}),{status:429,headers:{'Retry-After':'3600'}});},'https://proxy.test/');
- try{const {r}=scenario();client.update(r,true);await flush();assert.equal(url,'https://proxy.test/api/jev/decision');assert.match(client.status,/Local fallback/);assert.equal(client.warning.label,'JEV LIMIT');client.update(r,false);assert.equal(client.warning.label,'JEV LIMIT');client.reset();client.update(scenario().r,true);assert.equal(calls,1);assert.equal(client.warning.label,'JEV LIMIT');}
+ try{const {r}=scenario();client.update(r,true);await flush();assert.equal(url,'https://proxy.test/api/jev/decision');assert.match(client.status,/Local fallback/);assert.equal(client.warning.label,'JEV LIMIT');client.update(r,false);assert.equal(client.warning.label,'JEV LIMIT');client.resetScheduling();client.update(scenario().r,true);assert.equal(calls,1);assert.equal(client.warning.label,'JEV LIMIT');}
  finally{config.aiMode=before;client.dispose();}
 });
 function scenario(){const r=createRun(1982),e=r.recognizers[0];r.recognizers=[e];r.enemyTanks=[];Object.assign(e,{x:-5000,s:-5000,y:80,memory:{x:-5000,s:-4900,seenAt:0,vx:0,vs:0}});chooseManeuver(e,0,[e]);return {r,e};}
@@ -46,15 +46,15 @@ test('client never calls API in classic/local mode and ignores answers after pau
   const {r,e}=scenario();config.aiMode='classic';client.update(r,true);config.aiMode='local';client.update(r,true);assert.equal(calls,0);
   config.aiMode='jev';client.update(r,true);assert.equal(calls,1);client.update(r,false);
   resolve({ok:true,json:async()=>({id:e.tactical.options[0].id,confidence:1})});await flush();assert.equal(e.tactical.source,'local');assert.equal(client.history.length,0);
-  const fresh=scenario();client.update(fresh.r,true);client.reset();resolve({ok:true,json:async()=>({id:fresh.e.tactical.options[0].id,confidence:1})});await flush();assert.equal(fresh.e.tactical.source,'local');
+  const fresh=scenario();client.update(fresh.r,true);client.resetScheduling();resolve({ok:true,json:async()=>({id:fresh.e.tactical.options[0].id,confidence:1})});await flush();assert.equal(fresh.e.tactical.source,'local');
  }finally{config.aiMode=before;client.dispose();}
 });
 test('client accepts current valid answer and labels errors as local fallback',async()=>{
  const before=config.aiMode;config.aiMode='jev';
  const {r,e}=scenario(),client=new JevClient(async()=>({ok:true,json:async()=>({id:e.tactical.options[0].id,confidence:1})}));
  try{client.update(r,true);await flush();assert.equal(e.tactical.source,'jev');assert.equal(client.history.length,1);
-  client.reset();client.fetch=async()=>({ok:false,json:async()=>({error:'No key'})});e.tactical.requested=null;client.update(r,true);await flush();assert.match(client.status,/Local fallback: No key/);
-  assert.equal(client.warning.label,'JEV UNAVAILABLE');client.reset();e.tactical.requested=null;client.fetch=async()=>({ok:true,json:async()=>({id:e.tactical.options[0].id,confidence:0})});client.update(r,true);await flush();assert.equal(client.warning,null);assert.match(client.status,/uncertain/);
+  await new Promise(resolve=>setTimeout(resolve,660));client.resetScheduling();client.transport.fetchImpl=async()=>({ok:false,json:async()=>({error:'No key'})});e.tactical.requested=null;client.update(r,true);await flush();assert.match(client.status,/Local fallback: No key/);
+  assert.equal(client.warning.label,'JEV UNAVAILABLE');await new Promise(resolve=>setTimeout(resolve,660));client.resetScheduling();e.tactical.requested=null;client.transport.fetchImpl=async()=>({ok:true,json:async()=>({id:e.tactical.options[0].id,confidence:0})});client.update(r,true);await flush();assert.equal(client.warning,null);assert.match(client.status,/uncertain/);
  }finally{config.aiMode=before;client.dispose();}
 });
 
@@ -73,4 +73,13 @@ test('Jev uses only nearby fresh knowledge and rejects replies after leaving ran
   resolve({ok:true,json:async()=>({id:e.tactical.options[0].id,confidence:1})});await flush();
   assert.equal(client.history[0].accepted,false);assert.equal(e.tactical.source,'local');
  }finally{config.aiMode=before;client.dispose();}
+});
+
+test('local pacing and dollar budget have distinct messages and retry delays',async()=>{
+ let now=0;
+ const middleware=createJevMiddleware({apiKey:'test',clock:()=>now,limits:{bodyBytes:65536,intervalMs:600,hourlyUsd:.0004,timeoutMs:100},fetchImpl:async()=>Response.json({answers:{maneuver:{choice:'m0',confidence:1}},usage:{input_tokens:5000}})});
+ assert.equal((await invoke(middleware)).status,200);
+ const fast=await invoke(middleware);assert.match(fast.body.error,/too close together/);assert.equal(fast.body.retryAfter,1);
+ now=650;const capped=await invoke(middleware);assert.equal(capped.status,429);assert.match(capped.body.error,/rolling-hour budget/);
+ now=3600000;assert.equal((await invoke(middleware,{method:'GET',url:'/api/jev/status'})).body.budget.remainingUsd,.0004);
 });

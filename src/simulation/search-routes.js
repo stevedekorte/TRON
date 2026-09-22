@@ -1,10 +1,10 @@
-import {wallIntersection} from '../levels/maze.js';
-import {config} from '../game/config.js';
+import {DEFAULT_WORLD} from '../levels/scenario.js';
+import {config,configFor} from '../game/config.js';
 import {TACTICAL} from '../game/tactical.js';
 // Hypotheses for where a tank could have travelled, not aircraft flight paths.
 // Every graph edge sweeps the tank footprint; proximity across a wall is not connectivity.
 export function connectedSearchRoutes(origin,{radius=TACTICAL.searchRadiusMeters,step=TACTICAL.searchStepMeters,limit=TACTICAL.searchNodeLimit,
- clear=(a,b)=>wallIntersection({...a,y:2.8},{...b,y:2.8},config.tankRadius-.1)===null}={}){
+ world=DEFAULT_WORLD,vehicleConfig=config,clear=(a,b)=>world.wallIntersection({...a,y:2.8},{...b,y:2.8},vehicleConfig.tankRadius-.1)===null}={}){
  if(!clear(origin,origin))return [];
  const queue=[{x:origin.x,s:origin.s,ix:0,is:0,cost:0,parent:null}],seen=new Set(['0,0']);
  for(let index=0;index<queue.length&&queue.length<limit;index++){

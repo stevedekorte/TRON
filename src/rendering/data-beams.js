@@ -1,6 +1,6 @@
+import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as THREE from 'three';
 import {DATA_BEAM,dataRingSweep} from '../simulation/data-beams.js';
-import {MAZE_INSTANCES} from '../levels/maze.js';
 const RED=new THREE.Color(0xff2008),WHITE=new THREE.Color(0xffeeee),BLUE=new THREE.Color(0x168aff);
 const effectMaterial=color=>new THREE.MeshBasicMaterial({color,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,side:THREE.DoubleSide});
 // Project sky-reaching shafts against the far plane without visible clipped ends.
@@ -10,7 +10,8 @@ function skyMaterial(material){
  return material;
 }
 export class DataBeams{
- constructor(scene){
+ constructor(scene,world=DEFAULT_WORLD){
+  const {MAZE_INSTANCES}=world;
   this.beams=MAZE_INSTANCES.map(()=>{
    const group=new THREE.Group();
    for(const [radius,color,opacity] of [[1.3,0xff3210,.95],[3,0xff1805,.28],[7,0xff1000,.07]]){
@@ -33,13 +34,19 @@ export class DataBeams{
    const flare=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),effectMaterial(0xffc2a3));
    flare.position.y=2;flare.visible=false;group.add(flare);
    const curtain=new THREE.Group();
-   const shaftGeometry=new THREE.CylinderGeometry(.07,.07,1,6,1,true);
-   const glowGeometry=new THREE.CylinderGeometry(.3,.3,1,8,1,true);
-   for(let j=0;j<DATA_BEAM.ringShafts;j++){
-    const bar=new THREE.Group(),angle=j/DATA_BEAM.ringShafts*Math.PI*2;
-    const core=new THREE.Mesh(shaftGeometry,skyMaterial(effectMaterial(0x75cfff)));
-    const halo=new THREE.Mesh(glowGeometry,skyMaterial(effectMaterial(0x168aff)));
-    bar.add(core,halo);bar.position.set(Math.cos(angle)*DATA_BEAM.ringRadius,DATA_BEAM.height/2,Math.sin(angle)*DATA_BEAM.ringRadius);bar.scale.y=DATA_BEAM.height;core.material.opacity=.32;halo.material.opacity=.045;curtain.add(bar);
+   const panelWidth=2*DATA_BEAM.ringRadius*Math.tan(Math.PI/DATA_BEAM.ringPanels)-DATA_BEAM.ringPanelGap;
+   const panelGeometry=new THREE.PlaneGeometry(panelWidth,1);
+   const edgeGeometry=new THREE.PlaneGeometry(DATA_BEAM.ringEdgeWidth,1);
+   for(let j=0;j<DATA_BEAM.ringPanels;j++){
+    const panel=new THREE.Group(),angle=j/DATA_BEAM.ringPanels*Math.PI*2;
+    const face=new THREE.Mesh(panelGeometry,skyMaterial(effectMaterial(0x329dff)));
+    face.material.opacity=DATA_BEAM.ringPanelOpacity;panel.add(face);
+    for(const side of [-1,1]){
+     const edge=new THREE.Mesh(edgeGeometry,skyMaterial(effectMaterial(0x9eeaff)));
+     edge.position.x=side*(panelWidth-DATA_BEAM.ringEdgeWidth)/2;edge.material.opacity=DATA_BEAM.ringEdgeOpacity;panel.add(edge);
+    }
+    panel.position.set(Math.cos(angle)*DATA_BEAM.ringRadius,DATA_BEAM.height/2,Math.sin(angle)*DATA_BEAM.ringRadius);
+    panel.rotation.y=-Math.PI/2-angle;panel.scale.y=DATA_BEAM.height;curtain.add(panel);
    }
    group.add(curtain);
    group.userData.effects={pool,ring,pulse,flare,curtain};
@@ -64,11 +71,11 @@ export class DataBeams{
    curtain.visible=sweep>0;
    curtain.position.set(0,0,0);
    curtain.children.forEach((bar,j)=>{
-    // Switch each entire shaft on in sequence; opening reverses that sequence.
+    // Switch each entire panel on in sequence; opening reverses that sequence.
     bar.visible=sweep>(j/curtain.children.length);
    });
    pool.material.color.copy(color);pool.material.opacity=.3*(1+flareAmount);
-   const wave=active&&age<DATA_BEAM.blastSeconds;
+   const wave=DATA_BEAM.blastEnabled&&active&&age<DATA_BEAM.blastSeconds;
    ring.visible=pulse.visible=wave;flare.visible=flareAmount>0;
    const fade=Math.min(1,(DATA_BEAM.blastSeconds-age)/2);
    const radius=Math.max(.01,beam.waveRadius||0);

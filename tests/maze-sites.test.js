@@ -42,7 +42,8 @@ test('stationary transfer locks drive, allows aiming, heals, and turns blue only
  beginDataTransfer(r);collectData(r);assert.equal(r.events.filter(e=>e.type==='dataCollected').length,1);
  assert.equal(createRun(42).dataCollected,0);
 });
-test('transfer cancels on death and a blast hits each unit only when its front reaches it',()=>{
+test('transfer cancels on death and a blast hits each unit only when its front reaches it',t=>{
+ const previous=DATA_BEAM.blastEnabled;DATA_BEAM.blastEnabled=true;t.after(()=>{DATA_BEAM.blastEnabled=previous;});
  const r=createRun(42),b=r.dataBeams[0];r.x=b.x;r.s=b.s;r.speed=0;beginDataTransfer(r);r.crushed=true;collectData(r);assert.equal(b.transferStartedAt,null);
  r.crushed=false;b.collectedAt=0;r.enemyTanks=[{id:'test-ground',kind:'ground',x:b.x+100,s:b.s,state:'patrol',health:3}];r.recognizers=[{id:'test-air',x:b.x,s:b.s,y:200,state:'patrol',health:3}];
  r.time=DATA_BEAM.blastSeconds*50/DATA_BEAM.blastRadius;updateDataWaves(r);assert.equal(r.kills,0);
@@ -56,7 +57,8 @@ test('patrol decisions favor new areas and expire old exploration memory',()=>{
  patrolChoices(e,cells,()=>.5,300);assert.ok(e.patrolVisits.every(v=>v.time>=120));
 });
 
-test('spherical wave damages carrier once and leaves enemies beyond its reach intact',()=>{
+test('spherical wave damages carrier once and leaves enemies beyond its reach intact',t=>{
+ const previous=DATA_BEAM.blastEnabled;DATA_BEAM.blastEnabled=true;t.after(()=>{DATA_BEAM.blastEnabled=previous;});
  const r=createRun(42),b=r.dataBeams[0];r.dataBeams=[b];r.time=DATA_BEAM.blastSeconds;b.collectedAt=0;b.x=CARRIER.startX+CARRIER.speed*r.time;b.s=CARRIER.s;
  r.recognizers=[];r.enemyTanks=[{id:'outside',kind:'ground',x:b.x+DATA_BEAM.blastRadius+50,s:b.s,state:'patrol',health:3}];
  updateDataWaves(r);assert.equal(r.carrierHealth,75);assert.equal(r.enemyTanks[0].health,3);updateDataWaves(r);assert.equal(r.carrierHealth,75);
@@ -71,13 +73,15 @@ test('only lit transfer shafts destroy touching Recognizers, once, at any flight
  b.collectedAt=null;r.time=2;e.x=b.x+50;damageRingContacts(r);assert.equal(e.health,3);
 });
 
- test('ring engages and retracts twice as fast, retaining its hold and completing with the transfer',()=>{
+ test('ring forms and retracts three times faster while retaining the eleven-second hold',()=>{
  const beam={transferStartedAt:0,collectedAt:null};
- assert.equal(dataRingSweep(beam,.75),.5);
- assert.equal(dataRingSweep(beam,1.5),1);
+ assert.equal(dataRingSweep(beam,.25),.5);
+ assert.equal(dataRingSweep(beam,.5),1);
  assert.equal(dataRingSweep(beam,7.5),1);
- assert.equal(dataRingSweep(beam,9.25),.5);
- assert.equal(dataRingSweep(beam,11),0);
+ assert.equal(dataRingSweep(beam,11.5),1);
+ assert.equal(DATA_BEAM.holdSeconds,11);
+ assert.ok(Math.abs(dataRingSweep(beam,11.5+3.5/6)-.5)<1e-10);
+ assert.equal(dataRingSweep(beam,DATA_BEAM.transferSeconds),0);
  assert.equal(DATA_BEAM.transferSeconds,DATA_BEAM.buildSeconds+DATA_BEAM.holdSeconds+DATA_BEAM.retractSeconds);
  assert.equal(DATA_BEAM.blastSeconds,4);
  });
@@ -87,4 +91,11 @@ test('off-center CLU entry keeps ring contact damage centered on the data beam',
  Object.assign(r,{x:b.x+6,s:b.s,speed:0});beginDataTransfer(r);r.time=DATA_BEAM.buildSeconds;
  const e=r.recognizers[0];Object.assign(e,{x:b.x-DATA_BEAM.ringRadius-10,s:b.s,y:80,yaw:0,state:'wander',health:3});
  damageRingContacts(r);assert.equal(e.state,'destroyed');
+});
+
+test('post-transfer damage bubble is disabled by default',()=>{
+ assert.equal(DATA_BEAM.blastEnabled,false);
+ const r=createRun(42),b=r.dataBeams[0];r.dataBeams=[b];r.time=DATA_BEAM.blastSeconds;b.collectedAt=0;b.x=CARRIER.startX+CARRIER.speed*r.time;b.s=CARRIER.s;
+ r.recognizers=[{id:'air',x:b.x,s:b.s,y:20,state:'patrol',health:3}];r.enemyTanks=[{id:'ground',kind:'ground',x:b.x,s:b.s,state:'patrol',health:3}];
+ updateDataWaves(r);assert.equal(r.kills,0);assert.equal(r.carrierHealth,100);assert.equal(r.recognizers[0].health,3);assert.equal(r.enemyTanks[0].health,3);assert.equal(b.waveRadius,0);assert.deepEqual(b.waveHits,[]);
 });

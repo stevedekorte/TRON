@@ -1,6 +1,6 @@
+import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import {GROUND_GRID_METERS,GROUND_GRID_LINE_HALF_WIDTH,GROUND_GRID_AA_SCALE} from '../levels/ground-grid.js';
 import * as THREE from 'three';
-import { MAZE_INSTANCES, WALLS, WALL_HEIGHT, HALF, FLOOR_HALF, BASIS, wallAt } from '../levels/maze.js';
 
 // Linear RGB: a modest lift for wall faces, retaining the blue-black palette.
 const WALL_FACE_TONE=[.012,.022,.047];
@@ -9,7 +9,8 @@ const WALL_FACE_TONE=[.012,.022,.047];
 function distantFog(shader,falloff=200){
   shader.fragmentShader=shader.fragmentShader.replace('#include <fog_fragment>',THREE.ShaderChunk.fog_fragment.replace('fogDensity * fogDensity * vFogDepth * vFogDepth', 'fogDensity * fogDensity * readableDepth * readableDepth').replace('#ifdef FOG_EXP2', `#ifdef FOG_EXP2\n float readableDepth = vFogDepth <= 250. ? vFogDepth : 250. + ${falloff.toFixed(1)} * (1. - exp(-(vFogDepth - 250.) / ${falloff.toFixed(1)}));`));
 }
-export function createWorld(scene) {
+export function createWorld(scene,world=DEFAULT_WORLD) {
+  const {MAZE_INSTANCES,WALLS,WALL_HEIGHT,HALF,FLOOR_HALF,BASIS,wallAt}=world;
   const positions=[],colors=[],exposed=[],shadowIds=[];let shadowId=0;
   function quad(a,b,c,d,tone) {for(const p of [a,b,c,a,c,d]){positions.push(...p);colors.push(...tone);shadowIds.push(shadowId);}}
   for(const w of WALLS) {

@@ -1,0 +1,153 @@
+import { config, CLU_HEALTH, TURBO, GUNNER } from '../game/config.js';
+const $ = (id) => document.getElementById(id);
+const HEALTH_WARNING = { orange: 0.5, red: 0.25, critical: 0.1 };
+export class HudPresenter {
+  constructor(world, warnings) {
+    this.world = world;
+    this.warnings = warnings;
+    this.mapContext = $('map').getContext('2d');
+  }
+  drawMap(run) {
+    const { HALF, BASIS, WALLS } = this.world;
+    const ctx = this.mapContext,
+      w = 500,
+      h = 500,
+      scale = 440 / (2 * HALF * (BASIS.a + BASIS.b));
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#020710e8';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#253e62';
+    for (const wall of WALLS) {
+      ctx.beginPath();
+      wall.points.forEach((p, i) => {
+        const x = 250 + p.x * scale,
+          y = 250 - p.s * scale;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.closePath();
+      ctx.fill();
+    }
+    const px = 250 + run.x * scale,
+      py = 250 - run.s * scale;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(-run.yaw);
+    ctx.fillStyle = '#e8ad78';
+    ctx.beginPath();
+    ctx.moveTo(0, -6);
+    ctx.lineTo(-4, 5);
+    ctx.lineTo(4, 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  update({
+    run,
+    view,
+    mode,
+    autoplay,
+    jev,
+    showSurvey,
+    controlsFirstKey,
+    idleReminderArmed,
+    idleTime,
+  }) {
+    $('gunner-sight').hidden =
+      !(view.cameraRig.gunnerOpacity > 0) || run.crushed || !['running', 'paused'].includes(mode);
+    $('gunner-sight').style.opacity = String(
+      (view.cameraRig.gunnerOpacity || 0) * (mode === 'paused' ? 0.35 : 1),
+    );
+    const point = view.cameraRig.gunScreen,
+      scale = Math.min(innerWidth / 1000, innerHeight / 650);
+    $('gunner-crosshair').setAttribute(
+      'transform',
+      point
+        ? `translate(${(point.x * innerWidth) / 2 / scale} ${(-point.y * innerHeight) / 2 / scale})`
+        : '',
+    );
+    $('aim-dot').hidden = !view.cameraRig.mouseLook;
+    $('mouse-hint').textContent =
+      !GUNNER.mouseEnabled || document.pointerLockElement === $('game') ? '' : 'CLICK / MOUSE AIM';
+    $('gunner-sight').classList.toggle('on-target', !!view.gunnerHit);
+    $('gunner-sight').classList.toggle('critical-target', !!view.gunnerHit?.critical);
+    $('gunner-zoom').textContent = ['1×', '2×', '4×', '8×'][run.gunnerZoom];
+    $('zoom-hint').hidden = !(view.cameraRig.aerial || (GUNNER.mouseEnabled && run.gunner));
+    $('survey').hidden = !showSurvey;
+    $('autoplay-toggle').textContent = autoplay.enabled
+      ? `U / AUTOPLAY · ${jev.warning ? 'LOCAL FALLBACK' : autoplay.tactical?.source === 'jev' ? 'JEV' : 'LOCAL'}`
+      : 'U / AUTOPLAY OFF';
+    $('autoplay-toggle').setAttribute('aria-pressed', String(autoplay.enabled));
+    const jevStats = jev.stats.value,
+      statsNode = $('jev-stats');
+    statsNode.children[0].textContent = `JEV / ${jevStats.requests} REQUESTS · ${jevStats.requestsPerSecond.toFixed(1)}/s`;
+    statsNode.children[1].textContent = `${jevStats.estimatedRequests ? '~' : ''}$${jevStats.costUsd.toFixed(5)} USD`;
+
+    this.warnings.set(
+      'jev',
+      jev.warning ||
+        (config.aiMode === 'jev' || autoplay.enabled
+          ? jev.warning
+          : {
+              level: 'warning',
+              label: 'JEV OFF',
+              detail:
+                config.aiMode === 'classic'
+                  ? 'Classic enemy AI selected.'
+                  : 'Local tactical AI selected.',
+            }),
+    );
+    const healthFraction = run.crushed ? 0 : Math.max(0, Math.min(1, run.health / CLU_HEALTH.max)),
+      healthPercent = Math.ceil(healthFraction * 100);
+    $('health-fill').style.transform = `scaleX(${healthFraction})`;
+    $('health-meter').setAttribute('aria-valuenow', String(healthPercent));
+    $('clu-health').dataset.level =
+      healthFraction <= HEALTH_WARNING.critical
+        ? 'critical'
+        : healthFraction <= HEALTH_WARNING.red
+          ? 'red'
+          : healthFraction <= HEALTH_WARNING.orange
+            ? 'orange'
+            : 'normal';
+    const turbo = $('turbo'),
+      boosting = run.turboRemaining > 0,
+      charging = run.turboCooldown > 0;
+    turbo.setAttribute(
+      'aria-label',
+      boosting ? 'Turbo active' : charging ? 'Turbo recharging' : 'Turbo ready',
+    );
+    turbo.classList.toggle('boosting', boosting);
+    turbo.classList.toggle('charging', charging);
+    $('turbo-fill').style.transform =
+      `scaleX(${boosting ? run.turboRemaining / TURBO.duration : 1 - run.turboCooldown / TURBO.rechargeSeconds})`;
+    const openingControls = controlsFirstKey === null || run.time - controlsFirstKey < 10;
+    $('hint').classList.toggle(
+      'faded',
+      !['running', 'entering'].includes(mode) ||
+        !(openingControls || (idleReminderArmed && idleTime >= 3)),
+    );
+    document.body.classList.toggle('impact', run.impact > 0.6 && !view.cameraRig.reducedMotion);
+    if (showSurvey) this.drawMap(run);
+    if (import.meta.env.DEV && !$('tuning').hidden) {
+      $('ai-status').textContent = jev.status;
+      $('ai-decision').textContent = JSON.stringify(
+        jev.history.at(-1) || {
+          mode: config.aiMode,
+          units: [...run.recognizers, ...run.enemyTanks].map((e) => ({
+            id: e.id,
+            maneuver: e.tactical?.plan?.kind,
+            source: e.tactical?.source,
+            blocked: e.tactical?.blocked,
+          })),
+        },
+        null,
+        2,
+      );
+      $('perception').textContent = run.recognizers
+        .map(
+          (e) =>
+            `R${e.id + 1} ${e.state} | ${e.canSee ? 'visual' : e.memory ? `last seen ${(run.time - e.memory.seenAt).toFixed(1)}s ago via R${e.memory.source + 1}` : 'no sighting'}`,
+        )
+        .join('\n');
+    }
+  }
+}

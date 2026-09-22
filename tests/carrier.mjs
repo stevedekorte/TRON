@@ -19,7 +19,7 @@ try{
  // Check every anatomical section in both open and folded poses. A surface hit
  // must retain exactly two intact sections and conserve all source triangles.
  const sections=await page.evaluate(async()=>{
- await (await import('/src/rendering/debris-physics.js')).debrisPhysicsReady;
+ await (await import('/src/simulation/debris-physics.js')).debrisPhysicsReady;
   const T=await import('/node_modules/three/build/three.module.js');
   const {loadRecognizer,createRecognizer}=await import('/src/rendering/models.js');
   const {Breakups}=await import('/src/rendering/breakup.js');
@@ -42,7 +42,7 @@ try{
  });
  for(const r of sections){assert.ok(r.part==='body'?['crown','crossbar','left-shoulder','right-shoulder'].includes(r.hitPart):r.hitPart===r.part);assert.equal(r.sourceCount,r.outputCount);assert.equal(r.whole.length,5);assert.ok(!r.whole.includes(r.part));}
  const lights=await page.evaluate(async()=>{
- await (await import('/src/rendering/debris-physics.js')).debrisPhysicsReady;
+ await (await import('/src/simulation/debris-physics.js')).debrisPhysicsReady;
   const {loadCarrier,updateCarrier}=await import('/src/rendering/carrier.js');const ship=await loadCarrier();
   updateCarrier(ship,.1);const bright=ship.userData.beacons.map(b=>b.material.emissiveIntensity);
   updateCarrier(ship,.6);const dim=ship.userData.beacons.map(b=>b.material.emissiveIntensity);

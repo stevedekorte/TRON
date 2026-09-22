@@ -1,4 +1,5 @@
-import {jevQuestion} from '../../server/jev-protocol.js';
+import {errorBody} from '../../shared/jev-errors.js';
+import {jevQuestion} from '../../shared/jev-protocol.js';
 import {PUBLIC_LIMITS} from './budget.js';
 export {JevBudget} from './budget.js';
 const encoder=new TextEncoder();
@@ -19,7 +20,7 @@ async function clientHash(ip,key){
 export function createWorker(fetchImpl=fetch){return {async fetch(request,env,ctx){
  const origin=request.headers.get('Origin'),allowed=(env.ALLOWED_ORIGINS||'').split(',').map(s=>s.trim());
  const headers={'Cache-Control':'no-store','Vary':'Origin','Content-Type':'application/json'};
- const send=(status,value,extra={})=>new Response(JSON.stringify(value),{status,headers:{...headers,...extra}});
+ const send=(status,value,extra={})=>new Response(JSON.stringify(errorBody(status,value)),{status,headers:{...headers,...extra}});
  if(!origin||!allowed.includes(origin))return send(403,{error:'Origin rejected'});
  Object.assign(headers,{'Access-Control-Allow-Origin':origin,'Access-Control-Expose-Headers':'Retry-After'});
  const path=new URL(request.url).pathname;
@@ -49,7 +50,7 @@ export function createWorker(fetchImpl=fetch){return {async fetch(request,env,ct
   const data=await upstream.json(),answer=data.answers?.maneuver,options=JSON.parse(body).questions.maneuver.criteria;
   if(!Object.hasOwn(options,answer?.choice)||!Number.isFinite(answer?.confidence)||answer.confidence<0||answer.confidence>1)return send(502,{error:'Invalid Jev answer; using local tactics'});
   return send(200,{id:answer.choice,confidence:answer.confidence,probabilities:answer.probabilities||{},usage:data.usage||null});
- }catch{return send(502,{error:'Jev timed out or unavailable; using local tactics'});}
+ }catch(error){const timeout=error.name==='TimeoutError'||error.name==='AbortError';return send(502,{code:timeout?'timeout':'unavailable',error:timeout?'Jev timed out; using local tactics':'Jev unavailable; using local tactics'});}
  finally{ctx.waitUntil(budget.fetch('https://budget/release',{method:'POST',body:JSON.stringify({lease:reservation.lease})}).catch(()=>{}));}
 }};}
 export default createWorker();

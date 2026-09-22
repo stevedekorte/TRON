@@ -1,3 +1,4 @@
+import {radioRangeFor} from '../src/game/communication.js';
 import {intercept} from '../src/simulation/intercept.js';
 import {formationTarget} from '../src/simulation/formation.js';
 import test from 'node:test';
@@ -229,11 +230,11 @@ test('confirmed crush clears pursuit by radio and old sightings cannot revive it
 });
 
 
-test('radio reports stop at 1000 feet, including vertical separation',()=>{
- assert.equal(SENSORS.radioRange,304.8);
- const r=createRun();Object.assign(r,{x:-4000,s:-4000});
+test('radio reports stop at one maze width, including vertical separation',()=>{
+ const radius=radioRangeFor(null);assert.equal(SENSORS.radioRange,radius);
+ const r=createRun();Object.assign(r,{x:-4000,s:-4000,enemyTanks:[]});
  r.recognizers=r.recognizers.slice(0,4);
- r.recognizers.forEach((e,i)=>Object.assign(e,{x:-1800+[0,304.7,304.9,200][i],s:-1800,y:i===3?320:80,nextSense:Infinity,memory:null}));
+ r.recognizers.forEach((e,i)=>Object.assign(e,{x:-1800+[0,radius-.1,radius+.1,radius*.8][i],s:-1800,y:i===3?80+radius*.8:80,nextSense:Infinity,memory:null}));
  r.recognizers[0].memory={x:-1800,s:-1700,vx:0,vs:0,seenAt:0,source:0};
  updateRecognizers(r,1/60);
  assert.deepEqual(r.radio.map(m=>m.to),[1]);

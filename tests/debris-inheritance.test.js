@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {Breakups} from '../src/rendering/breakup.js';
-import {debrisPhysicsReady,DebrisPhysics} from '../src/rendering/debris-physics.js';
+import {debrisPhysicsReady,DebrisPhysics} from '../src/simulation/debris-physics.js';
 await debrisPhysicsReady;
 test('explosion adds full vehicle velocity to each piece, and Rapier receives it',()=>{
  const root=new T.Group();root.add(new T.Mesh(new T.BoxGeometry(2,2,2),new T.MeshBasicMaterial()));
@@ -12,6 +12,7 @@ test('explosion adds full vehicle velocity to each piece, and Rapier receives it
   const event={x:0,y:100,s:0,yaw:.7,fold:0};
   still.spawn({root},event);moving.spawn({root},{...event,vx:45,vy:-12,vs:30});
   const a=still.bursts[0].pieces,b=moving.bursts[0].pieces;assert.equal(a.length,b.length);
+  assert.ok([...a,...b].every(p=>p.gravity===9.81));
   for(let i=0;i<a.length;i++){
    assert.ok(b[i].velocity.clone().sub(a[i].velocity).distanceTo(new T.Vector3(45,-12,-30))<1e-8);
    moving.physics.activate(b[i]);assert.ok(new T.Vector3().copy(b[i].body.linvel()).distanceTo(b[i].velocity)<1e-4);

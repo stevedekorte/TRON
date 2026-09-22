@@ -1,40 +1,157 @@
-import {hearingTarget} from '../simulation/hearing.js';
-import {MAZE_LENGTH} from '../levels/maze.js';
-import {config} from '../game/config.js';
-import {TACTICAL} from '../game/tactical.js';
-import {applyTacticalChoice} from '../simulation/tactical.js';
-const PUBLIC_REQUEST_INTERVAL_MS=1200;
-// Gate on recorded knowledge, never on the player's hidden live position.
-function withinJevRange(e,now){
- const heard=hearingTarget(e,now),m=e.memory&&now-e.memory.seenAt<=TACTICAL.jevMemoryMaxAgeSeconds?e.memory:heard?{...heard.estimatedPosition,seenAt:heard.heardAt}:null;
- return !!m&&!e.targetGone&&now-m.seenAt<=TACTICAL.jevMemoryMaxAgeSeconds&&Math.hypot(e.x-m.x,e.s-m.s)<=MAZE_LENGTH*TACTICAL.jevRangeMazeLengths;
-}
-export class JevClient{
- constructor(fetchImpl=fetch,apiBase=import.meta.env?.VITE_JEV_API_BASE||''){this.apiBase=apiBase.replace(/\/$/,'');this.warning=null;this.retryUntilMs=0;this.nextRequestMs=0;this.fetch=(...args)=>fetchImpl(...args);this.epoch=0;this.status='Off';this.history=[];this.next=0;}
- reset(){this.epoch++;this.pending?.abort();this.pending=null;this.run=null;this.next=0;this.history=[];this.status='Off';}
- update(run,playing){
-  if(this.run!==run){this.reset();this.run=run;}
-  if(config.aiMode!=='jev'||!playing||run.crushed){if(this.pending){this.pending.abort();this.pending=null;this.epoch++;}this.status=config.aiMode==='local'?'Local planner':config.aiMode==='jev'?'Paused':'Off';return;}
-  if(this.pending||run.time<this.next||Date.now()<this.nextRequestMs)return;
-  if(Date.now()<this.retryUntilMs){this.status='Local fallback: public AI cooldown';return;}
-  const e=[...run.recognizers,...run.enemyTanks].find(e=>withinJevRange(e,run.time)&&e.health>0&&!e.teleport&&e.state!=='materializing'&&!e.attack&&e.tactical?.options?.length&&e.tactical.requested!==e.tactical.revision&&run.time-e.tactical.started<TACTICAL.requestMaxAge);
-  if(!e){this.status='Local tactics (no nearby eligible contact)';return;}
-  const t=e.tactical,revision=t.revision,at=run.time,epoch=this.epoch,snapshot=t.snapshot;
-  t.requested=revision;this.next=at+TACTICAL.requestInterval;this.status='Waiting for Jev';
-  const controller=new AbortController();this.pending=controller;
-  const sentAt=performance.now();
-  if(this.apiBase)this.nextRequestMs=Date.now()+PUBLIC_REQUEST_INTERVAL_MS;
-  const timeout=setTimeout(()=>controller.abort(),TACTICAL.requestTimeoutMs);
-  this.fetch(this.apiBase+'/api/jev/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(snapshot),signal:controller.signal})
-   .then(async response=>{const value=await response.json();if(!response.ok){const error=new Error(value.error||'Jev unavailable');error.httpStatus=response.status;error.retryAfter=Number(response.headers?.get('Retry-After')||value.retryAfter)||0;throw error;}return value;})
-   .then(answer=>{
-    if(epoch!==this.epoch||this.run!==run||config.aiMode!=='jev')return;
-    this.warning=null;
-    const accepted=withinJevRange(e,run.time)&&applyTacticalChoice(e,answer,revision,at,run.time);
-    this.status=accepted?'Jev active':'Local fallback (stale or uncertain answer)';
-    this.history.push({unit:e.id,time:at,latencyMs:Math.round(performance.now()-sentAt),accepted,request:snapshot,response:answer});this.history=this.history.slice(-12);
-   }).catch(error=>{if(epoch!==this.epoch)return;const reason=error.name==='AbortError'?'Request timed out':error.message;this.warning={level:'warning',label:error.httpStatus===429?'JEV LIMIT':'JEV UNAVAILABLE',detail:reason+'. Local AI remains active.'};this.status='Local fallback: '+reason;this.next=run.time+10;this.retryUntilMs=Math.max(this.retryUntilMs,Date.now()+Math.min(86400,Math.max(0,error.retryAfter||0))*1000);})
-   .finally(()=>{clearTimeout(timeout);if(this.pending===controller)this.pending=null;});
- }
- dispose(){this.reset();}
+import { JevStats } from './jev-stats.js';
+import { JevTransport } from './jev-transport.js';
+import { JevRequestPolicy, JEV_TIMEOUT_RETRY } from './jev-request-policy.js';
+import { selectParticipant } from './jev-participants.js';
+import { configFor } from '../game/config.js';
+import { TACTICAL } from '../game/tactical.js';
+export { JEV_TIMEOUT_RETRY } from './jev-request-policy.js';
+
+/** Coordinates round-scoped participants; transport and pacing have separate owners. */
+export class JevClient {
+  constructor(
+    fetchImpl = fetch,
+    apiBase = import.meta.env?.VITE_JEV_API_BASE || '',
+    {
+      clock = Date.now,
+      elapsed = () => performance.now(),
+      setTimer = (fn, ms) => setTimeout(fn, ms),
+      clearTimer = (id) => clearTimeout(id),
+    } = {},
+  ) {
+    this.clock = clock;
+    this.elapsed = elapsed;
+    this.transport = new JevTransport({ fetchImpl, apiBase, setTimer, clearTimer });
+    this.policy = new JevRequestPolicy({ clock, publicRelay: !!apiBase });
+    this.stats = new JevStats(clock);
+    this.statsRun = null;
+    this.epoch = 0;
+    this.round = 0;
+    this.warning = null;
+    this.status = 'Off';
+    this.history = [];
+  }
+  cancelPending() {
+    this.epoch++;
+    this.pending?.abort();
+    this.pending = null;
+  }
+  resetScheduling() {
+    this.cancelPending();
+    this.policy.resetRound();
+    this.run = null;
+    this.history = [];
+    this.status = 'Off';
+  }
+  beginRound(run) {
+    this.resetScheduling();
+    this.run = run;
+    if (this.statsRun !== run) {
+      this.statsRun = run;
+      this.stats = new JevStats(this.clock);
+      this.round++;
+    }
+  }
+  disengageAutoplay(autoplay, run) {
+    if (!autoplay?.enabled) return;
+    autoplay.setEnabled(false);
+    run.cruiseThrottle = false;
+    if (this.warning && !this.warning.detail.includes('Autoplay disengaged'))
+      this.warning = {
+        ...this.warning,
+        detail: this.warning.detail + ' Autoplay disengaged; press U to retry.',
+      };
+  }
+  update(run, playing, autoplay = null) {
+    const config = configFor(run);
+    if (this.disposed) return;
+    if (this.run !== run) this.beginRound(run);
+    if ((config.aiMode !== 'jev' && !autoplay?.enabled) || !playing || run.crushed) {
+      if (this.pending) this.cancelPending();
+      this.status =
+        config.aiMode === 'local' ? 'Local planner' : config.aiMode === 'jev' ? 'Paused' : 'Off';
+      return;
+    }
+    if (this.policy.coolingDown) {
+      this.disengageAutoplay(autoplay, run);
+      this.status = 'Local fallback: public AI cooldown';
+      return;
+    }
+    if (this.pending || !this.policy.ready(run.time)) return;
+    const participant = selectParticipant(run, autoplay, this.lastOwner);
+    if (!participant) {
+      this.status = 'Local tactics (no nearby eligible contact)';
+      return;
+    }
+    const t = participant.plan,
+      snapshot = structuredClone(t.snapshot);
+    const ticket = {
+      sessionId: this.round,
+      epoch: this.epoch,
+      unitId: participant.id,
+      revision: t.revision,
+      teleportRevision: participant.teleportRevision,
+      observedAt: run.time,
+    };
+    this.lastOwner = participant.owner;
+    t.requested = ticket.revision;
+    this.policy.sent(run.time, TACTICAL.requestInterval);
+    this.status = 'Waiting for Jev';
+    const controller = new AbortController();
+    this.pending = controller;
+    const sentAt = this.elapsed(),
+      stats = this.stats,
+      requestStats = stats.sent(snapshot);
+    const current = () =>
+      ticket.epoch === this.epoch && ticket.sessionId === this.round && this.run === run;
+    this.transport
+      .request(snapshot, controller.signal)
+      .then((answer) => {
+        stats.settle(requestStats, answer.usage); // A late response still belongs to its original billing round.
+        if (!current() || !participant.current()) return;
+        this.policy.succeeded();
+        this.warning = null;
+        const accepted = participant.apply(answer, ticket.revision, ticket.observedAt);
+        this.status = accepted ? 'Jev active' : 'Local fallback (stale or uncertain answer)';
+        this.history.push({
+          unit: ticket.unitId,
+          time: ticket.observedAt,
+          latencyMs: Math.round(this.elapsed() - sentAt),
+          accepted,
+          request: snapshot,
+          response: answer,
+        });
+        this.history = this.history.slice(-12);
+      })
+      .catch((error) => {
+        if (!current() || error.code === 'cancelled') return;
+        const timedOut = error.code === 'timeout',
+          reason = timedOut ? 'Request timed out' : error.message;
+        if (timedOut && this.policy.retryTimeout(run.time)) {
+          this.warning = {
+            level: 'warning',
+            label: 'JEV RETRY',
+            detail: `Request timed out. Retrying (${this.policy.timeoutFailures}/${JEV_TIMEOUT_RETRY.attempts - 1}); autoplay continues locally.`,
+          };
+          this.status = 'Retrying Jev after timeout';
+          if (t.requested === ticket.revision) t.requested = null;
+          return;
+        }
+        this.warning = {
+          level: 'warning',
+          label: error.code === 'limited' ? 'JEV LIMIT' : 'JEV UNAVAILABLE',
+          detail: reason + '. Local AI remains active.',
+        };
+        this.disengageAutoplay(autoplay, run);
+        this.status = 'Local fallback: ' + reason;
+        this.policy.failed(run.time, error.retryAfter);
+      })
+      .finally(() => {
+        if (this.pending === controller) this.pending = null;
+      });
+  }
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.resetScheduling();
+  }
 }

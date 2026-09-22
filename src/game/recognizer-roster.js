@@ -1,3 +1,14 @@
-import {RECOGNIZER_STARTS as mazeStarts,PURSUER_COUNT} from '../levels/maze.js';
-import {AIR_ESCORT_COUNT,airEscortSlot} from './carrier.js';
-export const RECOGNIZER_STARTS=[...mazeStarts.map((p,i)=>({...p,role:i<PURSUER_COUNT?'pursuer':'patrol'})),...Array.from({length:AIR_ESCORT_COUNT},(_,escortIndex)=>({...airEscortSlot(escortIndex,0),role:'escort',escortIndex}))];
+import { DEFAULT_WORLD } from '../levels/scenario.js';
+import { AIR_ESCORT_COUNT, airEscortSlot } from './carrier.js';
+export function recognizerStarts(world = DEFAULT_WORLD) {
+  const mazeStarts = world.RECOGNIZER_STARTS;
+  return [
+    ...mazeStarts.map((p, i) => ({ ...p, role: i < world.PURSUER_COUNT ? 'pursuer' : 'patrol' })),
+    ...Array.from({ length: AIR_ESCORT_COUNT }, (_, escortIndex) => ({
+      ...airEscortSlot(escortIndex, 0, world),
+      role: 'escort',
+      escortIndex,
+    })),
+  ];
+}
+export const RECOGNIZER_STARTS = recognizerStarts();

@@ -7,3 +7,5 @@ export const HEARING_DEFAULTS=Object.freeze({engineIntervalSeconds:1,memorySecon
  investigateScore:65,replanSeconds:4});
 
 export const HEARING={...HEARING_DEFAULTS};
+
+export const hearingFor=e=>e?.settings?.hearing || HEARING;

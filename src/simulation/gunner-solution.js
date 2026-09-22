@@ -1,10 +1,11 @@
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
 import {cannonPose} from './run.js';
 import {CLU_WEAPON,RECOGNIZER_SCALE} from '../game/config.js';
-import {wallIntersection,lineOfSight} from '../levels/maze.js';
 import {enemyHitPart} from './hit-parts.js';
 // Predict the current barrel's shot, not an auto-aim correction. Enemy motion is
 // extrapolated linearly; turns, acceleration and changing folds can invalidate it.
 export function gunnerSolution(run){
+ const {wallIntersection,lineOfSight}=worldFor(run);
  if(!run.gunner||run.crushed)return null;
  const muzzle=cannonPose(run),pitch=run.aimPitch||0;
  if(!lineOfSight({x:run.x,s:run.s,y:muzzle.y},muzzle))return null;

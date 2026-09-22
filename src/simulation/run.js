@@ -1,3 +1,6 @@
+import {configFor,attachSettings} from '../game/config.js';
+import {createTeleportPads} from '../levels/teleporters.js';
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
 import {updateHearing} from './hearing.js';
 import {TELEPORT_PADS,updateTeleporters} from './teleporters.js';
 import {updateReinforcements} from './reinforcements.js';
@@ -11,16 +14,19 @@ import {stabilizeTurret} from './turret.js';
 import {createGroundTanks,updateGroundTanks,reactToGroundHit} from './ground-tanks.js';
 import {intercept} from './intercept.js';
 import { TANK } from '../game/tank.js';
-import { nearbyWalls, insideWall, closestWallPoint, SPAWN, wallIntersection, lineOfSight } from '../levels/maze.js';
 import { config, CLU_HEALTH, CLU_WEAPON, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, clamp, damp, angleDelta } from '../game/config.js';
 import { createRecognizers, updateRecognizers, perceive } from './recognizers.js';
 
-export function createRun(seed=randomSeed()) {
+export function createRun(seed=randomSeed(),world=DEFAULT_WORLD,settings=null) {
+  const config=settings?.vehicle||configFor(null);
+  const {SPAWN}=world;
   const random=seededRandom(seed);
-  const run={...SPAWN,seed,teleportPads:TELEPORT_PADS.map(p=>({...p})),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random),dataCollected:0,enemyTanks:createGroundTanks(random),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random),radio:[]};
+  const run={...SPAWN,seed,teleportPads:createTeleportPads(world.MAZE_INSTANCES,world.WALL_HEIGHT),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+    carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
   if(config.aiMode!=='classic'&&config.aiSmallEncounter){run.recognizers=run.recognizers.slice(0,2);run.enemyTanks=run.enemyTanks.filter(e=>e.role==='patrol'&&e.mazeId===0).slice(0,1);if(run.enemyTanks[0])Object.assign(run.enemyTanks[0],{id:100,index:0});}
-  return run;
+  run.scenario={...world.spec,runSeed:seed,configuration:settings?structuredClone(settings):null};
+  if(settings){attachSettings(run,settings);for(const e of [...run.recognizers,...run.enemyTanks])attachSettings(e,settings);}
+  return attachWorld(run,world);
 }
 
 export function boostTank(run){
@@ -31,6 +37,7 @@ export function boostTank(run){
 
 // Opening pursuit is a real initial sighting, not a scripted tracking target.
 export function startPursuit(run){
+ const config=configFor(run);
   const forward={x:-Math.sin(run.yaw),s:Math.cos(run.yaw)};
   for(const [i,side,behind] of [[0,-340,320],[1,-170,310],[2,0,300],[3,170,310],[4,340,320]]){
     const e=run.recognizers[i];if(!e)continue;
@@ -44,6 +51,8 @@ export function startPursuit(run){
 
 // Sweep in substeps smaller than the hull radius, with circle/box wall sliding.
 export function moveTank(run,dx,ds) {
+ const config=configFor(run);
+ const {nearbyWalls,insideWall,closestWallPoint}=worldFor(run);
   const steps=Math.max(1,Math.ceil(Math.hypot(dx,ds)/.45)),radius=config.tankRadius;
   let hit=false;
   for(let i=0;i<steps;i++) {
@@ -73,6 +82,7 @@ export function cannonPose(run) {
 }
 
 export function cannonTarget(run) {
+ const {lineOfSight}=worldFor(run);
   const pose=cannonPose(run);
   if(run.gunner)return {manual:true,lock:false,id:null,distance:160,x:pose.x-Math.sin(pose.yaw)*Math.cos(run.aimPitch)*160,s:pose.s+Math.cos(pose.yaw)*Math.cos(run.aimPitch)*160,y:pose.y+Math.sin(run.aimPitch)*160};
   let best=null;
@@ -91,6 +101,7 @@ export function cannonTarget(run) {
 }
 
 export function updateWeapons(run,input,dt) {
+ const {wallIntersection,lineOfSight}=worldFor(run);
   for(const e of run.recognizers)e.hit=Math.max(0,e.hit-dt*4);
   run.cooldown=Math.max(0,run.cooldown-dt);run.recoil=Math.max(0,run.recoil-dt*4);
   if(!run.crushed){
@@ -154,6 +165,7 @@ export function updateWeapons(run,input,dt) {
 }
 
 export function step(run,input,dt) {
+ const config=configFor(run);
   if(run.crushed){run.gunnerLeveling=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.cruiseThrottle=false;input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
   updateTeleporters(run);updateHearing(run);
   if(run.teleport){input={};run.speed=0;run.steer=0;run.cruiseThrottle=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.turretCentering=false;run.turretLocked=false;}
@@ -201,6 +213,7 @@ export function step(run,input,dt) {
       if(pitch!==run.aimPitch)run.gunnerPitchMotion=0;
     }
   }
+  if(input.turbo&&input.throttle>0)boostTank(run);
   const boosting=run.turboRemaining>0,previousSpeed=run.speed;
   const speedLimit=config.maxSpeed*(boosting?TURBO.speedMultiplier:1);
   const throttle=input.throttle||0;

@@ -1,32 +1,39 @@
+import {coordinateAttacks,supportingAttack,attackSupportGoal} from './attack-coordination.js';
+import {radioRangeFor} from '../game/communication.js';
+import { returningToCarrier, flyCarrierEscort } from './carrier-escort.js';
+import {configFor} from '../game/config.js';
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
 import {hearingGoal} from './hearing.js';
 import {tacticalEnabled,navigateTactical} from './tactical.js';
 import {aircraftSweepClear} from './maneuver-geometry.js';
 import {patrolChoices} from './patrol-decisions.js';
-import {CARRIER,airEscortSlot} from '../game/carrier.js';
-import {RECOGNIZER_STARTS} from '../game/recognizer-roster.js';
+import {CARRIER,carrierFor,airEscortSlot} from '../game/carrier.js';
+import {RECOGNIZER_STARTS,recognizerStarts} from '../game/recognizer-roster.js';
 import {beginSpotlight,updateSpotlight,spotlightOnTarget,SEARCHLIGHT} from './spotlight.js';
 import {raiseAlert,searchlightStrength} from './alertness.js';
 import {formationTarget} from './formation.js';
 import {retireTarget} from './target-memory.js';
-import {advanceFlight,advanceYaw,advanceLift,FLIGHT} from './flight.js';
+import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor} from './flight.js';
 import {beginCrush,advanceCrush,resolveCrush,CRUSH,stompTarget,stompApproach} from './crush.js';
-import { OPEN_CELLS, MAZE_LENGTH, WALL_HEIGHT, freePosition, lineOfSight } from '../levels/maze.js';
+const {MAZE_LENGTH}=DEFAULT_WORLD;
 import { config, RECOGNIZER_SCALE, angleDelta, clamp } from '../game/config.js';
 
-export const SENSORS = Object.freeze({range:MAZE_LENGTH,groundNearRange:45,fov:Math.PI*.82,interval:.2,radioRange:1000*.3048,radioDelay:.45,radioInterval:1.4,memorySeconds:38,predictionSeconds:5});
+export const SENSORS = Object.freeze({range:MAZE_LENGTH,groundNearRange:45,fov:Math.PI*.82,interval:.2,radioRange:radioRangeFor(null),radioDelay:.45,radioInterval:1.4,memorySeconds:38,predictionSeconds:5});
 function random(e) {e.seed=(Math.imul(e.seed,1664525)+1013904223)>>>0;return e.seed/4294967296;}
-export function createRecognizers(rng=Math.random) {
+export function createRecognizers(rng=Math.random,world=DEFAULT_WORLD) {
+ const {OPEN_CELLS,WALL_HEIGHT}=world,RECOGNIZER_STARTS=recognizerStarts(world),CARRIER=carrierFor(world);
   return RECOGNIZER_STARTS.map((start,id)=>{
     const cells=OPEN_CELLS.filter(p=>p.mazeId===(start.mazeId??0));
     const p=start.role==='patrol'?{...start,...cells[Math.floor(rng()*cells.length)]}:start;
-    return {...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s),
+    return attachWorld({...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s),
     alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.role==='escort'?CARRIER.speed:0,vs:0,vy:0,yawVelocity:0,seed:Math.floor(rng()*4294967296),
-    targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0};});
+    targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0},world);});
 }
 export function canSeeClu(e,clu) {
+ const {lineOfSight,MAZE_LENGTH}=worldFor(e);
   if(clu.crushed||clu.teleport)return false;
   const dx=clu.x-e.x,ds=clu.s-e.s,distance=Math.hypot(dx,ds);
-  if(Math.hypot(distance,e.y-2.8)>SENSORS.range)return false;
+  if(Math.hypot(distance,e.y-2.8)>MAZE_LENGTH)return false;
   // Downward vision includes the area immediately under the craft.
   const bearing=-Math.atan2(dx,ds),nearRange=e.kind==='ground'?SENSORS.groundNearRange:Math.max(24,(e.y-CRUSH.soleHeight)*.9);
   const hullError=Math.abs(angleDelta(e.yaw,bearing));
@@ -44,7 +51,7 @@ function remember(e,sighting,now) {
 // are peer observations, not permission to read the hidden live target.
 export function inheritNearbyAwareness(e,run){
   const nearby=[...run.recognizers,...(run.enemyTanks||[])].filter(other=>other!==e&&other.health>0&&!other.teleport&&other.state!=='destroyed'&&other.state!=='materializing'
-    &&Math.hypot(other.x-e.x,other.s-e.s,(other.y||0)-(e.y||0))<=SENSORS.radioRange);
+    &&Math.hypot(other.x-e.x,other.s-e.s,(other.y||0)-(e.y||0))<=radioRangeFor(e));
   e.canSee=false;e.spotlight=null;
   if(e.targetGone){e.state='wander';return;}
   if(nearby.some(other=>other.targetGone)){retireTarget(e);return;}
@@ -85,7 +92,8 @@ export function perceive(e,clu,now) {
   }else if(e.spotlight){e.spotlight.target=null;}
 
 }
-export function predict(memory,now) {
+export function predict(memory,now,world=DEFAULT_WORLD) {
+ const {freePosition}=world;
   let x=memory.x,s=memory.s;
   const age=clamp(now-memory.seenAt,0,SENSORS.predictionSeconds),steps=Math.max(1,Math.ceil(age*30));
   for(let i=0;i<steps;i++) {
@@ -96,7 +104,8 @@ export function predict(memory,now) {
   return {x,s};
 }
 function chooseSearch(e,now) {
-  const predicted=predict(e.memory,now),age=now-e.memory.seenAt;
+ const {OPEN_CELLS}=worldFor(e);
+  const predicted=predict(e.memory,now,worldFor(e)),age=now-e.memory.seenAt;
   const radius=90+Math.min(220,age*7);
   let choices=OPEN_CELLS.filter(p=>Math.hypot(p.x-predicted.x,p.s-predicted.s)<radius);
   if(!choices.length)choices=[predicted];
@@ -112,6 +121,9 @@ function chooseSearch(e,now) {
 }
 // Navigation receives only the craft's own memory and the fixed map, never Clu.
 export function navigate(e,now,dt,others) {
+ const FLIGHT=flightFor(e);
+ const config=configFor(e);
+ const {OPEN_CELLS,WALL_HEIGHT,freePosition}=worldFor(e),CARRIER=carrierFor(worldFor(e));
   if(e.spotlight?.phase==='acquire'){e.state='search';advanceYaw(e,dt);advanceLift(e,dt,e.spotlight.hoverAltitude??=e.y);advanceFlight(e,dt,0,1);return;}
   if(advanceCrush(e,now,dt))return;
   beginCrush(e,now);if(e.attack){advanceCrush(e,now,dt);return;}
@@ -119,15 +131,15 @@ export function navigate(e,now,dt,others) {
   if(e.memory) {
     const age=now-e.memory.seenAt;
     if(e.canSee) {e.state='pursue';e.goal=stompApproach(e,now,config.enemySpeed*1.15);e.goalUntil=now+1;}
-    else if(!e.goal) {e.state='investigate';e.goal=predict(e.memory,now+SENSORS.predictionSeconds);e.goalUntil=now+12;}
-    else if(e.state==='pursue'){e.state='investigate';e.goal=predict(e.memory,now+SENSORS.predictionSeconds);e.goalUntil=now+12;}
+    else if(!e.goal) {e.state='investigate';e.goal=predict(e.memory,now+SENSORS.predictionSeconds,worldFor(e));e.goalUntil=now+12;}
+    else if(e.state==='pursue'){e.state='investigate';e.goal=predict(e.memory,now+SENSORS.predictionSeconds,worldFor(e));e.goalUntil=now+12;}
     if(!e.canSee&&(Math.hypot(e.goal.x-e.x,e.goal.s-e.s)<24||now>e.goalUntil||age>16&&e.state==='investigate')) {
       e.state='search';e.goal=chooseSearch(e,now);e.goalUntil=now+8;
     }
   } else if(hearingGoal(e,now)){
     e.state='investigate';e.goal=hearingGoal(e,now);e.goalUntil=now+1;
   } else if(e.role==='escort'){
-    e.state='escort';e.goal=airEscortSlot(e.escortIndex,now+2);e.goalUntil=now+3;
+    e.state='escort';e.goal=airEscortSlot(e.escortIndex,now+2,worldFor(e));e.goalUntil=now+3;
   } else {
     e.state='wander';
     if(!e.goal||Math.hypot(e.goal.x-e.x,e.goal.s-e.s)<25||now>e.goalUntil) {
@@ -136,13 +148,14 @@ export function navigate(e,now,dt,others) {
       e.goal={x:p.x,s:p.s};e.goalUntil=now+24;
     }
   }
-  const formation=(e.state==='pursue'||e.state==='investigate')?formationTarget(e,others,e.goal,SENSORS.radioRange):null;
-  const destination=formation||e.goal;
+  const formation=!e.attackAssignment&&(e.state==='pursue'||e.state==='investigate')?formationTarget(e,others,e.goal,radioRangeFor(e)):null;
+  const destination=supportingAttack(e)&&e.memory?attackSupportGoal(e,e.memory):formation||e.goal;
   const dx=destination.x-e.x,ds=destination.s-e.s,distance=Math.hypot(dx,ds);
+  if(supportingAttack(e)&&distance<18){advanceYaw(e,dt);advanceFlight(e,dt,0,1);advanceLift(e,dt,WALL_HEIGHT+22*RECOGNIZER_SCALE+7);return;}
   const observedDistance=e.memory?Math.hypot(e.memory.x-e.x,e.memory.s-e.s):Infinity;
   // Avoidance used to compete with pursuit around the same point, continually
   // reversing the requested heading. Yield the close approach to a nearer craft.
-  const yielding=e.memory&&observedDistance<70&&others.some(other=>{
+  const yielding=!e.attackAssignment&&e.memory&&observedDistance<70&&others.some(other=>{
     if(other===e||other.state==='destroyed')return false;
     const otherDistance=Math.hypot(other.x-e.memory.x,other.s-e.memory.s);
     return otherDistance<50&&(otherDistance<observedDistance-1
@@ -152,8 +165,8 @@ export function navigate(e,now,dt,others) {
   // leave the aircraft hovering, rather than spinning above a narrow passage.
   const strikePoint=e.memory&&e.canSee?stompTarget(e,now):null;
   const strikeDistance=strikePoint?Math.hypot(strikePoint.x-e.x,strikePoint.s-e.s):observedDistance;
-  const settling=e.memory&&!formation&&strikeDistance<CRUSH.triggerDistance;
-  const closeApproach=e.memory&&Math.min(distance,strikeDistance)<70;
+  const settling=!supportingAttack(e)&&e.memory&&!formation&&strikeDistance<CRUSH.triggerDistance;
+  const closeApproach=!supportingAttack(e)&&e.memory&&Math.min(distance,strikeDistance)<70;
   let headingX=dx-(closeApproach?0:e.vx*1.5),headingS=ds-(closeApproach?0:e.vs*1.5);
   const length=Math.hypot(headingX,headingS)||1;headingX/=length;headingS/=length;
   // The close approach is handled by yielding and physical clearance. Keep
@@ -197,17 +210,18 @@ export function updateRecognizers(run,dt) {
   for(const e of active){updateSpotlight(e,now,dt);perceive(e,run,now);}
   // Share confirmed destruction through the same delayed, range-limited radio.
   for(const e of active)if(e.targetGone&&!e.neutralizationSent){
-    for(const other of active)if(other!==e&&!other.targetGone&&Math.hypot(other.x-e.x,other.s-e.s,other.y-e.y)<=SENSORS.radioRange)
+    for(const other of active)if(other!==e&&!other.targetGone&&Math.hypot(other.x-e.x,other.s-e.s,other.y-e.y)<=radioRangeFor(e))
       run.radio.push({kind:'neutralized',to:other.id,deliverAt:now+SENSORS.radioDelay});
     e.neutralizationSent=true;
   }
   for(const e of active)if((!e.spotlight||e.spotlight.confirmedAt!=null)&&e.memory&&e.memory.seenAt>e.lastBroadcast&&now>=e.nextRadio) {
-    for(const other of active)if(other!==e&&Math.hypot(other.x-e.x,other.s-e.s,other.y-e.y)<=SENSORS.radioRange) {
+    for(const other of active)if(other!==e&&Math.hypot(other.x-e.x,other.s-e.s,other.y-e.y)<=radioRangeFor(e)) {
       run.radio.push({to:other.id,deliverAt:now+SENSORS.radioDelay,sighting:{...e.memory}});
     }
     e.lastBroadcast=e.memory.seenAt;e.nextRadio=now+SENSORS.radioInterval;
   }
-  for(const e of active.filter(e=>e.kind!=='ground')){(tacticalEnabled()?navigateTactical:navigate)(e,now,dt,active);resolveCrush(run,e);}
+  coordinateAttacks(active,now);
+  for(const e of active.filter(e=>e.kind!=='ground')){(returningToCarrier(e,now)?flyCarrierEscort:tacticalEnabled(run)?navigateTactical:navigate)(e,now,dt,active);resolveCrush(run,e);}
   // Physical clearance backs up steering avoidance when several observers converge.
   // Shoulder width and physical spacing grow together with model scale.
   const separation=48*RECOGNIZER_SCALE;
@@ -216,7 +230,7 @@ export function updateRecognizers(run,dt) {
     if(d>=separation||Math.abs(a.y-b.y)>20||a.attack&&b.attack)continue;
     const nx=d>1e-8?dx/d:Math.cos(i*17+j*7),ns=d>1e-8?ds/d:Math.sin(i*17+j*7);
     const correction=(separation-d+.001)/2;
-    if(!a.attack){const weight=b.attack?2:1;const p={...a,x:a.x+nx*correction*weight,s:a.s+ns*correction*weight};if(!tacticalEnabled()||aircraftSweepClear(a,p)){a.x=p.x;a.s=p.s;}}
-    if(!b.attack){const weight=a.attack?2:1;const p={...b,x:b.x-nx*correction*weight,s:b.s-ns*correction*weight};if(!tacticalEnabled()||aircraftSweepClear(b,p)){b.x=p.x;b.s=p.s;}}
+    if(!a.attack&&b.attackAssignment?.leaderId!==a.id){const weight=b.attack||a.attackAssignment?.leaderId===b.id?2:1;const p={...a,x:a.x+nx*correction*weight,s:a.s+ns*correction*weight};if(!tacticalEnabled(run)||aircraftSweepClear(a,p)){a.x=p.x;a.s=p.s;}}
+    if(!b.attack&&a.attackAssignment?.leaderId!==b.id){const weight=a.attack||b.attackAssignment?.leaderId===a.id?2:1;const p={...b,x:b.x-nx*correction*weight,s:b.s-ns*correction*weight};if(!tacticalEnabled(run)||aircraftSweepClear(b,p)){b.x=p.x;b.s=p.s;}}
   }
 }

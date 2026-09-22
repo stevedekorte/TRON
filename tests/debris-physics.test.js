@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {DebrisPhysics,debrisPhysicsReady} from '../src/rendering/debris-physics.js';
+import {DebrisPhysics,debrisPhysicsReady,DEBRIS_PHYSICS} from '../src/simulation/debris-physics.js';
 await debrisPhysicsReady;
 function piece(dimensions=[2,2,2]){
  const group=new T.Group();group.add(new T.Mesh(new T.BoxGeometry(...dimensions)));
@@ -9,7 +9,7 @@ function piece(dimensions=[2,2,2]){
 }
 function wall(points,height=10){return {height,edges:points.map((a,i)=>({a,b:points[(i+1)%points.length]}))};}
 const slab=wall([{x:0,s:-10},{x:1,s:-10},{x:1,s:10},{x:0,s:10}]);
-function simulate(p,seconds,gravity=14.7,walls=[]){
+function simulate(p,seconds,gravity=DEBRIS_PHYSICS.gravityMetersPerSecondSquared,walls=[]){
  const physics=new DebrisPhysics(()=>walls);physics.add(p,gravity);
  for(let i=0;i<Math.round(seconds*120);i++)physics.update(1/120);
  return physics;
@@ -19,7 +19,7 @@ test('tilted blocks fall onto their broad face and sleep',()=>{
  const physics=simulate(p,20);
  try{p.group.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(p.group);
  assert.ok(bounds.min.y>-.03);assert.ok(bounds.min.y<.03);assert.ok(bounds.max.y<3.1);assert.equal(p.sleeping,true);
- const before=p.group.position.clone();physics.update(.1);assert.deepEqual(p.group.position,before);
+ const before=p.group.position.clone();physics.update(.1);assert.ok(p.group.position.distanceTo(before)<1e-10);
  }finally{physics.dispose();}
 });
 test('fast box bounces off thin wall',()=>{
@@ -61,4 +61,29 @@ test('vehicle impact reports relative energy once, including mass',()=>{
  assert.ok(shoot(40)[0].energy>hit[0].energy*1.5);
  assert.ok(shoot(120)[0].energy>hit[0].energy*10);
  assert.ok(shoot(30,1)[0].energy<hit[0].energy/6);
+});
+
+// Check actual acceleration well above scenery, independent of piece mass.
+test('default debris gravity is Earth gravity for small and large vehicle parts',()=>{
+ for(const size of [1,6]){
+  const physics=new DebrisPhysics(),p=piece([size,size,size]);p.group.position.y=100;
+  try{
+   physics.add(p);physics.activate(p);
+   for(let second=1;second<=4;second++){
+    for(let i=0;i<60;i++)physics.update(1/60);
+    assert.ok(Math.abs(p.body.linvel().y+9.81*second)<.01);
+    assert.ok(Math.abs(p.body.translation().y-(100-9.81/2*second*second))<.12);
+    assert.ok(Math.abs(p.group.position.y-p.body.translation().y)<.34);
+   }
+  }finally{physics.dispose();}
+ }
+});
+
+test('horizontal damping retains blast drag without damping vertical velocity',()=>{
+ const physics=new DebrisPhysics(),p=piece();p.group.position.y=150;p.velocity.set(40,0,30);
+ try{
+  physics.add(p);for(let i=0;i<120;i++)physics.update(1/60);
+  const v=p.body.linvel();assert(v.x<36&&v.x>30);assert(v.z<27&&v.z>22);
+  assert.ok(Math.abs(v.y+19.62)<.01);
+ }finally{physics.dispose();}
 });

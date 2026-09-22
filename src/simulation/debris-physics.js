@@ -1,35 +1,35 @@
 import * as THREE from 'three';
-import {DEBRIS_DAMAGE} from '../simulation/debris-damage.js';
+import {DEBRIS_DAMAGE} from './debris-damage.js';
 import RAPIER from '@dimforge/rapier3d-compat';
 
 export const debrisPhysicsReady=RAPIER.init();
 // Meters and seconds. Scenery and vehicle contacts; no debris/debris contacts.
-export const DEBRIS_PHYSICS={step:1/120,maxFrame:.1,restitution:.28,friction:.55,linearDamping:.12,angularDamping:.04,maxPieces:160};
+export const DEBRIS_PHYSICS={gravityMetersPerSecondSquared:9.81,step:1/120,maxFrame:.1,restitution:.28,friction:.55,horizontalDampingPerSecond:.12,angularDamping:.04,maxPieces:160};
 const rotation=new THREE.Quaternion(),rotationMatrix=new THREE.Matrix4(),rotatedCenter=new THREE.Vector3();
 const SCENERY=0x00010002,DEBRIS=0x00020005,VEHICLE=0x00040002;
 export class DebrisPhysics {
  constructor(nearbyWalls=()=>[]){
-  this.nearbyWalls=nearbyWalls;this.world=new RAPIER.World({x:0,y:-9.81,z:0});
+  this.nearbyWalls=nearbyWalls;this.world=new RAPIER.World({x:0,y:-DEBRIS_PHYSICS.gravityMetersPerSecondSquared,z:0});
   this.world.timestep=DEBRIS_PHYSICS.step;this.world.integrationParameters.maxCcdSubsteps=4;
   this.world.numSolverIterations=8;
   this.world.integrationParameters.normalizedAllowedLinearError=.001;
   this.targets=new Map();this.colliderOwners=new Map();this.impacts=[];this.queue=new RAPIER.EventQueue(true);
-  this.pieces=new Set();this.walls=new Set();this.time=0;this.accumulator=0;
+  this.nextPieceId=0;this.pieces=new Set();this.walls=new Set();this.time=0;this.accumulator=0;
   this.world.createCollider(RAPIER.ColliderDesc.cuboid(100000,10,100000).setTranslation(0,-10,0).setCollisionGroups(SCENERY));
  }
- add(piece,gravity){
+ add(piece,gravity=DEBRIS_PHYSICS.gravityMetersPerSecondSquared){
   const box=new THREE.Box3();
   for(const mesh of piece.group.children)if(mesh.isMesh&&!mesh.userData.breakupExclude){mesh.geometry.computeBoundingBox();box.union(mesh.geometry.boundingBox);}
   piece.collider={center:box.getCenter(new THREE.Vector3()),half:box.getSize(new THREE.Vector3()).multiplyScalar(.5)};
-  piece.hitTimes=new Map();piece.gravity=gravity;piece.startTime=this.time+(piece.delay||0);piece.sleeping=false;
+  piece.debrisId=++this.nextPieceId;piece.hitTimes=new Map();piece.gravity=gravity;piece.startTime=this.time+(piece.delay||0);piece.sleeping=false;
   piece.previousPosition=piece.group.position.clone();piece.previousRotation=piece.group.quaternion.clone();
   this.pieces.add(piece);
  }
  activate(piece){
   const {group,velocity,spin,collider}=piece,p=group.position,c=collider.center,h=collider.half;
   piece.body=this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x,p.y,p.z).setRotation(group.quaternion)
-   .setLinvel(velocity.x,velocity.y,velocity.z).setAngvel(spin).setGravityScale(piece.gravity/9.81)
-   .setLinearDamping(DEBRIS_PHYSICS.linearDamping).setAngularDamping(DEBRIS_PHYSICS.angularDamping).setCcdEnabled(true));
+   .setLinvel(velocity.x,velocity.y,velocity.z).setAngvel(spin).setGravityScale(piece.gravity/DEBRIS_PHYSICS.gravityMetersPerSecondSquared)
+   .setLinearDamping(0).setAngularDamping(DEBRIS_PHYSICS.angularDamping).setCcdEnabled(true));
   const shape=this.world.createCollider(RAPIER.ColliderDesc.cuboid(Math.max(.02,h.x),Math.max(.02,h.y),Math.max(.02,h.z)).setTranslation(c.x,c.y,c.z)
    .setDensity(DEBRIS_DAMAGE.density).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS).setFriction(DEBRIS_PHYSICS.friction).setRestitution(DEBRIS_PHYSICS.restitution).setCollisionGroups(DEBRIS),piece.body);
   piece.shape=shape;this.colliderOwners.set(shape.handle,{piece});
@@ -111,6 +111,12 @@ export class DebrisPhysics {
      }
      this.activate(p);
     }
+    // Rapier's generic damping also slows vertical free fall. Damp only the
+    // horizontal axes so heavy detached parts retain Earth-gravity acceleration.
+    if(!p.body.isSleeping()){
+     const velocity=p.body.linvel(),drag=1/(1+DEBRIS_PHYSICS.horizontalDampingPerSecond*step);
+     p.body.setLinvel({x:velocity.x*drag,y:velocity.y,z:velocity.z*drag},false);
+    }
     p.preVelocity=new THREE.Vector3().copy(p.body.linvel());p.preSpin=new THREE.Vector3().copy(p.body.angvel());p.preCenter=new THREE.Vector3().copy(p.body.worldCom());
     const position=p.body.translation();p.previousPosition.copy(position);p.previousRotation.copy(p.body.rotation());
     const reach=p.collider.center.length()+p.collider.half.length()+p.velocity.length()*step+1;
@@ -132,6 +138,20 @@ export class DebrisPhysics {
    if(bottom<0)p.group.position.y-=bottom;
    p.velocity.copy(p.body.linvel());p.spin.copy(p.body.angvel());p.sleeping=p.body.isSleeping();
   }
+ }
+ observations(){
+  return [...this.pieces].map(p=>{
+   const q=p.body?p.body.rotation():p.group.quaternion;
+   rotationMatrix.makeRotationFromQuaternion(rotation.copy(q));
+   const e=rotationMatrix.elements,h=p.collider.half;
+   const ex=Math.abs(e[0])*h.x+Math.abs(e[4])*h.y+Math.abs(e[8])*h.z;
+   const ey=Math.abs(e[1])*h.x+Math.abs(e[5])*h.y+Math.abs(e[9])*h.z;
+   const ez=Math.abs(e[2])*h.x+Math.abs(e[6])*h.y+Math.abs(e[10])*h.z;
+   const center=rotatedCenter.copy(p.collider.center).applyQuaternion(rotation).add(p.body?p.body.translation():p.group.position);
+   const v=p.body?p.body.linvel():p.velocity;
+   return {id:p.debrisId,x:center.x,s:-center.z,y:center.y,vx:v.x,vs:-v.z,vy:v.y,
+    radius:Math.hypot(ex,ez),halfHeight:ey,gravity:p.gravity,sleeping:!!p.sleeping};
+  });
  }
  remove(piece){if(piece.body){this.colliderOwners.delete(piece.shape.handle);this.world.removeRigidBody(piece.body);piece.body=null;}this.pieces.delete(piece);}
  clear(){for(const piece of this.pieces)this.remove(piece);this.syncVehicles([]);this.impacts=[];this.queue.clear();this.accumulator=0;this.time=0;}

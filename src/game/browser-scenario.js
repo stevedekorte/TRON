@@ -1,0 +1,17 @@
+import { createScenario } from '../levels/scenario.js';
+export function browserScenario(location, random = Math.random) {
+  const query = new URLSearchParams(location.search),
+    reference = location.pathname.endsWith('/reference.html');
+  const layout = ['authored', 'blueprint'].includes(query.get('maze'))
+    ? query.get('maze')
+    : reference
+      ? 'authored'
+      : 'blueprint';
+  const seed = query.get('layoutSeed');
+  return createScenario({
+    layout,
+    layoutSeed: seed === null ? Math.floor(random() * 4294967296) : Number(seed),
+    runSeed: Number(query.get('runSeed') ?? 1982),
+    siteCount: reference ? 1 : 4,
+  });
+}

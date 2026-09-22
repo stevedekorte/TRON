@@ -18,3 +18,7 @@ export const damp = (a, b, rate, dt) => a + (b - a) * (1 - Math.exp(-rate * dt))
 export const angleDelta = (a, b) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
 export const gunnerAimScale=zoom=>Math.tan(GUNNER.fovs[zoom]*Math.PI/360)/Math.tan(GUNNER.fovs[0]*Math.PI/360);
+
+// Plain standalone fixtures retain legacy defaults; sessions carry their own settings.
+export const configFor=record=>record?.settings?.vehicle || config;
+export function attachSettings(record,settings){Object.defineProperty(record,'settings',{value:settings,configurable:true});return record;}

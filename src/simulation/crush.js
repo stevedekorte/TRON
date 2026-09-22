@@ -1,7 +1,8 @@
+import {supportingAttack} from './attack-coordination.js';
+import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
 import {aircraftSweepClear} from './maneuver-geometry.js';
 import {retireTarget} from './target-memory.js';
-import {advanceFlight,advanceYaw,advanceLift,FLIGHT} from './flight.js';
-import {freePosition, WALL_HEIGHT} from '../levels/maze.js';
+import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor} from './flight.js';
 import {clamp,RECOGNIZER_SCALE} from '../game/config.js';
 
 // Meters and seconds; model-local distances track the rendered scale.
@@ -10,6 +11,7 @@ export function stompDuration(altitude){
   return CRUSH.foldSeconds+Math.sqrt(2*Math.max(0,altitude-CRUSH.soleHeight)/CRUSH.dropAcceleration);
 }
 export function stompTarget(e,now,approachSeconds=0){
+ const {freePosition}=worldFor(e);
   if(!e.memory)return null;
   const time=Math.max(0,now-e.memory.seenAt)+stompDuration(e.y)+approachSeconds;
   const dx=(e.memory.vx||0)*time,ds=(e.memory.vs||0)*time;
@@ -29,6 +31,7 @@ export function stompApproach(e,now,speed){
 }
 
 export function advanceCrush(e,now,dt) {
+ const {WALL_HEIGHT}=worldFor(e);
   if(!e.attack)return false;
   const a=e.attack;e.vx??=0;e.vs??=0;e.vy??=0;
   advanceYaw(e,dt);
@@ -56,7 +59,9 @@ export function advanceCrush(e,now,dt) {
   return true;
 }
 export function beginCrush(e,now,oriented=false) {
-  if(e.stompDisabled||e.targetGone||e.attack||!e.canSee||!e.memory||now-e.memory.seenAt>.25||now<(e.nextAttack||0))return;
+ const FLIGHT=flightFor(e);
+ const {freePosition}=worldFor(e);
+  if(supportingAttack(e)||e.stompDisabled||e.targetGone||e.attack||!e.canSee||!e.memory||now-e.memory.seenAt>.25||now<(e.nextAttack||0))return;
   const target=stompTarget(e,now),duration=stompDuration(e.y);
   const drift=(1-Math.exp(-(FLIGHT.drag+FLIGHT.brakeDrag)*duration))/(FLIGHT.drag+FLIGHT.brakeDrag);
   const landing={x:e.x+(e.vx||0)*drift,s:e.s+(e.vs||0)*drift};
