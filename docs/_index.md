@@ -22,6 +22,11 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 - [x] Generate floor-shader pad borders from the active scenario’s maze sites, matching simulation placement. Remove the renderer’s use of the legacy authored-world pad constants. Include pad geometry in the shader cache key so different seeds/site counts cannot reuse stale positions.
 - [x] Check all 52 pads across two blueprint seeds, an authored seed and a single-site authored layout. Preserve floor-integrated borders, grid-line thickness and horizon fading.
 
+### Recognizer spotlight surface reach — September 23
+
+- [x] Extend downward search/target beams to the floor using their current projector height and direction, including the ribbon width. Preserve wall clipping and sensing limits. Do not fade the final segment when a ray ends on a surface.
+- [x] Check high-altitude ground/raised-surface endpoints and browser rendering, wall clipping, pause and state visibility.
+
 ### Wall-shadow depth stability — September 23
 
 - [x] Increase the exact wall-overlay depth bias from slope/units −1/−1 to −2/−4. Independently rounded clipped vertices at distant maze coordinates could otherwise compete with the receiving wall and make patches flicker under tiny camera motion.

@@ -105,3 +105,21 @@ test('confirmed beam fades on lost observation instead of tracking hidden Clu',(
   }
   assert.ok(locked>=175,`kept target lit on ${locked}/180 frames`);
  });
+
+test('high-altitude search ribbons reach ground and stop at raised surfaces',async()=>{
+ const THREE=await import('three');
+ const {Searchlights}=await import('../src/rendering/searchlights.js');
+ for(const surfaceY of [0.04,60]){
+  const world={wallIntersection:(a,b)=>surfaceY===.04?null:(a.y-surfaceY)/(a.y-b.y)};
+  const scene=new THREE.Scene(),lights=new Searchlights(scene,1,beamPose,world);
+  const enemy={x:0,s:0,y:400,yaw:0,id:0,state:'search',alertUntil:180,scanBeam:{yaw:0,pitch:-.18}};
+  const camera=new THREE.PerspectiveCamera();camera.position.set(100,500,100);
+  lights.update([enemy],1,camera,1,true);
+  const geometry=lights.beams[0].mesh.geometry,positions=geometry.attributes.position;
+  for(let i=positions.count-33;i<positions.count;i++){
+   assert.ok(Math.abs(positions.getY(i)-surfaceY)<1e-4);
+   assert.equal(geometry.attributes.surfaceHit.getX(i),1);
+  }
+  geometry.dispose();lights.beams[0].mesh.material.dispose();
+ }
+});

@@ -35,6 +35,11 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 - [x] Generate floor-shader pad borders from the active scenario’s maze sites, matching simulation placement. Remove the renderer’s use of the legacy authored-world pad constants. Include pad geometry in the shader cache key so different seeds/site counts cannot reuse stale positions.
 - [x] Check all 52 pads across two blueprint seeds, an authored seed and a single-site authored layout. Preserve floor-integrated borders, grid-line thickness and horizon fading.
 
+### Recognizer spotlight surface reach — September 23
+
+- [x] Extend downward search/target beams to the floor using their current projector height and direction, including the ribbon width. Preserve wall clipping and sensing limits. Do not fade the final segment when a ray ends on a surface.
+- [x] Check high-altitude ground/raised-surface endpoints and browser rendering, wall clipping, pause and state visibility.
+
 ### Wall-shadow depth stability — September 23
 
 - [x] Increase the exact wall-overlay depth bias from slope/units −1/−1 to −2/−4. Independently rounded clipped vertices at distant maze coordinates could otherwise compete with the receiving wall and make patches flicker under tiny camera motion.
@@ -3286,3 +3291,8 @@ September 23 carrier panel refinement: Chrome materialization checks passed afte
 - Chrome 153/macOS `node tests/wall-shadow-stability.mjs --measure` reproduced depth dropout before the fix: up to 31,795 mismatching pixels versus a depth-uncontested reference; camera shifts of 1–2 cm changed the missing patches at 10 km world coordinates.
 - After adjusting the wall overlay’s depth bias, `node tests/wall-shadow-stability.mjs` passed all 81 poses with zero mismatching pixels and explicit visible-shadow coverage in every pose.
 - `node tests/wall-shadow-edges.mjs` retained zero mismatches against independent ray/box shadow intersections. The nearest-map comparison had 5,959 mismatches, confirming fixture sensitivity. This addresses the reproduced coplanar shadow flicker; other moving-object cases remain subject to play review.
+
+
+## Spotlight surface reach — September 23
+
+`node --test tests/alertness.test.js`: 11 passed, including every ribbon endpoint at 400 m altitude reaching the ground or a raised clipping surface. `node tests/searchlights.mjs`: Chrome headless on macOS passed rendering, wall/floor clipping, state visibility and pause checks without browser errors. Detection limits are unchanged.

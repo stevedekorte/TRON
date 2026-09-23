@@ -940,3 +940,8 @@ September 23 carrier panel refinement: Chrome materialization checks passed afte
 - Chrome 153/macOS `node tests/wall-shadow-stability.mjs --measure` reproduced depth dropout before the fix: up to 31,795 mismatching pixels versus a depth-uncontested reference; camera shifts of 1–2 cm changed the missing patches at 10 km world coordinates.
 - After adjusting the wall overlay’s depth bias, `node tests/wall-shadow-stability.mjs` passed all 81 poses with zero mismatching pixels and explicit visible-shadow coverage in every pose.
 - `node tests/wall-shadow-edges.mjs` retained zero mismatches against independent ray/box shadow intersections. The nearest-map comparison had 5,959 mismatches, confirming fixture sensitivity. This addresses the reproduced coplanar shadow flicker; other moving-object cases remain subject to play review.
+
+
+## Spotlight surface reach — September 23
+
+`node --test tests/alertness.test.js`: 11 passed, including every ribbon endpoint at 400 m altitude reaching the ground or a raised clipping surface. `node tests/searchlights.mjs`: Chrome headless on macOS passed rendering, wall/floor clipping, state visibility and pause checks without browser errors. Detection limits are unchanged.

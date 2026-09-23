@@ -14,7 +14,9 @@ export function beamPose(e,time){
  const origin=new THREE.Vector3(source.x,source.y,-source.s);
  const direction=new THREE.Vector3(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
  const target=e.spotlight?.target;
- const range=target?Math.min(rangeLimit,Math.hypot(target.x-source.x,target.s-source.s,2.8-source.y)+30):SEARCHLIGHT.scanRange;
+ const nominalRange=target?Math.min(rangeLimit,Math.hypot(target.x-source.x,target.s-source.s,2.8-source.y)+30):SEARCHLIGHT.scanRange;
+ // Include the full ribbon width so even its upper edge reaches the floor.
+ const range=direction.y<0?Math.max(nominalRange,(origin.y+SEARCHLIGHT.halfWidth)/-direction.y):nominalRange;
  return {origin,direction,strength,range};
 }
 export function clippedBeamEnd(origin,end,world=DEFAULT_WORLD){
@@ -34,12 +36,13 @@ export class Searchlights {
     const a=y*(columns+1)+x,b=a+columns+1;indices.push(a,b,a+1,b,b+1,a+1);
    }
    geometry.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
+   geometry.setAttribute('surfaceHit',new THREE.BufferAttribute(new Float32Array((columns+1)*(rows+1)),1).setUsage(THREE.DynamicDrawUsage));
    geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(indices);
    const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,
-    uniforms:{strength:{value:0}},vertexShader:'varying vec2 beamUv;void main(){beamUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader:`varying vec2 beamUv;uniform float strength;
+    uniforms:{strength:{value:0}},vertexShader:'attribute float surfaceHit;varying float hitSurface;varying vec2 beamUv;void main(){hitSurface=surfaceHit;beamUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader:`varying float hitSurface;varying vec2 beamUv;uniform float strength;
     void main(){float x=abs(beamUv.x*2.-1.);float core=exp(-x*x*24.);float halo=exp(-x*x*5.)*(1.-smoothstep(.8,1.,x));
-    float ends=smoothstep(0.,.035,beamUv.y)*(1.-smoothstep(.94,1.,beamUv.y));
+    float ends=smoothstep(0.,.035,beamUv.y)*(1.-(1.-hitSurface)*smoothstep(.94,1.,beamUv.y));
     vec3 color=mix(vec3(.12,.15,1.),vec3(.78,.95,1.),core);
     gl_FragColor=vec4(color*(.7+core*1.5),(halo*.22+core*.42)*ends*strength);}`});
    const mesh=new THREE.Mesh(geometry,material);mesh.frustumCulled=false;mesh.visible=false;mesh.renderOrder=2;scene.add(mesh);
@@ -63,13 +66,15 @@ export class Searchlights {
    for(let x=0;x<=columns;x++){
     const lateral=x/columns*2-1;
     const start=origin.clone().addScaledVector(side,lateral*(pose?.sourceRadius||1.0));
-    const end=clippedBeamEnd(start,origin.clone().addScaledVector(direction,range).addScaledVector(side,lateral*(beam.pose.halfWidth||SEARCHLIGHT.halfWidth)),this.world);
+    const fullEnd=origin.clone().addScaledVector(direction,range).addScaledVector(side,lateral*(beam.pose.halfWidth||SEARCHLIGHT.halfWidth));
+    const end=clippedBeamEnd(start,fullEnd,this.world),hit=end.distanceToSquared(fullEnd)>1e-8;
     shortest=Math.min(shortest,start.distanceTo(end));
     for(let y=0;y<=rows;y++){
      const p=start.clone().lerp(end,y/rows);position.setXYZ(y*(columns+1)+x,p.x,p.y,p.z);
+     beam.mesh.geometry.attributes.surfaceHit.setX(y*(columns+1)+x,hit?1:0);
     }
    }
-   beam.length=shortest;position.needsUpdate=true;beam.mesh.material.uniforms.strength.value=beam.strength;
+   beam.length=shortest;position.needsUpdate=true;beam.mesh.geometry.attributes.surfaceHit.needsUpdate=true;beam.mesh.material.uniforms.strength.value=beam.strength;
   });
  }
 }
