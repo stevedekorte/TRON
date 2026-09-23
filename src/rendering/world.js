@@ -42,10 +42,10 @@ export function createWorld(scene,world=DEFAULT_WORLD) {
     }
     faces.push({...first,b:end});
   }
-  const lines=[],lineShadowIds=[],corners=new Map();
-  const line=(a,b)=>{lines.push(new THREE.Vector3(...a),new THREE.Vector3(...b));lineShadowIds.push(shadowId,shadowId);};
+  const lines=[],lineShadowIds=[],lineNormals=[],corners=new Map();let lineNormal=[0,1,0];
+  const line=(a,b)=>{lines.push(new THREE.Vector3(...a),new THREE.Vector3(...b));lineShadowIds.push(shadowId,shadowId);lineNormals.push(...lineNormal,...lineNormal);};
   for(const {a,b,nx,ns,shadowId:faceShadowId} of faces) {
-    shadowId=faceShadowId;
+    shadowId=faceShadowId;lineNormal=[nx,0,-ns];
     const length=Math.hypot(b.x-a.x,b.s-a.s);
     const p=(distance,y,out=.035)=>[a.x+(b.x-a.x)*distance/length+nx*out,y,-a.s-(b.s-a.s)*distance/length-ns*out];
     line(p(0,WALL_HEIGHT-.12),p(length,WALL_HEIGHT-.12));
@@ -74,11 +74,13 @@ export function createWorld(scene,world=DEFAULT_WORLD) {
     if(items.length<2||items.every(e=>Math.abs(e.nx-items[0].nx)+Math.abs(e.ns-items[0].ns)<.001))continue;
     shadowId=items[0].shadowId;
     const {point}=items[0],nx=items.reduce((v,e)=>v+e.nx,0)*.035,ns=items.reduce((v,e)=>v+e.ns,0)*.035;
+    lineNormal=[nx,0,-ns];
     line([point.x+nx,.25,-point.s-ns],[point.x+nx,WALL_HEIGHT-.15,-point.s-ns]);
   }
   const seams=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(lines),
     new THREE.LineBasicMaterial({color:0x354963,transparent:true,opacity:.68,depthWrite:false}));
   seams.geometry.setAttribute('shadowWallId',new THREE.Float32BufferAttribute(lineShadowIds,1));
+  seams.geometry.setAttribute('shadowReceiverNormal',new THREE.Float32BufferAttribute(lineNormals,3));
   seams.material.onBeforeCompile=shader=>distantFog(shader,120);
   scene.add(seams);
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setAttribute('shadowWallId',new THREE.Float32BufferAttribute(shadowIds,1));geometry.computeBoundingSphere();

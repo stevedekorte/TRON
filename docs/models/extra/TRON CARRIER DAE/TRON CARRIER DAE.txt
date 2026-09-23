@@ -1,0 +1,36 @@
+TRON CARRIER dae by JIHS
+_______________________
+
+Sark´s carrier, from "Tron" (1982) movie. Original design by Syd Mead.
+
+
+Converted from FBX to DAE with FBX Converter.
+
+Tested in 3dmax 2013:
+
+This format create a multimaterial, but the render is correct.
+For edit the textures select them picking in the object
+
+With this correction the model is operative in 3dmax 2013.
+
+__________________________________________________________________
+
+Materials:
+7 jpg adapted in the native model (sketchup) and exported with it, textured in 3dmax:
+
+TxTC01 (dark body): 256x256 pixels
+TxTC02 (red light): 256x256
+TxTC03 (green light): 256x256
+TxTC04 (orange light): 256x256
+TxTC05 (white light): 256x256
+TxTC06 (cyan light): 256x256
+TxTC07 (blue light): 256x256
+
+floorlines: 421x421
+digitalsea: 777x676
+________________________
+
+If you have any problem  with this model that not appear in the specifications, please report to Turbosquid for a correction or devolution.
+Thank you for select this product.
+
+

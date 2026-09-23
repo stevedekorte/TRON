@@ -470,6 +470,32 @@
       "source": "../references/videos/Sark%20and%20MCP.mp4",
       "author": "TRON (1982) film soundtrack / Disney",
       "license": "User-supplied film reference; unofficial personal fan project"
+    },
+    {
+      "id": "carrier-derez",
+      "title": "Carrier derezz \u2014 film excerpt",
+      "group": "Film-derived candidates",
+      "status": "Extracted; awaiting auditory review",
+      "use": "Carrier materialization/dematerialization candidate",
+      "notes": "Second half of the original excerpt: 1.5 seconds from 2:38.5\u20132:40, high-pass 70 Hz / low-pass 9 kHz, normalized to peak 0.7 with 25 ms edge fades. Mixed film soundtrack, not an isolated effects stem. Not loaded by gameplay. Regenerate with scripts/extract-carrier-derez.py.",
+      "author": "TRON (1982) film soundtrack; user-supplied reference",
+      "source": "../references/videos/Carrier%20derezed.mp4",
+      "license": "Film-derived reference; no standalone redistribution license supplied",
+      "playback": "../../audio/carrier-derez.wav",
+      "disk": "public/audio/carrier-derez.wav"
+    },
+    {
+      "id": "carrier-derez-loop",
+      "title": "Carrier materialization \u2014 loop candidate",
+      "group": "Film-derived candidates",
+      "status": "Extracted; awaiting auditory review",
+      "use": "Carrier materialization/dematerialization candidate",
+      "notes": "1.38-second forward-playing loop with a 120 ms cosine crossfade, prepared from 2:38.5\u20132:40 (the second half of the original excerpt). Mixed film soundtrack, not an isolated effects stem. Not loaded by gameplay. Regenerate with scripts/extract-carrier-derez.py.",
+      "author": "TRON (1982) film soundtrack; user-supplied reference",
+      "source": "../references/videos/Carrier%20derezed.mp4",
+      "license": "Film-derived reference; no standalone redistribution license supplied",
+      "playback": "../../audio/carrier-derez-loop.wav",
+      "disk": "public/audio/carrier-derez-loop.wav"
     }
   ]
 }

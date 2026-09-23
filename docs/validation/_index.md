@@ -3,6 +3,28 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Pursuit frame pacing — September 22
+
+`scripts/benchmark-enemy-pursuit.mjs` reproduces twenty simulated seconds with five Recognizers and three maze tanks tracking recorded contact in blueprint/layoutSeed/runSeed 1982. Node CPU profiles on the development Mac identified synchronous route/replan bursts, repeated frontier sorting and redundant distant-pad footprint construction. In the measured profiled runs, worst simulation tick fell from 100.5 ms to 19.9 ms; the largest later replan spike fell from 33.3 ms to 8.8 ms. Total simulation CPU time fell from about 507 to 409 ms. These are one-machine simulation measurements, not guaranteed browser frame rates; budgeted work deliberately spreads smaller costs across more ticks.
+
+`npm test` passed all 244 tests. New checks cover stable search priority/tie order, bounded and fair incremental route work, identical completed synchronous/incremental routes, cancellation, changed destinations, and independent tactical planning budgets. Existing maze radio pursuit, wall-side attacks, hidden-information invariants, teleport bounds and coordinated stomps also pass.
+
+Chrome 153.0.8010.53 on macOS, 1280×720, local tactics without provider calls: twenty-second rendered checks with eight and then 25 active units returned median frame intervals of 16.7 ms and 95th-percentile intervals of 16.8 ms, with no page errors. Units tracked a recorded blueprint contact; these checks measure that encounter, not every viewpoint or live-provider workload. The rendered capture was inspected. Production/documentation build passed; generated HTML was produced by colvmn from Markdown, not edited manually.
+
+## Maze tank pursuit connectivity — September 22
+
+Reproduced on blueprint/layoutSeed/runSeed 1982: two of three maze-zero tanks had no route from their original spawn pockets to a recorded contact and remained stationary. Spawn exit validation and the expanded pursuit fallback allow all three replacement patrols to move; a 20-second local simulation measured approximately 36, 75 and 100 m displacement.
+
+`node --test tests/ground-tanks.test.js` passed 21 tests. New checks verify swept exit routes for every blueprint patrol, more than 10 m of movement after an actual Recognizer radio report in Classic/local/JEV modes, retained report age and no direct sight of hidden Clu, and collision-safe partial progress from an unreachable pocket. `npm run test:browser -- --refactor` passed in Chrome 153.0.8010.53 on macOS: blueprint startup, snapshot isolation, pause, camera modes and three resets with stable 97 geometries, 28 textures and one audio context. No provider calls were required.
+
+## Recognizer moving turns — September 22
+
+The new navigation regression exercises 90° and 180° turns in Classic, local tactical, JEV-selected and escort controllers. Every fixture maintains more than 7 m/s throughout three seconds, travels more than 25 m and changes yaw by more than 0.7 radians without wall overlap. Tactical tests also retain wall-side stomp clearance and multi-location searching; the two-aircraft encounter completes a coordinated stomp. Straight waypoint lookahead and actual-pose attack clearance prevent the faster curved approaches from regressing arrival behavior.
+
+`node tests/recognizer-momentum.mjs` passed in headless Chrome on macOS, including movement during yaw reversal, bounded angular/lift acceleration, pause, reset and tuning. The fixture explicitly selects Classic to avoid provider calls. The spotlight fixture now places a new contact ahead of the aircraft's changed heading; the older five-pursuer fixture now seeds its run and explicitly limits the roster to the five craft named by the check. Visual flight feel remains subject to play review.
+
+Final `npm test`: 238 passed. Production/documentation build passed. `node tests/tactical-browser.mjs` passed mode switching, actual wall-side descent/crush, mocked unavailable-provider fallback, pause/reset and Classic isolation. The first attempts used an unused port and then mismatched the legacy authored wall fixture with the default blueprint world; the fixture now explicitly selects the authored maze and reproducible seeds on port 5173.
+
 ## Aircraft shadows blocked by maze geometry — September 22
 
 Headless Chrome 153.0.8010.53 on macOS: `node tests/recognizer-shadow-occlusion.mjs` reproduced aircraft shadow leakage onto the far wall and covered floor, then verified the maze-depth mask. Exposed-roof shadow pixels remained 8,694; far-wall shadow pixels fell from 15,312 to zero and covered-floor pixels from 1,069 to zero. Detached-part wall leakage was zero. The separate projected ground silhouette fell from 941 leaked pixels to zero. The resulting fixture capture was inspected. These measurements cover the controlled geometry, not every possible viewing angle.
@@ -873,3 +895,48 @@ Refined only the carrier to a 6×6 Gaussian-weighted coverage filter, retaining 
 - `node tests/data-beams.mjs`: Chrome/macOS completed all four beam transfers, blue states and reset without errors. Panel shell capture inspected from aerial view; close-view review run uses `--preview` and reduced motion.
 - `node tests/autoplay.mjs`: Chrome/macOS passed HUD count/rate/cost assertions plus existing controls, background and outage coverage, with mocked JEV and no paid requests.
 - `npm run build` and `git diff --check`: passed.
+
+### Moving-shadow roof rims — September 22
+
+- Chrome 153/macOS: isolated blueprint maze 1982 with a broad overhead moving caster reproduced the reported sawtooth wall-rim shadows. Rendered comparison inspected after the fix: wall faces and trim remain continuous.
+- `node tests/recognizer-shadow-occlusion.mjs`: passed, including full-height wall receiver reaching the roof edge with a slab ID. Exposed roof retained all 8,694 shadow pixels; shielded wall went from 16,474 leaked pixels to zero. Ground, debris and projected-shadow occlusion passed.
+- `npm run test:browser -- --refactor`: passed snapshot isolation, pause, camera views and repeated resets; resources stable at 97 geometries, 28 textures and one context.
+
+### Safari local-file documentation styling — September 22
+
+- User screenshot confirmed entirely missing CSS in Safari when opening the JEV file URL; automated WebKit with default permissions did not reproduce that load denial.
+- Project generation now embeds the upstream colvmn stylesheet in all nine authored pages, without modifying the colvmn submodule or hand-editing HTML.
+- WebKit 26.6/macOS verified both file and HTTP JEV pages with external CSS and layout JavaScript blocked: 202 embedded CSS rules, 960px page width, expected background/font and no horizontal page overflow at 1280px. Regeneration retains a single embedded stylesheet.
+
+### Solar Sailer and opening carrier materialization — September 22
+
+- `node --test tests/solar-sailer.test.js`: passed fixed-lane direction/altitude, three-minute repetition, hidden interval and disabled setting.
+- `node tests/solar-sailer.mjs`: Chrome 153/macOS rendered source and adapted sailer, seven model textures loaded. Repeated crossings retain 109 geometries/eight textures; disposal leaves zero scene geometries and only the renderer-owned DFG lookup texture. Checked hidden preview/reset and captured the corrected forward orientation and split amber beam.
+- `node tests/carrier-materialization.mjs`: Chrome checked opening, wire sweep, solid fade, completion and repeat/reset. The sweep spans the 1,225 m long axis. Captures inspected.
+- `node tests/materialization.mjs`: existing Recognizer phases, two reinforcements, rendering/audio/shadow rebuilds, pause and reset passed after shared reveal changes.
+- `npm run test:browser -- --refactor`: Solar Sailer integration passed pause/view/reset and retained stable resources across three restarts. No paid JEV requests used.
+
+### Active-layout pad visibility — September 22
+
+- `node tests/teleporter-visibility.mjs`: Chrome 153/macOS pixel checks passed for all 52 pads across blueprint seeds 1982/99, authored seed 7, and authored single-site 1982. Each active pad location contains 1,824–2,744 red border pixels in the overhead fixture; disabling borders leaves zero. A shared renderer exercises shader reuse across different pad layouts.
+- Root cause: physics used scenario-generated pad positions while presentation compiled legacy default authored positions. Rendering now derives positions from the same scenario inputs.
+
+Solar Sailer timing follow-up: first transit now starts at 180 seconds. Two unit tests cover pre-arrival fade, post-departure fade, dark intervals and repeat cycles. Chrome fixture verified beam opacities 0/0.5/1/0.5/0, unchanged hull gap and stable resources; production build passed.
+
+Carrier arrival follow-up: the rectangle now stays at one world position while the carrier advances through it, bow first. `node tests/carrier-materialization.mjs` checks constant world coordinates across opening/sweep/fade, bow-before-stern clipping, full completion and restart. The previous eight-second timer is superseded by distance divided by carrier speed.
+
+Carrier lighting follow-up: Chrome fog fixture retained 14,111 bright red pixels during the wireframe phase. All 34 live light materials share the reveal cut; beacon emissive intensity still cycles from 0.1 to 3.1. Front-first stationary-plane/reset assertions and existing Recognizer materialization browser checks passed.
+
+Carrier panel reference follow-up: reviewed six frames spanning 2:37–2:38 of `Carrier derezed.mp4`. Chrome captures confirm the translucent cool field and faint green rim; checks passed for the 7 Hz pulse (opacity multiplier 0.78–1), world-fixed reveal, lights and reset. Extracted stereo WAVs are 3.00/2.88 seconds at 44.1 kHz with peak 0.7; auditory suitability remains unverified and gameplay does not load them.
+
+Solar Sailer speed doubled to 280 m/s; 12 km crossing now takes about 42.9 seconds. First appearance and repetition stay at 180 seconds, with a three-second beam fade-in and extended nine-second fade-out.
+
+Carrier audio trim follow-up: retained only the second half, 2:38.5–2:40. Regenerated the 1.50-second clip and 1.38-second loop, including source metadata and catalog descriptions.
+
+September 23 carrier panel refinement: Chrome materialization checks passed after adding the yellow rim and gray-fill fade to zero at its inner edge. Rendered midpoint capture inspected; center base opacity remains 0.5 and the existing pulse remains active. Production build passed.
+
+### Wall-shadow flicker — September 23
+
+- Chrome 153/macOS `node tests/wall-shadow-stability.mjs --measure` reproduced depth dropout before the fix: up to 31,795 mismatching pixels versus a depth-uncontested reference; camera shifts of 1–2 cm changed the missing patches at 10 km world coordinates.
+- After adjusting the wall overlay’s depth bias, `node tests/wall-shadow-stability.mjs` passed all 81 poses with zero mismatching pixels and explicit visible-shadow coverage in every pose.
+- `node tests/wall-shadow-edges.mjs` retained zero mismatches against independent ray/box shadow intersections. The nearest-map comparison had 5,959 mismatches, confirming fixture sensitivity. This addresses the reproduced coplanar shadow flicker; other moving-object cases remain subject to play review.

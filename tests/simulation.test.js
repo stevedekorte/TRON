@@ -195,7 +195,8 @@ test('an aircraft brakes without spinning when already inside the strike footpri
 
 
 test('five close pursuers yield instead of repeatedly spinning around the tank',()=>{
-  const r=createRun();Object.assign(r,{x:-1800,s:-1800});
+  const r=createRun(1982);Object.assign(r,{x:-1800,s:-1800});
+  r.recognizers=r.recognizers.slice(0,5);
   r.recognizers.forEach((e,i)=>Object.assign(e,{x:r.x+Math.cos(i*1.256)*35,s:r.s+Math.sin(i*1.256)*35,y:80,yaw:i,vx:0,vs:0}));
   const turns=r.recognizers.map(()=>0);
   for(let i=0;i<1200&&!r.crushed;i++){

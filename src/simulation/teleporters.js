@@ -19,11 +19,21 @@ export function vehicleFootprint(e,airborne=false){
 export function vehicleAltitude(e,airborne=false){
  return airborne?{min:(e.y||0)-TELEPORT_VEHICLE_BOUNDS.airBottom,max:(e.y||0)+TELEPORT_VEHICLE_BOUNDS.airTop}:{min:0,max:TELEPORT_VEHICLE_BOUNDS.tankHeight};
 }
+const footprintRadius={
+ tank:Math.hypot(3.635,7.537)+Math.hypot(TANK.pivot[0],TANK.pivot[2]),
+ air:Math.hypot(18,6.5)*RECOGNIZER_SCALE,
+};
+function nearPad(e,pad,airborne){
+ const reach=pad.size/2+footprintRadius[airborne?'air':'tank'];
+ return Math.abs(e.x-pad.x)<=reach&&Math.abs(e.s-pad.s)<=reach;
+}
 export function fullyInsidePad(e,pad,airborne=false){
+ if(!nearPad(e,pad,airborne))return false;
  const y=vehicleAltitude(e,airborne);
  return y.min>=0&&y.max<=(pad.height??TELEPORTERS.height)&&vehicleFootprint(e,airborne).every(p=>Math.abs(p.x-pad.x)<=pad.size/2&&Math.abs(p.s-pad.s)<=pad.size/2);
 }
 export function overlapsPad(e,pad,airborne=false){
+ if(!nearPad(e,pad,airborne))return false;
  const points=vehicleFootprint(e,airborne),h=pad.size/2,y=vehicleAltitude(e,airborne);
  return y.max>=0&&y.min<=(pad.height??TELEPORTERS.height)&&Math.min(...points.map(p=>p.x))<=pad.x+h&&Math.max(...points.map(p=>p.x))>=pad.x-h&&Math.min(...points.map(p=>p.s))<=pad.s+h&&Math.max(...points.map(p=>p.s))>=pad.s-h;
 }

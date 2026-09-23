@@ -1,0 +1,37 @@
+TRON SUNSHIP dae by JIHS
+_______________________
+
+Solar ship, from "Tron" (1982) movie. Original design by Syd Mead, Jean Giraud "Moebius", and Peter LLoyd.
+______________________________________________________________________
+
+
+Converted from FBX to DAE with FBX Converter.
+
+Tested in 3dmax 2013:
+
+This format create a multimaterial, but the render is correct.
+For edit the textures select them picking in the object
+
+With this correction the model is operative in 3dmax 2013.
+
+__________________________________________________________________
+
+Materials:
+7 jpg adapted in the native model (sketchup) and exported with it, textured in 3dmax:
+
+TxTS01 (metal): 256x256 pixels
+TxTS02 (dark metal): 256x256
+TxTS03 (golden metal): 256x256
+TxTS04 (yellow light): 256x256
+TxTS05 (green light): 256x256
+TxTS06 (red light): 256x256
+TxTS07 (blue light): 256x256
+
+floorlines: 421x421
+digitalsea: 777x676
+________________________
+
+If you have any problem  with this model that not appear in the specifications, please report to Turbosquid for a correction or devolution.
+Thank you for select this product.
+
+

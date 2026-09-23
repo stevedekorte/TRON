@@ -1,3 +1,7 @@
+import {enemyPlanningBudget} from './planning-budget.js';
+import {groundRoute,GroundRoutePlanner} from './ground-routing.js';
+export {groundRoute} from './ground-routing.js';
+const groundPlanners=new WeakMap();
 import {radioRangeFor} from '../game/communication.js';
 import { returningToCarrier, groundEscortGoal, ESCORT_NAVIGATION } from './carrier-escort.js';
 import {configFor} from '../game/config.js';
@@ -17,6 +21,21 @@ import {formationTarget} from './formation.js';
 import {intercept} from './intercept.js';
 export const ESCORT={count:2,turnRate:.8,turretRate:1.3,fireRange:340,spacing:38,damageAlertSeconds:5,damageProbeDistance:80};
 export const GROUND_PATROL={count:3,stuckSeconds:5};
+export const GROUND_NAVIGATION=Object.freeze({cellMeters:8,maxIterations:12000,detourMazeWidths:3,exitMarginMeters:32,partialProgressMeters:12,goalShiftMeters:12});
+const patrolExitCache=new WeakMap();
+function patrolHasExit(p,world,config){
+ // The authored maze is generated as one connected corridor graph; only the
+ // traced blueprint contains free-floor pockets outside that graph.
+ if(world.MAZE_KIND!=='blueprint')return true;
+ let cache=patrolExitCache.get(world);
+ if(!cache||cache.radius!==config.tankRadius){cache={radius:config.tankRadius,points:new Map()};patrolExitCache.set(world,cache);}
+ if(!cache.points.has(p)){
+  const b=world.MAZE_INSTANCES[p.mazeId].bounds,margin=GROUND_NAVIGATION.exitMarginMeters;
+  const goal={x:b.minX-margin,s:b.minS-margin};
+  cache.points.set(p,groundRoute(p,goal,{world,vehicleConfig:config,longRange:true,cellMeters:GROUND_NAVIGATION.cellMeters,maxIterations:GROUND_NAVIGATION.maxIterations,detourMeters:world.MAZE_LENGTH*GROUND_NAVIGATION.detourMazeWidths}).length>0);
+ }
+ return cache.points.get(p);
+}
 export const GROUND_TANK_COUNT=ESCORT.count+GROUND_PATROL.count*MAZE_INSTANCES.length;
 export const groundTankCount=(world=DEFAULT_WORLD)=>ESCORT.count+GROUND_PATROL.count*world.MAZE_INSTANCES.length;
 const patrolCache=new WeakMap();
@@ -33,7 +52,14 @@ export function createGroundTanks(random=Math.random,world=DEFAULT_WORLD,config=
  const starts=[];
  for(let i=0;i<GROUND_PATROL.count*MAZE_INSTANCES.length;i++){
   const candidates=patrolCells.filter(p=>p.mazeId===Math.floor(i/GROUND_PATROL.count)&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
-  const p=candidates[Math.floor(random()*candidates.length)];
+  // Blueprint outlines include enclosed pockets. Free floor alone does not
+  // make a valid patrol spawn: the tank must be able to leave its corridor.
+  let p;
+  while(candidates.length){
+   const [candidate]=candidates.splice(Math.floor(random()*candidates.length),1);
+   if(patrolHasExit(candidate,world,config)){p=candidate;break;}
+  }
+  if(!p)throw new Error(`No connected ground patrol spawn in maze ${Math.floor(i/GROUND_PATROL.count)}`);
   starts.push(p);
  }
  return Array.from({length:GROUND_TANK_COUNT},(_,index)=>{
@@ -69,36 +95,6 @@ function patrolGoal(e,now,others){
  return {x:e.x,s:e.s};
 }
 const clear=(a,b,world=worldFor(a))=>world.wallIntersection({...a,y:2},{...b,y:2},configFor(a).tankRadius+.5)===null;
-// Local A*: all edges are swept against the same expanded walls as the hull.
-export function groundRoute(start,goal,{longRange=false,cellMeters=12,maxIterations=2500,detourMeters=500,world=worldFor(start),vehicleConfig=configFor(start)}={}){
- const config=vehicleConfig;
- const clear=(a,b)=>world.wallIntersection({...a,y:2},{...b,y:2},config.tankRadius+.5)===null;
- // A sighting can be closer to a wall than our route margin. Approach a nearby
- // clear point rather than discarding the entire radio-directed route.
- if(!clear(goal,goal)){
-  const candidates=[];
-  for(const radius of [4,8,16,24])for(let i=0;i<16;i++){
-   const p={x:goal.x+Math.cos(i*Math.PI/8)*radius,s:goal.s+Math.sin(i*Math.PI/8)*radius};
-   if(clear(p,p))candidates.push(p);
-  }
-  candidates.sort((a,b)=>Math.hypot(a.x-goal.x,a.s-goal.s)-Math.hypot(b.x-goal.x,b.s-goal.s)||Math.hypot(a.x-start.x,a.s-start.s)-Math.hypot(b.x-start.x,b.s-start.s));
-  if(!candidates.length)return [];goal=candidates[0];
- }
- if(clear(start,goal))return [goal];
- const cell=cellMeters,open=[{x:start.x,s:start.s,g:0,key:'0,0',ix:0,is:0}],seen=new Map([['0,0',0]]);
- for(let iteration=0;open.length&&iteration<maxIterations;iteration++){
-  open.sort((a,b)=>(b.g+Math.hypot(b.x-goal.x,b.s-goal.s))-(a.g+Math.hypot(a.x-goal.x,a.s-goal.s)));
-  const n=open.pop();
-  if((longRange||Math.hypot(n.x-goal.x,n.s-goal.s)<24)&&clear(n,goal)){const path=[goal];for(let p=n;p.parent;p=p.parent)path.unshift({x:p.x,s:p.s});return path;}
-  for(let dx=-1;dx<=1;dx++)for(let ds=-1;ds<=1;ds++){
-   if(!dx&&!ds)continue;const ix=n.ix+dx,is=n.is+ds,key=ix+','+is,g=n.g+cell*Math.hypot(dx,ds);
-   if(g>Math.hypot(goal.x-start.x,goal.s-start.s)+detourMeters||g>=(seen.get(key)??Infinity))continue;
-   const p={x:start.x+ix*cell,s:start.s+is*cell};if(!clear(n,p))continue;
-   seen.set(key,g);open.push({...p,ix,is,key,g,parent:n});
-  }
- }
- return [];
-}
 // Impact direction is a local clue, not knowledge of the hidden shooter's position.
 export function reactToGroundHit(e,projectile,now){
  if(e.targetGone)return;
@@ -116,6 +112,8 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
  const config=configFor(run);
  const {freePosition}=worldFor(run);
  const active=run.enemyTanks.filter(e=>!e.teleport&&e.state!=='destroyed');
+ let planner=groundPlanners.get(run);if(!planner){planner=new GroundRoutePlanner();groundPlanners.set(run,planner);}
+ planner.update(active);
  for(const e of active){
   if(e.turretHeading==null)e.turretHeading=e.yaw+e.turretYaw;
   e.cooldown=Math.max(0,e.cooldown-dt);e.recoil=Math.max(0,e.recoil-dt*4);e.hit=Math.max(0,e.hit-dt*4);
@@ -133,15 +131,27 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   if(reacting){goal=e.threatGoal;e.state='investigate';}
   const escorting=returningToCarrier(e,run.time);
   if(escorting){e.tactical=null;goal=groundEscortGoal(e,goal);}
-  const tactical=tacticalEnabled(run)&&!escorting?chooseManeuver(e,run.time,[...run.recognizers,...active]):null;
+  const tactical=tacticalEnabled(run)&&!escorting?chooseManeuver(e,run.time,[...run.recognizers,...active],enemyPlanningBudget(run)):null;
   if(tactical)goal=tactical.goal;
   const withdrawing=tactical&&['retreat','regroup'].includes(tactical.kind);
   e.goal=goal;
-  if(run.time>=e.nextRoute){
-   const route=groundRoute(e,goal,escorting?{longRange:true,maxIterations:12000,detourMeters:worldFor(e).MAZE_LENGTH*2}:{});
-   // Keep a valid in-progress route if a shifted local grid cannot find its replacement.
-   if(route.length||!e.path.length||!clear(e,e.path[0]))e.path=route;
+  const ready=planner.take(e);
+  if(ready&&Math.hypot(goal.x-ready.goal.x,goal.s-ready.goal.s)<GROUND_NAVIGATION.goalShiftMeters){
+   const route=ready.path;
+   while(route.length>1&&clear(e,route[1]))route.shift();
+   if(route.length&&clear(e,route[0])){e.path=route;e.routeGoal=ready.goal;}
+   else if(!e.path.length||!clear(e,e.path[0]))e.path=[];
    if(!e.path.length&&e.role==='patrol'&&!e.memory)e.patrolGoal=null;
+  }
+  if(run.time>=e.nextRoute){
+   const continuing=e.path.length&&e.routeGoal&&Math.hypot(goal.x-e.routeGoal.x,goal.s-e.routeGoal.s)<GROUND_NAVIGATION.goalShiftMeters&&clear(e,e.path[0]);
+   if(clear(e,goal)){planner.cancel(e);e.path=[goal];e.routeGoal={x:goal.x,s:goal.s};}
+   else if(!continuing){
+    const shared={world:worldFor(e),vehicleConfig:configFor(e)};
+    const options=escorting?{...shared,longRange:true,maxIterations:12000,detourMeters:worldFor(e).MAZE_LENGTH*2}:shared;
+    const fallback=e.memory?{...shared,longRange:true,cellMeters:GROUND_NAVIGATION.cellMeters,maxIterations:GROUND_NAVIGATION.maxIterations,detourMeters:worldFor(e).MAZE_LENGTH*GROUND_NAVIGATION.detourMazeWidths,allowPartial:true}:null;
+    planner.request(e,goal,options,fallback);
+   }
    e.nextRoute=run.time+2;
   }
   while(e.path.length&&Math.hypot(e.x-e.path[0].x,e.s-e.path[0].s)<6&&(!e.path[1]||clear(e,e.path[1])))e.path.shift();

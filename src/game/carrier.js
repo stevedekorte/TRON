@@ -9,6 +9,8 @@ const transitDistance = 3 * HALF,
   lateralOffset = 3000;
 export const CARRIER = {
   searchlightsEnabled: false,
+  materializationFadeSeconds: 2,
+  materializationWireColorLinear: [1.5, 0, 0], // Restrained red, with less bloom.
   altitude: 360,
   speed: defaults.maxSpeed,
   startX: SPAWN.x - Math.sin(SPAWN.yaw) * transitDistance - Math.cos(SPAWN.yaw) * lateralOffset,

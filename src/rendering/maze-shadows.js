@@ -2,6 +2,11 @@ import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as T from 'three';
 import {createStaticWallShadowGeometry} from './static-wall-shadows.js';
 import {RecognizerShadows} from './recognizer-shadows.js';
+// Bias measured in depth-buffer units plus receiver slope. Clipped shadow
+// vertices are independently rounded to float32; at distant maze coordinates
+// one unit allowed entire patches to alternate with the underlying wall.
+const WALL_SHADOW_DEPTH = Object.freeze({factor: -2, units: -4});
+
 // The maze is static: render its depth maps once, independently of moving casters.
 export class MazeShadows extends RecognizerShadows{
  constructor(world,vehicles=[],map=DEFAULT_WORLD){
@@ -38,7 +43,7 @@ export class MazeShadows extends RecognizerShadows{
   this.floorShadow.matrixAutoUpdate=false;
   this.floorShadow.onBeforeRender=()=>{world.slabs.updateWorldMatrix(true,false);this.floorShadow.matrixWorld.copy(world.slabs.matrixWorld);};
   world.slabs.parent.add(this.floorShadow);
-  const wallMaterial=material.clone();wallMaterial.depthTest=true;wallMaterial.polygonOffset=true;wallMaterial.polygonOffsetFactor=-1;wallMaterial.polygonOffsetUnits=-1;
+  const wallMaterial=material.clone();wallMaterial.depthTest=true;wallMaterial.polygonOffset=true;wallMaterial.polygonOffsetFactor=WALL_SHADOW_DEPTH.factor;wallMaterial.polygonOffsetUnits=WALL_SHADOW_DEPTH.units;
   wallMaterial.stencilWriteMask=wallMaterial.stencilFuncMask=wallMaterial.stencilRef=2;
   wallMaterial.vertexShader='void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
   this.wallShadow=new T.Mesh(createStaticWallShadowGeometry(world.slabs,casterGeometry||world.slabs.geometry),wallMaterial);

@@ -1,5 +1,5 @@
 import { worldFor } from '../levels/scenario.js';
-import { configFor, angleDelta, clamp } from '../game/config.js';
+import { configFor, clamp } from '../game/config.js';
 import { airEscortSlot, carrierFor } from '../game/carrier.js';
 import { hearingGoal } from './hearing.js';
 import { advanceFlight, advanceYaw, advanceLift, flightFor } from './flight.js';
@@ -40,15 +40,12 @@ export function flyCarrierEscort(e, now, dt) {
   const clearHeight = e.y >= altitude - 0.5;
   advanceLift(e, dt, altitude);
   advanceYaw(e, dt, clearHeight ? yaw : null);
-  const alignment = Math.max(0, Math.cos(angleDelta(e.yaw, yaw)));
   const speed = Math.hypot(e.vx, e.vs);
   const desired = clearHeight
     ? Math.min(
         carrier.speed + ESCORT_NAVIGATION.airCatchupMetersPerSecond,
         Math.max(0, (carrier.speed * dx) / (d || 1) + d * 0.5),
-      ) *
-      alignment *
-      alignment
+      )
     : 0;
   advanceFlight(
     e,

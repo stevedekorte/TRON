@@ -117,3 +117,48 @@ test('live enemy firing obeys the slower cooldown between shots',()=>{
  assert.ok(times.length>=3&&times.length<=6);
  for(let i=1;i<times.length;i++)assert.ok(times[i]-times[i-1]>=3.4-dt-1e-8);
 });
+
+test('blueprint patrols spawn in corridors connected to the exterior',async()=>{
+ const {createScenario}=await import('../src/levels/scenario.js');
+ const {GROUND_NAVIGATION}=await import('../src/simulation/ground-tanks.js');
+ const {world}=createScenario({layout:'blueprint',layoutSeed:1982});
+ const r=createRun(1982,world);
+ for(const e of r.enemyTanks.filter(e=>e.role==='patrol')){
+  const b=world.MAZE_INSTANCES[e.mazeId].bounds;
+  const goal={x:b.minX-GROUND_NAVIGATION.exitMarginMeters,s:b.minS-GROUND_NAVIGATION.exitMarginMeters};
+  const path=groundRoute(e,goal,{longRange:true,cellMeters:8,maxIterations:12000,detourMeters:world.MAZE_LENGTH*3});
+  assert.ok(path.length,`tank ${e.id} has an exit`);
+  let before=e;for(const p of path){assert.equal(world.wallIntersection({...before,y:2},{...p,y:2},config.tankRadius+.5),null);before=p;}
+ }
+});
+test('maze tanks follow a Recognizer radio contact without seeing hidden Clu',async()=>{
+ const {createScenario}=await import('../src/levels/scenario.js');
+ const {GameSession}=await import('../src/simulation/game-session.js');
+ const {world}=createScenario({layout:'blueprint',layoutSeed:1982});
+ for(const aiMode of ['classic','local','jev']){
+  const session=new GameSession({world,settings:{vehicle:{aiMode}}}),r=session.run;
+  try{
+   const target=world.OPEN_CELLS.find(p=>p.mazeId===0),sender=r.recognizers[0];
+   Object.assign(r,{x:-30000,s:-30000,recognizers:[sender],enemyTanks:r.enemyTanks.filter(e=>e.mazeId===0),dataBeams:[]});
+   Object.assign(sender,{...target,y:100,nextSense:Infinity,nextAttack:Infinity,stompDisabled:true,canSee:true,memory:{x:target.x,s:target.s,vx:0,vs:0,seenAt:0,source:sender.id}});
+   const starts=r.enemyTanks.map(e=>({x:e.x,s:e.s}));
+   for(const e of r.enemyTanks){e.nextSense=Infinity;assert.equal(e.memory,null);}
+   for(let i=0;i<900;i++)session.advance({},dt);
+   for(const [i,e] of r.enemyTanks.entries()){
+    assert.equal(e.memory?.source,sender.id);assert.equal(e.memory.seenAt,0);assert.equal(e.canSee,false);
+    assert.ok(Math.hypot(e.x-starts[i].x,e.s-starts[i].s)>10,`${aiMode}: tank ${e.id} follows radio contact`);
+    assert.ok(e.path.length,`${aiMode}: tank ${e.id} retains route`);
+   }
+  }finally{session.dispose();}
+ }
+});
+test('an unreachable contact permits bounded partial progress without crossing a wall',async()=>{
+ const {createScenario}=await import('../src/levels/scenario.js');
+ const {world}=createScenario({layout:'blueprint',layoutSeed:1982});
+ const start={x:153.26666666666677,s:69.66666666666674},goal=world.OPEN_CELLS.find(p=>p.mazeId===0);
+ assert.equal(groundRoute(start,goal,{world}).length,0);
+ const path=groundRoute(start,goal,{world,cellMeters:8,maxIterations:12000,detourMeters:4000,allowPartial:true});
+ assert.ok(path.length);
+ assert.ok(Math.hypot(path.at(-1).x-goal.x,path.at(-1).s-goal.s)<Math.hypot(start.x-goal.x,start.s-goal.s)-12);
+ let before=start;for(const p of path){assert.equal(world.wallIntersection({...before,y:2},{...p,y:2},config.tankRadius+.5),null);before=p;}
+});
