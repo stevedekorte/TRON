@@ -1,0 +1,13 @@
+{
+  "source": "docs/references/videos/Carrier derezed.mp4",
+  "sha256": "62cfc50443af7548d21fa4d0b4977f7ca2ee07834e45bb3d821438679cee46b8",
+  "startSeconds": 158.5,
+  "endSeconds": 160.0,
+  "filters": "highpass=f=70,lowpass=f=9000",
+  "peakTarget": 0.7,
+  "edgeFadeSeconds": 0.025,
+  "loopCrossfadeSeconds": 0.12,
+  "sampleRate": 44100,
+  "channels": 2,
+  "note": "Mixed film soundtrack, not an isolated sound-effects stem. Audition candidates; not loaded by gameplay."
+}

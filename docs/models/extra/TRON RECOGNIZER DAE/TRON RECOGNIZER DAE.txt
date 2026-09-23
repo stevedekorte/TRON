@@ -1,0 +1,30 @@
+TRON RECOGNIZER dae by JIHS
+_______________________
+
+Recognizers from the film "Tron" (1982).
+
+
+Converted from FBX to DAE with FBX Converter.
+
+Tested in 3dmax 2013:
+
+This format create a multimaterial, but the render is correct.
+For edit the textures select them picking in the object
+
+With this correction the model is operative in 3dmax 2013.
+
+__________________________________________________________________
+
+Materials:
+4 jpg adapted in the native model (sketchup) and exported with it, textured in 3dmax:
+
+TxRecg1 (dark green): 128x128 pixels
+TxRecg1b (blue): 128x128
+TxRecg2 (red neon): 128x128
+TxRecg2b (cyan neon): 128x128
+________________________
+
+If you have any problem  with this model that not appear in the specifications, please report to Turbosquid for a correction or devolution.
+Thank you for select this product.
+
+

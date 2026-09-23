@@ -1,0 +1,30 @@
+TRON BIKES dae by JIHS
+_______________________
+
+Lightbikes from the "Tron" movie (1982).
+
+
+Converted from FBX to DAE with FBX Converter.
+
+Tested in 3dmax 2013:
+
+This format create a multimaterial, but the render is correct.
+For edit the textures select them picking in the object
+
+With this correction the model is operative in 3dmax 2013.
+
+__________________________________________________________________
+
+Materials:
+4 jpg adapted in the native model (sketchup) and exported with it, textured in 3dmax:
+
+TxTLB1 (body bike and way): 472x472 pixels
+TxTLB2 (glasses): 85x85
+TxTLB3 (wireframe floor): 421x421
+TxTLB4 (light way): 885x526
+________________________
+
+If you have any problem  with this model that not appear in the specifications, please report to Turbosquid for a correction or devolution.
+Thank you for select this product.
+
+

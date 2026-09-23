@@ -1,3 +1,7 @@
+import { createTeleportPads } from '../levels/teleporters.js';
+import { carrierFor } from '../game/carrier.js';
+import { CarrierMaterialization } from './carrier-materialization.js';
+import { SolarSailer } from './solar-sailer.js';
 import { occludeProjectedShadow } from './maze-light-visibility.js';
 import { disposeSceneResources } from './scene-resources.js';
 import { CameraRig } from './camera-rig.js';
@@ -44,6 +48,7 @@ export class View {
     cloud = null,
     map = DEFAULT_WORLD,
     physics = null,
+    solarSailer = null,
   ) {
     this.map = map;
     const RECOGNIZER_STARTS = recognizerStarts(map),
@@ -73,9 +78,14 @@ export class View {
     this.scene.add(fill);
     this.world = createWorld(this.scene, map);
     this.dataBeams = new DataBeams(this.scene, map);
-    this.teleportPads = createTeleporters(this.world.floor.material);
+    this.teleportPads = createTeleporters(this.world.floor.material, createTeleportPads(map.MAZE_INSTANCES, map.WALL_HEIGHT));
+    this.solarSailer = solarSailer ? new SolarSailer(solarSailer, this.scene, map) : null;
     this.carrier = carrier;
-    if (carrier) this.scene.add(carrier);
+    if (carrier) {
+      carrier.userData.rez = new CarrierMaterialization(carrier);
+      carrier.userData.rez.updateTransit(0, carrierFor(map).speed);
+      this.scene.add(carrier);
+    }
     this.clouds = cloud ? new CloudLayer(cloud, this.scene, map) : null;
     this.tank = tank;
     this.scene.add(this.tank.root);
@@ -275,6 +285,7 @@ export class View {
     this.teleportPads.update(run.teleportPads, run.time);
     const { cinematic, aerialMix, preview, gunner } = this.cameraRig.begin(run, dt, mode);
     this.clouds?.update(run.time, run.seed, !preview);
+    this.solarSailer?.update(run.time, !preview);
     if (this.carrier) {
       this.carrier.visible = !preview;
       updateCarrier(
@@ -284,6 +295,7 @@ export class View {
         Math.max(0, 1 - (run.time - run.carrierHitAt) / 1.2),
         this.map,
       );
+      this.carrier.userData.rez.updateTransit(run.time, carrierFor(this.map).speed);
     }
     if (run.teleport) previous = { ...run };
     const x = previous.x + (run.x - previous.x) * alpha;
@@ -560,6 +572,7 @@ export class View {
     this.recognizerShadows.dispose();
     for (const craft of [this.tank, ...this.enemyTanks, ...this.recognizers]) craft.rez?.dispose();
     this.recognizerTemplate.traverse((o) => o.material?.dispose());
+    this.carrier?.userData.rez?.dispose();
     this.breakups.dispose();
     this.clouds?.dispose();
     disposeSceneResources(this.scene);

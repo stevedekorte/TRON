@@ -32,23 +32,26 @@ function reveal(material,uniforms){
  material.customProgramCacheKey=()=>key+'|rez-sweep-v2:'+!!uniforms.rezAlpha;material.needsUpdate=true;
 }
 export class Materialization{
- constructor(root){
+ constructor(root,{axis='z',reverse=false,wireFog=true,isLiveMaterial=()=>false}={}){
+  this.frame=new T.Matrix4().makeRotationY(axis==='x'?(reverse?Math.PI/2:-Math.PI/2):(reverse?Math.PI:0));
+  this.frameInverse=this.frame.clone().invert();
   this.root=root;this.inverse={value:new T.Matrix4()};
   this.portal={portalActive:{value:0},portalMin:{value:new T.Vector3()},portalMax:{value:new T.Vector3()}};
   this.solid={rezInverse:this.inverse,rezCut:{value:1e6},rezAlpha:{value:1}};
+  this.live={rezInverse:this.inverse,rezCut:{value:1e6}};
   this.materials=[];this.opacity=1;
   this.wire={rezInverse:this.inverse,rezCut:{value:-1e6}};
   root.updateMatrixWorld(true);
-  const inverse=root.matrixWorld.clone().invert(),bounds=new T.Box3(),sources=[];
+  const inverse=this.frame.clone().multiply(root.matrixWorld.clone().invert()),bounds=new T.Box3(),sources=[];
   root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude)sources.push(o);});
   for(const mesh of sources){mesh.geometry.computeBoundingBox();bounds.union(mesh.geometry.boundingBox.clone().applyMatrix4(inverse.clone().multiply(mesh.matrixWorld)));}
   this.bounds=bounds;this.wires=[];this.depthMaterials=[];
   const patched=new Set();
   root.traverse(o=>{
-   if(!o.isMesh)return;
-   for(const m of Array.isArray(o.material)?o.material:[o.material])if(!patched.has(m)){this.materials.push({material:m,transparent:m.transparent,depthWrite:m.depthWrite,blending:m.blending});reveal(m,this.solid);portalClip(m,this.portal);patched.add(m);}
+   if(!o.isMesh&&!o.isLine)return;
+   for(const m of Array.isArray(o.material)?o.material:[o.material])if(!patched.has(m)){const live=isLiveMaterial(m);this.materials.push({material:m,transparent:m.transparent,depthWrite:m.depthWrite,blending:m.blending,live});reveal(m,live?this.live:this.solid);portalClip(m,this.portal);patched.add(m);}
   });
-  const lineMaterial=new T.LineBasicMaterial({color:new T.Color(4,.015,.005),toneMapped:false,transparent:true,opacity:1,depthWrite:false});reveal(lineMaterial,this.wire);this.lineMaterial=lineMaterial;
+  const lineMaterial=new T.LineBasicMaterial({color:new T.Color(4,.015,.005),toneMapped:false,transparent:true,opacity:1,depthWrite:false,fog:wireFog});reveal(lineMaterial,this.wire);this.lineMaterial=lineMaterial;
   portalClip(lineMaterial,this.portal,true);
   for(const mesh of sources){
    if(sources.some(o=>o.material.name==='Base')&&mesh.material.name!=='Base')continue;
@@ -59,34 +62,35 @@ export class Materialization{
   const material=new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending,toneMapped:false,
    uniforms:{strength:{value:0},lineStrength:{value:0}},vertexShader:'varying vec2 uvRez;void main(){uvRez=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
    fragmentShader:'varying vec2 uvRez;uniform float strength;uniform float lineStrength;void main(){vec2 edge=min(uvRez,1.-uvRez);float border=1.-smoothstep(.003,.009,min(edge.x,edge.y));gl_FragColor=vec4(vec3(3.,.025,.005),strength*(.025+max(border,lineStrength)*.8));}'});
-  this.rectangle=new T.Mesh(new T.PlaneGeometry(size.x+4,size.y+4),material);this.rectangle.position.set(center.x,center.y,0);this.rectangle.userData.breakupExclude=true;this.rectangle.visible=false;root.add(this.rectangle);
+  this.rectangle=new T.Mesh(new T.PlaneGeometry(size.x+4,size.y+4),material);this.rectangle.position.set(center.x,center.y,0).applyMatrix4(this.frameInverse);this.rectangle.quaternion.setFromRotationMatrix(this.frameInverse);this.rectangleCenter=center;this.rectangle.userData.breakupExclude=true;this.rectangle.visible=false;root.add(this.rectangle);
  }
- update(age=null,pad=null){
+ update(age=null,pad=null,sweep=null){
   if(age!==null)pad=null;
   this.portal.portalActive.value=pad?1:0;
   if(pad){const h=pad.size/2;this.portal.portalMin.value.set(pad.x-h,0,-pad.s-h);this.portal.portalMax.value.set(pad.x+h,pad.height??TELEPORTERS.height,-pad.s+h);}
-  this.root.updateWorldMatrix(true,false);this.inverse.value.copy(this.root.matrixWorld).invert();
-  const phase=age===null?{complete:true}:materializationPhase(age),active=!phase.complete;
+  this.root.updateWorldMatrix(true,false);this.inverse.value.copy(this.root.matrixWorld).invert().premultiply(this.frame);
+  const phase=sweep?.phase??(age===null?{complete:true}:materializationPhase(age)),active=!phase.complete;
   const scale=new T.Vector3().setFromMatrixScale(this.root.matrixWorld);
   const padding=MATERIALIZATION.sweepClearance/scale.z,from=this.bounds.min.z-padding,to=this.bounds.max.z+padding;
   this.opacity=active?phase.solid:1;
   this.solid.rezAlpha.value=this.opacity;
   // Solids fade across the whole vehicle after the only spatial sweep.
   this.solid.rezCut.value=this.opacity>0?1e6:from;
-  const fading=this.opacity<1;
   for(const original of this.materials){
+   const fading=this.opacity<1&&!original.live;
    const m=original.material,transparent=fading||original.transparent;
    if(m.transparent!==transparent){m.transparent=transparent;m.needsUpdate=true;}
    m.depthWrite=fading?false:original.depthWrite;
    m.blending=fading?T.NormalBlending:original.blending;
   }
   this.lineMaterial.opacity=pad?1:1-this.opacity;
-  this.wire.rezCut.value=pad?1e6:active?T.MathUtils.lerp(from,to,phase.wire):-1e6;
+  this.wire.rezCut.value=pad?1e6:active?(sweep?.cut??T.MathUtils.lerp(from,to,phase.wire)):-1e6;
+  this.live.rezCut.value=active?this.wire.rezCut.value:1e6;
   for(const wire of this.wires)wire.visible=active||!!pad;
   this.rectangle.visible=active;this.rectangle.material.uniforms.strength.value=active?phase.opacity:0;
   this.rectangle.material.uniforms.lineStrength.value=active?Math.max(0,1-phase.height/.06):0;
   if(active){
-   this.rectangle.position.z=T.MathUtils.lerp(from,to,phase.scan);
+   this.rectangle.position.set(this.rectangleCenter.x,this.rectangleCenter.y,sweep?.cut??T.MathUtils.lerp(from,to,phase.scan)).applyMatrix4(this.frameInverse);
    const lineScale=MATERIALIZATION.lineHeight/(this.rectangle.geometry.parameters.height*scale.y);
    this.rectangle.scale.y=T.MathUtils.lerp(lineScale,1,phase.height);
   }

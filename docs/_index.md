@@ -17,6 +17,57 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 
 ## Current direction — open-ended simulation
 
+### Teleporter border placement — September 22
+
+- [x] Generate floor-shader pad borders from the active scenario’s maze sites, matching simulation placement. Remove the renderer’s use of the legacy authored-world pad constants. Include pad geometry in the shader cache key so different seeds/site counts cannot reuse stale positions.
+- [x] Check all 52 pads across two blueprint seeds, an authored seed and a single-site authored layout. Preserve floor-integrated borders, grid-line thickness and horizon fading.
+
+### Wall-shadow depth stability — September 23
+
+- [x] Increase the exact wall-overlay depth bias from slope/units −1/−1 to −2/−4. Independently rounded clipped vertices at distant maze coordinates could otherwise compete with the receiving wall and make patches flicker under tiny camera motion.
+- [x] Verify 81 perspective camera poses across 0/4/10 km offsets, wall orientations and centimeter camera movement. Keep depth testing and stencil union, and preserve exact geometric edges.
+
+### Carrier reveal panel and audio study — September 22
+
+- [x] Use `Carrier derezed.mp4` at 2:37–2:38 to replace the carrier’s red rectangle with a softly feathered, translucent blue-white field and faint green rim. September 23 refinement: use a yellow pulsing rim, retain 0.5 base gray opacity at the center, and fade the gray fill to zero before it meets the rim. Add a 7 Hz pulse limited to 22% opacity variation, driven by simulation time so pause/reset remain stable.
+- [x] Extract 2:38.5–2:40 (the second half of the initial clip) as a stereo WAV and prepare a 120 ms crossfaded loop candidate. Record source hash, timing and filters in `public/audio/carrier-derez-source.json`; add both to the sound library for audition.
+- [ ] Audition the mixed-soundtrack excerpt/loop before choosing gameplay playback. No claim of isolated SFX or auditory approval; not yet loaded by the game.
+
+### Solar Sailer transit and carrier arrival — September 22
+
+- [x] Import the user-supplied JIHS Solar Sailer DAE locally as GLB with all seven textures. Preserve proportions at uniform 2.5× scale; use the film clip `carrier and solar sailer.mp4` at 1:34–1:46 for direction, silver sails and amber beam.
+- [x] Add a fixed horizontal +X lane parallel to the carrier, at 520 m altitude and 600 m lateral offset. Traverse 12 km at 280 m/s every 180 seconds, starting three minutes into the round; fade at the distant ends. The beam fades in during the three seconds preceding each pass and fades out over nine seconds afterward, remaining invisible between passes. Pause/restart follow simulation time. This is background scenery without combat or collision participation.
+- [x] Replace the model’s short source beam with a 24 km amber beam split around the complete vehicle span; the sail end leads travel. Expose scale, altitude, speed and period in development tuning.
+- [x] Materialize the carrier at round start using the existing opening-line/rectangle, one wireframe sweep and solid fade, driven by the carrier’s 22 m/s translation (about 57 seconds for the hull to emerge, then the two-second solid fade). Reveal the +X front before the rear through a rectangle fixed in world space; its local position cancels the carrier’s translation. Sweep along the carrier’s long X axis, include existing hull seam lines in the reveal, and fade its shadow with the solids. Repeat on restart without recreating effects. Carrier wireframe ignores ground fog so it stays red at sky distances; its linear color is tuned to (1.5, 0, 0) for a softer red glow rather than the original overbright orange cast; running lights and beacons become active as they cross the reveal plane, independently of the final armor fade.
+
+### Local documentation styling — September 22
+
+- [x] Embed the colvmn stylesheet during `npm run docs` generation so Safari local-file viewing does not require a sibling-folder CSS load. Keep upstream colvmn unchanged; author Markdown/JSON and regenerate HTML with the project wrapper.
+
+### Wall rims and landing tactics — September 22
+
+- [x] Prevent moving aircraft shadows from exposing sawtooth strips on self-shielded maze wall rims. Use the slab face orientation and caster identity; give decorative trim explicit surface normals. Keep foreign-wall occlusion and exposed roof shadows.
+- [ ] Allow deliberate Recognizer landings as future tactical choices: block Clu’s path to give an ally a crush opportunity, or land to rest. Ground contact is not inherently a navigation failure; distinguish purposeful blocking/resting from getting stuck. No new landing maneuvers are implemented by this rendering fix.
+
+### Pursuit frame pacing — September 22
+
+- [x] Replace repeatedly sorted ground/air search frontiers with stable priority queues. Spread enemy ground route searches across ticks with a shared 192-node budget and 24-node round-robin slices; keep movement, sensing and collisions running every tick.
+- [x] Admit one new tactical candidate set per simulation tick across aircraft and tanks. Preserve existing maneuvers while waiting, defer expensive search-map construction to admitted planning work, and precompute search candidate rankings.
+- [x] Reject distant teleporter pads with a conservative radius check before building exact vehicle footprints. Verify exact overlap/containment behavior and lifecycle isolation.
+- [x] Record a reproducible eight-unit pursuit profile and validate bounded work, fair route completion, destination replacement and independent round budgets.
+
+### Maze tank pursuit — September 22
+
+- [x] Require a swept exit route when choosing blueprint ground patrol spawns; free floor inside an enclosed blueprint pocket is not a valid spawn. Cache checks per world and hull radius.
+- [x] Retain valid ground routes to stable destinations. When the ordinary pursuit search fails, try finer 8 m routing with a bounded larger search; permit wall-safe partial progress toward a recorded contact if the full destination remains unreachable.
+- [x] Verify patrol exit routes and actual radio-directed movement in Classic, local and JEV modes without revealing hidden Clu state. Preserve original observation age and physical wall collision.
+
+### Recognizer moving turns — September 22
+
+- [x] Remove heading-alignment stops from Classic, tactical/JEV and carrier escort flight. Preserve forward-only thrust, positional/angular inertia and level attitude while turning in flight.
+- [x] Limit approach speed by remaining distance and turn time to prevent orbiting nearby destinations. Carry speed through collinear tactical waypoints; retain braking for arrival, acquisition, deliberate holds and confined descent. Permit a settled attack from an already clear actual pose without waiting for redundant final yaw.
+- [x] Check right-angle/reversing turns, multi-location search, wall-side clearance, coordinated stomps and browser momentum/pause/reset behavior.
+
 ### Aircraft shadow occlusion — September 22
 
 - [x] Gate Recognizer, carrier and detached-part shadows against the existing static maze light-depth atlas. Preserve shadows on exposed roofs while preventing additional dark silhouettes on obscured wall faces and covered ground.

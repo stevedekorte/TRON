@@ -38,3 +38,11 @@ export function advanceLift(e,dt,altitude,maxSpeed=flightFor(e).liftSpeed){
 }
 
 export const flightFor=e=>e?.settings?.flight || FLIGHT;
+
+// Keep a turn's radius inside the remaining approach distance. A distant goal
+// allows full cruise even behind the craft; nearby goals require a slower arc.
+export const FLIGHT_APPROACH=Object.freeze({turnTimeMargin:2,responseSeconds:1});
+export function approachSpeed(e, heading, distance, requestedSpeed) {
+ const turnSeconds=FLIGHT_APPROACH.turnTimeMargin*Math.abs(angleDelta(e.yaw,heading))/flightFor(e).turnRate;
+ return Math.min(requestedSpeed,distance/(FLIGHT_APPROACH.responseSeconds+turnSeconds));
+}

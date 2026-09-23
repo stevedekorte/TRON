@@ -1,6 +1,1446 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="data:,"><title>Carrier escape shuttle – TRON</title><link rel="stylesheet" href="../../colvmn/style.css">  <link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt">
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="data:,"><title>Carrier escape shuttle – TRON</title><link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt">
   <meta name="description" content="Reference reconstruction of the carrier escape pod">
+<style id="tron-docs-style">
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #2a2a2a;
+  background: #c8c3bd;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  --page-padding-x: 70px;
+  max-width: 960px;
+  margin: 40px auto;
+  background: #faf9f6;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  padding: 60px var(--page-padding-x) 80px;
+  opacity: 0;
+}
+
+.page.loaded {
+  opacity: 1;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 50px;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.5px;
+  color: #2a2a2a;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #2a2a2a;
+  text-decoration: none;
+}
+
+/* Intro / meta */
+.intro {
+  max-width: 520px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.8;
+  margin-bottom: 60px;
+}
+
+.intro p {
+  margin: 0 0 14px;
+}
+
+.intro p:last-child {
+  margin-bottom: 0;
+}
+
+/* On classdoc pages the intro is the class docstring — render it at the
+   same size as the slot description bodies. */
+.page:has(.classdoc) .intro {
+  font-size: 13px;
+}
+
+/* Links */
+a {
+  color: #888;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #2a2a2a;
+}
+
+.section-body li > a:only-child::after {
+  content: " →";
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+/* Section headings */
+h2 {
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: -0.3px;
+  margin-top: 60px;
+  margin-bottom: 30px;
+}
+
+h2:first-of-type {
+  margin-top: 0;
+}
+
+h3 {
+  font-size: 17px;
+  font-weight: 300;
+  letter-spacing: -0.3px;
+  color: #000;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+h4 {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: -0.3px;
+  color: #000;
+  margin-top: 24px;
+  margin-bottom: 14px;
+}
+
+/* Table of contents */
+.toc {
+  margin-bottom: 40px;
+}
+
+.toc ul {
+  list-style: none;
+  padding: 0;
+  columns: 2;
+  column-gap: 30px;
+}
+
+.toc li {
+  font-size: 13px;
+  line-height: 1.8;
+  break-inside: avoid;
+}
+
+.toc a {
+  color: #555;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.toc a:hover {
+  color: #2a2a2a;
+}
+
+/* Code */
+pre {
+  background: #f5f5f3;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+code, tt {
+  font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 11px;
+}
+
+p code, li code, p tt, li tt {
+  background: #f5f5f3;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+/* Content blocks */
+.section {
+  border-top: 1px solid #ddd;
+  padding: 30px 0;
+}
+
+.section-head {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #2a2a2a;
+  margin-bottom: 10px;
+}
+
+.section-body {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.75;
+}
+
+.section-body p {
+  margin-bottom: 12px;
+}
+
+.section-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline diagrams scale down to fit the page width; viewBox preserves aspect ratio */
+.section-body svg,
+.section-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+.section-body ul, .section-body ol {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+
+.section-body li {
+  margin-bottom: 5px;
+}
+
+.section-body li ul {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.section-body strong {
+  color: #2a2a2a;
+}
+
+/* Tables */
+.section-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 24px;
+  font-size: 13px;
+}
+
+.section-body th, .section-body td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.section-body th {
+  font-weight: 600;
+  color: #2a2a2a;
+  border-bottom: 2px solid #ccc;
+}
+
+.section-body td {
+  color: #555;
+}
+
+/* Sub-sections within a section */
+.sub {
+  margin-top: 22px;
+}
+
+.sub:first-child {
+  margin-top: 0;
+}
+
+.sub-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2a2a2a;
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+
+.sub-note {
+  font-size: 12px;
+  font-style: italic;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+/* Workflow diagram */
+.workflow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 12px 0 16px;
+}
+
+.workflow-step {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #444;
+  min-width: 200px;
+  text-align: center;
+}
+
+.workflow-arrow {
+  color: #bbb;
+  font-size: 16px;
+  padding-left: 88px;
+}
+
+/* Checkmark */
+.check { color: #5a9a5a; }
+
+/* Back link */
+.back-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #999;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  transition: color 0.15s;
+}
+
+.back-link:hover { color: #2a2a2a; }
+
+/* Two-column layout variant */
+.section-two-col {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0 40px;
+  border-top: 1px solid #ddd;
+  padding: 30px 0;
+}
+
+.section-two-col .section-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #2a2a2a;
+  padding-top: 2px;
+}
+
+.section-two-col .section-body {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.75;
+}
+
+.section-two-col .section-body p {
+  margin-bottom: 12px;
+}
+
+.section-two-col .section-body p:last-child {
+  margin-bottom: 0;
+}
+
+.section-two-col .section-body ul,
+.section-two-col .section-body ol {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+
+.section-two-col .section-body li {
+  margin-bottom: 5px;
+}
+
+.section-two-col .section-body strong {
+  color: #2a2a2a;
+}
+
+/* Card grid */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+.card-grid.cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.card {
+  padding: 32px 0;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+}
+
+/* Vertical dividers: 2-col */
+.card-grid.cols-2 > .card:nth-child(odd) {
+  border-right: 1px solid #ddd;
+  padding-right: 30px;
+}
+
+.card-grid.cols-2 > .card:nth-child(even) {
+  padding-left: 30px;
+}
+
+/* Vertical dividers: 3-col */
+.card-grid:not(.cols-2) > .card:not(:nth-child(3n)) {
+  border-right: 1px solid #ddd;
+  padding-right: 30px;
+}
+
+.card-grid:not(.cols-2) > .card:nth-child(3n+2),
+.card-grid:not(.cols-2) > .card:nth-child(3n) {
+  padding-left: 30px;
+}
+
+/* Horizontal dividers between rows in 2-col grids */
+.card-grid.cols-2 > .card:nth-child(n+3) {
+  border-top: 1px solid #ddd;
+}
+
+/* Horizontal dividers between rows in 3-col grids */
+.card-grid:not(.cols-2) > .card:nth-child(n+4) {
+  border-top: 1px solid #ddd;
+}
+
+/* Last card spanning remaining columns in partial row */
+.card-span-2 {
+  grid-column: span 2;
+  border-right: none !important;
+}
+
+.card-span-3 {
+  grid-column: span 3;
+  border-right: none !important;
+}
+
+.card:hover { background: #fafaf8; }
+
+.card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #2a2a2a;
+  margin-bottom: 12px;
+}
+
+.card p {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.7;
+}
+
+.card .arrow {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #999;
+  letter-spacing: 0.5px;
+  transition: color 0.15s;
+}
+
+.card:hover .arrow { color: #2a2a2a; }
+
+.card .card-date {
+  font-size: 12px;
+  color: #999;
+  margin-top: -8px;
+  margin-bottom: 10px;
+}
+
+/* ── Timeline page layout ── */
+.page-timeline {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+}
+
+.page-timeline .header {
+  padding: 40px 70px 0;
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+.page-timeline .intro {
+  max-width: none;
+  padding: 0 70px 30px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+/* Timeline toolbar */
+.timeline-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 0;
+  background: #f9f8f6;
+  flex-shrink: 0;
+}
+
+.page-timeline .timeline-toolbar {
+  padding: 12px 70px;
+}
+
+.timeline-toolbar button {
+  font-size: 12px;
+  color: #999;
+  background: none;
+  border: 1px solid #ddd;
+  padding: 4px 12px;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.timeline-toolbar button:hover {
+  color: #2a2a2a;
+  border-color: #999;
+}
+
+.zoom-btn {
+  font-size: 14px !important;
+  padding: 4px 10px !important;
+  margin-right: 4px;
+}
+
+.details-toggle {
+  margin-left: 8px;
+}
+
+.hide-details .event-desc { display: none; }
+
+/* Timeline container */
+.timeline-wrap {
+  flex: 1;
+  min-height: 480px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #f9f8f6;
+}
+
+.timeline-track {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  height: 100%;
+  min-width: max-content;
+  padding: 40px 0;
+}
+
+/* Horizontal axis line */
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: #2a2a2a;
+  transform: translateY(-1px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Axis year labels */
+.axis-year {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: #2a2a2a;
+  z-index: 2;
+  background: #f9f8f6;
+  padding: 0 6px;
+}
+
+.axis-year-start { left: 14px; }
+.axis-year-end { right: 14px; }
+
+/* Column per time point */
+.tl-col {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 220px;
+  position: relative;
+  z-index: 1;
+}
+
+.tl-above {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 20px;
+}
+
+.tl-below {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+/* Vertical stem connecting events to axis */
+.tl-stem {
+  width: 2px;
+  height: 60px;
+  background: #2a2a2a;
+  flex-shrink: 0;
+}
+
+/* Event card */
+.event {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.event-date {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: #2a2a2a;
+  margin-bottom: 8px;
+}
+
+.event-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #2a2a2a;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.event-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted #888;
+}
+
+.event-link:hover {
+  color: #1a5fb4;
+  border-bottom-color: #1a5fb4;
+}
+
+.event-link-arrow {
+  margin-left: 4px;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.event-desc {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.7;
+  max-width: 200px;
+}
+
+/* Timeline footer */
+.timeline-footer {
+  background: #faf9f6;
+  padding: 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.page-timeline .timeline-footer {
+  padding: 0 70px 40px;
+  box-shadow: 0 -1px 4px rgba(0,0,0,0.04);
+}
+
+.timeline-footer-rule {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 0 0 24px;
+}
+
+.page-timeline .timeline-footer-rule {
+  margin: 0 -70px 24px;
+}
+
+.timeline-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.scroll-hint {
+  font-size: 12px;
+  color: #999;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+/* Chapter hero */
+.hero {
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: contain;
+  min-height: clamp(180px, 34vw, 320px);
+  padding: 60px 0 80px;
+  margin: 20px 0 60px;
+  display: flex;
+  align-items: center;
+}
+
+/* Wide variant — image spans the full page width (breaks out of page padding).
+   --hero-aspect (from the page's heroAspect frontmatter) should match the
+   image's natural aspect ratio; falls back to 2/1 if unset. */
+.hero.hero-wide {
+  background-size: 100% auto;
+  background-position: center;
+  margin-left: calc(var(--page-padding-x) * -1);
+  margin-right: calc(var(--page-padding-x) * -1);
+  padding-left: var(--page-padding-x);
+  padding-right: var(--page-padding-x);
+  aspect-ratio: var(--hero-aspect, 2 / 1);
+  min-height: 0;
+}
+
+.hero-title {
+  font-size: clamp(40px, 7vw, 64px);
+  font-weight: 400;
+  letter-spacing: -1.5px;
+  color: #1a1a1a;
+  margin: 0;
+  max-width: 50%;
+  line-height: 1.05;
+}
+
+/* Desktop heading weights */
+@media (min-width: 701px) {
+  .header h1 { font-weight: 400; }
+  h2 { font-weight: 400; }
+  h3 { font-weight: 400; }
+  h4 { font-weight: 500; }
+}
+
+/* FAQ */
+.faq {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-item {
+  border-top: 1px solid #e5e5e5;
+  padding: 16px 0;
+}
+
+.faq-item:last-child {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.faq-q {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2a2a2a;
+  letter-spacing: 0.2px;
+}
+
+.faq-a {
+  padding: 12px 0 4px;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.75;
+  max-width: 640px;
+}
+
+.faq-a p { margin: 0 0 10px; }
+.faq-a p:last-child { margin-bottom: 0; }
+
+/* Responsive */
+@media (max-width: 700px) {
+  .page {
+    --page-padding-x: 28px;
+    margin: 0;
+    padding: 32px var(--page-padding-x) 48px;
+    box-shadow: none;
+  }
+  .header { flex-direction: column; gap: 8px; margin-bottom: 32px; }
+  .header .brand { order: -1; }
+  .section-two-col { grid-template-columns: 1fr; gap: 12px 0; }
+  .card-grid, .card-grid.cols-2 { grid-template-columns: 1fr; }
+  .toc ul { columns: 1; }
+  .card-span-2, .card-span-3 { grid-column: span 1; }
+  .card { border-right: none !important; border-top: none !important; padding-left: 0 !important; padding-right: 0 !important; }
+  .card:not(:last-child) { border-bottom: 1px solid #ddd; }
+  .page-timeline .header,
+  .page-timeline .intro,
+  .page-timeline .timeline-toolbar,
+  .page-timeline .timeline-footer { padding-left: 28px; padding-right: 28px; }
+  .page-timeline .timeline-footer-rule { margin-left: -28px; margin-right: -28px; }
+
+  /* Mobile: flip the horizontal timeline into a vertical list with the
+     axis line running down the left side. Keeps the same typography. */
+  .page-timeline {
+    height: auto;
+    overflow: visible;
+  }
+  .page-timeline .timeline-toolbar { display: none; }
+  .timeline-wrap {
+    flex: none;
+    min-height: 0;
+    overflow: visible;
+    cursor: auto !important;
+    padding: 0 28px;
+  }
+  .timeline-track {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 0;
+    min-width: 0;
+    height: auto;
+    zoom: 1 !important;
+  }
+  /* Vertical axis line running down the left. */
+  .timeline-track::before {
+    top: 16px;
+    bottom: 16px;
+    left: 7px;
+    right: auto;
+    width: 2px;
+    height: auto;
+    transform: none;
+  }
+  .axis-year { display: none; }
+
+  /* Each time-point is a row in the list; above/below stacks vertically. */
+  .tl-col {
+    width: auto !important;
+    margin-left: 0 !important;
+    padding: 14px 0 14px 40px;
+    position: relative;
+  }
+  /* Dot on the axis line. */
+  .tl-col::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 22px;
+    width: 10px;
+    height: 10px;
+    background: #2a2a2a;
+    border-radius: 50%;
+    z-index: 2;
+  }
+  .tl-above, .tl-below {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+  .tl-above:empty, .tl-below:empty { display: none; }
+  .tl-below:not(:empty) { margin-top: 14px; }
+  /* Stems don't apply in list mode. */
+  .tl-stem { display: none; }
+
+  .event { width: 100%; }
+  .event-desc { max-width: none; }
+
+  .scroll-hint { display: none; }
+  /* End spacer from desktop is unnecessary in list mode. */
+  .timeline-track > div[style*="width: 120px"] { display: none; }
+  /* Mobile: hide the hero background image and show the title as a
+     normal page heading. hero-wide (full-width banners) still show. */
+  .hero:not(.hero-wide) {
+    min-height: 0;
+    padding: 0;
+    margin: 10px 0 28px;
+    background-image: none !important;
+    display: block;
+  }
+  .hero.hero-wide {
+    padding-top: 0;
+    padding-bottom: 0;
+    background-size: 100% auto;
+  }
+  .hero-title {
+    font-size: 40px;
+    max-width: none;
+    margin-top: 0;
+  }
+}
+
+/* Print */
+@media print {
+  body { background: none; }
+  .page {
+    margin: 0;
+    padding: 40px 50px;
+    box-shadow: none;
+    max-width: none;
+    background: #fff;
+  }
+  h2 { break-after: avoid; page-break-after: avoid; }
+  h2 + .section, h2 + .section-two-col { break-before: avoid; page-break-before: avoid; }
+  .section, .section-two-col { break-inside: avoid; }
+  .card-grid { break-inside: avoid; }
+  .back-link { display: none; }
+  .page-footer { display: none; }
+}
+
+/* ClassDoc — language-agnostic class/proto/struct documentation */
+nav.classdoc-toc {
+  margin-bottom: 40px;
+}
+
+nav.classdoc-toc ul {
+  list-style: none !important;
+  padding: 0;
+  margin: 0;
+}
+
+nav.classdoc-toc ul.classdoc-toc-members {
+  columns: 2;
+  column-gap: 30px;
+}
+
+nav.classdoc-toc ul ul {
+  padding-left: 14px;
+  margin-top: 4px;
+}
+
+nav.classdoc-toc li {
+  font-size: 13px;
+  line-height: 1.8;
+  break-inside: avoid;
+  margin: 0;
+  padding: 0;
+  list-style: none !important;
+}
+
+nav.classdoc-toc > ul > li {
+  break-inside: avoid-column;
+  margin-bottom: 10px;
+}
+
+nav.classdoc-toc > ul > li > a {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #2a2a2a;
+}
+
+nav.classdoc-toc ul ul > li > a {
+  font-weight: 400;
+  color: #555;
+}
+
+nav.classdoc-toc ul.classdoc-toc-members > li > a {
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: #555;
+}
+
+nav.classdoc-toc ul.classdoc-toc-members > li {
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+nav.classdoc-toc a {
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+nav.classdoc-toc a:hover { color: #2a2a2a; }
+
+.classdoc h2.classdoc-section {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #2a2a2a;
+  border-top: 1px solid #ddd;
+  padding-top: 24px;
+  margin-top: 40px;
+  margin-bottom: 0;
+}
+
+.classdoc h3.classdoc-category {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #999;
+  margin-top: 24px;
+  margin-bottom: 6px;
+}
+
+.classdoc-member {
+  border-top: 1px solid #eee;
+  padding: 18px 0;
+  scroll-margin-top: 16px;
+}
+
+.classdoc-member:first-of-type {
+  border-top: none;
+}
+
+.classdoc-member-head {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.classdoc-member-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a2a2a;
+}
+
+.classdoc-member-sig {
+  font-size: 14px;
+  font-weight: 400;
+  color: #888;
+}
+
+.classdoc-member-body {
+  font-size: 13px;
+  line-height: 1.75;
+  color: #555;
+  padding-left: 0;
+}
+
+.classdoc-member-body p { margin-bottom: 10px; }
+.classdoc-member-body p:last-child { margin-bottom: 0; }
+.classdoc-member-body code,
+.classdoc-member-body tt {
+  background: #f5f5f3;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+.classdoc-member-body pre {
+  background: #f5f5f3;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-size: 12px;
+}
+
+/* Page footer — opt-in next/up link via "nextSectionLink": true */
+.page-footer {
+  margin-top: 60px;
+  padding-top: 24px;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.next-link {
+  color: #555;
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.next-link:hover {
+  color: #2a2a2a;
+  border-bottom-color: #2a2a2a;
+}
+
+/* ContentCompetitorTable */
+.comp-table {
+  margin: 0 0 40px;
+}
+
+.comp-section-head {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #2a2a2a;
+  margin: 28px 0 16px;
+}
+
+.comp-section-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 28px 0 16px;
+}
+
+.comp-section-head-row .comp-section-head {
+  margin: 0;
+}
+
+/* Toolbar row with no heading — keep the Details toggle at the right edge */
+.comp-toolbar {
+  justify-content: flex-end;
+}
+
+.comp-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 12px;
+}
+
+.comp-info-table,
+.comp-feature-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+  margin: 0;
+}
+
+.comp-info-table thead th,
+.comp-feature-table thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 12px 16px 12px 0;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  letter-spacing: 0.3px;
+  color: #555;
+}
+
+.comp-info-table thead th:first-child,
+.comp-feature-table thead th:first-child {
+  width: 200px;
+}
+
+/* Feature table is transposed (competitors are rows, features are columns):
+   let columns size to content and scroll horizontally rather than squish. */
+.comp-feature-table {
+  table-layout: auto;
+  width: auto;
+  min-width: 100%;
+}
+
+.comp-feature-table thead th,
+.comp-feature-table tbody td {
+  padding-right: 24px;
+  min-width: 84px;
+}
+
+.comp-feature-table thead th:first-child,
+.comp-feature-table tbody td:first-child {
+  width: auto;
+  min-width: 160px;
+  white-space: nowrap;
+}
+
+/* Freeze the first column (entity names) during horizontal scroll. Needs an
+   opaque background so scrolled cells don't show through underneath. */
+.comp-feature-table thead th:first-child,
+.comp-feature-table tbody td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #faf9f6;
+}
+
+.comp-feature-table tbody tr.comp-row-selected td:first-child {
+  background: #ebebe8;
+}
+
+/* Breathing room between the frozen name column and the first data column */
+.comp-feature-table thead th:nth-child(2),
+.comp-feature-table tbody td:nth-child(2) {
+  padding-left: 24px;
+}
+
+.comp-info-table tbody td,
+.comp-feature-table tbody td {
+  padding: 10px 16px 10px 0;
+  border-bottom: 1px solid #eee;
+  color: #555;
+  vertical-align: top;
+  text-align: left;
+}
+
+.comp-info-table tbody td:first-child,
+.comp-feature-table tbody td:first-child {
+  color: #555;
+  font-weight: 400;
+}
+
+.comp-info-table tbody tr:last-child td,
+.comp-feature-table tbody tr:last-child td {
+  border-bottom: 1px solid #ccc;
+}
+
+/* Click/tap a row to toggle a selection highlight */
+.comp-info-table tbody tr,
+.comp-feature-table tbody tr {
+  cursor: pointer;
+}
+
+.comp-info-table tbody tr.comp-row-selected td,
+.comp-feature-table tbody tr.comp-row-selected td {
+  background: rgba(42, 42, 42, 0.07);
+}
+
+/* Website arrow link — mirrors the page's back link (gray, no underline) */
+.comp-info-table tbody a.comp-arrow {
+  color: #999;
+  text-decoration: none;
+  font-size: 15px;
+  transition: color 0.15s;
+}
+
+.comp-info-table tbody a.comp-arrow:hover {
+  color: #2a2a2a;
+}
+
+/* Columns clipped at the scroll edge hide their label/values but keep their
+   width and row (border) lines, so the horizontal rules stay continuous.
+   The extra class raises specificity above the thead/tbody color rules. */
+.comp-feature-table .comp-col-hidden,
+.comp-info-table .comp-col-hidden {
+  color: transparent;
+}
+
+.comp-col-hidden * {
+  visibility: hidden;
+}
+
+/* Dot indicators */
+.comp-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.comp-dot-yes {
+  background: #2a2a2a;
+}
+
+.comp-dot-no {
+  background: transparent;
+  border: 1.5px solid #ccc;
+}
+
+.comp-dot-partial {
+  background: linear-gradient(to right, #2a2a2a 50%, transparent 50%);
+  border: 1.5px solid #2a2a2a;
+}
+
+.comp-dot-unclear {
+  background: linear-gradient(to right, #aaa 50%, transparent 50%);
+  border: 1.5px solid #aaa;
+}
+
+/* Completion: a row of 5 dots (filled-of-5), shown under a card/page title and
+   above the subtitle. Set per card/page via the `completion:` field (0-5). */
+.completion-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin: 6px 0 10px;
+  opacity: 0.7;
+}
+.completion-dots .cd {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+}
+.completion-dots .cd.on {
+  background: currentColor;
+}
+
+.comp-summary {
+  font-size: 11px;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 1px dotted #ccc;
+}
+
+.comp-summary:hover {
+  color: #555;
+}
+
+.comp-notes {
+  font-size: 10px;
+  color: #aaa;
+  line-height: 1.5;
+  margin-top: 4px;
+  display: none;
+}
+
+.comp-notes.open {
+  display: block;
+}
+
+.comp-detail {
+  display: block;
+  font-size: 11px;
+  color: #888;
+}
+
+.comp-universal-note {
+  margin-top: 18px;
+  font-size: 12px;
+  color: #888;
+  line-height: 1.7;
+  max-width: 700px;
+}
+
+
+/* Details toggle (scoped to .comp-table so it doesn't conflict with timeline) */
+.comp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.comp-toggle input { display: none; }
+
+.comp-toggle-slider {
+  width: 32px;
+  height: 18px;
+  background: #ccc;
+  border-radius: 9px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.comp-toggle-slider::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+}
+
+.comp-toggle input:checked + .comp-toggle-slider {
+  background: #2a2a2a;
+}
+
+.comp-toggle input:checked + .comp-toggle-slider::after {
+  transform: translateX(14px);
+}
+
+.comp-toggle-label {
+  font-size: 12px;
+  color: #888;
+  letter-spacing: 0.3px;
+}
+
+/* Hide summaries / notes / details when toggle is off */
+.comp-table.hide-details .comp-summary,
+.comp-table.hide-details .comp-notes,
+.comp-table.hide-details .comp-detail {
+  display: none !important;
+}
+
+/* With details collapsed, clip any value that overruns its column to a single
+   line with an ellipsis. The full value stays available via the cell's title
+   tooltip and the Details toggle. The first column (entity name) is left whole.
+   Only applies to the fixed-layout info table; feature cells are dots here. */
+.comp-table.hide-details .comp-info-table tbody td:not(:first-child) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .comp-info-table thead th:first-child,
+  .comp-feature-table thead th:first-child { width: 110px; }
+  .comp-info-table, .comp-feature-table { font-size: 12px; }
+}
+
+/* Zoomable images and diagrams (lightbox) — behavior in layout/Lightbox.js */
+img.colvmn-zoomable-image,
+.section-body svg {
+  cursor: zoom-in;
+}
+
+.colvmn-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.85);
+  cursor: zoom-out;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+.colvmn-lightbox-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.colvmn-lightbox-overlay img,
+.colvmn-lightbox-overlay svg {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Enlarged diagrams render on a light surface so the dark-on-light SVGs read,
+   and scale up (vector) to fill the viewport while the viewBox keeps the ratio. */
+.colvmn-lightbox-overlay svg {
+  box-sizing: border-box;
+  width: 95vw;
+  height: auto;
+  max-height: 95vh;
+  background: #fff;
+  padding: 24px;
+  border-radius: 4px;
+}
+
+/* Prevent background scroll while the overlay is open */
+body.colvmn-lightbox-active {
+  overflow: hidden;
+}
+
+
+</style>
 </head><body>
   <div class="page loaded"><div class="header"><div><h1>Carrier escape shuttle</h1><a class="back-link" href="../index.html">&larr; Models</a></div><a class="brand" href="../index.html">TRON</a></div><div class="intro"><p>Reference reconstruction of the carrier escape pod</p></div><h2 id="model">Model</h2><div class="section"><div class="section-body"><p>A locally authored, faceted Three.js model based on the supplied TRON (1982) stills and the escape sequence in <code>MCP destroyed.mp4</code>, 2:34&ndash;2:57. The studio supports orbit, zoom, fixed detachment/reference/side/top/rear/underside views, a turntable and GLB export. This is a standalone asset, with no new game behavior attached.</p><p>The revised model uses an open asymmetric shell: two ribbed overhead surfaces, two downward-hanging end blades, a single outer side wall with a recessed green panel, and a narrow connecting saddle. The first solid-pontoon interpretation was rejected in comparison with the detachment still. Materials are assigned directly to geometry, avoiding dependence on external textures. Source: <code>src/rendering/carrier-shuttle.js</code>; preview: <code>shuttle.html</code>.</p><p>The 20 × 14 × 9 m envelope is provisional. Absolute dimensions, internal saddle details, side-wall thickness and forward-axis assignment remain inferred. This is a reference reconstruction, not a recovered original film model. These areas should be revisited as more views become available.</p></div></div><h2 id="supplied-references">Supplied references</h2><div class="section"><div class="section-body"><ul><li><a href="../../references/images/Carrier%20Escape%20Pod/Escapepodside.webp">Side / three-quarter</a></li><li><a href="../../references/images/Carrier%20Escape%20Pod/Escapepodtop.webp">Top</a></li><li><a href="../../references/images/Carrier%20Escape%20Pod/Escapepodback.webp">Back</a></li><li><a href="../../references/images/Carrier%20Escape%20Pod/Escapepoddetach.webp">Detachment</a></li><li><a href="../../references/videos/MCP%20destroyed.mp4">MCP destroyed clip</a>, 2:34&ndash;2:57</li></ul><p>User-supplied film references; personal project. Geometry authored for this project from those references. The GLB embeds its source and provisional reconstruction notes in scene metadata.</p><p>September 18 orientation correction: the shell opens downward, and the ribbed surfaces are viewed from below. Reference and detachment cameras look upward; the principal light and hemisphere fill now come from below. The exported GLB includes the corrected orientation.</p></div></div></div>
-<script src="../../colvmn/layout/bundle.js" defer></script>  <script type="application/json" id="colvmn-prefetch">{"./_index.json":{"ok":false,"status":404},"./_index.md":{"ok":true,"status":200,"content":"---\ntitle: Carrier escape shuttle\ntopTitle: TRON\nsubtitle: Reference reconstruction of the carrier escape pod\n---\n\n[Open the interactive model studio](../../../shuttle.html) · [Download the GLB](carrier-escape-shuttle.glb)\n\n## Model\n\nA locally authored, faceted Three.js model based on the supplied TRON (1982) stills and the escape sequence in `MCP destroyed.mp4`, 2:34–2:57. The studio supports orbit, zoom, fixed detachment/reference/side/top/rear/underside views, a turntable and GLB export. This is a standalone asset, with no new game behavior attached.\n\nThe revised model uses an open asymmetric shell: two ribbed overhead surfaces, two downward-hanging end blades, a single outer side wall with a recessed green panel, and a narrow connecting saddle. The first solid-pontoon interpretation was rejected in comparison with the detachment still. Materials are assigned directly to geometry, avoiding dependence on external textures. Source: `src/rendering/carrier-shuttle.js`; preview: `shuttle.html`.\n\nThe 20 × 14 × 9 m envelope is provisional. Absolute dimensions, internal saddle details, side-wall thickness and forward-axis assignment remain inferred. This is a reference reconstruction, not a recovered original film model. These areas should be revisited as more views become available.\n\n## Supplied references\n\n- [Side / three-quarter](../../references/images/Carrier%20Escape%20Pod/Escapepodside.webp)\n- [Top](../../references/images/Carrier%20Escape%20Pod/Escapepodtop.webp)\n- [Back](../../references/images/Carrier%20Escape%20Pod/Escapepodback.webp)\n- [Detachment](../../references/images/Carrier%20Escape%20Pod/Escapepoddetach.webp)\n- [MCP destroyed clip](../../references/videos/MCP%20destroyed.mp4), 2:34–2:57\n\nUser-supplied film references; personal project. Geometry authored for this project from those references. The GLB embeds its source and provisional reconstruction notes in scene metadata.\n\nSeptember 18 orientation correction: the shell opens downward, and the ribbed surfaces are viewed from below. Reference and detachment cameras look upward; the principal light and hemisphere fill now come from below. The exported GLB includes the corrected orientation.\n"},"../_index.json":{"ok":false,"status":404},"../_index.md":{"ok":true,"status":200,"content":"---\ntitle: Models\nsubtitle: Imported vehicle sources and runtime adapters\n---\n\nBoth files were supplied by the user on September 12, 2026 after downloading from Sketchfab. Embedded asset metadata identifies the following sources; original binaries remain unmodified.\n\n| File | Source / author | Terms recorded |\n| --- | --- | --- |\n| tank_-_tron_1982.glb | [Tank — Tron (1982), arabinowitz](https://sketchfab.com/3d-models/tank-tron-1982-b730d118f54b4a868339a4ddf11e09a7) | Embedded SKETCHFAB Standard; creator description additionally says editorial purposes only. |\n| tron_1982_recognizer.glb | [Tron 1982 Recognizer, Shriker1](https://sketchfab.com/3d-models/tron-1982-recognizer-ecb52608275c40a28d7d9dda1aed54f3) | Embedded SKETCHFAB Standard. |\n\nLicense link from both files: [Sketchfab licenses](https://sketchfab.com/licenses). TRON is Disney's property. This records the supplied files' provenance and creator restrictions, not an independent grant of film rights.\n\n## Runtime modifications\n\nThe adapter in src/rendering/models.js bakes the export transforms and uniformly scales both models. The tank is 6.5 meters wide (about 9.37 meters hull length); it faces local -Z. Original polySurface1–13 form the rotating cannon/canopy assembly around the circular base. The barrel remains level; recoil translates the assembly slightly. A muzzle flash is added, with simulation coordinates shared through src/game/tank.js.\n\nTank armor uses cool-blue specular highlights. Red trim is non-emissive, gold is limited to upward-facing shoulders, and lower side panels remain dark. The white insignia has only minimal emission. Hull and turret cast projected silhouettes onto the floor. The extra rectangular contact-shadow plane has been removed. Recognizer trim retains emission.\n\nRecognizer geometry is shared between five aircraft, with separate materials for independent hit flashes. Uniform normalization gives 15 meters overall height and approximately 18.38 meters width at the existing 0.5 simulation scale. Collision remains a simplified independent volume.\n\nVite packages both GLBs into local dist/assets URLs. There is no Sketchfab runtime request or account requirement. Startup waits for both models and shows a reload message if either fails.\n\n## Verification\n\nnode tests/models.mjs checks muzzle alignment across nine hull/turret combinations, Recognizer scale and independent materials, and writes test-results/imported-models.png for visual inspection. Browser controls and lifecycle checks are recorded in [Validation](../validation/index.html).\n\nRecognizer articulation now splits the Base and Light triangle meshes into a body and two legs at the shoulder seam. Original normals, UVs and materials are retained. Each leg turns 180 degrees around its upright center while sliding inward to form the crush pose. Geometry is shared among aircraft; each has independent pose and hit-flash materials.\n\n## Sark’s carrier\n\nUser supplied `TRON CARRIER DAE` on September 13, 2026. The included readme credits JIHS, with original design by Syd Mead, and identifies the model as Sark’s carrier from the 1982 film. Source: [JIHS / TurboSquid](https://www.turbosquid.com/3d-models/3d-tron-1982-carrier-model-1811129). The listing records a Standard license; the supplied folder has a technical readme but no separate license document. Preserve the purchase license with the source archive.\n\n`scripts/prepare-carrier.mjs` converts the untouched Collada file into `tron_1982_carrier.glb` using Three.js ColladaLoader and GLTFExporter in Chrome, repairing relative texture URLs in memory. All seven referenced textures are embedded. Measured export: 77 meshes, 64,519 triangles, 6.86 MB; bounds approximately 1,224.65 × 201.96 × 277.01 meters. Source units and proportions are preserved.\n\n`src/rendering/carrier.js` centers the model and adapts its materials to a dark hull with illuminated trim. It travels along world +X at 24 m/s, center altitude 360 m, starting three times the spawn-to-maze distance ahead of Clu (six maze half-widths), 9,000 m to the left of the initial heading. Motion follows simulation time, so standby freezes it and restart restores the transit. It is scenery with no combat or collision behavior. It continues along its line without wrapping. The camera far plane is 12 km, and the carrier is exempt from ground fog. The standalone `/carrier.html` preview provides orbit, pan and zoom with original materials.\n\n## Localized Recognizer destruction\n\nThe nearest posed triangle to the reported projectile impact selects the body, left leg or right leg. Only that section is partitioned into 8–13 randomized surface fragments; both other sections detach as whole pieces with gentler spin and impulses. Folded poses, original trim and inherited velocity are preserved. Every source triangle belongs to one piece. This remains a surface breakup effect, not a solid-volume fracture simulation.\n\nCarrier contrast correction: restored source hull colors and textures, reduced blue emission, and adjusted roughness for directional shading. Applied a small depth offset to the original illuminated trim so coplanar hull surfaces do not hide it. Inspected the revised in-game capture; `npm run test:browser -- --carrier` passed.\n\nCarrier trim balance: softened red paint and emission, increased the original blue trim emission, and added muted blue lines at actual armor boundaries (25-degree edge threshold, excluding coplanar triangle edges). This makes the smaller hull panels readable without raising the hull fill.\n\nRecognizer destruction refinement: the earlier rig grouped the complete upper assembly as one body, so one body hit could fragment crown, crossbar and shoulders together. Breakup now treats crown, crossbar, left shoulder, right shoulder and the two articulated legs as six sections. Only the struck section fragments; the remaining five detach whole. Section boundaries use the source triangle centers, preserving every original triangle.\n\nClu destruction now uses the same posed-surface breakup system: a stomp hides the intact tank and its projected shadows and scatters randomized tank fragments. Current turret yaw and tank momentum are captured by the destruction event. Shadow geometry and muzzle effects are excluded. Thin blue boundary seams outline tank fragments; red boundary seams outline fractured Recognizer sections. Interior triangle diagonals are excluded. Seams fade and dispose with debris. Restart restores the intact tank.\n\n## Carrier escape shuttle\n\n[Model notes and GLB](carrier-shuttle/index.html) · [Interactive preview](../../shuttle.html). Reference reconstruction from the supplied film stills and escape sequence, with provisional scale and hidden surfaces.\n\n## Grid cloud\n\n[cloud.glb](cloud.glb) contains one complete connected grid cloud extracted from `extra/tron_1982.glb`, with no neighboring cloud fragments. Original cyan emissive material and imported scale are preserved; source transforms are baked to Y-up and the cloud is centered at the origin. It contains 1,046 vertices and 846 triangles and spans approximately 735 × 695 meters in the XZ plane. [Preview](cloud-preview.png).\n\nSource: **Tron 1982** by **jvouillon**, from the source file's embedded metadata: https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88 — CC BY 4.0. Attribution and modification notes are retained in the exported GLB. Reproduce with `python3 scripts/extract-cloud.py`. The game reuses this asset for its decorative drifting cloud layer.\n"}}</script>
+<script src="../../colvmn/layout/bundle.js" defer></script>  <script type="application/json" id="colvmn-prefetch">{"./_index.json":{"ok":false,"status":404},"./_index.md":{"ok":true,"status":200,"content":"---\ntitle: Carrier escape shuttle\ntopTitle: TRON\nsubtitle: Reference reconstruction of the carrier escape pod\n---\n\n[Open the interactive model studio](../../../shuttle.html) · [Download the GLB](carrier-escape-shuttle.glb)\n\n## Model\n\nA locally authored, faceted Three.js model based on the supplied TRON (1982) stills and the escape sequence in `MCP destroyed.mp4`, 2:34–2:57. The studio supports orbit, zoom, fixed detachment/reference/side/top/rear/underside views, a turntable and GLB export. This is a standalone asset, with no new game behavior attached.\n\nThe revised model uses an open asymmetric shell: two ribbed overhead surfaces, two downward-hanging end blades, a single outer side wall with a recessed green panel, and a narrow connecting saddle. The first solid-pontoon interpretation was rejected in comparison with the detachment still. Materials are assigned directly to geometry, avoiding dependence on external textures. Source: `src/rendering/carrier-shuttle.js`; preview: `shuttle.html`.\n\nThe 20 × 14 × 9 m envelope is provisional. Absolute dimensions, internal saddle details, side-wall thickness and forward-axis assignment remain inferred. This is a reference reconstruction, not a recovered original film model. These areas should be revisited as more views become available.\n\n## Supplied references\n\n- [Side / three-quarter](../../references/images/Carrier%20Escape%20Pod/Escapepodside.webp)\n- [Top](../../references/images/Carrier%20Escape%20Pod/Escapepodtop.webp)\n- [Back](../../references/images/Carrier%20Escape%20Pod/Escapepodback.webp)\n- [Detachment](../../references/images/Carrier%20Escape%20Pod/Escapepoddetach.webp)\n- [MCP destroyed clip](../../references/videos/MCP%20destroyed.mp4), 2:34–2:57\n\nUser-supplied film references; personal project. Geometry authored for this project from those references. The GLB embeds its source and provisional reconstruction notes in scene metadata.\n\nSeptember 18 orientation correction: the shell opens downward, and the ribbed surfaces are viewed from below. Reference and detachment cameras look upward; the principal light and hemisphere fill now come from below. The exported GLB includes the corrected orientation.\n"},"../_index.json":{"ok":false,"status":404},"../_index.md":{"ok":true,"status":200,"content":"---\ntitle: Models\nsubtitle: Imported vehicle sources and runtime adapters\n---\n\nBoth files were supplied by the user on September 12, 2026 after downloading from Sketchfab. Embedded asset metadata identifies the following sources; original binaries remain unmodified.\n\n| File | Source / author | Terms recorded |\n| --- | --- | --- |\n| tank_-_tron_1982.glb | [Tank — Tron (1982), arabinowitz](https://sketchfab.com/3d-models/tank-tron-1982-b730d118f54b4a868339a4ddf11e09a7) | Embedded SKETCHFAB Standard; creator description additionally says editorial purposes only. |\n| tron_1982_recognizer.glb | [Tron 1982 Recognizer, Shriker1](https://sketchfab.com/3d-models/tron-1982-recognizer-ecb52608275c40a28d7d9dda1aed54f3) | Embedded SKETCHFAB Standard. |\n\nLicense link from both files: [Sketchfab licenses](https://sketchfab.com/licenses). TRON is Disney's property. This records the supplied files' provenance and creator restrictions, not an independent grant of film rights.\n\n## Runtime modifications\n\nThe adapter in src/rendering/models.js bakes the export transforms and uniformly scales both models. The tank is 6.5 meters wide (about 9.37 meters hull length); it faces local -Z. Original polySurface1–13 form the rotating cannon/canopy assembly around the circular base. The barrel remains level; recoil translates the assembly slightly. A muzzle flash is added, with simulation coordinates shared through src/game/tank.js.\n\nTank armor uses cool-blue specular highlights. Red trim is non-emissive, gold is limited to upward-facing shoulders, and lower side panels remain dark. The white insignia has only minimal emission. Hull and turret cast projected silhouettes onto the floor. The extra rectangular contact-shadow plane has been removed. Recognizer trim retains emission.\n\nRecognizer geometry is shared between five aircraft, with separate materials for independent hit flashes. Uniform normalization gives 15 meters overall height and approximately 18.38 meters width at the existing 0.5 simulation scale. Collision remains a simplified independent volume.\n\nVite packages both GLBs into local dist/assets URLs. There is no Sketchfab runtime request or account requirement. Startup waits for both models and shows a reload message if either fails.\n\n## Verification\n\nnode tests/models.mjs checks muzzle alignment across nine hull/turret combinations, Recognizer scale and independent materials, and writes test-results/imported-models.png for visual inspection. Browser controls and lifecycle checks are recorded in [Validation](../validation/index.html).\n\nRecognizer articulation now splits the Base and Light triangle meshes into a body and two legs at the shoulder seam. Original normals, UVs and materials are retained. Each leg turns 180 degrees around its upright center while sliding inward to form the crush pose. Geometry is shared among aircraft; each has independent pose and hit-flash materials.\n\n## Sark’s carrier\n\nUser supplied `TRON CARRIER DAE` on September 13, 2026. The included readme credits JIHS, with original design by Syd Mead, and identifies the model as Sark’s carrier from the 1982 film. Source: [JIHS / TurboSquid](https://www.turbosquid.com/3d-models/3d-tron-1982-carrier-model-1811129). The listing records a Standard license; the supplied folder has a technical readme but no separate license document. Preserve the purchase license with the source archive.\n\n`scripts/prepare-carrier.mjs` converts the untouched Collada file into `tron_1982_carrier.glb` using Three.js ColladaLoader and GLTFExporter in Chrome, repairing relative texture URLs in memory. All seven referenced textures are embedded. Measured export: 77 meshes, 64,519 triangles, 6.86 MB; bounds approximately 1,224.65 × 201.96 × 277.01 meters. Source units and proportions are preserved.\n\n`src/rendering/carrier.js` centers the model and adapts its materials to a dark hull with illuminated trim. It travels along world +X at 24 m/s, center altitude 360 m, starting three times the spawn-to-maze distance ahead of Clu (six maze half-widths), 9,000 m to the left of the initial heading. Motion follows simulation time, so standby freezes it and restart restores the transit. It is scenery with no combat or collision behavior. It continues along its line without wrapping. The camera far plane is 12 km, and the carrier is exempt from ground fog. The standalone `/carrier.html` preview provides orbit, pan and zoom with original materials.\n\n## Localized Recognizer destruction\n\nThe nearest posed triangle to the reported projectile impact selects the body, left leg or right leg. Only that section is partitioned into 8–13 randomized surface fragments; both other sections detach as whole pieces with gentler spin and impulses. Folded poses, original trim and inherited velocity are preserved. Every source triangle belongs to one piece. This remains a surface breakup effect, not a solid-volume fracture simulation.\n\nCarrier contrast correction: restored source hull colors and textures, reduced blue emission, and adjusted roughness for directional shading. Applied a small depth offset to the original illuminated trim so coplanar hull surfaces do not hide it. Inspected the revised in-game capture; `npm run test:browser -- --carrier` passed.\n\nCarrier trim balance: softened red paint and emission, increased the original blue trim emission, and added muted blue lines at actual armor boundaries (25-degree edge threshold, excluding coplanar triangle edges). This makes the smaller hull panels readable without raising the hull fill.\n\nRecognizer destruction refinement: the earlier rig grouped the complete upper assembly as one body, so one body hit could fragment crown, crossbar and shoulders together. Breakup now treats crown, crossbar, left shoulder, right shoulder and the two articulated legs as six sections. Only the struck section fragments; the remaining five detach whole. Section boundaries use the source triangle centers, preserving every original triangle.\n\nClu destruction now uses the same posed-surface breakup system: a stomp hides the intact tank and its projected shadows and scatters randomized tank fragments. Current turret yaw and tank momentum are captured by the destruction event. Shadow geometry and muzzle effects are excluded. Thin blue boundary seams outline tank fragments; red boundary seams outline fractured Recognizer sections. Interior triangle diagonals are excluded. Seams fade and dispose with debris. Restart restores the intact tank.\n\n## Carrier escape shuttle\n\n[Model notes and GLB](carrier-shuttle/index.html) · [Interactive preview](../../shuttle.html). Reference reconstruction from the supplied film stills and escape sequence, with provisional scale and hidden surfaces.\n\n## Grid cloud\n\n[cloud.glb](cloud.glb) contains one complete connected grid cloud extracted from `extra/tron_1982.glb`, with no neighboring cloud fragments. Original cyan emissive material and imported scale are preserved; source transforms are baked to Y-up and the cloud is centered at the origin. It contains 1,046 vertices and 846 triangles and spans approximately 735 × 695 meters in the XZ plane. [Preview](cloud-preview.png).\n\nSource: **Tron 1982** by **jvouillon**, from the source file's embedded metadata: https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88 — CC BY 4.0. Attribution and modification notes are retained in the exported GLB. Reproduce with `python3 scripts/extract-cloud.py`. The game reuses this asset for its decorative drifting cloud layer.\n\n## Solar Sailer — September 22\n\nSource: `extra/TRON_SUNSHIP DAE/TRON_SUNSHIP.dae`, supplied with seven vehicle textures and the JIHS readme. The original design credits Syd Mead, Jean Giraud (Moebius), and Peter Lloyd. The readme references TurboSquid but does not specify redistribution terms. The source is retained unchanged.\n\nRun `node scripts/prepare-solar-sailer.mjs` with Vite on port 5173 to regenerate `tron_1982_solar_sailer.glb`. The browser conversion repairs the source `file://` texture paths in memory and embeds all seven textures. Source geometry has 136,380 triangles; the 162 m overall bound includes a short yellow beam. The adapter hides that beam, anchors the craft on its axis, preserves proportions at uniform 2.5× scale, and orients the sails to lead the +X transit. A fixed amber beam stops at the rear/front hull bounds and resumes on the other side. Materials retain textures with adjusted sky fill and emissive rigging.\n\nReference reviewed: `docs/references/videos/carrier and solar sailer.mp4`, 1:34–1:46. Film-derived scale and exact visual fidelity remain approximations; this is scenery, not a new combat unit. Lane placement and cadence are named settings in `src/game/solar-sailer.js`.\n\nThe first Solar Sailer pass starts at three simulation minutes and repeats every three minutes. Its beam eases in over the three seconds before each crossing and out over nine seconds afterward; both remain absent during the initial quiet period. Pause and restart use the same simulation clock.\n"}}</script>
 </body></html>

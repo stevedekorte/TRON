@@ -10,9 +10,9 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && npm run docs && node scripts/copy-docs.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/escort-debris.test.js tests/refactoring.test.js tests/jev-stats.test.js tests/autoplay-blueprint.test.js tests/jev-spend.test.js tests/beam-camera.test.js tests/autoplay-input.test.js tests/autoplay.test.js tests/worker.test.js tests/hearing.test.js tests/tactical.test.js tests/jev.test.js tests/teleporters.test.js tests/reinforcements.test.js tests/debris-inheritance.test.js tests/debris-damage.test.js tests/debris-physics.test.js tests/simulation.test.js tests/blueprint.test.js tests/ground-tanks.test.js tests/gunner.test.js tests/alertness.test.js tests/cannon-reserve.test.js tests/maze-patrol.test.js tests/maze-sites.test.js tests/carrier-search.test.js tests/mouse-raycast.test.js tests/music-selection.test.js",
+    "test": "node --test tests/solar-sailer.test.js tests/planning-budget.test.js tests/escort-debris.test.js tests/refactoring.test.js tests/jev-stats.test.js tests/autoplay-blueprint.test.js tests/jev-spend.test.js tests/beam-camera.test.js tests/autoplay-input.test.js tests/autoplay.test.js tests/worker.test.js tests/hearing.test.js tests/tactical.test.js tests/jev.test.js tests/teleporters.test.js tests/reinforcements.test.js tests/debris-inheritance.test.js tests/debris-damage.test.js tests/debris-physics.test.js tests/simulation.test.js tests/blueprint.test.js tests/ground-tanks.test.js tests/gunner.test.js tests/alertness.test.js tests/cannon-reserve.test.js tests/maze-patrol.test.js tests/maze-sites.test.js tests/carrier-search.test.js tests/mouse-raycast.test.js tests/music-selection.test.js",
     "test:browser": "node tests/browser.mjs",
-    "docs": "node scripts/trace-blueprint.mjs && node scripts/build-sound-library.mjs && node docs/colvmn/static-gen.js docs",
+    "docs": "node scripts/trace-blueprint.mjs && node scripts/build-sound-library.mjs && node scripts/build-docs.mjs",
     "worker:check": "wrangler deploy --dry-run",
     "worker:deploy": "wrangler deploy"
   },

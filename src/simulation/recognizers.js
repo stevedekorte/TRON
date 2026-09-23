@@ -1,3 +1,4 @@
+import {enemyPlanningBudget} from './planning-budget.js';
 import {coordinateAttacks,supportingAttack,attackSupportGoal} from './attack-coordination.js';
 import {radioRangeFor} from '../game/communication.js';
 import { returningToCarrier, flyCarrierEscort } from './carrier-escort.js';
@@ -13,7 +14,7 @@ import {beginSpotlight,updateSpotlight,spotlightOnTarget,SEARCHLIGHT} from './sp
 import {raiseAlert,searchlightStrength} from './alertness.js';
 import {formationTarget} from './formation.js';
 import {retireTarget} from './target-memory.js';
-import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor} from './flight.js';
+import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor,approachSpeed} from './flight.js';
 import {beginCrush,advanceCrush,resolveCrush,CRUSH,stompTarget,stompApproach} from './crush.js';
 const {MAZE_LENGTH}=DEFAULT_WORLD;
 import { config, RECOGNIZER_SCALE, angleDelta, clamp } from '../game/config.js';
@@ -180,18 +181,16 @@ export function navigate(e,now,dt,others) {
   }
   const desired=-Math.atan2(headingX,headingS);
   advanceYaw(e,dt,settling||yielding?null:desired);
-  const alignment=Math.max(0,Math.cos(angleDelta(e.yaw,desired)));
   const cruise=e.state==='escort'?CARRIER.speed+8:config.enemySpeed*(e.state==='pursue'?1.15:e.state==='wander'?.57:.7)*(formation?.speedScale??1);
   // A visible moving intercept point needs velocity matching plus closure.
   // Distance-only arrival settles behind it at the target's cruising speed.
   const targetMotion=e.canSee&&e.memory&&distance>0
     ?Math.max(0,((e.memory.vx||0)*dx+(e.memory.vs||0)*ds)/distance):0;
-  const targetSpeed=Math.min(cruise,targetMotion+distance*.6)*alignment*alignment;
+  const targetSpeed=approachSpeed(e,desired,distance,Math.min(cruise,targetMotion+distance*.6));
   const speed=Math.hypot(e.vx,e.vs),forward=-Math.sin(e.yaw)*e.vx+Math.cos(e.yaw)*e.vs;
   const braking=clamp((speed-targetSpeed)/8,0,1);
-  const thrust=alignment*(FLIGHT.drag*targetSpeed+Math.max(0,targetSpeed-forward)*1.2);
-  const turnInPlace=closeApproach&&Math.abs(angleDelta(e.yaw,desired))>.2;
-  const hold=settling||yielding||turnInPlace;
+  const thrust=FLIGHT.drag*targetSpeed+Math.max(0,targetSpeed-forward)*1.2;
+  const hold=settling||yielding;
   advanceFlight(e,dt,hold?0:thrust,hold?1:braking);
   // Feet clear the slabs, so patrols can physically fly across the whole maze.
   const altitude=WALL_HEIGHT+22*RECOGNIZER_SCALE+7+(e.state==='wander'?7:0)+Math.sin(now*.4+e.id)*1.8;
@@ -221,7 +220,7 @@ export function updateRecognizers(run,dt) {
     e.lastBroadcast=e.memory.seenAt;e.nextRadio=now+SENSORS.radioInterval;
   }
   coordinateAttacks(active,now);
-  for(const e of active.filter(e=>e.kind!=='ground')){(returningToCarrier(e,now)?flyCarrierEscort:tacticalEnabled(run)?navigateTactical:navigate)(e,now,dt,active);resolveCrush(run,e);}
+  for(const e of active.filter(e=>e.kind!=='ground')){(returningToCarrier(e,now)?flyCarrierEscort:tacticalEnabled(run)?navigateTactical:navigate)(e,now,dt,active,enemyPlanningBudget(run));resolveCrush(run,e);}
   // Physical clearance backs up steering avoidance when several observers converge.
   // Shoulder width and physical spacing grow together with model scale.
   const separation=48*RECOGNIZER_SCALE;

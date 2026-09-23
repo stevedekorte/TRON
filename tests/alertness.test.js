@@ -49,7 +49,8 @@ test('out-of-range or lost spotlight target cannot be reported, and hidden motio
  const r=spotlightEncounter(),e=r.recognizers[0];r.s=e.s+SEARCHLIGHT.range+50;
  for(let i=0;i<180;i++){r.time+=1/60;updateRecognizers(r,1/60);}
  assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.equal(r.radio.length,0);
- r.s=e.s+200;r.time+=.21;updateRecognizers(r,1/60);assert.equal(e.spotlight.phase,'acquire');
+ // Place the new contact ahead of the aircraft after its moving patrol turn.
+ r.x=e.x-Math.sin(e.yaw)*200;r.s=e.s+Math.cos(e.yaw)*200;r.time+=.21;updateRecognizers(r,1/60);assert.equal(e.spotlight.phase,'acquire');
  r.x=-9000;r.time+=.21;updateRecognizers(r,1/60);
  assert.equal(e.spotlight?.target??null,null);
  const a=structuredClone(e),b=structuredClone(e);updateSpotlight(a,r.time+.1,.1);updateSpotlight(b,r.time+.1,.1);assert.deepEqual(a.spotlight,b.spotlight);

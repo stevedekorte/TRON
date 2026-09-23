@@ -156,3 +156,31 @@ test('ground search records completed checks and does not return to the last-kno
  assert.ok(Math.hypot(e.x-goal.goal.x,e.s-goal.goal.s)>TACTICAL.searchVisitMeters);
  assert.equal(e.nextRoute,0);
 });
+
+test('Recognizer navigation keeps flying through right-angle and reversing turns',async()=>{
+ const {navigate}=await import('../src/simulation/recognizers.js');
+ const {navigateTactical}=await import('../src/simulation/tactical.js');
+ const {flyCarrierEscort}=await import('../src/simulation/carrier-escort.js');
+ const {airEscortSlot}=await import('../src/game/carrier.js');
+ for(const control of ['classic','local','jev','escort'])for(const angle of [Math.PI/2,Math.PI]){
+  const r=createRun(1982),e=r.recognizers[0];
+  const goal=control==='escort'?airEscortSlot(0,2):{x:-5000,s:-4500};
+  Object.assign(e,{x:goal.x,s:goal.s-500,y:SAFE_ALTITUDE+20,yaw:angle,yawVelocity:0,
+   vx:-Math.sin(angle)*15,vs:Math.cos(angle)*15,vy:0,memory:null,canSee:false,
+   attack:null,spotlight:null,role:'patrol',health:3,goal,goalUntil:100,stompDisabled:true,escortIndex:0});
+  if(control==='local'||control==='jev'){
+   chooseManeuver(e,0,[e]);
+   e.tactical.plan={kind:'patrol',goal:{...goal,y:e.y,yaw:0},route:[]};
+   e.tactical.nextPlan=100;e.tactical.source=control;
+  }
+  const start={x:e.x,s:e.s,yaw:e.yaw};let minSpeed=Infinity;
+  for(let i=0;i<180;i++){
+   (control==='classic'?navigate:control==='escort'?flyCarrierEscort:navigateTactical)(e,i/60,1/60,[e]);
+   minSpeed=Math.min(minSpeed,Math.hypot(e.vx,e.vs));
+   assert.ok(aircraftPoseClear(e),`${control}: clear flight`);
+  }
+  assert.ok(minSpeed>7,`${control} ${angle}: speed ${minSpeed}`);
+  assert.ok(Math.hypot(e.x-start.x,e.s-start.s)>25,`${control}: travels through turn`);
+  assert.ok(Math.abs(e.yaw-start.yaw)>.7,`${control}: changes heading while moving`);
+ }
+});

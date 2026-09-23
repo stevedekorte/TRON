@@ -57,3 +57,13 @@ Clu destruction now uses the same posed-surface breakup system: a stomp hides th
 [cloud.glb](cloud.glb) contains one complete connected grid cloud extracted from `extra/tron_1982.glb`, with no neighboring cloud fragments. Original cyan emissive material and imported scale are preserved; source transforms are baked to Y-up and the cloud is centered at the origin. It contains 1,046 vertices and 846 triangles and spans approximately 735 × 695 meters in the XZ plane. [Preview](cloud-preview.png).
 
 Source: **Tron 1982** by **jvouillon**, from the source file's embedded metadata: https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88 — CC BY 4.0. Attribution and modification notes are retained in the exported GLB. Reproduce with `python3 scripts/extract-cloud.py`. The game reuses this asset for its decorative drifting cloud layer.
+
+## Solar Sailer — September 22
+
+Source: `extra/TRON_SUNSHIP DAE/TRON_SUNSHIP.dae`, supplied with seven vehicle textures and the JIHS readme. The original design credits Syd Mead, Jean Giraud (Moebius), and Peter Lloyd. The readme references TurboSquid but does not specify redistribution terms. The source is retained unchanged.
+
+Run `node scripts/prepare-solar-sailer.mjs` with Vite on port 5173 to regenerate `tron_1982_solar_sailer.glb`. The browser conversion repairs the source `file://` texture paths in memory and embeds all seven textures. Source geometry has 136,380 triangles; the 162 m overall bound includes a short yellow beam. The adapter hides that beam, anchors the craft on its axis, preserves proportions at uniform 2.5× scale, and orients the sails to lead the +X transit. A fixed amber beam stops at the rear/front hull bounds and resumes on the other side. Materials retain textures with adjusted sky fill and emissive rigging.
+
+Reference reviewed: `docs/references/videos/carrier and solar sailer.mp4`, 1:34–1:46. Film-derived scale and exact visual fidelity remain approximations; this is scenery, not a new combat unit. Lane placement and cadence are named settings in `src/game/solar-sailer.js`.
+
+The first Solar Sailer pass starts at three simulation minutes and repeats every three minutes. Its beam eases in over the three seconds before each crossing and out over nine seconds afterward; both remain absent during the initial quiet period. Pause and restart use the same simulation clock.

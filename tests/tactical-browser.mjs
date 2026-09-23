@@ -6,7 +6,9 @@ const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'
 try{
  const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:'reduce'}),errors=[];let requests=0;
  page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().endsWith('/api/jev/decision'))requests++;});
- await page.goto(process.env.TRON_URL||'http://127.0.0.1:5175');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);
+ // Match the authored geometry used by this wall-side fixture.
+ const url=new URL(process.env.TRON_URL||'http://127.0.0.1:5173');url.searchParams.set('maze','authored');url.searchParams.set('layoutSeed','1982');url.searchParams.set('runSeed','1982');
+ await page.goto(url.href);await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);
  const status=await page.request.get(new URL('/api/jev/status',page.url()).href);assert.equal(status.status(),200);assert.equal(typeof (await status.json()).configured,'boolean');
  await page.route('**/api/jev/decision',r=>r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'No key (test fallback)'})}));
  assert.equal(await page.evaluate(()=>__tron.state.aiMode),'jev');

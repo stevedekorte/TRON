@@ -1,3 +1,4 @@
+import {MinHeap} from '../util/min-heap.js';
 import {worldFor,DEFAULT_WORLD} from '../levels/scenario.js';
 const {WALL_HEIGHT}=DEFAULT_WORLD;
 import {RECOGNIZER_SCALE,angleDelta} from '../game/config.js';
@@ -53,11 +54,11 @@ export function overheadRoute(e,goal,walls=null,world=worldFor(e)){
 // edge checks the whole swept aircraft, including rotations, not a point agent.
 export function corridorRoute(e,goal,walls=null,world=worldFor(e)){
  const start=pose(e),height=goal.y,first={...start,y:height};if(!aircraftSweepClear(start,first,walls,world))return null;
- const step=TACTICAL.routeStep,open=[{x:0,s:0,h:0,cost:0,pose:first,parent:null}],visited=new Map();
+ const step=TACTICAL.routeStep,open=new MinHeap(n=>n.cost+Math.hypot(n.pose.x-goal.x,n.pose.s-goal.s)),visited=new Map();
+ open.push({x:0,s:0,h:0,cost:0,pose:first,parent:null});
  const key=n=>`${n.x},${n.s},${n.h}`;
  for(let iterations=0;open.length&&iterations<TACTICAL.routeNodes;iterations++){
-  open.sort((a,b)=>a.cost+Math.hypot(a.pose.x-goal.x,a.pose.s-goal.s)-b.cost-Math.hypot(b.pose.x-goal.x,b.pose.s-goal.s));
-  const n=open.shift(),k=key(n);if((visited.get(k)??Infinity)<=n.cost)continue;visited.set(k,n.cost);
+  const n=open.pop(),k=key(n);if((visited.get(k)??Infinity)<=n.cost)continue;visited.set(k,n.cost);
   if(Math.hypot(n.pose.x-goal.x,n.pose.s-goal.s)<step*1.5){
    const heading=-Math.atan2(goal.x-n.pose.x,goal.s-n.pose.s),turn={...n.pose,yaw:heading},end={...goal,yaw:heading};
    if(aircraftSweepClear(n.pose,turn,walls,world)&&aircraftSweepClear(turn,end,walls,world)&&aircraftSweepClear(end,goal,walls,world)){

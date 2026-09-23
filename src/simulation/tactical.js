@@ -7,7 +7,7 @@ import {hearingReports,hearingTarget,hearingGoal} from './hearing.js';
 import {HEARING,hearingFor} from '../game/hearing.js';
 import {config,angleDelta,clamp} from '../game/config.js';
 import {TACTICAL} from '../game/tactical.js';
-import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor} from './flight.js';
+import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor,approachSpeed} from './flight.js';
 import {beginCrush,advanceCrush,stompTarget,CRUSH} from './crush.js';
 import {aircraftPoseClear,aircraftSweepClear,overheadRoute,corridorRoute,SAFE_ALTITUDE,AIR_HULL} from './maneuver-geometry.js';
 export const tacticalEnabled=e=>['local','jev'].includes(configFor(e).aiMode);
@@ -91,7 +91,7 @@ export function maneuverOptions(e,now,others){
   const visited=search?.visited||[];
   const rank=p=>distance(p,e)*.6+p.cost*.2-((p.x-target.x)*(m.vx||0)+(p.s-target.s)*(m.vs||0))/speed*.25
     +allies.filter(a=>a.tactical?.plan?.kind==='search-branch'&&distance(a.tactical.plan.goal,p)<40).length*100;
-  const branches=(search?.routes||connectedSearchRoutes(target,{world:worldFor(e),vehicleConfig:configFor(e)})).filter(p=>distance(p,e)>TACTICAL.searchVisitMeters&&!visited.some(v=>distance(p,v)<TACTICAL.searchCheckedRadiusMeters)).sort((a,b)=>rank(a)-rank(b));
+  const branches=(search?.routes||connectedSearchRoutes(target,{world:worldFor(e),vehicleConfig:configFor(e)})).filter(p=>distance(p,e)>TACTICAL.searchVisitMeters&&!visited.some(v=>distance(p,v)<TACTICAL.searchCheckedRadiusMeters)).map(p=>({point:p,score:rank(p)})).sort((a,b)=>a.score-b.score).map(entry=>entry.point);
   let offered=0;
   for(const p of branches){
    if(offered>=2)break;
@@ -127,7 +127,7 @@ function updateSearch(e,now){
  const t=e.tactical,target=targetMemory(e,now);
  if(e.canSee||!target){t.search=null;return;}
  if(!t.search||distance(t.search.memory,e.memory)>=TACTICAL.targetShiftMeters){
-  t.search={memory:{...e.memory},origin:target,originChecked:false,visited:[],routes:connectedSearchRoutes(target,{world:worldFor(e),vehicleConfig:configFor(e)})};
+  t.search={memory:{...e.memory},origin:target,originChecked:false,visited:[],routes:null};
  }
  const search=t.search;
  if(!search.originChecked&&distance(e,search.origin)<=TACTICAL.searchArrivalMeters){
@@ -138,7 +138,7 @@ function updateSearch(e,now){
   search.visited.push({x:t.plan.goal.x,s:t.plan.goal.s});t.plan=null;
  }
 }
-export function chooseManeuver(e,now,others){
+export function chooseManeuver(e,now,others,budget=null){
  e.tactical??={revision:0,nextPlan:0};const t=e.tactical;
  updateSearch(e,now);
  if(t.plan?.kind==='investigate-sound'&&!hearingTarget(e,now))t.plan=null;
@@ -147,6 +147,9 @@ export function chooseManeuver(e,now,others){
  if(t.plan&&now<t.nextPlan&&!injured&&!urgent)return t.plan;
  // Let a multi-stage maneuver finish; replan when observations move materially.
  if(t.plan&&now-(t.started||0)<20&&t.index<(t.plan.route?.length||0)&&!injured&&!urgent&&(!e.memory||!t.target||distance(e.memory,t.target)<45))return t.plan;
+ if(!t.plan&&t.options?.length===0&&now<t.nextPlan&&!injured&&!urgent)return null;
+ if(budget){if(budget.remaining<=0)return injured?null:t.plan;budget.remaining--;}
+ if(t.search&&!t.search.routes)t.search.routes=connectedSearchRoutes(t.search.origin,{world:worldFor(e),vehicleConfig:configFor(e)});
  if(urgent)t.lastEventAt=now;
  t.reason=reason||(injured?'injury':'scheduled');t.observation=observedState(e,now);
  if(e.canSee)t.search=null;
@@ -175,14 +178,14 @@ export function applyTacticalChoice(e,choice,revision,requestedAt,now){
  if(t.target&&e.memory&&distance(t.target,e.memory)>45)return false;
  t.plan=option;t.index=0;t.source='jev';t.nextPlan=Math.max(t.nextPlan,now+TACTICAL.commitSeconds);return true;
 }
-export function navigateTactical(e,now,dt,others){
+export function navigateTactical(e,now,dt,others,budget=null){
  const FLIGHT=flightFor(e);
  const config=configFor(e);
  const SAFE_ALTITUDE=worldFor(e).WALL_HEIGHT+AIR_HULL.bottom+8;
  const before={x:e.x,s:e.s,y:e.y,yaw:e.yaw};
  if(e.attack){advanceCrush(e,now,dt);}
  else{
-  const plan=chooseManeuver(e,now,others),t=e.tactical;
+  const plan=chooseManeuver(e,now,others,budget),t=e.tactical;
   // Above the roof, turn and climb while travelling. Do not fly back to the
   // route's initial stationary poses after forward momentum carries us away.
   if(plan?.route?.length>=3&&t.index<2&&e.y>=SAFE_ALTITUDE&&plan.route[0].y>=SAFE_ALTITUDE&&plan.route[1].x===plan.route[0].x&&plan.route[1].s===plan.route[0].s&&plan.route[2].y>=SAFE_ALTITUDE)t.index=2;
@@ -193,18 +196,29 @@ export function navigateTactical(e,now,dt,others){
    // waypoints without braking to a stop on every moving-target replan.
    while(t.index<(plan.route?.length||0)-1){
     const current=plan.route[t.index],next=plan.route[t.index+1];
-    if(distance(e,current)>TACTICAL.arrivalDistance||Math.abs(current.y-e.y)>.3||Math.abs(angleDelta(e.yaw,current.yaw))>TACTICAL.arrivalAngle||Math.abs(angleDelta(current.yaw,next.yaw))>.08||Math.abs(next.y-current.y)>.3)break;
+    if(distance(e,current)>Math.max(TACTICAL.arrivalDistance,Math.hypot(e.vx,e.vs)*TACTICAL.routeLookAheadSeconds)||Math.abs(current.y-e.y)>.3||Math.abs(angleDelta(e.yaw,current.yaw))>TACTICAL.arrivalAngle||Math.abs(angleDelta(current.yaw,next.yaw))>.08||Math.abs(next.y-current.y)>.3)break;
     t.index++;
    }
    const waypoint=plan.route?.[t.index]||plan.goal,dist=distance(e,waypoint),vertical=Math.abs(waypoint.y-e.y),speed=Math.hypot(e.vx,e.vs);
    const moving=dist>TACTICAL.arrivalDistance,heading=moving?-Math.atan2(waypoint.x-e.x,waypoint.s-e.s):waypoint.yaw;
    advanceYaw(e,dt,heading);
-   const aligned=Math.abs(angleDelta(e.yaw,heading))<.10;
+   // Carry speed through straight route segments; only the next real corner
+   // or final approach is a braking destination.
+   let travelDistance=dist,previous=waypoint;
+   for(let i=t.index+1;vertical<.3&&i<(plan.route?.length||0);i++){
+    const next=plan.route[i];
+    if(Math.abs(angleDelta(previous.yaw,next.yaw))>.08||Math.abs(previous.y-next.y)>.3)break;
+    travelDistance+=distance(previous,next);previous=next;
+   }
    const max=e.y<SAFE_ALTITUDE?TACTICAL.lowSpeed:config.enemySpeed*TACTICAL.cruiseSpeedMultiplier;
-   const target=moving&&aligned?Math.min(max,dist*.8):0;
+   // Heading steers thrust, not a stop/rotate/go gate. Arrival still brakes.
+   const target=moving?approachSpeed(e,heading,travelDistance,Math.min(max,travelDistance*.8)):0;
    advanceFlight(e,dt,target?Math.min(FLIGHT.acceleration,FLIGHT.drag*target+Math.max(0,target-speed)*1.4):0,target?clamp((speed-target)/5,0,1):1);
    // Finish translation and alignment before descending into a confined area.
    advanceLift(e,dt,moving||Math.abs(angleDelta(e.yaw,waypoint.yaw))>.08?Math.max(e.y,waypoint.y):waypoint.y);
+   // The final planned yaw is only a clearance aid. If the actual settled
+   // pose already has a clear drop, do not wait for a redundant stationary turn.
+   if(['strike','low-approach'].includes(plan.kind)&&distance(e,plan.goal)<TACTICAL.arrivalDistance&&Math.abs(e.y-plan.goal.y)<.3&&e.health>TACTICAL.retreatHealth)beginCrush(e,now,true);
    if(dist<TACTICAL.arrivalDistance&&vertical<.3&&speed<.7&&Math.abs(e.vy)<.5&&Math.abs(angleDelta(e.yaw,waypoint.yaw))<TACTICAL.arrivalAngle){
     if(t.index<(plan.route?.length||0)-1)t.index++;
     else{

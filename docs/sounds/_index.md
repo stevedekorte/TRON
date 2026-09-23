@@ -371,6 +371,32 @@ General Frank Serafine collection, not a verified original TRON stems release. P
 
 [Local catalog: 1028 rows](catalogs/serafine-scifi-ii.csv) · [Publisher CSV](https://portal.sound-ideas.com/CSVexport/product=477) · [Publisher audition page](https://soundideas.sourceaudio.com/album/3304306)
 
+## Film-derived candidates
+
+### Carrier derezz — film excerpt
+
+**Extracted; awaiting auditory review** · Carrier materialization/dematerialization candidate
+
+Second half of the original excerpt: 1.5 seconds from 2:38.5–2:40, high-pass 70 Hz / low-pass 9 kHz, normalized to peak 0.7 with 25 ms edge fades. Mixed film soundtrack, not an isolated effects stem. Not loaded by gameplay. Regenerate with scripts/extract-carrier-derez.py.
+
+<audio controls preload="none" aria-label="Carrier derezz — film excerpt" src="../../audio/carrier-derez.wav"></audio>
+
+[Open audio file](../../audio/carrier-derez.wav)
+
+[Source](../references/videos/Carrier%20derezed.mp4) · TRON (1982) film soundtrack; user-supplied reference · Film-derived reference; no standalone redistribution license supplied
+
+### Carrier materialization — loop candidate
+
+**Extracted; awaiting auditory review** · Carrier materialization/dematerialization candidate
+
+1.38-second forward-playing loop with a 120 ms cosine crossfade, prepared from 2:38.5–2:40 (the second half of the original excerpt). Mixed film soundtrack, not an isolated effects stem. Not loaded by gameplay. Regenerate with scripts/extract-carrier-derez.py.
+
+<audio controls preload="none" aria-label="Carrier materialization — loop candidate" src="../../audio/carrier-derez-loop.wav"></audio>
+
+[Open audio file](../../audio/carrier-derez-loop.wav)
+
+[Source](../references/videos/Carrier%20derezed.mp4) · TRON (1982) film soundtrack; user-supplied reference · Film-derived reference; no standalone redistribution license supplied
+
 ## Next auditions
 
 1. Compare the Syna-Max Recognizer against the current film-derived flight loop.

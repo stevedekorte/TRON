@@ -13,6 +13,8 @@ The browser defaults to **Tactical + Jev** with the full enemy population. Shift
 
 ## Decision flow
 
+September 22 flight correction: executing a selected maneuver no longer waits for near-perfect heading alignment before applying thrust. Recognizers turn while moving, reduce approach speed when the remaining distance cannot accommodate a broad arc, and pass through straight route segments without stopping at each waypoint. Arrival, confined descent and attack clearance still use local geometry and braking; this changes the local controller, not the JEV request/response contract.
+
 1. Existing perception and radio systems update each vehicle's observations and target memory.
 2. The local tactical planner generates feasible maneuvers and immediately starts its highest-scoring choice. Simulation never waits for an API call.
 3. The browser scheduler selects an eligible unit and posts its planning snapshot to the local Vite relay.
@@ -393,3 +395,19 @@ The prediction omits future contact impulses and changing debris orientation, so
 Within 140 m of a recorded target, aircraft with radio contact and compatible memories reserve an attack lead for up to twelve seconds. The lead must have visual contact and be healthy and ready to strike; a committed attack retains ownership. Distance fluctuations alone do not replace a valid reservation. Blocked, destroyed, injured, cooling-down or visually disconnected leads yield; an expired reservation gives another eligible aircraft a turn.
 
 The enemy snapshot’s `attackAssignment` records lead ID, lease times, heading and support slot. Supporters get separated flank goals, omit strike/low-approach candidates while supporting, and cannot initiate a stomp even if a delayed choice arrives. Assignment changes invalidate the previous tactical plan/revision. Close physical separation moves the supporter aside instead of displacing the lead. Distant pursuit still uses the existing intercept behavior. The automated two-aircraft encounter now allows one attacker to complete a stomp without simultaneous competing drops.
+
+## Ground pursuit connectivity — September 22
+
+Blueprint ground patrol spawns now require a swept route to the maze exterior. The blueprint contains enclosed free-floor pockets; checking only hull clearance previously allowed tanks to spawn where they could never join a pursuit. Checks are cached per world and hull radius.
+
+Tank route execution retains a valid route while its destination remains close to the route's original target. If the normal 12 m search fails during pursuit, a bounded 8 m search allows larger detours. If no complete route is found, it can approach the closest explored reachable point that improves distance by at least 12 m. Every segment still has swept hull clearance; a genuinely inaccessible contact cannot authorize crossing a wall. These changes use recorded sightings/radio reports and static geometry, and apply in Classic, local and JEV modes without changing the API contract.
+
+## Planning workload — September 22
+
+Enemy ground A* now runs incrementally through `GroundRoutePlanner`, sharing 192 search steps per simulation tick in round-robin slices of 24. A unit follows its existing usable path while a replacement is pending; stale destinations and removed units discard pending work. Startup validation and player mission planning retain a synchronous adapter. Priority queues replace full frontier sorts in ground and aircraft route search.
+
+Aircraft and tanks share a budget of one newly generated tactical candidate set per simulation tick. Pending units retain their current maneuver; their motors, perception, radio and collision updates still run at the fixed simulation rate. First plans and replans may therefore be delayed by a few ticks under load. The expensive lost-contact search map is constructed when that planning work is admitted. Budgets and pending searches are round-local and do not enter API snapshots. Provider scheduling, billing and the JEV input/output contract are unchanged.
+
+## Approved landing tactics — September 22
+
+Recognizers may deliberately land to block Clu’s path and create a crush opportunity for an ally. Landing to rest is also acceptable. These are approved future maneuver choices, not yet implemented options in the candidate list. A stationary grounded unit should be evaluated by its intent and progress, rather than automatically classified as stuck. Coordination must continue to use observed or communicated information.

@@ -15,11 +15,13 @@ try{
   const scene=new T.Scene(),storage=new T.Scene();
   const renderer=new T.WebGLRenderer({antialias:false,stencil:true,preserveDrawingBuffer:true});renderer.setSize(800,600);document.body.append(renderer.domElement);
   const block=new T.Mesh(new T.BoxGeometry(30,40,30),new T.MeshBasicMaterial());block.position.y=20;storage.add(block);
+  block.geometry.setAttribute('shadowWallId',new T.Float32BufferAttribute(new Array(block.geometry.attributes.position.count).fill(1),1));
   const maze=new MazeShadows({slabs:block},[],{...DEFAULT_WORLD,MAZE_LENGTH:100,WALL_HEIGHT:40,MAZE_INSTANCES:[{x:0,s:0}]});maze.update(renderer);
   const make=(w,h)=>new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:0x7799bb,side:T.DoubleSide}));
   const roof=make(28,28);roof.rotation.x=-Math.PI/2;roof.position.y=40;
-  const wall=make(28,38);wall.position.set(0,20,15);
+  const wall=make(30,40);wall.position.set(0,20,15);
   const floor=make(28,28);floor.rotation.x=-Math.PI/2;floor.position.y=.01;
+  for(const surface of [roof,wall])surface.geometry.setAttribute('shadowWallId',new T.Float32BufferAttribute(new Array(surface.geometry.attributes.position.count).fill(1),1));
   scene.add(roof,wall,floor);
   const root=new T.Group(),caster=new T.Mesh(new T.BoxGeometry(26,2,26),new T.MeshBasicMaterial({name:'Base'}));root.add(caster);root.position.set(-15,70,-15);
   const craft={root,casters:[caster],radius:65};

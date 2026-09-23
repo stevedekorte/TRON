@@ -74,6 +74,8 @@ The plan is `docs/_index.md`. Generate HTML with [colvmn](https://colvmn.dev):
 npm run docs
 ```
 
+The project generation wrapper runs colvmn and embeds its stylesheet in each generated page. This keeps local `file://` pages styled even when Safari blocks sibling-folder resources. Edit the Markdown/JSON sources and run `npm run docs`; never edit generated HTML. The upstream colvmn checkout remains unchanged.
+
 The engine is a local checkout in `docs/colvmn`, installed from <https://github.com/stevedekorte/colvmn> at revision `1b2612e52b3a17d6778785dbdfeeab147af1f941`. To restore it if absent:
 
 ```sh

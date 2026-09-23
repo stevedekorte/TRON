@@ -5,6 +5,7 @@ try{
  const page=await browser.newPage({viewport:{width:1000,height:700}}),errors=[];
  if(process.env.TRON_CONTAINER){await page.emulateMedia({reducedMotion:'reduce'});page.setDefaultTimeout(120000);}
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+ await page.addInitScript(()=>localStorage.setItem('tron-enemy-ai',JSON.stringify({version:3,mode:'classic',small:false})));
  await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');
  await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.waitForFunction(()=>window.__tron);if(process.env.TRON_CONTAINER)await page.evaluate(()=>__tron.configure({renderScale:.5,bloom:0}));await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__tron?.state.mode==='running');await page.keyboard.press('KeyW');
  await page.evaluate(()=>{
@@ -21,6 +22,7 @@ try{
  }
  const early=samples[1].e;assert.ok(early.yaw>0&&early.yawVelocity>0,'rotation carries through the reversed heading request');assert.ok(early.y>start.e.y,'lift retains upward momentum');
  assert.ok(samples.at(-1).e.yawVelocity<0,'turn eventually reverses');
+ assert.ok(samples.every(({e})=>Math.hypot(e.vx,e.vs)>7),'aircraft keeps flying throughout the turn');
  for(let i=1;i<samples.length;i++){const a=samples[i-1],b=samples[i],dt=b.time-a.time;assert.ok(Math.abs(b.e.yawVelocity-a.e.yawVelocity)<=.8*dt+1e-6);assert.ok(Math.abs(b.e.vy-a.e.vy)<=14*dt+1e-6);}
  await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.recognizers[0]);await page.waitForTimeout(250);assert.deepEqual(await page.evaluate(()=>__tron.state.recognizers[0]),paused);
  const reset=await page.evaluate(()=>{__tron.reset();return __tron.state.recognizers;});assert.ok(reset.every(e=>e.yawVelocity===0&&e.vy===0));const tuned=await page.evaluate(async()=>{const label=[...document.querySelectorAll('#sliders label')].find(e=>e.textContent.includes('Recognizer turnAcceleration'));const input=label.querySelector('input');input.value='1.1';input.dispatchEvent(new Event('input'));const changed=__tron.state.recognizerFlight.turnAcceleration;document.querySelector('#reset-tuning').click();return {changed,reset:__tron.state.recognizerFlight.turnAcceleration,expected:.8};});assert.equal(tuned.changed,1.1);assert.equal(tuned.reset,tuned.expected);assert.deepEqual(errors,[]);

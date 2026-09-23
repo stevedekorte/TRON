@@ -30,6 +30,7 @@ export function createDevelopmentTools({
         mode,
         opening: view.cameraRig.opening,
         carrier: view.carrier?.position.toArray(),
+        solarSailer: view.solarSailer ? { visible: view.solarSailer.root.visible && view.solarSailer.ship.visible, position: view.solarSailer.ship.position.toArray() } : null,
         tankVisible: view.tank.root.visible,
         enemyTankVisuals: view.enemyTanks.map((c) => ({
           visible: c.root.visible,

@@ -10,6 +10,7 @@ The tank and Recognizers are user-supplied Sketchfab GLBs; Sark’s carrier is a
 | Tank | arabinowitz / Sketchfab | GLB, 1.82 MB | Embedded Standard license; creator listing additionally says editorial purposes only | Imported and active |
 | Recognizer | Shriker1 / Sketchfab | GLB, 128 KB | Embedded Sketchfab Standard license | Imported and active |
 | Sark’s carrier | JIHS / TurboSquid; supplied by user | GLB, 6.86 MB, seven embedded textures | Listing Standard license; source readme retained | Background straight-line transit |
+| Solar Sailer | JIHS; user-supplied TurboSquid DAE/readme | Local GLB, approximately 14 MB, seven embedded textures | Readme credits Syd Mead, Jean Giraud (Moebius), and Peter Lloyd for original design; redistribution terms are not stated in the supplied readme | Periodic background transit; no deployment performed |
 | Maze slabs and surrounding grid | Fixed branching topology, oblique convex prism geometry | JavaScript / generated buffers | Original project implementation | Active |
 | Tank movement and Recognizer flight/approach | User-supplied TRON scene | Three stereo PCM WAV loops, about 0.76 MB combined | Film-derived excerpts; source/timecodes below | Active, awaiting auditory review |
 | Cannon | User-supplied TRON scene | Stereo PCM WAV, 102 KB | Film-derived excerpt | Active |

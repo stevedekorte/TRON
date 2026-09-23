@@ -9,7 +9,7 @@ export class CarrierShadows extends RecognizerShadows {
   carrier.traverse(o=>{if(o.isMesh&&o.material?.name.startsWith('TxTC01'))casters.push(o);});
   const receivers=[world.slabs,world.seams,world.floor];
   for(const root of vehicles)root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude)receivers.push(o);});
-  super([{root:carrier,casters,radius:CARRIER_SHADOWS.radius,distance:CARRIER_SHADOWS.distance}],receivers,0,{...CARRIER_SHADOWS,prefix:'carrierShadow'});
+  super([{root:carrier,casters,rez:carrier.userData.rez,radius:CARRIER_SHADOWS.radius,distance:CARRIER_SHADOWS.distance}],receivers,0,{...CARRIER_SHADOWS,prefix:'carrierShadow'});
   // A compact Gaussian filter smooths coverage over 6×6 texels.
   // Compare each depth separately; never interpolate packed depth values.
   // At this hull span, one texel is about 0.37 m instead of 1.46 m.

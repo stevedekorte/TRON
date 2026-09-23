@@ -1,3 +1,5 @@
+import { SOLAR_SAILER, SOLAR_SAILER_DEFAULTS } from '../game/solar-sailer.js';
+import { loadSolarSailer } from '../rendering/solar-sailer.js';
 import { createDevelopmentTools } from './development-tools.js';
 import { HudPresenter } from '../ui/hud-presenter.js';
 import { GameLoop } from './game-loop.js';
@@ -624,13 +626,14 @@ export function createGameApp() {
         throw new Error(
           'This game needs WebGL 2. Try a current desktop browser with hardware acceleration enabled.',
         );
-      const [[tank, recognizer], carrier, cloud] = await Promise.all([
+      const [[tank, recognizer], carrier, cloud, solarSailer] = await Promise.all([
         loadVehicles(),
         loadCarrier(),
         loadCloud(),
+        loadSolarSailer(),
       ]);
       const physics = new DebrisPhysics(map.nearbyWalls);
-      view = new View($('game'), tank, recognizer, carrier, cloud, map, physics);
+      view = new View($('game'), tank, recognizer, carrier, cloud, map, physics, solarSailer);
       session.attachDebris(physics, view.breakups);
       if (disposed) {
         view.dispose();
@@ -704,6 +707,7 @@ export function createGameApp() {
       explosionRangeMeters: [300, 1600, 25],
     };
     const tuningFields = [
+      ...Object.entries({ altitudeMeters: [400, 1200, 20], speedMetersPerSecond: [100, 440, 5], periodSeconds: [150, 360, 10], scale: [1, 5, 0.25] }).map(([key, range]) => ({ key, range, target: SOLAR_SAILER, title: `Solar Sailer ${key}` })),
       ...Object.entries(hearingRanges).map(([key, range]) => ({
         key,
         range,
@@ -728,7 +732,7 @@ export function createGameApp() {
       label.innerHTML = `<span>${title}</span><output>${target[key]}</output><input type="range" min="${min}" max="${max}" step="${stepSize}" value="${target[key]}">`;
       listen(label.querySelector('input'), 'input', (e) => {
         target[key] = Number(e.target.value);
-        session.configure(
+        if (target !== SOLAR_SAILER) session.configure(
           target === config ? 'vehicle' : target === FLIGHT ? 'flight' : 'hearing',
           { [key]: target[key] },
         );
@@ -742,6 +746,7 @@ export function createGameApp() {
         aiMode: config.aiMode,
         aiSmallEncounter: config.aiSmallEncounter,
       });
+      Object.assign(SOLAR_SAILER, SOLAR_SAILER_DEFAULTS);
       Object.assign(FLIGHT, FLIGHT_DEFAULTS);
       Object.assign(HEARING, HEARING_DEFAULTS);
       session.configure('vehicle', config);
@@ -757,7 +762,7 @@ export function createGameApp() {
     });
     listen($('export-tuning'), 'click', () =>
       navigator.clipboard.writeText(
-        JSON.stringify({ ...config, recognizerFlight: FLIGHT }, null, 2),
+        JSON.stringify({ ...config, recognizerFlight: FLIGHT, solarSailer: SOLAR_SAILER }, null, 2),
       ),
     );
     // Development-only observability/scenario placement; outcomes still run through step().

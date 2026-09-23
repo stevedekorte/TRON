@@ -1,0 +1,32 @@
+TRON TANK dae by JIHS
+_______________________
+
+Tanks from the "Tron" movie (1982).
+
+
+Converted from FBX to DAE with FBX Converter.
+
+Tested in 3dmax 2013:
+
+This format create a multimaterial, but the render is correct.
+For edit the textures select them picking in the object
+
+With this correction the model is operative in 3dmax 2013.
+
+__________________________________________________________________
+
+Materials:
+6 jpg adapted in the native model (sketchup) and exported with it, textured in 3dmax:
+
+TxTT01 (dark body): 256x256 pixels
+TxTT02 (Flynn´s tank color): 256x256
+TxTT03 (computer´s tanks color): 256x256
+TxTT04 (red light): 256x256
+TxTT05 (white light): 256x256
+floorlines: 421x421
+________________________
+
+If you have any problem  with this model that not appear in the specifications, please report to Turbosquid for a correction or devolution.
+Thank you for select this product.
+
+
