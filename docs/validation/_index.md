@@ -3,6 +3,20 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Central labyrinth follow-up — September 23
+
+`npm test`: 276 passed after fixed courtyard beam placement, eight interior tank spawns and six air patrol spawns. Four layout seeds verify counts, interior regions, beam coordinates and clearance. Central tank spawn connectivity now targets the courtyard with a 40,000-node offline budget; using the old outer-maze exit budget rejected valid deep-interior positions.
+
+`node tests/wall-shadow-stability.mjs` passed in headless Chrome on macOS: zero dropped shadow pixels across 81 combinations of wall orientation, world offset and camera position/jitter, compared with the same clipped geometry without depth testing. `node tests/labyrinth.mjs` passed five-maze browser startup and geometry rendering. Safari at the user's reported viewpoint still needs visual confirmation.
+
+## Central labyrinth — September 23
+
+On the development Mac, `npm test` passed all 276 tests. Added checks compare roof triangle area against outlines minus holes, sample collision/occupancy agreement throughout the blueprint, verify an unobstructed central court, and check five-site separation, patrols, five beams and twenty transport pads across seeds 0, 42, 1982 and 99999. A ground route from the southern exterior to the central court succeeds with tank clearance (164 waypoints using 12 m search cells and a larger offline search budget); this establishes connectivity, not live autoplay performance through every passage.
+
+`node tests/labyrinth.mjs` passed in headless Chromium on macOS at 1448×1086: normal game startup includes five beams/twenty pads, with no page errors. Inspected top-down, oblique and full-layout renders in `test-results/labyrinth-top.png`, `labyrinth-3d.png` and `five-mazes.png`. The contours match the supplied reference, roof holes remain open, and the center labyrinth fits without moving the outer mazes. Production/documentation build and `git diff --check` passed. Browser play feel and sustained large-maze AI performance remain for user review.
+
+
+
 ## Pursuit frame pacing — September 22
 
 `scripts/benchmark-enemy-pursuit.mjs` reproduces twenty simulated seconds with five Recognizers and three maze tanks tracking recorded contact in blueprint/layoutSeed/runSeed 1982. Node CPU profiles on the development Mac identified synchronous route/replan bursts, repeated frontier sorting and redundant distant-pad footprint construction. In the measured profiled runs, worst simulation tick fell from 100.5 ms to 19.9 ms; the largest later replan spike fell from 33.3 ms to 8.8 ms. Total simulation CPU time fell from about 507 to 409 ms. These are one-machine simulation measurements, not guaranteed browser frame rates; budgeted work deliberately spreads smaller costs across more ticks.
@@ -945,3 +959,57 @@ September 23 carrier panel refinement: Chrome materialization checks passed afte
 ## Spotlight surface reach — September 23
 
 `node --test tests/alertness.test.js`: 11 passed, including every ribbon endpoint at 400 m altitude reaching the ground or a raised clipping surface. `node tests/searchlights.mjs`: Chrome headless on macOS passed rendering, wall/floor clipping, state visibility and pause checks without browser errors. Detection limits are unchanged.
+
+## Confined stomp positioning — September 23
+
+On macOS, `npm test` passed all 249 tests. New cases cover three oblique wall orientations, close-wall offsets, tight corridors, and a complete collision-free stomp in a 10.8 m corridor rotated 0.37 radians. Existing wall-side, moving-turn, information isolation and attack tests remain passing. `node tests/tactical-browser.mjs` passed in headless Chrome: wall-side drop, AI mode changes, no-key fallback, pause/reset and Classic isolation. Inspected `test-results/tactical-wall-descent.png`; this is a small aerial fixture, not a general approval of all driving/attack feel. `node scripts/benchmark-enemy-pursuit.mjs` measured simulation-step p95 0.59 ms, worst 17.83 ms on this run (not a browser frame-rate claim). Landing search remains under the shared planning admission budget. Physically impassable gaps remain unsupported.
+
+## Surface impacts, support roles and victory — September 23
+
+On macOS, `npm test` passed all 256 tests before the final additional projectile-event test; `node --test tests/surface-impact.test.js` then passed all five impact tests, including both player and enemy wall shots. Formation coverage includes six recognizers, separated goals, retained satellite assignment beyond 140 m, support without personal sight, stale-memory release and existing leader handoff. The pursuit benchmark measured p95 0.35 ms/worst 15.67 ms simulation steps on this run, not a browser FPS measurement.
+
+Headless Chrome checks passed: `node tests/surface-impacts.mjs` (surface orientation, camera independence, shader compilation and cleanup), `node tests/victory.mjs` (all-blue victory, exact text, frozen simulation, Return to credits/music without detachment, restart), `node tests/death-terminal.mjs` (existing fatal-hit terminal/music/signoff flow), and `node tests/tactical-browser.mjs` (wall-side stomp, modes, fallback, pause/reset). Inspected `surface-impact-wall.png`, `victory-terminal.png`, and `victory-credits.png` under `test-results`. Browser music state/playback was checked; no claim of an auditory review. Rings use existing projectile collision coverage, with rendered mesh normals for registered vehicle hits; this does not introduce projectile collision for scenery that was previously noncollidable.
+
+## Victory printer pacing — September 23
+
+Use a monotonic clock, stable per-line DOM nodes and at most one new character per rendered frame. The rate is now 45 characters/second; a stalled frame cannot dump a word-sized backlog. Skip the hidden 3D scene while the victory page is open. `node --test tests/victory.test.js` passed, including a two-second synthetic stall, one-character updates, unchanged completed lines and restart. `node tests/victory.mjs` passed in both headless Chrome and workspace-installed WebKit: early/late rates were 45.00/44.99 and 45.06/44.98 characters/second respectively. Exact text, credits/music transition, Shift+8 preview and restart checks passed; build passed. A browser rendering below the target character rate can print more slowly rather than batch characters.
+
+
+## Two-recognizer approach regression — September 23
+
+A deterministic local encounter with two healthy aircraft 120 m to either side of stationary Clu failed to complete a stomp after 120 simulated seconds before the fix. Progress-based lease renewal completed it in 24.27 seconds. `node --test tests/escort-debris.test.js tests/tactical.test.js` passed all 32 tests, including a 45-second completion bound, stable lead, single active strike, blocked-lead handoff and stalled-lead expiry. `node tests/tactical-browser.mjs` passed in headless Chrome (wall-side attack, AI modes, fallback, pause/reset). The reported live JEV session itself was not captured; the reproduced local-controller failure is fixed.
+
+Safari follow-up: victory text now appends one immutable `.printer-character` element per glyph, grouped into stable lines. Printing never reads bounding boxes, offset/client/scroll dimensions, or computed styles; normal browser layout is still necessary. Targeted tests passed, including glyph-node structure and one-character updates. Headless WebKit measured 45.19 characters/second early and 44.98 late, with victory/credits/restart checks passing. Build passed. This automation has not reproduced the slowdown reported in the user's Safari window, so the visible Safari result still needs confirmation.
+
+## Pursuit stomp and JEV toggle — September 23
+
+- `node --test tests/tactical.test.js tests/escort-debris.test.js`: 34 passed. Simulated accepted provider pursuit choices complete collision-free stomps in an oblique 10.8 m corridor and a two-aircraft full-session encounter with one active attacker.
+- `npm test`: 260 passed.
+- `node tests/jev-toggle.mjs`: headless Chrome on macOS passed N on/off while paused without advancing/restarting the round, repeat suppression, autoplay disengagement on disable, and U re-enabling JEV. Provider requests stubbed; no live JEV quality claim.
+- Actual interactive flight and live-provider choice quality remain for play review.
+
+## Four-second stomp acceptance — September 23
+
+- `npm test`: 269 passed, including 32 close-stomp cases (eight headings × local/pursue/strike/low-approach), the real five-unit starting formation, tight oblique corridors, no stomp self-damage from debris, bounded repeatable cannon spread, and zero vertical enemy scatter for level aim.
+- Close-range deadline assumes a healthy aircraft starting at rest at 80 m altitude, stationary observed Clu 48 m away in open space, and a ready attack. Simulated provider responses exercise accepted plans, not live JEV policy quality.
+- `node tests/stomp-browser.mjs`: headless Chrome/macOS, actual opening formation, simulated accepted JEV low-approach/pursue replies, starting throttle released. Rendered drop and stomp completed at 11.0 seconds from encounter start (initial separation exceeds 300 m); attacker health remained 3. Capture: `test-results/opening-stomp.png`. No page errors.
+- `npm run build` passed; existing bundle-size advisory remains. `git diff --check` passed.
+
+## Three-second full-speed turning limit — September 23
+
+- Removed the close-attack yaw override. Normal flight now caps yaw at 2π/3 rad/s with 4π/3 rad/s² acceleration, smooth braking, and speed reduction for tight approach turns.
+- `npm test`: 269 passed. Eight initial headings across local and simulated JEV choices complete stomps while respecting rate/acceleration bounds; only initially aligned attacks retain the four-second deadline assertion. This supersedes the earlier all-heading four-second acceptance.
+- `npm run build` and `git diff --check` passed. Rendered turning feel has not been rechecked in this change; user play review remains.
+
+## Original motion, helicopter translation and ENCOM mark — September 23
+
+- `npm test`: 271 passed. Directional thrust verifies pure lateral/reverse movement without yaw, shared diagonal acceleration budget, and unchanged velocity limits. Corridor search verifies lateral travel with a fixed wall-aligned hull. Eight-heading attacks respect original yaw and acceleration limits.
+- `node tests/victory.mjs`: headless Chrome/macOS passed opening/victory/credits ENCOM visibility, victory printer pacing (~45 characters/s), terminal lifecycle and restart. Inspected `test-results/terminal-encom.png`: lower-right lavender outline and glow match the reference treatment. Logo is a local project-authored SVG approximation.
+- Before adding independent translation, `node tests/stomp-browser.mjs` verified the restored original flight limits completed the rendered opening stomp at 13.23 simulated seconds; attacker retained health 3. Provider responses were simulated.
+- After independent translation: `node tests/stomp-browser.mjs` passed the rendered opening at 13.27 simulated seconds, attacker health 3, accepted simulated JEV plans, and no page errors.
+
+## Approaching-target stomp interception — September 23
+
+- `npm test`: 274 passed. Local and simulated JEV pursuit choices intercept Clu travelling at 22 m/s from 140 m away, with lateral offsets 0/20/40 m. Tests require fold commitment while Clu remains more than 40 m away, successful impact within eight seconds of the encounter, and no attacker health loss. Local measured impacts: 5.02/5.60/6.18 seconds; no movement tuning changes.
+- Regression verifies holding a crossing during expected target motion and replanning immediately for a newly observed turn. Existing sight-loss, wall-clearance and post-commit miss tests remain covered.
+- `node tests/stomp-browser.mjs --approaching`: headless Chrome/macOS passed with accepted simulated JEV responses, CLU driving toward an offset aircraft, fold beginning more than 35 m ahead, and successful impact at 5.92 simulated seconds; attacker health remained 3. Capture: `test-results/approaching-stomp.png`. No page errors.

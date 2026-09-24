@@ -2,6 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>/</loc></url>
   <url><loc>/assets/</loc></url>
+  <url><loc>/history/</loc></url>
   <url><loc>/jev/</loc></url>
   <url><loc>/models/</loc></url>
   <url><loc>/models/carrier-shuttle/</loc></url>

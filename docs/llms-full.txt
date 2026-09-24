@@ -14,7 +14,7 @@ Source: /
 ---
 title: Implementation plan
 topTitle: TRON
-subtitle: Open-ended maze simulation and historical M0/M1 plans
+subtitle: Current simulation scope, decisions, and acceptance criteria
 ---
 
 ## Project documents
@@ -26,14 +26,63 @@ subtitle: Open-ended maze simulation and historical M0/M1 plans
 <a class="card" href="sounds/index.html"><h3>Sound library</h3><p>Listen to sound candidates, compare current effects, and browse future resources.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="refactoring/index.html"><h3>Refactoring design</h3><p>Code review, object ownership and an incremental cleanup plan.</p><span class="arrow">View &rarr;</span></a>
 <a class="card" href="validation/index.html"><h3>Validation</h3><p>Browser checks, measured results and remaining review.</p><span class="arrow">View &rarr;</span></a>
+<a class="card" href="history/index.html"><h3>History</h3><p>Original milestones, earlier plans, and development notes.</p><span class="arrow">View &rarr;</span></a>
 </div>
 
 ## Current direction — open-ended simulation
+
+### Central labyrinth placement and population — September 23
+
+- [x] Fix its beam to the measured center of the blueprint’s circular courtyard (pixel 724, 514), instead of choosing a random central navigation cell.
+- [x] Scatter eight tanks and six Recognizers among interior annular sectors. Tank spawns must have a swept-clear route to the courtyard; other mazes retain their existing population.
+- [x] Separate clipped wall-shadow decals from their receivers by 0.02 m before float32 upload, retaining depth testing and stencil union. This prevents coplanar rounding artifacts without softening the shadow edges.
+
+### Central labyrinth — September 23
+
+- [x] Trace the supplied Big labyrinth image into 116 wall islands, preserving the circular courtyard and three enclosed openings. Share polygon extrusion/collision code with the original blueprint maze, including hole-aware roof triangulation.
+- [x] Add the labyrinth as a fifth, grid-aligned site at the center of the four existing mazes. Use 2.4 meters per image pixel and the existing 54-meter wall height. The default layout fits without moving the outer sites; placement can move overlapping sites outward if needed.
+- [x] Include a fifth beam, four transport pads and normal maze patrols. Keep authored/reference fixtures unchanged. Verify collision/roof agreement, separation across four layout seeds, courtyard route accessibility, game startup and rendered geometry.
+
+### Smarter stomps with original motion — September 23
+
+- [x] Preserve the earlier film-like movement: thrust 24.2 m/s², yaw cap 0.62 rad/s, yaw acceleration 0.8 rad/s², ordinary drag/braking, 1.3-second fold, and 85 m/s² powered stomp descent. Remove all close-attack performance overrides. Cruise/max speeds are unchanged.
+- [x] Improve decisions rather than physics: approach overhead before descending, retain a progressing attack lead, align for nearby walls, and allow a healthy pursuing lead to take a safe attack opportunity.
+- [x] Brake as soon as the predicted stopping path provides a valid stomp, rather than insisting on an exact waypoint or redundant final heading. Keep fresh personal sight, cooldown, drift prediction and swept wall clearance checks.
+- [x] Stomp drop/landing contact with debris cannot damage the attacker; normal flight and weapon hits remain vulnerable.
+- [x] Double horizontal cannon scatter: Clu ±1.2°, enemies ±2.4°. Level aim has zero vertical scatter; gunner shots remain exact. Deliberate vertical auto-aim to airborne targets is retained.
+- The user’s motion-fidelity correction supersedes both the universal four-second stomp deadline and the subsequent three-second full-rotation tuning. Regression cases check successful attacks from eight headings without exceeding original thrust/yaw limits, not an artificial deadline.
+
+### Pursuit attacks and JEV toggle — September 23
+
+- [x] Healthy lead Recognizers may commit a safe stomp while pursuing, without requiring JEV to select a separate strike maneuver. Pursuit endpoints use the wall-aligned landing pose; fresh sight, cooldown, support assignment, braking drift and full descent clearance remain mandatory.
+- [x] N toggles JEV/local tactical control during play or pause without restarting. The stats box displays ON/OFF. Disabling JEV disengages autoplay; U enables JEV when starting autoplay. Mode preference persists.
+- [x] Verify simulated JEV pursuit responses in a tight oblique corridor and a two-Recognizer encounter, plus Chrome keyboard/autoplay behavior. Full simulation suite: 260 passed. Live provider choices and actual play remain subject to review.
+
+### Progress-aware attack leadership — September 23
+
+- [x] Renew the lead recognizer’s twelve-second assignment after at least five meters of combined closing/descent progress. Do not rotate a progressing attacker out midway through its approach; retain blocked/dead/ineligible handoff and expiry for stalled attackers.
+- [x] Reproduce two aircraft approaching stationary Clu from opposite sides at 120 m: previously no stomp in 120 seconds; corrected local control completes the stomp in approximately 24.27 seconds with one consistent lead. Keep one active strike at a time.
+
+### Victory, surface impacts and attack support — September 23
+
+- [x] Add the explicitly requested win condition: complete every data beam, freeze the round, fade to the terminal and print `docs/victory.txt` continuously at 45 characters/second. This supersedes the earlier no-win-screen direction for this condition only; empty beam lists do not win.
+- [x] Drive victory printing from monotonic elapsed time rather than the capped simulation delta; reveal at most one character per frame as an immutable glyph element inside stable line nodes (no catch-up word bursts or DOM geometry/computed-style measurements) and skip hidden 3D rendering on the victory page.
+- [x] Use the victory typography size (`min(1.5vw, 2.15vh)`, 1.12 line height) across opening, death, victory and credits text, without content-dependent sizing.
+- [x] Add temporary Shift+8 victory preview for end-screen review (also available while paused).
+- [x] Leave the victory page visible until Return; then play the existing credits text/music without the detachment message. Preserve death behavior and clean restart.
+- [x] Reuse the optical double-ring burst for projectile wall/floor contacts and visible vehicle armor. Orient effects to surface normals with an 8 cm offset, retain depth testing, cap active effects, freeze them on pause and dispose them on expiry/reset.
+- [x] Retain recognizer support assignments outside the old 140 m recruitment radius and when support units lose personal sight. Choose one lead attacker, one spotter and separated exit-cover positions using ground-connected map branches; use overhead slots where no branch is available. Cache formation goals until leadership/membership or recorded contact changes. Preserve radio limits, fresh target knowledge, wounded withdrawal and attack handoff.
 
 ### Teleporter border placement — September 22
 
 - [x] Generate floor-shader pad borders from the active scenario’s maze sites, matching simulation placement. Remove the renderer’s use of the legacy authored-world pad constants. Include pad geometry in the shader cache key so different seeds/site counts cannot reuse stale positions.
 - [x] Check all 52 pads across two blueprint seeds, an authored seed and a single-site authored layout. Preserve floor-integrated borders, grid-line thickness and horizon fading.
+
+### Confined stomp positioning — September 23
+
+- [x] Search nearby landing positions in sixteen directions at two radii and include exact local wall-edge headings. Keep the whole aircraft clear and reserve positional tolerance inside the existing crush trigger; do not widen the damage radius.
+- [x] Settle strike approaches within 0.35 m and brake angular motion before committing to a descent. Preserve forward-only movement, collision checks, attack coordination, and fresh visual-contact requirements. This applies to Tactical/local and JEV maneuver execution; Classic behavior is unchanged.
+- [x] Verify oblique narrow-corridor and close-wall poses, a complete collision-free corridor stomp, and the full simulation suite.
 
 ### Recognizer spotlight surface reach — September 23
 
@@ -314,15 +363,209 @@ The user's latest direction supersedes the structured chase roadmap below. The p
 
 Run `npm run dev` and visit http://127.0.0.1:5173. Supporting documents: [Assets](assets/index.html) · [References](references/index.html) · [Validation](validation/index.html).
 
+### Superseded turn-speed experiment — September 23
+
+Historical experiment, now superseded by restoring original motion above: maximum yaw rate is 120°/s (one revolution per three seconds at full speed), with 240°/s² acceleration/braking and the normal smooth heading response. All flight uses the same limit, including close attacks. Close-attack speed reduces when a turn needs a tighter radius, avoiding repeated orbits. A turn from rest includes acceleration and settling time, so a backwards-facing attacker can exceed the four-second stomp target. Eight-heading tests verify bounded yaw rate/acceleration and successful stomps; aligned attacks retain the four-second check.
+
+### Helicopter-style Recognizer translation — September 23
+
+Recognizers can thrust sideways and backward independently of yaw, in local/JEV navigation, Classic navigation and carrier escort flight. The acceleration vector shares the original 24.2 m/s² budget across all directions (no diagonal bonus); drag, braking, speed caps and angular inertia remain unchanged. Tight-corridor planning includes lateral/reverse translations with swept hull clearance. A wall-aligned hull can slide into position without first turning broadside. Existing pursuit-to-stomp opportunity checks and support assignments remain active.
+
+### ENCOM terminal signature — September 23
+
+- [x] Add a local SVG ENCOM mark based on the supplied MCP terminal reference, with pale lavender glow at the lower right of the shared terminal overlay. Opening, detached/credits, victory and victory credits share the mark, and it fades with the opening transition. Typed text is unaffected.
+
+### Lead and intercept approaching Clu — September 23
+
+- [x] Choose a reachable crossing ahead of observed motion, accounting for approach, normal acceleration/braking, folding and fall time. Bounded prediction uses recorded position/velocity and stops at mapped obstructions.
+- [x] Hold the chosen crossing while sightings follow the predicted path, instead of continually moving it farther ahead. Changed velocity, lost sight, injury or an expired interception still permits replanning. JEV candidate facts include approach time and predicted impact time.
+- [x] Keep the lead's attack plan when only supporting positions change. Supporting units still refresh their own routes.
+- [x] Preserve a useful wall-aligned facing during overhead translation. Start folding while Clu approaches; commitment still requires fresh personal sight and a physically clear descent, and a committed drop cannot track an evasive maneuver.
+- All existing speeds, accelerations, fold/drop timing and health rules remain unchanged.
+
+
+---
+
+<!-- Page: assets -->
+Source: /assets/
+
+---
+title: Assets
+subtitle: Model, sound, and dependency inventory
+---
+
+## Big labyrinth blueprint — September 23
+
+`docs/references/images/mazes/Big labyrinth.png` is a user-supplied reference; original author and license have not been provided. Its blue wall silhouettes were traced locally into polygon contours, simplified at one image pixel, scaled to 2.4 m/pixel and extruded to 54 m. The runtime uses generated geometry, not the raster texture. Source, tracing script and an SVG comparison are retained in the repository.
+
+
+
+The tank and Recognizers are user-supplied Sketchfab GLBs; Sark’s carrier is a user-supplied JIHS Collada model converted locally to GLB. All are served locally with the application. Maze geometry is generated locally; vehicle/cannon audio uses short edits from the user-supplied film clip, with synthesized fallback and impact effects. No purchase was made. See [Models](../models/index.html) for source credits and adapter details.
+
+| Asset | Source / author | Format and size | Use / attribution | Status |
+| --- | --- | --- | --- | --- |
+| Tank | arabinowitz / Sketchfab | GLB, 1.82 MB | Embedded Standard license; creator listing additionally says editorial purposes only | Imported and active |
+| Recognizer | Shriker1 / Sketchfab | GLB, 128 KB | Embedded Sketchfab Standard license | Imported and active |
+| Sark’s carrier | JIHS / TurboSquid; supplied by user | GLB, 6.86 MB, seven embedded textures | Listing Standard license; source readme retained | Background straight-line transit |
+| Solar Sailer | JIHS; user-supplied TurboSquid DAE/readme | Local GLB, approximately 14 MB, seven embedded textures | Readme credits Syd Mead, Jean Giraud (Moebius), and Peter Lloyd for original design; redistribution terms are not stated in the supplied readme | Periodic background transit; no deployment performed |
+| Maze slabs and surrounding grid | Fixed branching topology, oblique convex prism geometry | JavaScript / generated buffers | Original project implementation | Active |
+| Tank movement and Recognizer flight/approach | User-supplied TRON scene | Three stereo PCM WAV loops, about 0.76 MB combined | Film-derived excerpts; source/timecodes below | Active, awaiting auditory review |
+| Cannon | User-supplied TRON scene | Stereo PCM WAV, 102 KB | Film-derived excerpt | Active |
+| Impact, destruction, missing-file fallback | Project Web Audio synthesis | Short oscillator/noise envelopes | Original synthesized effects | Active |
+| UI and favicon | Project HTML/CSS; inline favicon path | Local Interface Raster terminal font derived from VT323; system fonts elsewhere | Original project implementation | Active |
+| Terminal font | Peter Hull / [VT323 in Google Fonts](https://github.com/google/fonts/tree/main/ofl/vt323) | Local `public/fonts/VT323-Regular.ttf` | SIL Open Font License 1.1; retained in `public/fonts/OFL-VT323.txt` | Active |
+| Film reference stills | User-supplied screenshots from the linked 1982 sequence | 15 PNGs in `docs/references/images/` | Study references; not used as runtime art | Inspected |
+| Three.js | [Three.js](https://github.com/mrdoob/three), installed 0.186.0 | npm dependency, lockfile pinned | MIT; upstream license remains in package | Active |
+| colvmn | [Steve Dekorte / colvmn](https://github.com/stevedekorte/colvmn) | Local documentation engine checkout | MIT; upstream license retained | Active for docs only |
+
+## Evaluated external candidates
+
+| Candidate | Creator | Published details | Decision |
+| --- | --- | --- | --- |
+| [Tank — Tron (1982)](https://sketchfab.com/3d-models/tank-tron-1982-b730d118f54b4a868339a4ddf11e09a7) | arabinowitz | Listing describes Blender/FBX files, about 58k triangles, free download, and editorial use. The listing's generic “Free Standard” label should not be substituted for reviewing the actual terms. | User supplied the GLB; imported and browser-tested. |
+| [TRON Immersive](https://www.behance.net/gallery/236722545/TRON-Immersive) | Steve Talkowski | Creator presents tank and Recognizer work with embedded viewers. | Reference/candidate only; no download permission or usable distributable asset established. |
+
+No paid candidate was selected and no purchase was made. Both GLBs load with GLTFLoader and uniform normalization; the original files remain unmodified.
+
+The TRON names and film designs identify the user's reference. This inventory does not claim ownership of the underlying film property or permission to redistribute film assets.
+
+
+## Historical replacement model shortlist — September 12
+
+The user judged the second procedural pass closer but still inaccurate and requested internet models. Inspected the four public preview images below and queried Sketchfab's official metadata API. All four are marked downloadable. At the time of this initial search, no source mesh had been acquired or imported: an unauthenticated request to the official tank download endpoint returned `Authentication credentials were not provided.` The user subsequently supplied the two active GLBs above. Preserve the source archive and included license when downloading.
+
+**Recommended first: Shriker1's pair.** The tank preview has a much better broad hull, offset canopy, triangular cannon supports, collar and recessed muzzle. The Recognizer preview has the articulated-looking shoulder construction, substantial body depth and inward feet. Both are described by the creator as custom-made and game-ready. That description and the polygon counts make them promising for the browser; materials, movable parts and final fidelity still need inspection in the source files.
+
+| Model | Creator | Triangles | Published terms / formats |
+| --- | --- | --- | --- |
+| [Tron 1982 Tank](https://sketchfab.com/3d-models/tron-1982-tank-99f4ae8ce97445e8909c02d7481d12d9) | Shriker1 | 9,648 | Free Standard per official metadata; source formats not verified |
+| [Tron 1982 Recognizer](https://sketchfab.com/3d-models/tron-1982-recognizer-ecb52608275c40a28d7d9dda1aed54f3) | Shriker1 | 1,854 | Free Standard per official metadata; source formats not verified |
+| [Tank — Tron (1982)](https://sketchfab.com/3d-models/tank-tron-1982-b730d118f54b4a868339a4ddf11e09a7) | arabinowitz | 57,976 | Blender/FBX; listing says editorial use only |
+| [Recognizer — Tron (1982)](https://sketchfab.com/3d-models/recognizer-tron-1982-897ad9061ab34a9885b8e874fe8a17e0) | arabinowitz | 8,080 | Blender/FBX; listing says editorial use only |
+
+Sketchfab labels all four Free Standard; the arabinowitz descriptions additionally restrict use to editorial purposes. The current license page could not be fetched, so these are recorded listing terms, not completed license clearance. Metadata snapshots and public promotional previews are retained in `candidates/` for comparison; they are not runtime assets.
+
+### Shriker1 tank preview
+
+![Shriker1 tank promotional preview](candidates/99f4ae8ce97445e8909c02d7481d12d9.jpeg)
+
+### Shriker1 Recognizer preview
+
+![Shriker1 Recognizer promotional preview](candidates/ecb52608275c40a28d7d9dda1aed54f3.jpeg)
+
+### arabinowitz alternatives
+
+![arabinowitz tank promotional preview](candidates/b730d118f54b4a868339a4ddf11e09a7.jpeg)
+
+![arabinowitz Recognizer promotional preview](candidates/897ad9061ab34a9885b8e874fe8a17e0.jpeg)
+
+Also found [JIHS's TRON 1982 Tank on TurboSquid](https://www.turbosquid.com/3d-models/3d-tron-1982-tank-1811154), listed at $25, 49,152 polygons, with FBX/OBJ/glTF among the offered formats and an editorial-use restriction. It is a paid fallback; no purchase was made.
+
+
+The simulation revision still uses the procedural vehicle models. Recognizers are uniformly scaled by 0.5 in the adapter; collision uses the same scale. Five instances and five independent spatial sound voices replace the single scripted craft. Maze roof/side geometry is generated from the same clipped convex polygons used by collision and visibility.
+
+## Requested film audio pass
+
+Source: https://www.youtube.com/watch?v=kKBuOtedf3E — “Tron (1982) - Clu infiltrates the Encom system,” uploaded by vson8, 199 seconds. Metadata was retrieved on September 13; both audio-only Opus and standard MP4 media downloads returned HTTP 403. No film audio was extracted or added. Existing synthesized effects remain active. Await a local copy before isolating tank movement, cannon shots and Recognizer motion.
+
+
+## Local video sound extraction — September 13
+
+The user supplied `docs/references/videos/1982 tron clu scene.mp4` (187.48 s, 44.1 kHz stereo AAC). This resolved the earlier YouTube download block. Selected cuts using exterior action frames and signal/spectrum inspection. Source audio is a mixed film soundtrack; these edits are not isolated production stems. No direct auditory assessment was available in this run, so speech/score contamination and subjective fidelity remain for user audition.
+
+| Runtime sample | Local video in/out | Processing |
+| --- | --- | --- |
+| tank-drive.wav | Spectrum derived from 10.75–11.45 s | 5.94-second periodic engine bed reconstructed from the filtered film sample’s averaged spectrum. Randomized phases remove recurring source transients; original time-domain stereo is replaced by a compact emitter panned in-game. Rebuild with `scripts/smooth-tank-loop.py`. |
+| recognizer-flight.wav | 124–126 s | 45 Hz high-pass, 6.5 kHz low-pass, 120 ms loop crossfade |
+| recognizer-approach.wav | 126.20–128.40 s | Same filters/crossfade; mixed into pursuit and attack |
+| cannon.wav | 121.38–121.76 s | 65 Hz high-pass, 12 kHz low-pass, 3 ms attack/70 ms release fades |
+
+All retain two channels, receive DC removal and peak normalization to 0.72, and are stored in `public/audio/`. Rebuild with `python3 scripts/extract-sfx.py` (ffmpeg required). `public/audio/sources.json` records the input SHA-256, cuts and processing. Credits: TRON (1982) film soundtrack, supplied by the user for this local study; no redistribution license has been established. The full reference video is excluded from the static build.
+
+[Sound audition](http://127.0.0.1:5173/audio.html) provides individual loops and a moving stereo Recognizer using the game's HRTF emitter. Each craft has two world-space emitters 4.8 m apart, independent loop offsets, distance attenuation, wall low-pass/attenuation and bounded Doppler playback-rate shifts. The listener follows Clu with camera orientation, rather than moving hundreds of meters away with the aerial camera.
+
+Tank revision: the user identified dialogue in the original 70.80–73.20 s cut. Replaced it with a short opening texture from 10.75–11.45 s (0.58 s after crossfade), chosen using the opening frames and spectrum. Listening confirmation remains with the user. Recognizer and cannon WAV hashes are unchanged.
+
+
+Cannon revision: shortened the film cut to 0.38 s around the first firing onset to reduce neighboring rapid-fire content, widened the passband, and removed random playback pitch. Inspected frames at 120.8–123.2 s and measured waveform onset at 121.38 s. This is still mixed film audio; listening approval is pending. Terminal clicks and access beep are synthesized approximations, not extracted movie sounds.
+
+
+Camera-listener revision: all spatial listening now uses the camera, including its height and movement. The tank has an 18 m reference-distance stereo emitter, so zooming away attenuates its sound. This supersedes the earlier Clu-anchored listener description. The opening tracks Clu's live position while it starts at full speed; releasing W ends the initial throttle.
+
+
+## Opening music
+
+User-supplied `music/Tron/03 We've Got Company.mp3` plays once from the beginning when a run starts, including the opening zoom. It pauses with standby, resumes from its current position, follows the sound mute/master volume, and restarts on R. A single streaming media element feeds the audio mix at 55% gain. Vite packages this selected track; the documentation copy excludes the rest of the supplied album. Source: user's local TRON film soundtrack collection; no new redistribution license established.
+
+
+Terminal keys now use four stereo excerpts from the first two seconds of the supplied local video, starting at 0.885, 1.395, 0.995 and 1.585 seconds. The latest revision trims each to 60 ms, lowers the low-pass cutoff to 6.5 kHz, and adds an early decay with a smooth 30 ms release to suppress the harsh trailing transient reported by the user. Samples alternate without immediate repeats; synthesized ticks remain a loading/failure fallback. The access beep remains synthesized. Audio context resume and music play are both requested directly during Return's input event, before any asynchronous yield.
+
+## Carrier rumble
+
+`scripts/extract-carrier-sfx.py` reproducibly extracts 116.2–120.2 seconds of the user-supplied carrier/solar-sailer video. `public/audio/carrier-rumble.wav` is stereo PCM, 44.1 kHz, 3.6 seconds after a 0.4-second loop crossfade, DC removal, 35–900 Hz filtering and peak normalization to 0.65. Provenance/hash and processing are in `public/audio/carrier-source.json`. This is a mixed film soundtrack excerpt, not an isolated vehicle stem. Auditory approval remains pending; the assistant has not listened to the sample. In-game it uses stereo HRTF placement, camera distance attenuation, distant low-pass filtering and Doppler following the carrier's world position. The master mute/standby gate applies.
+
+
+September 14: eight ground enemies reuse arabinowitz's supplied tank GLB, normalized geometry, surface materials and cannon sample. Each clone has independent turret/recoil transforms and red insignia. Source assets are unchanged; no additional models were downloaded.
+
+### September 14 Recognizer sound revisions
+
+Re-cut `recognizer-flight.wav` from exactly 2:04–2:06 of the local `1982 tron clu scene.mp4`; stereo PCM with the existing 120 ms loop join (1.88-second playback). Added `recognizer-explosion.wav` from 3:06–3:07, a one-second stereo effect with short edge fades, 45 Hz high-pass and 12 kHz low-pass. Recognizer destruction plays it through two world-space HRTF emitters; tank destruction retains its existing sound. Both excerpts are available on `/audio.html`. These remain mixed film soundtrack excerpts, not isolated sound-effect stems.
+
+Correction: the 3:06–3:07 selection contained terminal typing. `recognizer-explosion.wav` now uses video time 1:47.84–1:48.69 (0.85 seconds), aligned with the visible explosion before the cockpit cut. Recognizer excerpts are now extracted from the user-supplied M4A. Full decoded PCM comparison found that M4A equals the video audio after trimming its first 2112 frames (47.89 ms); the extraction script compensates for this offset and records source/seek per sample. The game and audition page request version 2 of the explosion to bypass the previous cached audio.
+
+The supplied `Recognizer Explosion.m4a` edit matches video time 113.207 seconds (normalized waveform correlation 0.997). `scripts/clean-recognizer-explosion.py` uses surrounding soundtrack context and shared-stereo harmonic/percussive masks to suppress sustained tonal ridges. It generates original/balanced/strong audition WAVs under `public/audio/studies` and a provenance manifest. Requires NumPy/SciPy (installed only in a temporary environment). This is approximate suppression: overlapping cannon/explosion energy cannot be reliably separated by this method, and stronger masking loses transient detail. Listening comparison is pending.
+
+## Sound resource library
+
+[Open the sound library](../sounds/index.html) for downloaded Syna-Max recreation previews, existing film edits, cleanup candidates, verified stock-effect catalog IDs and vendor metadata exports. The shelf preserves inactive resources, author/source links and licensing notes for this personal-use project. `docs/sounds/catalog.json` is the editable inventory; `scripts/build-sound-library.mjs` regenerates its page during the docs build. Public MP3 previews are clearly distinguished from original downloads and unacquired commercial-library audio.
+
+### MCP closing dialog
+
+`docs/references/dialog/END OF LINE.mp3` is the user-supplied MCP “END OF LINE” film dialog (1.28-second MP3). It plays once as the terminal starts typing the final sign-off. Imported directly through Vite and decoded into Web Audio; no edits to the source recording. Source: Disney's 1982 TRON, supplied by the user for this fan tribute.
+
+### Embedded terminal raster font
+
+`public/fonts/InterfaceRaster-Regular.ttf` is a modified VT323 font, renamed **Interface Raster**. Each of 582 glyphs retains its original monochrome outline and adds COLRv0 layers: bright pixels plus 15-unit bands at 68% brightness within each 80-unit source pixel row. The two embedded palettes match terminal blue and sign-off red. This replaces the screen-space scanline mask, keeping the dim bands aligned through typing, resizing, and sentence fades. The CSS cursor receives a matching dim-band treatment.
+
+Based on Peter Hull's VT323 under SIL OFL 1.1; original notices remain in the font and `public/fonts/OFL-VT323.txt`. Rebuild with `uv run --with fonttools==4.65.0 --with skia-pathops==0.9.2 python scripts/build-terminal-font.py`. No extra dependencies are needed to run the game.
+
+## Debris physics
+
+Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The local npm package includes WebAssembly; no runtime CDN is required. Used for vehicle debris only. [Source and license](https://github.com/dimforge/rapier).
+
+## Procedural pad teleport cue
+
+`src/audio/teleport.js` generates original deterministic stereo PCM buffers at the browser sample rate. Authored in this project; no external recording, model or asset was used. A descending FM sweep collapses into a short digital transient, followed by a rising inharmonic shimmer and short stereo echo. Departure lasts 0.28 seconds, arrival 0.62 seconds; Clu's combined transition lasts 0.78 seconds. Buffers are cached and reused; one-shot nodes disconnect on completion/reset. This is an original game sound, not a claimed recreation of a film sample. `node tests/teleport-audio.mjs` writes a standalone listening preview to `test-results/teleport-preview.wav`.
+
+## ENCOM terminal mark
+
+`public/images/encom-terminal.svg` is a project-authored vector approximation of the ENCOM mark visible in the user-supplied original-film still `docs/references/images/MCP terminal.png`. Paths and glow styling were authored locally; no external font or logo asset is loaded. The underlying film branding is not an original project design; no additional license is asserted.
+
+
+---
+
+<!-- Page: history -->
+Source: /history/
+
+---
+title: Project history
+topTitle: TRON
+subtitle: Original milestones and earlier development notes
+---
+
+[← Current implementation plan](../index.html)
+
+This archive preserves the original plans and earlier implementation notes. Later decisions in the current plan take precedence.
+
 ## Historical structured-chase plan
 
-The following records the original M0/M1 work and decisions. Its timed escape, capture and scripted encounter requirements are superseded by the simulation plan above.
+The following records the original M0/M1 work and decisions. Its timed escape, capture and scripted encounter requirements are superseded by the [current simulation plan](../index.html).
 
-Prepared 2026-09-12 from the [shared design conversation](https://chatgpt.com/share/6aa58280-6f74-83e9-a410-aa7c54032fe4). `../Goal.md` defines the experience; `../AGENTS.md` guides implementation.
+Prepared 2026-09-12 from the [shared design conversation](https://chatgpt.com/share/6aa58280-6f74-83e9-a410-aa7c54032fe4). `../../Goal.md` defines the experience; `../../AGENTS.md` guides implementation.
 
 A first playable is implemented as of 2026-09-12. Open the game at http://127.0.0.1:5173 after `npm run dev`. It includes a roughly 75-second authored canyon, procedural tank/Recognizer models, driving and collision, chase camera, positional synthesized audio, pause/restart, capture, and cannon fire. The user explicitly added shooting during implementation; three projectile hits destroy a Recognizer.
 
-Technical prototype work is substantially complete; M0/M1 are not represented as fully signed off. The supplied multi-angle film stills have now been inspected and used for a second art pass. Remaining items include final asset fidelity, actual Safari and human playtesting, and the unchecked detailed items below. See [Validation](validation/index.html) for evidence and limitations. Supporting documents: [Assets](assets/index.html) · [References](references/index.html).
+Technical prototype work is substantially complete; M0/M1 are not represented as fully signed off. The supplied multi-angle film stills have now been inspected and used for a second art pass. Remaining items include final asset fidelity, actual Safari and human playtesting, and the unchecked detailed items below. See [Validation](../validation/index.html) for evidence and limitations. Supporting documents: [Assets](../assets/index.html) · [References](../references/index.html).
 
 ## High-level roadmap
 
@@ -589,7 +832,7 @@ Aerial camera: V still toggles the overview; wheel/two-finger scrolling smoothly
 - [x] Add a straight background flight at 360 m center altitude and 24 m/s, tied to simulation time.
 - [x] Fragment only the struck Recognizer body/leg section; let the other two sections fall apart whole.
 
-See [Models](models/index.html) for source, parameters and limitations and [Validation](validation/index.html) for checks.
+See [Models](../models/index.html) for source, parameters and limitations and [Validation](../validation/index.html) for checks.
 
 ## September 13 — explicit terminal start
 
@@ -801,7 +1044,7 @@ Recognizers now burst into their 15 actual connected model blocks. Connectivity 
 ### Carrier escape shuttle — September 17
 
 - [x] Inspect supplied four-angle stills and the 2:34–2:57 escape sequence; construct an open shell model with ribbed trays, upright end blades and a single green-paneled side wall.
-- [x] Provide a standalone orbit/turntable studio at `shuttle.html`, six camera presets and GLB export. See [model notes](models/carrier-shuttle/index.html) for uncertain dimensions and hidden surfaces.
+- [x] Provide a standalone orbit/turntable studio at `shuttle.html`, six camera presets and GLB export. See [model notes](../models/carrier-shuttle/index.html) for uncertain dimensions and hidden surfaces.
 
 ### Maze music and presentation — September 17
 
@@ -961,154 +1204,6 @@ Use `scripts/codex-container login` once, then `scripts/codex-container` for fut
 - [x] Verify exact wall edges against independent ray/box intersections and inspect the authored-maze capture. User confirms the wall shadows look right after this change.
 
 September 20 teleporter flyover check: added a fixed-step moving-Recognizer regression at pursuit speed, with multiple headings and high altitude. All seven teleporter checks pass. Full-containment activation is unchanged: a 23.4 m wide aircraft has only 4.3 m of lateral center tolerance on an axis-aligned 32 m pad. A visually overlapping edge pass or an occupied destination can therefore produce no transfer; the reported flyover has not been reproduced as a trigger defect.
-
-
----
-
-<!-- Page: assets -->
-Source: /assets/
-
----
-title: Assets
-subtitle: Model, sound, and dependency inventory
----
-
-The tank and Recognizers are user-supplied Sketchfab GLBs; Sark’s carrier is a user-supplied JIHS Collada model converted locally to GLB. All are served locally with the application. Maze geometry is generated locally; vehicle/cannon audio uses short edits from the user-supplied film clip, with synthesized fallback and impact effects. No purchase was made. See [Models](../models/index.html) for source credits and adapter details.
-
-| Asset | Source / author | Format and size | Use / attribution | Status |
-| --- | --- | --- | --- | --- |
-| Tank | arabinowitz / Sketchfab | GLB, 1.82 MB | Embedded Standard license; creator listing additionally says editorial purposes only | Imported and active |
-| Recognizer | Shriker1 / Sketchfab | GLB, 128 KB | Embedded Sketchfab Standard license | Imported and active |
-| Sark’s carrier | JIHS / TurboSquid; supplied by user | GLB, 6.86 MB, seven embedded textures | Listing Standard license; source readme retained | Background straight-line transit |
-| Solar Sailer | JIHS; user-supplied TurboSquid DAE/readme | Local GLB, approximately 14 MB, seven embedded textures | Readme credits Syd Mead, Jean Giraud (Moebius), and Peter Lloyd for original design; redistribution terms are not stated in the supplied readme | Periodic background transit; no deployment performed |
-| Maze slabs and surrounding grid | Fixed branching topology, oblique convex prism geometry | JavaScript / generated buffers | Original project implementation | Active |
-| Tank movement and Recognizer flight/approach | User-supplied TRON scene | Three stereo PCM WAV loops, about 0.76 MB combined | Film-derived excerpts; source/timecodes below | Active, awaiting auditory review |
-| Cannon | User-supplied TRON scene | Stereo PCM WAV, 102 KB | Film-derived excerpt | Active |
-| Impact, destruction, missing-file fallback | Project Web Audio synthesis | Short oscillator/noise envelopes | Original synthesized effects | Active |
-| UI and favicon | Project HTML/CSS; inline favicon path | Local Interface Raster terminal font derived from VT323; system fonts elsewhere | Original project implementation | Active |
-| Terminal font | Peter Hull / [VT323 in Google Fonts](https://github.com/google/fonts/tree/main/ofl/vt323) | Local `public/fonts/VT323-Regular.ttf` | SIL Open Font License 1.1; retained in `public/fonts/OFL-VT323.txt` | Active |
-| Film reference stills | User-supplied screenshots from the linked 1982 sequence | 15 PNGs in `docs/references/images/` | Study references; not used as runtime art | Inspected |
-| Three.js | [Three.js](https://github.com/mrdoob/three), installed 0.186.0 | npm dependency, lockfile pinned | MIT; upstream license remains in package | Active |
-| colvmn | [Steve Dekorte / colvmn](https://github.com/stevedekorte/colvmn) | Local documentation engine checkout | MIT; upstream license retained | Active for docs only |
-
-## Evaluated external candidates
-
-| Candidate | Creator | Published details | Decision |
-| --- | --- | --- | --- |
-| [Tank — Tron (1982)](https://sketchfab.com/3d-models/tank-tron-1982-b730d118f54b4a868339a4ddf11e09a7) | arabinowitz | Listing describes Blender/FBX files, about 58k triangles, free download, and editorial use. The listing's generic “Free Standard” label should not be substituted for reviewing the actual terms. | User supplied the GLB; imported and browser-tested. |
-| [TRON Immersive](https://www.behance.net/gallery/236722545/TRON-Immersive) | Steve Talkowski | Creator presents tank and Recognizer work with embedded viewers. | Reference/candidate only; no download permission or usable distributable asset established. |
-
-No paid candidate was selected and no purchase was made. Both GLBs load with GLTFLoader and uniform normalization; the original files remain unmodified.
-
-The TRON names and film designs identify the user's reference. This inventory does not claim ownership of the underlying film property or permission to redistribute film assets.
-
-
-## Historical replacement model shortlist — September 12
-
-The user judged the second procedural pass closer but still inaccurate and requested internet models. Inspected the four public preview images below and queried Sketchfab's official metadata API. All four are marked downloadable. At the time of this initial search, no source mesh had been acquired or imported: an unauthenticated request to the official tank download endpoint returned `Authentication credentials were not provided.` The user subsequently supplied the two active GLBs above. Preserve the source archive and included license when downloading.
-
-**Recommended first: Shriker1's pair.** The tank preview has a much better broad hull, offset canopy, triangular cannon supports, collar and recessed muzzle. The Recognizer preview has the articulated-looking shoulder construction, substantial body depth and inward feet. Both are described by the creator as custom-made and game-ready. That description and the polygon counts make them promising for the browser; materials, movable parts and final fidelity still need inspection in the source files.
-
-| Model | Creator | Triangles | Published terms / formats |
-| --- | --- | --- | --- |
-| [Tron 1982 Tank](https://sketchfab.com/3d-models/tron-1982-tank-99f4ae8ce97445e8909c02d7481d12d9) | Shriker1 | 9,648 | Free Standard per official metadata; source formats not verified |
-| [Tron 1982 Recognizer](https://sketchfab.com/3d-models/tron-1982-recognizer-ecb52608275c40a28d7d9dda1aed54f3) | Shriker1 | 1,854 | Free Standard per official metadata; source formats not verified |
-| [Tank — Tron (1982)](https://sketchfab.com/3d-models/tank-tron-1982-b730d118f54b4a868339a4ddf11e09a7) | arabinowitz | 57,976 | Blender/FBX; listing says editorial use only |
-| [Recognizer — Tron (1982)](https://sketchfab.com/3d-models/recognizer-tron-1982-897ad9061ab34a9885b8e874fe8a17e0) | arabinowitz | 8,080 | Blender/FBX; listing says editorial use only |
-
-Sketchfab labels all four Free Standard; the arabinowitz descriptions additionally restrict use to editorial purposes. The current license page could not be fetched, so these are recorded listing terms, not completed license clearance. Metadata snapshots and public promotional previews are retained in `candidates/` for comparison; they are not runtime assets.
-
-### Shriker1 tank preview
-
-![Shriker1 tank promotional preview](candidates/99f4ae8ce97445e8909c02d7481d12d9.jpeg)
-
-### Shriker1 Recognizer preview
-
-![Shriker1 Recognizer promotional preview](candidates/ecb52608275c40a28d7d9dda1aed54f3.jpeg)
-
-### arabinowitz alternatives
-
-![arabinowitz tank promotional preview](candidates/b730d118f54b4a868339a4ddf11e09a7.jpeg)
-
-![arabinowitz Recognizer promotional preview](candidates/897ad9061ab34a9885b8e874fe8a17e0.jpeg)
-
-Also found [JIHS's TRON 1982 Tank on TurboSquid](https://www.turbosquid.com/3d-models/3d-tron-1982-tank-1811154), listed at $25, 49,152 polygons, with FBX/OBJ/glTF among the offered formats and an editorial-use restriction. It is a paid fallback; no purchase was made.
-
-
-The simulation revision still uses the procedural vehicle models. Recognizers are uniformly scaled by 0.5 in the adapter; collision uses the same scale. Five instances and five independent spatial sound voices replace the single scripted craft. Maze roof/side geometry is generated from the same clipped convex polygons used by collision and visibility.
-
-## Requested film audio pass
-
-Source: https://www.youtube.com/watch?v=kKBuOtedf3E — “Tron (1982) - Clu infiltrates the Encom system,” uploaded by vson8, 199 seconds. Metadata was retrieved on September 13; both audio-only Opus and standard MP4 media downloads returned HTTP 403. No film audio was extracted or added. Existing synthesized effects remain active. Await a local copy before isolating tank movement, cannon shots and Recognizer motion.
-
-
-## Local video sound extraction — September 13
-
-The user supplied `docs/references/videos/1982 tron clu scene.mp4` (187.48 s, 44.1 kHz stereo AAC). This resolved the earlier YouTube download block. Selected cuts using exterior action frames and signal/spectrum inspection. Source audio is a mixed film soundtrack; these edits are not isolated production stems. No direct auditory assessment was available in this run, so speech/score contamination and subjective fidelity remain for user audition.
-
-| Runtime sample | Local video in/out | Processing |
-| --- | --- | --- |
-| tank-drive.wav | Spectrum derived from 10.75–11.45 s | 5.94-second periodic engine bed reconstructed from the filtered film sample’s averaged spectrum. Randomized phases remove recurring source transients; original time-domain stereo is replaced by a compact emitter panned in-game. Rebuild with `scripts/smooth-tank-loop.py`. |
-| recognizer-flight.wav | 124–126 s | 45 Hz high-pass, 6.5 kHz low-pass, 120 ms loop crossfade |
-| recognizer-approach.wav | 126.20–128.40 s | Same filters/crossfade; mixed into pursuit and attack |
-| cannon.wav | 121.38–121.76 s | 65 Hz high-pass, 12 kHz low-pass, 3 ms attack/70 ms release fades |
-
-All retain two channels, receive DC removal and peak normalization to 0.72, and are stored in `public/audio/`. Rebuild with `python3 scripts/extract-sfx.py` (ffmpeg required). `public/audio/sources.json` records the input SHA-256, cuts and processing. Credits: TRON (1982) film soundtrack, supplied by the user for this local study; no redistribution license has been established. The full reference video is excluded from the static build.
-
-[Sound audition](http://127.0.0.1:5173/audio.html) provides individual loops and a moving stereo Recognizer using the game's HRTF emitter. Each craft has two world-space emitters 4.8 m apart, independent loop offsets, distance attenuation, wall low-pass/attenuation and bounded Doppler playback-rate shifts. The listener follows Clu with camera orientation, rather than moving hundreds of meters away with the aerial camera.
-
-Tank revision: the user identified dialogue in the original 70.80–73.20 s cut. Replaced it with a short opening texture from 10.75–11.45 s (0.58 s after crossfade), chosen using the opening frames and spectrum. Listening confirmation remains with the user. Recognizer and cannon WAV hashes are unchanged.
-
-
-Cannon revision: shortened the film cut to 0.38 s around the first firing onset to reduce neighboring rapid-fire content, widened the passband, and removed random playback pitch. Inspected frames at 120.8–123.2 s and measured waveform onset at 121.38 s. This is still mixed film audio; listening approval is pending. Terminal clicks and access beep are synthesized approximations, not extracted movie sounds.
-
-
-Camera-listener revision: all spatial listening now uses the camera, including its height and movement. The tank has an 18 m reference-distance stereo emitter, so zooming away attenuates its sound. This supersedes the earlier Clu-anchored listener description. The opening tracks Clu's live position while it starts at full speed; releasing W ends the initial throttle.
-
-
-## Opening music
-
-User-supplied `music/Tron/03 We've Got Company.mp3` plays once from the beginning when a run starts, including the opening zoom. It pauses with standby, resumes from its current position, follows the sound mute/master volume, and restarts on R. A single streaming media element feeds the audio mix at 55% gain. Vite packages this selected track; the documentation copy excludes the rest of the supplied album. Source: user's local TRON film soundtrack collection; no new redistribution license established.
-
-
-Terminal keys now use four stereo excerpts from the first two seconds of the supplied local video, starting at 0.885, 1.395, 0.995 and 1.585 seconds. The latest revision trims each to 60 ms, lowers the low-pass cutoff to 6.5 kHz, and adds an early decay with a smooth 30 ms release to suppress the harsh trailing transient reported by the user. Samples alternate without immediate repeats; synthesized ticks remain a loading/failure fallback. The access beep remains synthesized. Audio context resume and music play are both requested directly during Return's input event, before any asynchronous yield.
-
-## Carrier rumble
-
-`scripts/extract-carrier-sfx.py` reproducibly extracts 116.2–120.2 seconds of the user-supplied carrier/solar-sailer video. `public/audio/carrier-rumble.wav` is stereo PCM, 44.1 kHz, 3.6 seconds after a 0.4-second loop crossfade, DC removal, 35–900 Hz filtering and peak normalization to 0.65. Provenance/hash and processing are in `public/audio/carrier-source.json`. This is a mixed film soundtrack excerpt, not an isolated vehicle stem. Auditory approval remains pending; the assistant has not listened to the sample. In-game it uses stereo HRTF placement, camera distance attenuation, distant low-pass filtering and Doppler following the carrier's world position. The master mute/standby gate applies.
-
-
-September 14: eight ground enemies reuse arabinowitz's supplied tank GLB, normalized geometry, surface materials and cannon sample. Each clone has independent turret/recoil transforms and red insignia. Source assets are unchanged; no additional models were downloaded.
-
-### September 14 Recognizer sound revisions
-
-Re-cut `recognizer-flight.wav` from exactly 2:04–2:06 of the local `1982 tron clu scene.mp4`; stereo PCM with the existing 120 ms loop join (1.88-second playback). Added `recognizer-explosion.wav` from 3:06–3:07, a one-second stereo effect with short edge fades, 45 Hz high-pass and 12 kHz low-pass. Recognizer destruction plays it through two world-space HRTF emitters; tank destruction retains its existing sound. Both excerpts are available on `/audio.html`. These remain mixed film soundtrack excerpts, not isolated sound-effect stems.
-
-Correction: the 3:06–3:07 selection contained terminal typing. `recognizer-explosion.wav` now uses video time 1:47.84–1:48.69 (0.85 seconds), aligned with the visible explosion before the cockpit cut. Recognizer excerpts are now extracted from the user-supplied M4A. Full decoded PCM comparison found that M4A equals the video audio after trimming its first 2112 frames (47.89 ms); the extraction script compensates for this offset and records source/seek per sample. The game and audition page request version 2 of the explosion to bypass the previous cached audio.
-
-The supplied `Recognizer Explosion.m4a` edit matches video time 113.207 seconds (normalized waveform correlation 0.997). `scripts/clean-recognizer-explosion.py` uses surrounding soundtrack context and shared-stereo harmonic/percussive masks to suppress sustained tonal ridges. It generates original/balanced/strong audition WAVs under `public/audio/studies` and a provenance manifest. Requires NumPy/SciPy (installed only in a temporary environment). This is approximate suppression: overlapping cannon/explosion energy cannot be reliably separated by this method, and stronger masking loses transient detail. Listening comparison is pending.
-
-## Sound resource library
-
-[Open the sound library](../sounds/index.html) for downloaded Syna-Max recreation previews, existing film edits, cleanup candidates, verified stock-effect catalog IDs and vendor metadata exports. The shelf preserves inactive resources, author/source links and licensing notes for this personal-use project. `docs/sounds/catalog.json` is the editable inventory; `scripts/build-sound-library.mjs` regenerates its page during the docs build. Public MP3 previews are clearly distinguished from original downloads and unacquired commercial-library audio.
-
-### MCP closing dialog
-
-`docs/references/dialog/END OF LINE.mp3` is the user-supplied MCP “END OF LINE” film dialog (1.28-second MP3). It plays once as the terminal starts typing the final sign-off. Imported directly through Vite and decoded into Web Audio; no edits to the source recording. Source: Disney's 1982 TRON, supplied by the user for this fan tribute.
-
-### Embedded terminal raster font
-
-`public/fonts/InterfaceRaster-Regular.ttf` is a modified VT323 font, renamed **Interface Raster**. Each of 582 glyphs retains its original monochrome outline and adds COLRv0 layers: bright pixels plus 15-unit bands at 68% brightness within each 80-unit source pixel row. The two embedded palettes match terminal blue and sign-off red. This replaces the screen-space scanline mask, keeping the dim bands aligned through typing, resizing, and sentence fades. The CSS cursor receives a matching dim-band treatment.
-
-Based on Peter Hull's VT323 under SIL OFL 1.1; original notices remain in the font and `public/fonts/OFL-VT323.txt`. Rebuild with `uv run --with fonttools==4.65.0 --with skia-pathops==0.9.2 python scripts/build-terminal-font.py`. No extra dependencies are needed to run the game.
-
-## Debris physics
-
-Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The local npm package includes WebAssembly; no runtime CDN is required. Used for vehicle debris only. [Source and license](https://github.com/dimforge/rapier).
-
-## Procedural pad teleport cue
-
-`src/audio/teleport.js` generates original deterministic stereo PCM buffers at the browser sample rate. Authored in this project; no external recording, model or asset was used. A descending FM sweep collapses into a short digital transient, followed by a rising inharmonic shimmer and short stereo echo. Departure lasts 0.28 seconds, arrival 0.62 seconds; Clu's combined transition lasts 0.78 seconds. Buffers are cached and reused; one-shot nodes disconnect on completion/reset. This is an original game sound, not a claimed recreation of a film sample. `node tests/teleport-audio.mjs` writes a standalone listening preview to `test-results/teleport-preview.wav`.
 
 
 ---
@@ -1531,6 +1626,52 @@ Aircraft and tanks share a budget of one newly generated tactical candidate set 
 Recognizers may deliberately land to block Clu’s path and create a crush opportunity for an ally. Landing to rest is also acceptable. These are approved future maneuver choices, not yet implemented options in the candidate list. A stationary grounded unit should be evaluated by its intent and progress, rather than automatically classified as stuck. Coordination must continue to use observed or communicated information.
 
 
+## Confined stomp positioning — September 23
+
+The game now generates strike destinations using nearby wall-edge headings and a bounded two-ring search in sixteen directions around the predicted contact. This gives JEV feasible choices in angled corridors and beside walls, without changing the input/output contract. Offsets stay inside the existing attack trigger with an arrival margin. Execution settles within 0.35 m and brakes yaw before descent, retaining full collision clearance, fresh visible observations, lead/support coordination and the existing damage radius. Local tactical control uses the same candidates and controller. Classic is unchanged. Landing searches run only for visible contacts and remain subject to the shared per-tick planning budget.
+
+
+## Persistent attack support — September 23
+
+The coordination layer recruits nearby informed aircraft and retains their assignments while they move to support positions, within radio contact and the existing target-memory lifetime. The lead retains exclusive stomp authority; satellites no longer abandon support merely because they have moved beyond 140 m or lost personal line of sight. One satellite is designated spotter and the others cover separated ground-connected branches near the recorded contact. If no branch is available, distinct overhead positions provide a fallback. Goals are cached until the formation or recorded target shifts; roles and goals appear in the existing `attackAssignment` snapshot. These are positioning roles, not new weapons or permission to see hidden Clu. Existing lead leases, blocked/dead lead handoff, fresh-sighting attack gates and wounded retreat remain active.
+
+
+### Progress-aware lead renewal — September 23
+
+A leader now renews its twelve-second lease after five meters of measurable combined horizontal closure and descent toward the recorded target. Previously the fixed deadline swapped two approaching aircraft between lead and support, repeatedly cancelling the approach. This renewal is local coordination shared by Tactical and JEV, not a change to the provider contract. Blocked, destroyed, ineligible and genuinely stalled leaders still hand off.
+
+## Pursuit attack execution and runtime toggle — September 23
+
+N switches between JEV and local tactical enemy control without restarting the round, aborting pending requests. Turning JEV off also disengages Clu autoplay; U explicitly enables JEV again when starting autoplay. The stats box shows the toggle and its state. Request/cost totals remain for the current round.
+
+Pursuit now ends at an available wall-aligned stomp pose. Local execution can initiate a stomp during pursue, strike or low-approach when the actual pose is safe; it does not depend on the provider selecting strike. Leadership, healthy condition, fresh personal sight, cooldown, angular braking, predicted landing drift and full swept clearance still gate commitment. Supporting and retreating units cannot take this opportunity. The request/response schema is unchanged.
+
+### Smarter stomps with original motion — September 23
+
+- [x] Preserve the earlier film-like movement: thrust 24.2 m/s², yaw cap 0.62 rad/s, yaw acceleration 0.8 rad/s², ordinary drag/braking, 1.3-second fold, and 85 m/s² powered stomp descent. Remove all close-attack performance overrides. Cruise/max speeds are unchanged.
+- [x] Improve decisions rather than physics: approach overhead before descending, retain a progressing attack lead, align for nearby walls, and allow a healthy pursuing lead to take a safe attack opportunity.
+- [x] Brake as soon as the predicted stopping path provides a valid stomp, rather than insisting on an exact waypoint or redundant final heading. Keep fresh personal sight, cooldown, drift prediction and swept wall clearance checks.
+- [x] Stomp drop/landing contact with debris cannot damage the attacker; normal flight and weapon hits remain vulnerable.
+- [x] Double horizontal cannon scatter: Clu ±1.2°, enemies ±2.4°. Level aim has zero vertical scatter; gunner shots remain exact. Deliberate vertical auto-aim to airborne targets is retained.
+- The user’s motion-fidelity correction supersedes both the universal four-second stomp deadline and the subsequent three-second full-rotation tuning. Regression cases check successful attacks from eight headings without exceeding original thrust/yaw limits, not an artificial deadline.
+
+### Superseded turn-speed experiment — September 23
+
+Historical experiment, now superseded by restoring original motion above: maximum yaw rate is 120°/s (one revolution per three seconds at full speed), with 240°/s² acceleration/braking and the normal smooth heading response. All flight uses the same limit, including close attacks. Close-attack speed reduces when a turn needs a tighter radius, avoiding repeated orbits. A turn from rest includes acceleration and settling time, so a backwards-facing attacker can exceed the four-second stomp target. Eight-heading tests verify bounded yaw rate/acceleration and successful stomps; aligned attacks retain the four-second check.
+
+### Helicopter-style Recognizer translation — September 23
+
+Recognizers can thrust sideways and backward independently of yaw, in local/JEV navigation, Classic navigation and carrier escort flight. The acceleration vector shares the original 24.2 m/s² budget across all directions (no diagonal bonus); drag, braking, speed caps and angular inertia remain unchanged. Tight-corridor planning includes lateral/reverse translations with swept hull clearance. A wall-aligned hull can slide into position without first turning broadside. Existing pursuit-to-stomp opportunity checks and support assignments remain active.
+
+### Lead and intercept approaching Clu — September 23
+
+- [x] Choose a reachable crossing ahead of observed motion, accounting for approach, normal acceleration/braking, folding and fall time. Bounded prediction uses recorded position/velocity and stops at mapped obstructions.
+- [x] Hold the chosen crossing while sightings follow the predicted path, instead of continually moving it farther ahead. Changed velocity, lost sight, injury or an expired interception still permits replanning. JEV candidate facts include approach time and predicted impact time.
+- [x] Keep the lead's attack plan when only supporting positions change. Supporting units still refresh their own routes.
+- [x] Preserve a useful wall-aligned facing during overhead translation. Start folding while Clu approaches; commitment still requires fresh personal sight and a physically clear descent, and a committed drop cannot track an evasive maneuver.
+- All existing speeds, accelerations, fold/drop timing and health rules remain unchanged.
+
+
 ---
 
 <!-- Page: models -->
@@ -1836,6 +1977,14 @@ Source: /references/
 title: References
 subtitle: Visual direction and source images
 ---
+
+## Central labyrinth trace — September 23
+
+The user supplied [Big labyrinth](images/mazes/Big%20labyrinth.png) as the fifth maze blueprint. [Trace overlay](labyrinth-trace.svg) shows the extracted contours against the source. Blue regions become walls; dark regions remain open. The image yields 116 wall islands and three interior holes, simplified to a one-pixel contour tolerance, then scaled at 2.4 m/pixel with 54 m walls. This keeps the finer passages usable by tanks while preserving the circular court.
+
+`src/levels/labyrinth-outlines.js` contains the committed contour data. To retrace the PNG, run `scripts/trace-labyrinth.py` in a Python environment with `opencv-python-headless`. Normal builds require no Python: `npm run docs` regenerates the SVG from committed outlines. Both blueprint mazes share `src/levels/outline-maze.js` for collision and triangulation.
+
+
 
 ## Fixed reference studio
 
@@ -2353,6 +2502,20 @@ Source: /validation/
 title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
+
+## Central labyrinth follow-up — September 23
+
+`npm test`: 276 passed after fixed courtyard beam placement, eight interior tank spawns and six air patrol spawns. Four layout seeds verify counts, interior regions, beam coordinates and clearance. Central tank spawn connectivity now targets the courtyard with a 40,000-node offline budget; using the old outer-maze exit budget rejected valid deep-interior positions.
+
+`node tests/wall-shadow-stability.mjs` passed in headless Chrome on macOS: zero dropped shadow pixels across 81 combinations of wall orientation, world offset and camera position/jitter, compared with the same clipped geometry without depth testing. `node tests/labyrinth.mjs` passed five-maze browser startup and geometry rendering. Safari at the user's reported viewpoint still needs visual confirmation.
+
+## Central labyrinth — September 23
+
+On the development Mac, `npm test` passed all 276 tests. Added checks compare roof triangle area against outlines minus holes, sample collision/occupancy agreement throughout the blueprint, verify an unobstructed central court, and check five-site separation, patrols, five beams and twenty transport pads across seeds 0, 42, 1982 and 99999. A ground route from the southern exterior to the central court succeeds with tank clearance (164 waypoints using 12 m search cells and a larger offline search budget); this establishes connectivity, not live autoplay performance through every passage.
+
+`node tests/labyrinth.mjs` passed in headless Chromium on macOS at 1448×1086: normal game startup includes five beams/twenty pads, with no page errors. Inspected top-down, oblique and full-layout renders in `test-results/labyrinth-top.png`, `labyrinth-3d.png` and `five-mazes.png`. The contours match the supplied reference, roof holes remain open, and the center labyrinth fits without moving the outer mazes. Production/documentation build and `git diff --check` passed. Browser play feel and sustained large-maze AI performance remain for user review.
+
+
 
 ## Pursuit frame pacing — September 22
 
@@ -3296,3 +3459,57 @@ September 23 carrier panel refinement: Chrome materialization checks passed afte
 ## Spotlight surface reach — September 23
 
 `node --test tests/alertness.test.js`: 11 passed, including every ribbon endpoint at 400 m altitude reaching the ground or a raised clipping surface. `node tests/searchlights.mjs`: Chrome headless on macOS passed rendering, wall/floor clipping, state visibility and pause checks without browser errors. Detection limits are unchanged.
+
+## Confined stomp positioning — September 23
+
+On macOS, `npm test` passed all 249 tests. New cases cover three oblique wall orientations, close-wall offsets, tight corridors, and a complete collision-free stomp in a 10.8 m corridor rotated 0.37 radians. Existing wall-side, moving-turn, information isolation and attack tests remain passing. `node tests/tactical-browser.mjs` passed in headless Chrome: wall-side drop, AI mode changes, no-key fallback, pause/reset and Classic isolation. Inspected `test-results/tactical-wall-descent.png`; this is a small aerial fixture, not a general approval of all driving/attack feel. `node scripts/benchmark-enemy-pursuit.mjs` measured simulation-step p95 0.59 ms, worst 17.83 ms on this run (not a browser frame-rate claim). Landing search remains under the shared planning admission budget. Physically impassable gaps remain unsupported.
+
+## Surface impacts, support roles and victory — September 23
+
+On macOS, `npm test` passed all 256 tests before the final additional projectile-event test; `node --test tests/surface-impact.test.js` then passed all five impact tests, including both player and enemy wall shots. Formation coverage includes six recognizers, separated goals, retained satellite assignment beyond 140 m, support without personal sight, stale-memory release and existing leader handoff. The pursuit benchmark measured p95 0.35 ms/worst 15.67 ms simulation steps on this run, not a browser FPS measurement.
+
+Headless Chrome checks passed: `node tests/surface-impacts.mjs` (surface orientation, camera independence, shader compilation and cleanup), `node tests/victory.mjs` (all-blue victory, exact text, frozen simulation, Return to credits/music without detachment, restart), `node tests/death-terminal.mjs` (existing fatal-hit terminal/music/signoff flow), and `node tests/tactical-browser.mjs` (wall-side stomp, modes, fallback, pause/reset). Inspected `surface-impact-wall.png`, `victory-terminal.png`, and `victory-credits.png` under `test-results`. Browser music state/playback was checked; no claim of an auditory review. Rings use existing projectile collision coverage, with rendered mesh normals for registered vehicle hits; this does not introduce projectile collision for scenery that was previously noncollidable.
+
+## Victory printer pacing — September 23
+
+Use a monotonic clock, stable per-line DOM nodes and at most one new character per rendered frame. The rate is now 45 characters/second; a stalled frame cannot dump a word-sized backlog. Skip the hidden 3D scene while the victory page is open. `node --test tests/victory.test.js` passed, including a two-second synthetic stall, one-character updates, unchanged completed lines and restart. `node tests/victory.mjs` passed in both headless Chrome and workspace-installed WebKit: early/late rates were 45.00/44.99 and 45.06/44.98 characters/second respectively. Exact text, credits/music transition, Shift+8 preview and restart checks passed; build passed. A browser rendering below the target character rate can print more slowly rather than batch characters.
+
+
+## Two-recognizer approach regression — September 23
+
+A deterministic local encounter with two healthy aircraft 120 m to either side of stationary Clu failed to complete a stomp after 120 simulated seconds before the fix. Progress-based lease renewal completed it in 24.27 seconds. `node --test tests/escort-debris.test.js tests/tactical.test.js` passed all 32 tests, including a 45-second completion bound, stable lead, single active strike, blocked-lead handoff and stalled-lead expiry. `node tests/tactical-browser.mjs` passed in headless Chrome (wall-side attack, AI modes, fallback, pause/reset). The reported live JEV session itself was not captured; the reproduced local-controller failure is fixed.
+
+Safari follow-up: victory text now appends one immutable `.printer-character` element per glyph, grouped into stable lines. Printing never reads bounding boxes, offset/client/scroll dimensions, or computed styles; normal browser layout is still necessary. Targeted tests passed, including glyph-node structure and one-character updates. Headless WebKit measured 45.19 characters/second early and 44.98 late, with victory/credits/restart checks passing. Build passed. This automation has not reproduced the slowdown reported in the user's Safari window, so the visible Safari result still needs confirmation.
+
+## Pursuit stomp and JEV toggle — September 23
+
+- `node --test tests/tactical.test.js tests/escort-debris.test.js`: 34 passed. Simulated accepted provider pursuit choices complete collision-free stomps in an oblique 10.8 m corridor and a two-aircraft full-session encounter with one active attacker.
+- `npm test`: 260 passed.
+- `node tests/jev-toggle.mjs`: headless Chrome on macOS passed N on/off while paused without advancing/restarting the round, repeat suppression, autoplay disengagement on disable, and U re-enabling JEV. Provider requests stubbed; no live JEV quality claim.
+- Actual interactive flight and live-provider choice quality remain for play review.
+
+## Four-second stomp acceptance — September 23
+
+- `npm test`: 269 passed, including 32 close-stomp cases (eight headings × local/pursue/strike/low-approach), the real five-unit starting formation, tight oblique corridors, no stomp self-damage from debris, bounded repeatable cannon spread, and zero vertical enemy scatter for level aim.
+- Close-range deadline assumes a healthy aircraft starting at rest at 80 m altitude, stationary observed Clu 48 m away in open space, and a ready attack. Simulated provider responses exercise accepted plans, not live JEV policy quality.
+- `node tests/stomp-browser.mjs`: headless Chrome/macOS, actual opening formation, simulated accepted JEV low-approach/pursue replies, starting throttle released. Rendered drop and stomp completed at 11.0 seconds from encounter start (initial separation exceeds 300 m); attacker health remained 3. Capture: `test-results/opening-stomp.png`. No page errors.
+- `npm run build` passed; existing bundle-size advisory remains. `git diff --check` passed.
+
+## Three-second full-speed turning limit — September 23
+
+- Removed the close-attack yaw override. Normal flight now caps yaw at 2π/3 rad/s with 4π/3 rad/s² acceleration, smooth braking, and speed reduction for tight approach turns.
+- `npm test`: 269 passed. Eight initial headings across local and simulated JEV choices complete stomps while respecting rate/acceleration bounds; only initially aligned attacks retain the four-second deadline assertion. This supersedes the earlier all-heading four-second acceptance.
+- `npm run build` and `git diff --check` passed. Rendered turning feel has not been rechecked in this change; user play review remains.
+
+## Original motion, helicopter translation and ENCOM mark — September 23
+
+- `npm test`: 271 passed. Directional thrust verifies pure lateral/reverse movement without yaw, shared diagonal acceleration budget, and unchanged velocity limits. Corridor search verifies lateral travel with a fixed wall-aligned hull. Eight-heading attacks respect original yaw and acceleration limits.
+- `node tests/victory.mjs`: headless Chrome/macOS passed opening/victory/credits ENCOM visibility, victory printer pacing (~45 characters/s), terminal lifecycle and restart. Inspected `test-results/terminal-encom.png`: lower-right lavender outline and glow match the reference treatment. Logo is a local project-authored SVG approximation.
+- Before adding independent translation, `node tests/stomp-browser.mjs` verified the restored original flight limits completed the rendered opening stomp at 13.23 simulated seconds; attacker retained health 3. Provider responses were simulated.
+- After independent translation: `node tests/stomp-browser.mjs` passed the rendered opening at 13.27 simulated seconds, attacker health 3, accepted simulated JEV plans, and no page errors.
+
+## Approaching-target stomp interception — September 23
+
+- `npm test`: 274 passed. Local and simulated JEV pursuit choices intercept Clu travelling at 22 m/s from 140 m away, with lateral offsets 0/20/40 m. Tests require fold commitment while Clu remains more than 40 m away, successful impact within eight seconds of the encounter, and no attacker health loss. Local measured impacts: 5.02/5.60/6.18 seconds; no movement tuning changes.
+- Regression verifies holding a crossing during expected target motion and replanning immediately for a newly observed turn. Existing sight-loss, wall-clearance and post-commit miss tests remain covered.
+- `node tests/stomp-browser.mjs --approaching`: headless Chrome/macOS passed with accepted simulated JEV responses, CLU driving toward an offset aircraft, fold beginning more than 35 m ahead, and successful impact at 5.92 simulated seconds; attacker health remained 3. Capture: `test-results/approaching-stomp.png`. No page errors.

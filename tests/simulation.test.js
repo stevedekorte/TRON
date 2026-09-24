@@ -122,14 +122,15 @@ test('converging aircraft retain physical clearance at the reduced model scale',
 
 
 test('crush commits to a sighting, folds, drops, misses moving tanks and recovers',async()=>{
-  const {beginCrush,advanceCrush,resolveCrush}=await import('../src/simulation/crush.js');
+  const {beginCrush,advanceCrush,resolveCrush,CRUSH}=await import('../src/simulation/crush.js');
   const e={x:-1800,s:-1800,y:80,yaw:0,canSee:true,memory:{x:-1800,s:-1800,seenAt:0},fold:0};
   beginCrush(e,0);assert.equal(e.attack.phase,'fold');
   const run={x:-1800,s:-1800,events:[],crushed:false};
-  for(let i=1;i<=60;i++)advanceCrush(e,i/60,1/60);
+  const foldFrames=Math.floor(CRUSH.foldSeconds*60/2);
+  for(let i=1;i<=foldFrames;i++)advanceCrush(e,i/60,1/60);
   assert.equal(e.y,80);assert.ok(e.fold>0&&e.fold<1);
   run.x+=30; // Escaping after commitment cannot steer the falling craft.
-  for(let i=61;i<=300;i++){advanceCrush(e,i/60,1/60);resolveCrush(run,e);}
+  for(let i=foldFrames+1;i<=300;i++){advanceCrush(e,i/60,1/60);resolveCrush(run,e);}
   assert.equal(run.crushed,false);assert.equal(e.x,-1800);assert.ok(e.y>11);
   for(let i=301;i<=700;i++)advanceCrush(e,i/60,1/60);
   assert.equal(e.attack,null);assert.equal(e.fold,0);
@@ -168,12 +169,12 @@ test('flight adds only forward thrust and carries momentum through a turn',async
   assert.equal(resting.vx,0);assert.equal(resting.vs,0);
 });
 
-test('avoidance changes heading without adding sideways propulsion',async()=>{
+test('avoidance can translate away from a neighbor independently of heading',async()=>{
   const {navigate}=await import('../src/simulation/recognizers.js');
   const e={...createRecognizers()[0],x:-1800,s:-1800,y:80,yaw:0,vx:0,vs:0,memory:null,goal:{x:-1800,s:-1400},goalUntil:100};
   const other={...e,id:1,x:e.x+30};navigate(e,0,.1,[e,other]);
   assert.ok(e.yaw>0);assert.ok(Math.hypot(e.vx,e.vs)>0);
-  assert.ok(Math.abs(e.vx*Math.cos(e.yaw)+e.vs*Math.sin(e.yaw))<1e-10);
+  assert.ok(e.vx<0);assert.ok(e.vs>0);
 });
 
 test('crush waits for a slow approach and preserves residual drift',async()=>{

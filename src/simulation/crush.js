@@ -6,7 +6,7 @@ import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor} from './flight.js
 import {clamp,RECOGNIZER_SCALE} from '../game/config.js';
 
 // Meters and seconds; model-local distances track the rendered scale.
-export const CRUSH=Object.freeze({foldSeconds:1.3,dropAcceleration:85,recoverSpeed:22,cooldown:7,clearance:20*RECOGNIZER_SCALE,triggerDistance:8*RECOGNIZER_SCALE,soleHeight:22*RECOGNIZER_SCALE,hitRadius:11*RECOGNIZER_SCALE});
+export const CRUSH=Object.freeze({foldSeconds:1.3,dropAcceleration:85,recoverSpeed:22,cooldown:7,clearance:20*RECOGNIZER_SCALE,triggerDistance:8*RECOGNIZER_SCALE,soleHeight:22*RECOGNIZER_SCALE,hitRadius:11*RECOGNIZER_SCALE,maxCommitYawRate:.04});
 export function stompDuration(altitude){
   return CRUSH.foldSeconds+Math.sqrt(2*Math.max(0,altitude-CRUSH.soleHeight)/CRUSH.dropAcceleration);
 }
@@ -28,6 +28,23 @@ export function stompApproach(e,now,speed){
   let target=stompTarget(e,now);
   for(let i=0;i<4;i++)target=stompTarget(e,now,Math.min(12,Math.hypot(target.x-e.x,target.s-e.s)/speed));
   return target;
+}
+
+export const STOMP_INTERCEPT=Object.freeze({horizonSeconds:12,sampleSeconds:.5,settleSeconds:.6});
+// Choose a reachable future crossing, allowing time to get there and brake.
+// The chosen point is held by the maneuver; fresh observations still decide
+// when to fold/drop, so this never authorizes an attack on stale knowledge.
+export function stompIntercept(e,now,speed){
+ const immediate=stompTarget(e,now);
+ if(!immediate||!e.canSee||Math.hypot(e.memory.vx||0,e.memory.vs||0)<2)return immediate;
+ const flight=flightFor(e),cruise=Math.min(speed,flight.acceleration/flight.drag);
+ const brakingSeconds=Math.log1p(Math.hypot(e.vx||0,e.vs||0))/(flight.drag+flight.brakeDrag);
+ for(let wait=0;wait<=STOMP_INTERCEPT.horizonSeconds;wait+=STOMP_INTERCEPT.sampleSeconds){
+  const point=stompTarget(e,now,wait),distance=Math.hypot(point.x-e.x,point.s-e.s);
+  const travel=Math.max(distance/cruise,Math.sqrt(2*distance/flight.acceleration))+brakingSeconds+STOMP_INTERCEPT.settleSeconds;
+  if(travel<=wait)return {...point,approachSeconds:wait};
+ }
+ return stompApproach(e,now,cruise);
 }
 
 export function advanceCrush(e,now,dt) {
@@ -58,7 +75,7 @@ export function advanceCrush(e,now,dt) {
   }
   return true;
 }
-export function beginCrush(e,now,oriented=false) {
+export function crushOpportunity(e,now,oriented=false) {
  const FLIGHT=flightFor(e);
  const {freePosition}=worldFor(e);
   if(supportingAttack(e)||e.stompDisabled||e.targetGone||e.attack||!e.canSee||!e.memory||now-e.memory.seenAt>.25||now<(e.nextAttack||0))return;
@@ -66,11 +83,17 @@ export function beginCrush(e,now,oriented=false) {
   const drift=(1-Math.exp(-(FLIGHT.drag+FLIGHT.brakeDrag)*duration))/(FLIGHT.drag+FLIGHT.brakeDrag);
   const landing={x:e.x+(e.vx||0)*drift,s:e.s+(e.vs||0)*drift};
   if(Math.hypot(target.x-landing.x,target.s-landing.s)>CRUSH.triggerDistance)return;
-  // A stationary target still requires a settled hover. Against a moving
-  // target, the landing prediction already includes our braking drift.
-  if(Math.hypot(e.memory.vx||0,e.memory.vs||0)<2&&Math.hypot(e.vx||0,e.vs||0)>1.2)return;
   // Conservative whole-craft clearance prevents a drop through a roof or wall.
   if(oriented?!aircraftSweepClear(e,{...e,x:landing.x,s:landing.s,y:CRUSH.soleHeight}):!freePosition(e.x,e.s,CRUSH.clearance+1))return;
+  return {target,duration};
+}
+export function beginCrush(e,now,oriented=false) {
+  const opportunity=crushOpportunity(e,now,oriented);
+  if(!opportunity)return;
+  // Finish braking with normal flight authority before committing.
+  if(oriented&&Math.abs(e.yawVelocity||0)>CRUSH.maxCommitYawRate)return;
+  if(Math.hypot(e.memory.vx||0,e.memory.vs||0)<2&&Math.hypot(e.vx||0,e.vs||0)>1.2)return;
+  const {target,duration}=opportunity;
   e.attack={phase:'fold',started:now,altitude:e.y,velocity:0,impact:false,target:{x:target.x,s:target.s},impactAt:now+duration};e.fold=0;e.state='fold';
 }
 export function resolveCrush(run,e) {

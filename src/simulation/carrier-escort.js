@@ -1,8 +1,8 @@
 import { worldFor } from '../levels/scenario.js';
-import { configFor, clamp } from '../game/config.js';
+import { configFor } from '../game/config.js';
 import { airEscortSlot, carrierFor } from '../game/carrier.js';
 import { hearingGoal } from './hearing.js';
-import { advanceFlight, advanceYaw, advanceLift, flightFor } from './flight.js';
+import { advanceFlightToward, advanceYaw, advanceLift } from './flight.js';
 import { AIR_HULL, aircraftSweepClear } from './maneuver-geometry.js';
 export const ESCORT_NAVIGATION = Object.freeze({
   memorySeconds: 38,
@@ -22,8 +22,7 @@ export function returningToCarrier(e, now) {
 }
 export function flyCarrierEscort(e, now, dt) {
   const world = worldFor(e),
-    carrier = carrierFor(world),
-    flight = flightFor(e);
+    carrier = carrierFor(world);
   const altitude = world.WALL_HEIGHT + AIR_HULL.bottom + 10;
   const before = { x: e.x, s: e.s, y: e.y, yaw: e.yaw };
   const goal = airEscortSlot(e.escortIndex, now + ESCORT_NAVIGATION.lookAheadSeconds, world);
@@ -40,21 +39,13 @@ export function flyCarrierEscort(e, now, dt) {
   const clearHeight = e.y >= altitude - 0.5;
   advanceLift(e, dt, altitude);
   advanceYaw(e, dt, clearHeight ? yaw : null);
-  const speed = Math.hypot(e.vx, e.vs);
   const desired = clearHeight
     ? Math.min(
         carrier.speed + ESCORT_NAVIGATION.airCatchupMetersPerSecond,
         Math.max(0, (carrier.speed * dx) / (d || 1) + d * 0.5),
       )
     : 0;
-  advanceFlight(
-    e,
-    dt,
-    desired
-      ? Math.min(flight.acceleration, flight.drag * desired + Math.max(0, desired - speed) * 1.4)
-      : 0,
-    desired ? clamp((speed - desired) / 5, 0, 1) : 1,
-  );
+  advanceFlightToward(e,dt,dx,ds,desired);
   if (!aircraftSweepClear(before, e, undefined, world)) {
     Object.assign(e, before, { vx: 0, vs: 0, vy: 0, yawVelocity: 0 });
   }

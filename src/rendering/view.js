@@ -1,3 +1,4 @@
+import {SurfaceImpacts} from './surface-impacts.js';
 import { createTeleportPads } from '../levels/teleporters.js';
 import { carrierFor } from '../game/carrier.js';
 import { CarrierMaterialization } from './carrier-materialization.js';
@@ -130,6 +131,7 @@ export class View {
           ...this.recognizers.map((c) => c.root),
         ])
       : null;
+    this.surfaceImpacts = new SurfaceImpacts(this.scene);
     this.breakups = new Breakups(this.scene, map, physics);
     this.connectMazeOcclusion();
     this.searchlights = new Searchlights(this.scene, this.recognizers.length, undefined, this.map);
@@ -231,11 +233,16 @@ export class View {
     this.searchlights.reset();
     this.carrierLights.reset();
     this.breakups.clear();
+    this.surfaceImpacts.clear();
     this.particles.length = 0;
   }
 
   event(event) {
     if (!['hit', 'destroyed'].includes(event.type)) return;
+    if(event.type==='hit'){
+      const craft=event.subject==='tank'?this.tank:event.subject==='enemyTank'?this.enemyTanks[event.id-100]:this.recognizers.find(c=>c.id===event.id);
+      this.surfaceImpacts.spawn(event,craft?.root);
+    }
     if (event.type === 'destroyed' && event.subject === 'tank') {
       this.tank.turret.rotation.y = event.turretYaw;
       this.breakups.spawn(this.tank, event);
@@ -507,6 +514,7 @@ export class View {
     }
     for (const burst of this.breakups.bursts)
       burst.optical?.mesh.quaternion.copy(this.camera.quaternion);
+    this.surfaceImpacts.update(mode==='running'?dt:0);
     this.horizon.update(this.camera, !preview && !this.cameraRig.referenceCamera);
     this.renderer.info.reset();
     this.mazeShadows.update(this.renderer);
@@ -574,6 +582,7 @@ export class View {
     this.recognizerTemplate.traverse((o) => o.material?.dispose());
     this.carrier?.userData.rez?.dispose();
     this.breakups.dispose();
+    this.surfaceImpacts.dispose();
     this.clouds?.dispose();
     disposeSceneResources(this.scene);
     for (const pass of this.composer.passes) pass.dispose?.();

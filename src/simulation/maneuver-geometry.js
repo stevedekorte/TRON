@@ -42,7 +42,7 @@ export function aircraftSweepClear(a,b,walls=null,world= a.world || b.world || D
  return true;
 }
 const pose=(e,y=e.y,yaw=e.yaw)=>({x:e.x,s:e.s,y,yaw});
-// Stop/turn/travel/align stages keep the forward-only flight dynamics executable.
+// Climb/travel/align stages keep the full oriented hull clear.
 export function overheadRoute(e,goal,walls=null,world=worldFor(e)){
  const SAFE_ALTITUDE=world.WALL_HEIGHT+AIR_HULL.bottom+8;
  const altitude=Math.max(SAFE_ALTITUDE,e.y,goal.y),heading=-Math.atan2(goal.x-e.x,goal.s-e.s);
@@ -60,7 +60,7 @@ export function corridorRoute(e,goal,walls=null,world=worldFor(e)){
  for(let iterations=0;open.length&&iterations<TACTICAL.routeNodes;iterations++){
   const n=open.pop(),k=key(n);if((visited.get(k)??Infinity)<=n.cost)continue;visited.set(k,n.cost);
   if(Math.hypot(n.pose.x-goal.x,n.pose.s-goal.s)<step*1.5){
-   const heading=-Math.atan2(goal.x-n.pose.x,goal.s-n.pose.s),turn={...n.pose,yaw:heading},end={...goal,yaw:heading};
+   const turn=n.pose,end={...goal,yaw:n.pose.yaw};
    if(aircraftSweepClear(n.pose,turn,walls,world)&&aircraftSweepClear(turn,end,walls,world)&&aircraftSweepClear(end,goal,walls,world)){
     const path=[turn,end,goal];for(let p=n;p;p=p.parent)path.unshift(p.pose);return path;
    }
@@ -69,6 +69,8 @@ export function corridorRoute(e,goal,walls=null,world=worldFor(e)){
   const choices=[{x:n.x,s:n.s,h:(n.h+1)%8,pose:{...n.pose,yaw:angle+Math.PI/4},cost:5},
    {x:n.x,s:n.s,h:(n.h+7)%8,pose:{...n.pose,yaw:angle-Math.PI/4},cost:5},
    {x:Math.round((n.x+dx)*1000)/1000,s:Math.round((n.s+ds)*1000)/1000,h:n.h,pose:{...n.pose,x:n.pose.x+dx*step,s:n.pose.s+ds*step},cost:step}];
+  // Translate sideways/backwards without rotating the collision footprint.
+  for(const [mx,ms] of [[-dx,-ds],[ds,-dx],[-ds,dx]])choices.push({x:Math.round((n.x+mx)*1000)/1000,s:Math.round((n.s+ms)*1000)/1000,h:n.h,pose:{...n.pose,x:n.pose.x+mx*step,s:n.pose.s+ms*step},cost:step});
   for(const next of choices){if(Math.hypot(next.pose.x-e.x,next.pose.s-e.s)>TACTICAL.routeRadius||!aircraftSweepClear(n.pose,next.pose,walls,world))continue;open.push({...next,cost:n.cost+next.cost,parent:n});}
  }
  return null;

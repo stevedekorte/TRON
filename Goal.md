@@ -64,3 +64,6 @@ September 21 optional autoplay: U enables Jev maneuver selection for Clu, using 
 
 
 September 22 corrections supersede earlier timing/physics notes: debris from every vehicle uses Earth gravity (9.81 m/s²). Beam panel formation/retraction now take 0.5/~1.167 seconds around the unchanged eleven-second hold. The damage wave remains disabled. Session, route, JEV transport, camera and audio ownership have been separated; see the current refactoring and JEV documents for architecture and validation.
+
+
+September 23 explicit victory exception: completing all maze beams now wins the round. Fade to the existing terminal style and print `docs/victory.txt` quickly at a uniform cadence. Return from that page shows `docs/credits.txt` with its existing music, without the normal detachment message. This supersedes the earlier prohibition on a win screen for this requested outcome; do not add unrelated timed waves or score systems.

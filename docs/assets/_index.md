@@ -3,6 +3,12 @@ title: Assets
 subtitle: Model, sound, and dependency inventory
 ---
 
+## Big labyrinth blueprint — September 23
+
+`docs/references/images/mazes/Big labyrinth.png` is a user-supplied reference; original author and license have not been provided. Its blue wall silhouettes were traced locally into polygon contours, simplified at one image pixel, scaled to 2.4 m/pixel and extruded to 54 m. The runtime uses generated geometry, not the raster texture. Source, tracing script and an SVG comparison are retained in the repository.
+
+
+
 The tank and Recognizers are user-supplied Sketchfab GLBs; Sark’s carrier is a user-supplied JIHS Collada model converted locally to GLB. All are served locally with the application. Maze geometry is generated locally; vehicle/cannon audio uses short edits from the user-supplied film clip, with synthesized fallback and impact effects. No purchase was made. See [Models](../models/index.html) for source credits and adapter details.
 
 | Asset | Source / author | Format and size | Use / attribution | Status |
@@ -139,3 +145,7 @@ Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The loc
 ## Procedural pad teleport cue
 
 `src/audio/teleport.js` generates original deterministic stereo PCM buffers at the browser sample rate. Authored in this project; no external recording, model or asset was used. A descending FM sweep collapses into a short digital transient, followed by a rising inharmonic shimmer and short stereo echo. Departure lasts 0.28 seconds, arrival 0.62 seconds; Clu's combined transition lasts 0.78 seconds. Buffers are cached and reused; one-shot nodes disconnect on completion/reset. This is an original game sound, not a claimed recreation of a film sample. `node tests/teleport-audio.mjs` writes a standalone listening preview to `test-results/teleport-preview.wav`.
+
+## ENCOM terminal mark
+
+`public/images/encom-terminal.svg` is a project-authored vector approximation of the ENCOM mark visible in the user-supplied original-film still `docs/references/images/MCP terminal.png`. Paths and glow styling were authored locally; no external font or logo asset is loaded. The underlying film branding is not an original project design; no additional license is asserted.

@@ -17,7 +17,7 @@ export function createWorld(scene,world=DEFAULT_WORLD) {
     shadowId++;
     const h=WALL_HEIGHT;
     const roof=[.035,.075,.19];
-    for(const tri of THREE.ShapeUtils.triangulateShape(w.points.map(p=>new THREE.Vector2(p.x,p.s)),[]))for(const p of tri.map(i=>w.points[i])){positions.push(p.x,h,-p.s);colors.push(...roof);shadowIds.push(shadowId);}
+    for(const tri of w.triangles||THREE.ShapeUtils.triangulateShape(w.points.map(p=>new THREE.Vector2(p.x,p.s)),[]).map(t=>t.map(i=>({a:w.points[i]}))))for(const p of tri.map(e=>e.a)){positions.push(p.x,h,-p.s);colors.push(...roof);shadowIds.push(shadowId);}
     for(const edge of w.edges) {
       const {a,b,nx,ns}=edge;
       if(wallAt((a.x+b.x)/2+nx*.1,(a.s+b.s)/2+ns*.1))continue;
@@ -115,12 +115,12 @@ export function createWorld(scene,world=DEFAULT_WORLD) {
       vec2 aa=fwidth(vGround.xz)*${GROUND_GRID_AA_SCALE.toFixed(1)};
       float grid=1.-min(smoothstep(${GROUND_GRID_LINE_HALF_WIDTH.toFixed(2)},${GROUND_GRID_LINE_HALF_WIDTH.toFixed(2)}+aa.x,cell.x),smoothstep(${GROUND_GRID_LINE_HALF_WIDTH.toFixed(2)},${GROUND_GRID_LINE_HALF_WIDTH.toFixed(2)}+aa.y,cell.y));
       float outside=1.;
-      ${MAZE_INSTANCES.map(m=>`{
+      ${MAZE_INSTANCES.map(m=>{const BASIS=m.basis||world.BASIS,FLOOR_HALF=m.floorHalf||world.FLOOR_HALF;return `{
         vec2 delta=vec2(vGround.x,-vGround.z)-vec2(${m.x.toFixed(6)},${m.s.toFixed(6)});
         vec2 site=vec2(${Math.cos(m.angle).toFixed(6)}*delta.x+${Math.sin(m.angle).toFixed(6)}*delta.y,${(-Math.sin(m.angle)).toFixed(6)}*delta.x+${Math.cos(m.angle).toFixed(6)}*delta.y);
         vec2 localMaze=vec2(${BASIS.d.toFixed(6)}*site.x-(${BASIS.b.toFixed(6)})*site.y,-(${BASIS.c.toFixed(6)})*site.x+${BASIS.a.toFixed(6)}*site.y)/${(BASIS.a*BASIS.d-BASIS.b*BASIS.c).toFixed(6)};
         outside*=max(step(${FLOOR_HALF[0].toFixed(1)},abs(localMaze.x)),step(${FLOOR_HALF[1].toFixed(1)},abs(localMaze.y)));
-      }`).join('\n')}
+      }`;}).join('\n')}
       float grazing=1.-abs(normalize(cameraPosition-vGround).y);
       float visibility=mix(.55,1.,smoothstep(.2,.8,grazing))*mix(1.,.16,smoothstep(50.,140.,cameraPosition.y));
       visibility=mix(visibility,.85,aerialView);

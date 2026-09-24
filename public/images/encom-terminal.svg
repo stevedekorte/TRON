@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 62" fill="none" stroke="#a5a4c7" stroke-width="4" stroke-linejoin="round" stroke-linecap="square">
+  <title>ENCOM</title>
+  <path d="M202 5H13Q5 5 5 13V49Q5 57 13 57H195Q203 57 203 49V15"/>
+  <path d="M39 16H17V46H39M17 30H35 M48 46V16H52L73 46H77V16 M111 16H94Q88 16 88 23V39Q88 46 94 46H111 M128 16H139Q145 16 145 23V39Q145 46 139 46H128Q122 46 122 39V23Q122 16 128 16Z M156 46V16H161L175 39L188 16H193V46"/>
+</svg>

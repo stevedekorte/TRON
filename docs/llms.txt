@@ -1,10 +1,14 @@
 # TRON
 
-> Open-ended maze simulation and historical M0/M1 plans
+> Current simulation scope, decisions, and acceptance criteria
 
 ## Assets
 
 - [Assets](/assets/): Model, sound, and dependency inventory
+
+## Project history
+
+- [Project history](/history/): Original milestones and earlier development notes
 
 ## Jev enemy control
 

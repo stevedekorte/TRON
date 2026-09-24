@@ -41,7 +41,7 @@ export class GameSession {
     step(r, input, dt);
     if (r.teleportRevision !== revision) this.previous = { ...r };
     // Existing debris moves before this tick's destruction events spawn new pieces.
-    if (this.physics) {
+    if (this.physics && !r.won) {
       this.physics.syncVehicles(debrisVehicleTargets(r));
       this.physics.update(dt);
       this.debris?.update(dt);

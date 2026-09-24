@@ -31,6 +31,7 @@ CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="
           <a class="terminal-notes" href="./docs/index.html" target="_blank" rel="noopener">PROJECT NOTES</a>
         </div>
       </div>
+      <img class="terminal-encom" src="/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
     </section>
     <section id="paused" class="standby" role="status" tabindex="-1" hidden>STAND BY <span>ANY KEY TO RESUME</span></section>
     <section id="error" class="result" hidden><div class="eyebrow">CONNECTION FAILED</div><h2>UNABLE TO ENTER.</h2><p id="error-message"></p><button class="primary" onclick="location.reload()">RELOAD</button></section>
@@ -50,7 +51,7 @@ CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="
     <span id="aim-dot" hidden></span><span id="mouse-hint"></span>
   </div>
   <div id="hud" hidden>
-    <button id="autoplay-toggle" type="button" aria-pressed="false" title="Toggle Jev control of Clu (U). Driving or firing takes back control.">U / AUTOPLAY OFF</button>
+    <button id="autoplay-toggle" type="button" aria-pressed="false" title="Toggle Jev control of Clu (U). Driving or firing temporarily overrides controls. N toggles Jev for all units.">U / AUTOPLAY OFF</button>
     <div id="jev-stats" title="This round; requests/sec over the last 10 seconds. Cost in USD; ~ includes estimated usage."><span>JEV / 0 REQUESTS · 0.0/s</span><span>$0.00000 USD</span></div>
     <div id="system-warnings" role="status" aria-live="polite" aria-atomic="true" hidden></div>
     <div id="clu-health" class="turbo-indicator health-indicator"><span>HEALTH</span><div id="health-meter" class="turbo-meter" role="meter" aria-label="CLU health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="health-fill"></i></div></div>

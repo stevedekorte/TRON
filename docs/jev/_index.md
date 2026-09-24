@@ -411,3 +411,49 @@ Aircraft and tanks share a budget of one newly generated tactical candidate set 
 ## Approved landing tactics — September 22
 
 Recognizers may deliberately land to block Clu’s path and create a crush opportunity for an ally. Landing to rest is also acceptable. These are approved future maneuver choices, not yet implemented options in the candidate list. A stationary grounded unit should be evaluated by its intent and progress, rather than automatically classified as stuck. Coordination must continue to use observed or communicated information.
+
+
+## Confined stomp positioning — September 23
+
+The game now generates strike destinations using nearby wall-edge headings and a bounded two-ring search in sixteen directions around the predicted contact. This gives JEV feasible choices in angled corridors and beside walls, without changing the input/output contract. Offsets stay inside the existing attack trigger with an arrival margin. Execution settles within 0.35 m and brakes yaw before descent, retaining full collision clearance, fresh visible observations, lead/support coordination and the existing damage radius. Local tactical control uses the same candidates and controller. Classic is unchanged. Landing searches run only for visible contacts and remain subject to the shared per-tick planning budget.
+
+
+## Persistent attack support — September 23
+
+The coordination layer recruits nearby informed aircraft and retains their assignments while they move to support positions, within radio contact and the existing target-memory lifetime. The lead retains exclusive stomp authority; satellites no longer abandon support merely because they have moved beyond 140 m or lost personal line of sight. One satellite is designated spotter and the others cover separated ground-connected branches near the recorded contact. If no branch is available, distinct overhead positions provide a fallback. Goals are cached until the formation or recorded target shifts; roles and goals appear in the existing `attackAssignment` snapshot. These are positioning roles, not new weapons or permission to see hidden Clu. Existing lead leases, blocked/dead lead handoff, fresh-sighting attack gates and wounded retreat remain active.
+
+
+### Progress-aware lead renewal — September 23
+
+A leader now renews its twelve-second lease after five meters of measurable combined horizontal closure and descent toward the recorded target. Previously the fixed deadline swapped two approaching aircraft between lead and support, repeatedly cancelling the approach. This renewal is local coordination shared by Tactical and JEV, not a change to the provider contract. Blocked, destroyed, ineligible and genuinely stalled leaders still hand off.
+
+## Pursuit attack execution and runtime toggle — September 23
+
+N switches between JEV and local tactical enemy control without restarting the round, aborting pending requests. Turning JEV off also disengages Clu autoplay; U explicitly enables JEV again when starting autoplay. The stats box shows the toggle and its state. Request/cost totals remain for the current round.
+
+Pursuit now ends at an available wall-aligned stomp pose. Local execution can initiate a stomp during pursue, strike or low-approach when the actual pose is safe; it does not depend on the provider selecting strike. Leadership, healthy condition, fresh personal sight, cooldown, angular braking, predicted landing drift and full swept clearance still gate commitment. Supporting and retreating units cannot take this opportunity. The request/response schema is unchanged.
+
+### Smarter stomps with original motion — September 23
+
+- [x] Preserve the earlier film-like movement: thrust 24.2 m/s², yaw cap 0.62 rad/s, yaw acceleration 0.8 rad/s², ordinary drag/braking, 1.3-second fold, and 85 m/s² powered stomp descent. Remove all close-attack performance overrides. Cruise/max speeds are unchanged.
+- [x] Improve decisions rather than physics: approach overhead before descending, retain a progressing attack lead, align for nearby walls, and allow a healthy pursuing lead to take a safe attack opportunity.
+- [x] Brake as soon as the predicted stopping path provides a valid stomp, rather than insisting on an exact waypoint or redundant final heading. Keep fresh personal sight, cooldown, drift prediction and swept wall clearance checks.
+- [x] Stomp drop/landing contact with debris cannot damage the attacker; normal flight and weapon hits remain vulnerable.
+- [x] Double horizontal cannon scatter: Clu ±1.2°, enemies ±2.4°. Level aim has zero vertical scatter; gunner shots remain exact. Deliberate vertical auto-aim to airborne targets is retained.
+- The user’s motion-fidelity correction supersedes both the universal four-second stomp deadline and the subsequent three-second full-rotation tuning. Regression cases check successful attacks from eight headings without exceeding original thrust/yaw limits, not an artificial deadline.
+
+### Superseded turn-speed experiment — September 23
+
+Historical experiment, now superseded by restoring original motion above: maximum yaw rate is 120°/s (one revolution per three seconds at full speed), with 240°/s² acceleration/braking and the normal smooth heading response. All flight uses the same limit, including close attacks. Close-attack speed reduces when a turn needs a tighter radius, avoiding repeated orbits. A turn from rest includes acceleration and settling time, so a backwards-facing attacker can exceed the four-second stomp target. Eight-heading tests verify bounded yaw rate/acceleration and successful stomps; aligned attacks retain the four-second check.
+
+### Helicopter-style Recognizer translation — September 23
+
+Recognizers can thrust sideways and backward independently of yaw, in local/JEV navigation, Classic navigation and carrier escort flight. The acceleration vector shares the original 24.2 m/s² budget across all directions (no diagonal bonus); drag, braking, speed caps and angular inertia remain unchanged. Tight-corridor planning includes lateral/reverse translations with swept hull clearance. A wall-aligned hull can slide into position without first turning broadside. Existing pursuit-to-stomp opportunity checks and support assignments remain active.
+
+### Lead and intercept approaching Clu — September 23
+
+- [x] Choose a reachable crossing ahead of observed motion, accounting for approach, normal acceleration/braking, folding and fall time. Bounded prediction uses recorded position/velocity and stops at mapped obstructions.
+- [x] Hold the chosen crossing while sightings follow the predicted path, instead of continually moving it farther ahead. Changed velocity, lost sight, injury or an expired interception still permits replanning. JEV candidate facts include approach time and predicted impact time.
+- [x] Keep the lead's attack plan when only supporting positions change. Supporting units still refresh their own routes.
+- [x] Preserve a useful wall-aligned facing during overhead translation. Start folding while Clu approaches; commitment still requires fresh personal sight and a physically clear descent, and a committed drop cannot track an evasive maneuver.
+- All existing speeds, accelerations, fold/drop timing and health rules remain unchanged.

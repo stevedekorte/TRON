@@ -13,13 +13,14 @@ import { Autoplay } from '../simulation/autoplay.js';
 import { JevClient } from '../ai/jev-client.js';
 import { SystemWarnings } from '../ui/system-warnings.js';
 import { AI_MODES } from '../game/tactical.js';
+import victoryText from '../../docs/victory.txt?raw';
 import creditsText from '../../docs/credits.txt?raw';
 import { debrisPhysicsReady } from '../simulation/debris-physics.js';
 import { loadCloud } from '../rendering/cloud-layer.js';
 import { saveScreenshot } from '../ui/screenshot.js';
 import { loadCarrier } from '../rendering/carrier.js';
 import { loadVehicles } from '../rendering/models.js';
-import { Terminal, TerminalTribute } from '../ui/terminal.js';
+import { Terminal, TerminalTribute, TerminalPrinter } from '../ui/terminal.js';
 import { View } from '../rendering/view.js';
 import { Sound } from '../audio/sound.js';
 import { FLIGHT, FLIGHT_DEFAULTS } from '../simulation/flight.js';
@@ -55,6 +56,8 @@ export function createGameApp() {
   const session = new GameSession({ world: map });
   const terminal = new Terminal($('terminal-text'), $('terminal-actions'));
   const tribute = new TerminalTribute($('end-tribute'), creditsText);
+  const victoryPrinter=new TerminalPrinter($('terminal-text'),victoryText);
+  let endingStage=null;
   let view,
     run = session.run,
     mode = 'loading';
@@ -153,6 +156,9 @@ export function createGameApp() {
     }
     if (disposed || mode === 'error') return;
     tribute.reset();
+    victoryPrinter.reset();endingStage=null;document.body.classList.remove('victory','victory-credits');
+    $('terminal-text').textContent=openingMessage;
+    $('terminal-text').parentElement.setAttribute('aria-label',openingMessage.replace('\n','. '));
     outroFade = 0;
     controlsFirstKey = null;
     idleReminderArmed = false;
@@ -208,6 +214,20 @@ export function createGameApp() {
   listen(window, 'keydown', (event) => {
     idleTime = 0;
     if (mode === 'loading') return;
+    if(event.code==='KeyN'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&['running','entering','paused'].includes(mode)){
+      event.preventDefault();
+      if(!event.repeat)setJevEnabled(config.aiMode!=='jev');
+      return;
+    }
+    // Temporary victory-preview shortcut; remove after end-screen review.
+    if(event.code==='Digit8'&&event.shiftKey&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&view&&mode!=='error'){
+      event.preventDefault();
+      if(!event.repeat&&endingStage!=='victory'){
+        run.won=true;run.crushed=false;run.speed=0;
+        showVictoryScreen();
+      }
+      return;
+    }
     if (
       event.code === 'KeyU' &&
       !event.repeat &&
@@ -313,6 +333,8 @@ export function createGameApp() {
     }
     if (key === 'Enter' && mode === 'ready') {
       event.preventDefault();
+      if(event.repeat)return;
+      if(endingStage==='victory'){startVictoryCredits();return;}
       terminal.done ? start() : terminal.finish();
       return;
     }
@@ -343,7 +365,16 @@ export function createGameApp() {
       keys.add(key);
     }
   });
+  function setJevEnabled(enabled) {
+    config.aiMode=enabled?'jev':'local';
+    session.configure('vehicle',{aiMode:config.aiMode});
+    jev.resetScheduling();
+    if(!enabled&&autoplay.enabled)setAutoplay(false);
+    if(import.meta.env.DEV)$('enemy-ai').value=config.aiMode;
+    try{localStorage.setItem('tron-enemy-ai',JSON.stringify({version:AI_PREFERENCE_VERSION,mode:config.aiMode,small:config.aiSmallEncounter}));}catch{}
+  }
   function setAutoplay(enabled) {
+    if(enabled&&config.aiMode!=='jev')setJevEnabled(true);
     autoplay.setEnabled(enabled);
     jev.resetScheduling();
     inputController.startingThrottle = false;
@@ -480,9 +511,28 @@ export function createGameApp() {
 
   const hud = new HudPresenter(map, systemWarnings);
 
+  function showVictoryScreen(){
+    endingStage='victory';tribute.reset();outroFade=0;
+    view.cameraRig.opening=null;
+    document.body.style.setProperty('--opening-fade','1');
+    document.body.classList.remove('detached','victory-credits');
+    document.body.classList.add('victory');
+    setMode('ready');sound.reset();jev.resetScheduling();
+    $('terminal-text').parentElement.setAttribute('aria-label',victoryText.trimEnd());
+    victoryPrinter.start();$('death-fade').hidden=true;
+  }
+
+  function startVictoryCredits(){
+    endingStage='credits';victoryPrinter.reset();
+    document.body.classList.remove('victory');document.body.classList.add('detached','victory-credits');
+    $('terminal-text').textContent='';$('terminal-text').parentElement.setAttribute('aria-label','');
+    sound.startMusic('terminal');tribute.start(view.cameraRig.reducedMotion);
+  }
+
   function updateDeathTerminal(dt) {
     const fade = $('death-fade');
-    if (mode === 'ready' && run.crushed) {
+    if(mode==='ready'&&endingStage==='victory'){victoryPrinter.update();return;}
+    if (mode === 'ready' && (run.crushed||endingStage==='credits')) {
       const music = sound.musicDirector.music;
       const signOffReady =
         sound.musicDirector.musicMode === 'terminal' &&
@@ -500,7 +550,7 @@ export function createGameApp() {
           run = session.reset();
           view.reset();
           view.cameraRig.opening = null;
-          document.body.classList.remove('detached');
+          document.body.classList.remove('detached','victory','victory-credits');endingStage=null;
           $('terminal-text').textContent = openingMessage;
           $('terminal-text').parentElement.setAttribute(
             'aria-label',
@@ -517,7 +567,7 @@ export function createGameApp() {
       }
       return;
     }
-    if (!run.crushed) {
+    if (!run.crushed&&!run.won) {
       deathElapsed = 0;
       fade.hidden = true;
       return;
@@ -534,6 +584,9 @@ export function createGameApp() {
     if (amount < 1) return;
     view.cameraRig.opening = null;
     document.body.style.setProperty('--opening-fade', '1');
+    if(run.won){
+      showVictoryScreen();return;
+    }
     $('terminal-text').textContent = DEATH_TERMINAL.message;
     const copy = $('terminal-text').parentElement;
     copy.setAttribute('aria-label', DEATH_TERMINAL.message.replace('\n', '. '));
@@ -576,7 +629,7 @@ export function createGameApp() {
       loop.advance(
         dt,
         background,
-        () => mode === 'running' || mode === 'entering',
+        () => !run.won && (mode === 'running' || mode === 'entering'),
         (fixedStep) => {
           let command = inputController.command(run, {
             mouseLook: view.cameraRig.mouseLook,
@@ -593,11 +646,11 @@ export function createGameApp() {
         },
       );
     }
-    jev.update(run, mode === 'running' || mode === 'entering', autoplay);
+    jev.update(run, !run.won && (mode === 'running' || mode === 'entering'), autoplay);
     if (!autoplay.enabled && (document.hidden || !windowFocused)) pause();
     if (view && mode !== 'error') updateDeathTerminal(dt);
     if (view && mode !== 'error') {
-      if (!document.hidden)
+      if (!document.hidden && !(mode==='ready'&&endingStage==='victory'))
         view.render(run, session.previous, mode === 'running' ? loop.alpha : 1, dt, mode);
       sound.update(run, view.camera, mode === 'running' || mode === 'entering');
       hud.update({
@@ -696,8 +749,8 @@ export function createGameApp() {
       renderScale: [0.5, 1, 0.1],
     };
     const flightRanges = {
-      turnRate: [0.1, 1.2, 0.02, 'rad/s'],
-      turnAcceleration: [0.1, 2, 0.05, 'rad/s²'],
+      turnRate: [0.1, 3, 0.02, 'rad/s'],
+      turnAcceleration: [0.1, 6, 0.05, 'rad/s²'],
       liftAcceleration: [2, 30, 1, 'm/s²'],
       liftSpeed: [5, 35, 1, 'm/s'],
     };
