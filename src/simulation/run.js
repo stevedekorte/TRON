@@ -1,3 +1,4 @@
+import {surfaceImpact} from './surface-impact.js';
 import {configFor,attachSettings} from '../game/config.js';
 import {createTeleportPads} from '../levels/teleporters.js';
 import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
@@ -22,7 +23,7 @@ export function createRun(seed=randomSeed(),world=DEFAULT_WORLD,settings=null) {
   const {SPAWN}=world;
   const random=seededRandom(seed);
   const run={...SPAWN,seed,teleportPads:createTeleportPads(world.MAZE_INSTANCES,world.WALL_HEIGHT),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
+    carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,won:false,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
   if(config.aiMode!=='classic'&&config.aiSmallEncounter){run.recognizers=run.recognizers.slice(0,2);run.enemyTanks=run.enemyTanks.filter(e=>e.role==='patrol'&&e.mazeId===0).slice(0,1);if(run.enemyTanks[0])Object.assign(run.enemyTanks[0],{id:100,index:0});}
   run.scenario={...world.spec,runSeed:seed,configuration:settings?structuredClone(settings):null};
   if(settings){attachSettings(run,settings);for(const e of [...run.recognizers,...run.enemyTanks])attachSettings(e,settings);}
@@ -137,12 +138,14 @@ export function updateWeapons(run,input,dt) {
     const steps=Math.max(1,Math.ceil(Math.hypot(p.vx,p.vs,p.vy)*dt/.8));
     for(let i=0;i<steps&&p.life>0;i++) {
       const next={x:p.x+p.vx*dt/steps,s:p.s+p.vs*dt/steps,y:p.y+p.vy*dt/steps};
-      if(wallIntersection(p,next)!==null||next.y<0){p.life=0;break;}
+      const surface=surfaceImpact(worldFor(run),p,next);
+      if(surface){run.events.push(surface);p.life=0;break;}
+      const shotFrom={x:p.x,y:p.y,z:-p.s};
       Object.assign(p,next);
       if(p.faction==='enemy'){
         if(run.enemyTanks.some(e=>e.id!==p.owner&&!e.teleport&&e.state!=='destroyed'&&Math.hypot(p.x-e.x,p.s-e.s)<3.5&&p.y<3.5)){p.life=0;continue;}
         if(!run.crushed&&!run.teleport&&Math.hypot(p.x-run.x,p.s-run.s)<3.5&&p.y<3.5){
-          p.life=0;run.health=Math.max(0,run.health-1);run.impact=1;run.events.push({type:'hit',subject:'tank',fatal:run.health<=0,x:p.x,y:p.y,s:p.s});
+          p.life=0;run.health=Math.max(0,run.health-1);run.impact=1;run.events.push({type:'hit',subject:'tank',shotFrom,fatal:run.health<=0,x:p.x,y:p.y,s:p.s});
           if(run.health<=0){const speed=run.speed;run.crushed=true;run.speed=0;run.events.push({type:'destroyed',subject:'tank',x:run.x,y:0,s:run.s,yaw:run.yaw,turretYaw:run.turretYaw,vx:-Math.sin(run.yaw)*speed,vs:Math.cos(run.yaw)*speed,hit:{x:p.x,y:p.y,z:-p.s}});}
         }
         continue;
@@ -153,7 +156,7 @@ export function updateWeapons(run,input,dt) {
         if(hitPart) {
           recordEnemyHit(e,p,hitPart,run.time);
           const {critical,damage}=applyPartDamage(e,hitPart);e.hit=1;p.life=0;
-          if(e.kind==='ground'&&e.health>0)reactToGroundHit(e,p,run.time);run.events.push({type:'hit',subject:e.kind==='ground'?'enemyTank':'recognizer',id:e.id,hitPart,critical,damage,fatal:e.health===0,x:p.x,y:p.y,s:p.s});
+          if(e.kind==='ground'&&e.health>0)reactToGroundHit(e,p,run.time);run.events.push({type:'hit',subject:e.kind==='ground'?'enemyTank':'recognizer',id:e.id,shotFrom,hitPart,critical,damage,fatal:e.health===0,x:p.x,y:p.y,s:p.s});
           if(e.health===0){e.state='destroyed';e.canSee=false;e.memory=null;run.kills++;run.events.push({type:'destroyed',subject:e.kind==='ground'?'enemyTank':undefined,turretYaw:e.turretYaw,id:e.id,hitPart,critical,x:e.x,y:e.kind==='ground'?0:e.y,s:e.s,yaw:e.yaw,fold:e.fold||0,vx:e.vx,vy:e.vy,vs:e.vs,hit:{x:p.x,y:p.y,z:-p.s}});}
           break;
         }
@@ -165,6 +168,7 @@ export function updateWeapons(run,input,dt) {
 }
 
 export function step(run,input,dt) {
+ if(run.won)return;
  const config=configFor(run);
   if(run.crushed){run.gunnerLeveling=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.cruiseThrottle=false;input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
   updateTeleporters(run);updateHearing(run);

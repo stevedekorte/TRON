@@ -3,6 +3,9 @@ import * as T from 'three';
 // Metres in the light's projection plane. The hash only limits CPU candidates;
 // it has no effect on the precision of the clipped shadow boundaries.
 const CELL_METERS=64,EPSILON=1e-7;
+// Lift clipped decals off their receiver before float32 upload. Depth bias alone
+// cannot compensate for independently rounded, nearly coplanar triangles.
+export const WALL_SHADOW_SURFACE_OFFSET_METERS=.02;
 const LIGHT=new T.Vector3(.5,-1,.5);
 const dot=(plane,p)=>plane.x*p.x+plane.y*p.y+plane.z*p.z+plane.w;
 function planeThrough(a,b,c,inside){
@@ -53,6 +56,8 @@ export function createStaticWallShadowGeometry(receiver,casterGeometry){
  for(const receiver of receivers){
   const candidates=new Set();cells(receiver.bounds,key=>{for(const c of bins.get(key)||[])candidates.add(c);});
   const r=receiver.bounds;
+  const [ra,rb,rc]=receiver.points;
+  const lift=new T.Vector3().subVectors(rb,ra).cross(new T.Vector3().subVectors(rc,ra)).normalize().multiplyScalar(WALL_SHADOW_SURFACE_OFFSET_METERS);
   for(const caster of candidates){
    if(receiver.id>0&&caster.id===receiver.id)continue;
    const c=caster.bounds;
@@ -62,7 +67,7 @@ export function createStaticWallShadowGeometry(receiver,casterGeometry){
    for(let i=1;i+1<polygon.length;i++){
     const [a,b,c]=[polygon[0],polygon[i],polygon[i+1]];
     if(new T.Vector3().subVectors(b,a).cross(new T.Vector3().subVectors(c,a)).lengthSq()<1e-12)continue;
-    for(const p of [a,b,c])positions.push(p.x,p.y,p.z);
+    for(const p of [a,b,c])positions.push(p.x+lift.x,p.y+lift.y,p.z+lift.z);
    }
   }
  }

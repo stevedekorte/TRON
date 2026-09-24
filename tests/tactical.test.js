@@ -157,7 +157,7 @@ test('ground search records completed checks and does not return to the last-kno
  assert.equal(e.nextRoute,0);
 });
 
-test('Recognizer navigation keeps flying through right-angle and reversing turns',async()=>{
+test('Recognizer navigation translates through turns and smoothly reverses velocity',async()=>{
  const {navigate}=await import('../src/simulation/recognizers.js');
  const {navigateTactical}=await import('../src/simulation/tactical.js');
  const {flyCarrierEscort}=await import('../src/simulation/carrier-escort.js');
@@ -173,14 +173,83 @@ test('Recognizer navigation keeps flying through right-angle and reversing turns
    e.tactical.plan={kind:'patrol',goal:{...goal,y:e.y,yaw:0},route:[]};
    e.tactical.nextPlan=100;e.tactical.source=control;
   }
-  const start={x:e.x,s:e.s,yaw:e.yaw};let minSpeed=Infinity;
+  const start={x:e.x,s:e.s,yaw:e.yaw};
   for(let i=0;i<180;i++){
+   const velocity={x:e.vx,s:e.vs};
    (control==='classic'?navigate:control==='escort'?flyCarrierEscort:navigateTactical)(e,i/60,1/60,[e]);
-   minSpeed=Math.min(minSpeed,Math.hypot(e.vx,e.vs));
+   assert.ok(Math.hypot(e.vx-velocity.x,e.vs-velocity.s)<2,`${control}: inertial acceleration`);
    assert.ok(aircraftPoseClear(e),`${control}: clear flight`);
   }
-  assert.ok(minSpeed>7,`${control} ${angle}: speed ${minSpeed}`);
+  assert.ok(e.vs>0,`${control}: moves toward goal even while turning`);
   assert.ok(Math.hypot(e.x-start.x,e.s-start.s)>25,`${control}: travels through turn`);
   assert.ok(Math.abs(e.yaw-start.yaw)>.7,`${control}: changes heading while moving`);
  }
+});
+
+test('stomp landing fits oblique narrow corridors and offsets from close walls',async()=>{
+ const {stompLanding,STOMP_POSITION}=await import('../src/simulation/stomp-position.js');
+ const {attachWorld}=await import('../src/levels/scenario.js');
+ const {CRUSH}=await import('../src/simulation/crush.js');
+ for(const angle of [.19,.37,.61])for(const narrow of [false,true]){
+  const rotate=p=>({x:p.x*Math.cos(angle)-p.s*Math.sin(angle),s:p.x*Math.sin(angle)+p.s*Math.cos(angle)});
+  const walls=[box(-100,-50,100,0),...(narrow?[box(-100,10.8,100,60)]:[])].map(w=>({...w,points:w.points.map(rotate)}));
+  const target=rotate({x:0,s:narrow?5.4:3.6});
+  const world={nearbyWalls:()=>walls};
+  const e=attachWorld({yaw:angle+Math.PI/2},world),landing=stompLanding(e,target);
+  assert.ok(landing,`missing landing: angle ${angle}, narrow ${narrow}`);
+  assert.ok(aircraftPoseClear(landing,walls));
+  assert.ok(Math.hypot(landing.x-target.x,landing.s-target.s)<=CRUSH.triggerDistance-STOMP_POSITION.arrivalMeters);
+ }
+});
+
+for(const kind of ['strike','pursue'])test(`recognizer completes a collision-free ${kind} stomp in an oblique tight corridor`,async()=>{
+ const {stompLanding}=await import('../src/simulation/stomp-position.js');
+ const {attachWorld,DEFAULT_WORLD}=await import('../src/levels/scenario.js');
+ const {navigateTactical}=await import('../src/simulation/tactical.js');
+ const {resolveCrush}=await import('../src/simulation/crush.js');
+ const angle=.37,rotate=p=>({x:p.x*Math.cos(angle)-p.s*Math.sin(angle),s:p.x*Math.sin(angle)+p.s*Math.cos(angle)});
+ const walls=[box(-100,-50,100,0),box(-100,10.8,100,60)].map(w=>({...w,points:w.points.map(rotate)}));
+ const world={...DEFAULT_WORLD,WALL_HEIGHT:54,nearbyWalls:()=>walls};
+ const target=rotate({x:0,s:5.4}),e=attachWorld({...createRun(1982).recognizers[0],...rotate({x:-30,s:5.4}),y:80,yaw:angle+Math.PI/2,vx:0,vs:0,vy:0,yawVelocity:0,canSee:true,health:3,stompDisabled:false,memory:{...target,vx:0,vs:0,seenAt:0}},world);
+ const landing=stompLanding(e,target),goal={...landing,y:80};assert.ok(landing);
+ const option=maneuverOptions(e,0,[e]).find(o=>o.kind===kind);assert.ok(option);
+ e.tactical={revision:1,index:0,nextPlan:Infinity,plan:{kind,goal,route:overheadRoute(e,goal)},target,options:[option]};
+ assert.ok(applyTacticalChoice(e,{id:option.id,confidence:1},1,0,0));
+ const run={...target,events:[],speed:0,yaw:0,turretYaw:0};
+ for(let i=0;i<3600&&!run.crushed;i++){
+  e.memory.seenAt=i/60;navigateTactical(e,i/60,1/60,[e]);
+  assert.ok(aircraftPoseClear(e,walls),`wall collision at ${i/60}`);resolveCrush(run,e);
+ }
+ assert.ok(run.crushed,JSON.stringify({x:e.x,s:e.s,y:e.y,yaw:e.yaw,plan:e.tactical}));
+});
+
+test('recognizer directional thrust strafes and reverses without yaw or a diagonal speed boost',async()=>{
+ const {advanceFlightToward,FLIGHT_DEFAULTS}=await import('../src/simulation/flight.js');
+ for(const [dx,ds] of [[1,0],[-1,0],[0,-1],[1,-1]]){
+  const e={x:0,s:0,vx:0,vs:0,yaw:0,yawVelocity:0};
+  advanceFlightToward(e,1/60,dx,ds,30);
+  assert.ok(Math.hypot(e.vx,e.vs)<=FLIGHT_DEFAULTS.acceleration/60);
+  for(let i=1;i<180;i++)advanceFlightToward(e,1/60,dx,ds,30);
+  assert.equal(e.yaw,0);assert.equal(e.yawVelocity,0);
+  assert.ok(e.x*dx+e.s*ds>20);
+  if(ds===0)assert.equal(e.s,0);if(dx===0)assert.equal(e.x,0);
+  assert.ok(Math.hypot(e.vx,e.vs)<=30+1e-6);
+ }
+});
+
+test('corridor navigation can move sideways while retaining the wall-aligned hull',()=>{
+ const walls=[box(-100,-50,100,0),box(-100,12,100,60)];
+ const start={x:-40,s:6,y:22,yaw:0},goal={x:40,s:6,y:22,yaw:0};
+ const route=corridorRoute(start,goal,walls);assert.ok(route);
+ for(const p of route){assert.equal(p.yaw,0);assert.ok(aircraftPoseClear(p,walls));}
+});
+
+test('intercept holds its crossing for expected motion but replans when the target turns',()=>{
+ const e=pursuitFixture();Object.assign(e,{x:-5000,s:-4600,y:80,yaw:Math.PI,vx:0,vs:0,tactical:null});
+ chooseManeuver(e,0,[e]);assert.ok(e.tactical.plan.intercept);
+ const plan=e.tactical.plan,revision=e.tactical.revision;
+ e.memory={...e.memory,s:e.memory.s+66,seenAt:3};chooseManeuver(e,3,[e]);
+ assert.equal(e.tactical.plan,plan);assert.equal(e.tactical.revision,revision);
+ e.memory={...e.memory,vx:22,vs:0,seenAt:3.1};chooseManeuver(e,3.1,[e]);
+ assert.equal(e.tactical.reason,'target-maneuver');assert.ok(e.tactical.revision>revision);
 });

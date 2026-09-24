@@ -1,3 +1,4 @@
+import {inPatrolRegion} from '../levels/patrol-region.js';
 import {enemyPlanningBudget} from './planning-budget.js';
 import {groundRoute,GroundRoutePlanner} from './ground-routing.js';
 export {groundRoute} from './ground-routing.js';
@@ -31,13 +32,14 @@ function patrolHasExit(p,world,config){
  if(!cache||cache.radius!==config.tankRadius){cache={radius:config.tankRadius,points:new Map()};patrolExitCache.set(world,cache);}
  if(!cache.points.has(p)){
   const b=world.MAZE_INSTANCES[p.mazeId].bounds,margin=GROUND_NAVIGATION.exitMarginMeters;
-  const goal={x:b.minX-margin,s:b.minS-margin};
-  cache.points.set(p,groundRoute(p,goal,{world,vehicleConfig:config,longRange:true,cellMeters:GROUND_NAVIGATION.cellMeters,maxIterations:GROUND_NAVIGATION.maxIterations,detourMeters:world.MAZE_LENGTH*GROUND_NAVIGATION.detourMazeWidths}).length>0);
+  const site=world.MAZE_INSTANCES[p.mazeId];
+  const goal=site.beamPosition??{x:b.minX-margin,s:b.minS-margin};
+  cache.points.set(p,groundRoute(p,goal,{world,vehicleConfig:config,longRange:true,cellMeters:GROUND_NAVIGATION.cellMeters,maxIterations:site.patrols?40000:GROUND_NAVIGATION.maxIterations,detourMeters:world.MAZE_LENGTH*GROUND_NAVIGATION.detourMazeWidths}).length>0);
  }
  return cache.points.get(p);
 }
 export const GROUND_TANK_COUNT=ESCORT.count+GROUND_PATROL.count*MAZE_INSTANCES.length;
-export const groundTankCount=(world=DEFAULT_WORLD)=>ESCORT.count+GROUND_PATROL.count*world.MAZE_INSTANCES.length;
+export const groundTankCount=(world=DEFAULT_WORLD)=>ESCORT.count+world.MAZE_INSTANCES.reduce((sum,m)=>sum+(m.patrols?.groundCount??GROUND_PATROL.count),0);
 const patrolCache=new WeakMap();
 function groundPatrolCells(world,vehicleConfig=configFor(null)){
  const cached=patrolCache.get(world);if(cached?.radius===vehicleConfig.tankRadius)return cached.cells;
@@ -50,8 +52,8 @@ export function escortSlot(index,time,world=DEFAULT_WORLD){const CARRIER=carrier
 export function createGroundTanks(random=Math.random,world=DEFAULT_WORLD,config=configFor(null)){
  const {MAZE_INSTANCES}=world,patrolCells=groundPatrolCells(world,config),GROUND_TANK_COUNT=groundTankCount(world),CARRIER=carrierFor(world);
  const starts=[];
- for(let i=0;i<GROUND_PATROL.count*MAZE_INSTANCES.length;i++){
-  const candidates=patrolCells.filter(p=>p.mazeId===Math.floor(i/GROUND_PATROL.count)&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
+ for(const m of MAZE_INSTANCES)for(let sector=0;sector<(m.patrols?.groundCount??GROUND_PATROL.count);sector++){
+  const candidates=patrolCells.filter(p=>p.mazeId===m.id&&inPatrolRegion(p,m,m.patrols?sector:null,m.patrols?.groundCount??1)&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
   // Blueprint outlines include enclosed pockets. Free floor alone does not
   // make a valid patrol spawn: the tank must be able to leave its corridor.
   let p;
@@ -59,7 +61,7 @@ export function createGroundTanks(random=Math.random,world=DEFAULT_WORLD,config=
    const [candidate]=candidates.splice(Math.floor(random()*candidates.length),1);
    if(patrolHasExit(candidate,world,config)){p=candidate;break;}
   }
-  if(!p)throw new Error(`No connected ground patrol spawn in maze ${Math.floor(i/GROUND_PATROL.count)}`);
+  if(!p)throw new Error(`No connected ground patrol spawn in maze ${m.id}`);
   starts.push(p);
  }
  return Array.from({length:GROUND_TANK_COUNT},(_,index)=>{

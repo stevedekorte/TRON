@@ -63,3 +63,37 @@ export class TerminalTribute {
   return false;
  }
 }
+
+// Constant character cadence, including punctuation and line breaks.
+export const VICTORY_PRINT=Object.freeze({charactersPerSecond:45});
+export class TerminalPrinter {
+ constructor(output,message,{clock=()=>performance.now()}={}){
+  this.output=output;this.message=message.replace(/\r\n?/g,'\n').trimEnd();this.clock=clock;this.reset();
+ }
+ reset(){this.active=false;this.count=0;this.line=null;}
+ start(){this.reset();this.startedAt=this.clock();this.nextCharacterAt=this.startedAt+1000/VICTORY_PRINT.charactersPerSecond;this.active=true;this.output.replaceChildren();}
+ update(){
+  if(!this.active)return;
+  // Show at most one character per rendered frame; never dump a backlog as words.
+  const now=this.clock(),interval=1000/VICTORY_PRINT.charactersPerSecond;
+  if(now<this.nextCharacterAt)return;
+  const count=Math.min(this.message.length,this.count+1);
+  this.nextCharacterAt=Math.max(this.nextCharacterAt+interval,now);
+  if(count<=this.count)return;
+  const document=this.output.ownerDocument;
+  for(const chunk of this.message.slice(this.count,count).split(/(\n)/)){
+   if(!chunk)continue;
+   if(chunk==='\n'){this.output.appendChild(document.createTextNode(chunk));this.line=null;continue;}
+   if(!this.line){
+    this.line=document.createElement('span');this.line.className='printer-line';
+    this.output.appendChild(this.line);
+   }
+   // Immutable glyph nodes: never reshape an ever-growing text run.
+   // No DOM geometry/computed-style reads in the printing path.
+   const character=document.createElement('span');character.className='printer-character';
+   character.appendChild(document.createTextNode(chunk));this.line.appendChild(character);
+  }
+  this.count=count;
+  if(count===this.message.length)this.active=false;
+ }
+}

@@ -13,5 +13,6 @@ export function browserScenario(location, random = Math.random) {
     layoutSeed: seed === null ? Math.floor(random() * 4294967296) : Number(seed),
     runSeed: Number(query.get('runSeed') ?? 1982),
     siteCount: reference ? 1 : 4,
+    centralLabyrinth: !reference&&layout==='blueprint',
   });
 }

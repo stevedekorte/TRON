@@ -31,3 +31,40 @@ test('initial tank position is one maze width outside the southern boundary',()=
  assert.ok(Math.abs((-maze.FLOOR_HALF[1]-maze.SPAWN.s)-maze.HALF*2)<1e-8);
  for(let s=maze.SPAWN.s;s< -maze.FLOOR_HALF[1];s+=10)assert.ok(maze.freePosition(maze.SPAWN.x,s,3.5));
 });
+
+test('central labyrinth preserves courtyard, holes and matching collision triangles',async()=>{
+ const lab=await import('../src/levels/labyrinth-maze.js');
+ assert.equal(lab.WALLS.length,116);
+ const area=points=>Math.abs(points.reduce((sum,p,i)=>{const q=points[(i+1)%points.length];return sum+p.x*q.s-q.x*p.s;},0))/2;
+ for(const w of lab.WALLS){
+  const roof=area(w.points)-w.holes.reduce((sum,h)=>sum+area(h),0);
+  const triangles=w.triangles.reduce((sum,t)=>sum+area(t.map(e=>e.a)),0);
+  assert.ok(Math.abs(roof-triangles)<1e-5);
+ }
+ const court=lab.pixelToWorld([724,514]);assert.ok(lab.freePosition(court.x,court.s,250));
+ const {groundRoute}=await import('../src/simulation/ground-routing.js');
+ const route=groundRoute(lab.pixelToWorld([724,1100]),court,{world:lab,cellMeters:12,maxIterations:100000,detourMeters:4000,longRange:true});
+ assert.ok(route.length>0);assert.deepEqual(route.at(-1),court);
+ for(let y=5;y<1086;y+=23)for(let x=5;x<1448;x+=23){const p=lab.pixelToWorld([x,y]);assert.equal(lab.wallIntersection({...p,y:10},{...p,y:11})!==null,lab.wallAt(p.x,p.s));}
+});
+
+test('fifth maze fits between four grid-aligned outer sites and participates in gameplay',async()=>{
+ const {createScenario}=await import('../src/levels/scenario.js'),{createRun}=await import('../src/simulation/run.js');
+ for(const seed of [0,42,1982,99999]){
+  const {world}=createScenario({layout:'blueprint',layoutSeed:seed,centralLabyrinth:true});
+  const center=world.MAZE_INSTANCES[4];assert.equal(center.kind,'labyrinth');
+  assert.equal(world.MAZE_INSTANCES.length,5);
+  for(const m of world.MAZE_INSTANCES){assert.equal(Math.abs(m.x%24),0);assert.equal(Math.abs(m.s%24),0);}
+  for(const m of world.MAZE_INSTANCES.slice(0,4)){
+   const a=m.bounds,b=center.bounds;
+   assert.ok(a.maxX+200<b.minX||b.maxX+200<a.minX||a.maxS+200<b.minS||b.maxS+200<a.minS,'exterior clearance');
+  }
+  const r=createRun(1982,world);assert.equal(r.dataBeams.length,5);assert.equal(r.teleportPads.length,20);
+  assert.equal(r.enemyTanks.filter(e=>e.mazeId===4).length,8);
+  for(const p of r.teleportPads)assert.ok(world.freePosition(p.x,p.s,34));
+  assert.equal(r.recognizers.filter(e=>e.mazeId===4).length,6);
+  const {inPatrolRegion}=await import('../src/levels/patrol-region.js');
+  for(const units of [r.enemyTanks,r.recognizers])for(const e of units.filter(e=>e.mazeId===4))assert.ok(inPatrolRegion(e,center));
+  const b=r.dataBeams[4];assert.equal(b.x,center.beamPosition.x);assert.equal(b.s,center.beamPosition.s);assert.ok(world.freePosition(b.x,b.s,20));
+ }
+});

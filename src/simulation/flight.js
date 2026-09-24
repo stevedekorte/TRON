@@ -6,15 +6,24 @@ import {clamp,angleDelta,RECOGNIZER_SCALE} from '../game/config.js';
 export const FLIGHT_DEFAULTS=Object.freeze({acceleration:24.2,turnRate:.62,turnAcceleration:.8,turnResponse:1.8,liftAcceleration:14,liftSpeed:22,liftResponse:1.4,drag:.7,brakeDrag:2.4,avoidanceRadius:130*RECOGNIZER_SCALE});
 export const FLIGHT={...FLIGHT_DEFAULTS};
 export function advanceFlight(e,dt,thrust=0,braking=0) {
-  const FLIGHT=flightFor(e);
-  const drag=FLIGHT.drag+clamp(braking,0,1)*FLIGHT.brakeDrag;
-  const decay=Math.exp(-drag*dt),integral=(1-decay)/drag;
-  const acceleration=clamp(thrust,0,FLIGHT.acceleration);
-  const ax=-Math.sin(e.yaw)*acceleration,as=Math.cos(e.yaw)*acceleration;
-  // Drag slows existing momentum; only forward thrust adds new momentum.
-  e.x+=e.vx*integral+ax*(dt-integral)/drag;
-  e.s+=e.vs*integral+as*(dt-integral)/drag;
-  e.vx=e.vx*decay+ax*integral;e.vs=e.vs*decay+as*integral;
+  thrust=clamp(thrust,0,flightFor(e).acceleration);
+  advanceFlightVector(e,dt,-Math.sin(e.yaw)*thrust,Math.cos(e.yaw)*thrust,braking);
+}
+// Directional thrust has one shared acceleration budget, including diagonals.
+export function advanceFlightVector(e,dt,ax,as,braking=0){
+ const flight=flightFor(e),magnitude=Math.hypot(ax,as);
+ if(magnitude>flight.acceleration){ax*=flight.acceleration/magnitude;as*=flight.acceleration/magnitude;}
+ const drag=flight.drag+clamp(braking,0,1)*flight.brakeDrag;
+ const decay=Math.exp(-drag*dt),integral=(1-decay)/drag;
+ e.x+=e.vx*integral+ax*(dt-integral)/drag;
+ e.s+=e.vs*integral+as*(dt-integral)/drag;
+ e.vx=e.vx*decay+ax*integral;e.vs=e.vs*decay+as*integral;
+}
+export function advanceFlightToward(e,dt,dx,ds,speed){
+ const flight=flightFor(e),distance=Math.hypot(dx,ds);
+ if(!speed||!distance){advanceFlight(e,dt,0,1);return;}
+ const vx=dx/distance*speed,vs=ds/distance*speed;
+ advanceFlightVector(e,dt,flight.drag*vx+(vx-e.vx)*1.4,flight.drag*vs+(vs-e.vs)*1.4,clamp((Math.hypot(e.vx,e.vs)-speed)/5,0,1));
 }
 
 

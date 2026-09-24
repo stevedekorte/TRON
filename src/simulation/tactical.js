@@ -1,3 +1,4 @@
+import {stompLanding,STOMP_POSITION} from './stomp-position.js';
 import {supportingAttack,attackSupportGoal} from './attack-coordination.js';
 import {radioRangeFor} from '../game/communication.js';
 import {configFor} from '../game/config.js';
@@ -5,10 +6,10 @@ import {worldFor} from '../levels/scenario.js';
 import {connectedSearchRoutes} from './search-routes.js';
 import {hearingReports,hearingTarget,hearingGoal} from './hearing.js';
 import {HEARING,hearingFor} from '../game/hearing.js';
-import {config,angleDelta,clamp} from '../game/config.js';
+import {config,angleDelta} from '../game/config.js';
 import {TACTICAL} from '../game/tactical.js';
-import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor,approachSpeed} from './flight.js';
-import {beginCrush,advanceCrush,stompTarget,CRUSH} from './crush.js';
+import {advanceFlightToward,advanceFlight,advanceYaw,advanceLift} from './flight.js';
+import {beginCrush,crushOpportunity,advanceCrush,stompTarget,stompIntercept,CRUSH} from './crush.js';
 import {aircraftPoseClear,aircraftSweepClear,overheadRoute,corridorRoute,SAFE_ALTITUDE,AIR_HULL} from './maneuver-geometry.js';
 export const tacticalEnabled=e=>['local','jev'].includes(configFor(e).aiMode);
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.s-b.s);
@@ -53,27 +54,32 @@ export function maneuverOptions(e,now,others){
  const ally=allies.sort((a,b)=>distance(b,target)-distance(a,target))[0];
  if(ally)add('regroup',{x:ally.x+dx/norm*35,s:ally.s+ds/norm*35,y:SAFE_ALTITUDE,yaw:e.yaw},wounded?110:25);
  if(air){
-  if(supportingAttack(e)&&e.canSee){
+  if(supportingAttack(e)){
    const p=attackSupportGoal(e,target);add('support',{...p,y:SAFE_ALTITUDE,yaw:-Math.atan2(target.x-p.x,target.s-p.s)},wounded?0:95);return options;
   }
   // Find room for the actual oriented silhouette beside a wall, rather than
   // rejecting every site inside a single large circular clearance radius.
-  const predicted=stompTarget(e,now)||target,poses=[];
+  const predicted=stompIntercept(e,now,config.enemySpeed*TACTICAL.cruiseSpeedMultiplier)||target;
+  const landing=e.canSee?stompLanding(e,predicted):null;
   // Close on recorded contact even when another unit owns the final attack.
   // Offset supporting units so they do not all converge on the stomp column.
   const side=(e.id%2?1:-1)*TACTICAL.supportOffsetMeters;
   const pursuit={x:predicted.x+(occupied?-ds/norm*side:0),s:predicted.s+(occupied?dx/norm*side:0),y:Math.max(e.y,SAFE_ALTITUDE),yaw:-Math.atan2(predicted.x-e.x,predicted.s-e.s)};
+  // Pursuit should finish at an attackable pose, including the wall-aligned
+  // yaw and small lateral offset needed to fit a confined descent column.
+  if(landing&&!occupied)Object.assign(pursuit,{x:landing.x,s:landing.s,yaw:landing.yaw});
   if(e.canSee||!e.tactical?.search?.originChecked)add('pursue',pursuit,wounded?-20:distance(e,target)>TACTICAL.attackApproachMeters?88:occupied?78:40);
-  for(const offset of [[0,0],[4,0],[-4,0],[0,4],[0,-4]])for(let i=0;i<8;i++){
-   const p={x:predicted.x+offset[0],s:predicted.s+offset[1],y:CRUSH.soleHeight,yaw:i*Math.PI/4};
-   if(poseClear(p))poses.push(p);
-  }
-  poses.sort((a,b)=>distance(a,predicted)-distance(b,predicted)+Math.abs(angleDelta(e.yaw,a.yaw))-Math.abs(angleDelta(e.yaw,b.yaw)));
-  const landing=poses[0];
   if(landing&&e.canSee){
-   add('strike',{...landing,y:SAFE_ALTITUDE},wounded?-20:occupied?15:e.canSee?85:35);
+   add('strike',{...landing,y:SAFE_ALTITUDE},wounded?-20:occupied?15:e.y>TACTICAL.lowAltitude+1&&distance(e,target)<=TACTICAL.attackApproachMeters?95:85);
    const low={...landing,y:TACTICAL.lowAltitude};
-   if(distance(e,low)<TACTICAL.routeRadius){const route=corridorRoute(e,low);if(route)add('low-approach',low,wounded?-20:e.canSee?90:65,route);}
+   // An airborne attacker should descend at the destination, not try to
+   // return to its moving route origin to descend before travelling.
+   if(distance(e,low)<TACTICAL.routeRadius){const route=e.y>=SAFE_ALTITUDE?overheadRoute(e,low):corridorRoute(e,low);if(route)add('low-approach',low,wounded?-20:e.canSee?90:65,route);}
+  }
+  if(predicted.approachSeconds!=null)for(const option of options)if(['pursue','strike','low-approach'].includes(option.kind)){
+   option.intercept={impactAt:now+predicted.time,observation:{...e.memory}};
+   option.facts.interceptImpactAt=option.intercept.impactAt;
+   option.facts.approachSeconds=predicted.approachSeconds;
   }
   // Even when a strike is impossible, descend into a reachable broad opening.
   const openings=OPEN_CELLS.filter(p=>distance(p,target)<100&&distance(e,p)<TACTICAL.routeRadius).sort((a,b)=>distance(a,target)-distance(b,target));
@@ -120,7 +126,13 @@ function observationChange(e,now){
  if(next.visible!==old.visible)return next.visible?'sight-regained':'sight-lost';
  if(next.known!==old.known)return next.known?'contact-reported':'contact-expired';
  if(next.known&&Math.hypot(next.vx-old.vx,next.vs-old.vs)>=TACTICAL.velocityChangeMetersPerSecond)return 'target-maneuver';
- if(next.known&&distance(next,old)>=TACTICAL.targetShiftMeters)return 'target-moved';
+ if(next.known&&distance(next,old)>=TACTICAL.targetShiftMeters){
+  const intercept=e.tactical?.plan?.intercept,m=intercept?.observation;
+  const age=m?Math.max(0,now-m.seenAt):0;
+  // Movement along the observed intercept trajectory is expected progress,
+  // not a reason to keep moving the chosen ambush point farther ahead.
+  if(!m||now>intercept.impactAt||Math.hypot(next.x-m.x-m.vx*age,next.s-m.s-m.vs*age)>TACTICAL.interceptTrackToleranceMeters)return 'target-moved';
+ }
  return null;
 }
 function updateSearch(e,now){
@@ -144,6 +156,7 @@ export function chooseManeuver(e,now,others,budget=null){
  if(t.plan?.kind==='investigate-sound'&&!hearingTarget(e,now))t.plan=null;
  const reason=observationChange(e,now),urgent=reason&&now-(t.lastEventAt??-Infinity)>=TACTICAL.eventCooldownSeconds;
  const injured=e.health<=TACTICAL.retreatHealth&&t.plan&&!['retreat','regroup'].includes(t.plan.kind);
+ if(t.plan&&now<=t.plan.intercept?.impactAt&&!injured&&!urgent)return t.plan;
  if(t.plan&&now<t.nextPlan&&!injured&&!urgent)return t.plan;
  // Let a multi-stage maneuver finish; replan when observations move materially.
  if(t.plan&&now-(t.started||0)<20&&t.index<(t.plan.route?.length||0)&&!injured&&!urgent&&(!e.memory||!t.target||distance(e.memory,t.target)<45))return t.plan;
@@ -179,7 +192,6 @@ export function applyTacticalChoice(e,choice,revision,requestedAt,now){
  t.plan=option;t.index=0;t.source='jev';t.nextPlan=Math.max(t.nextPlan,now+TACTICAL.commitSeconds);return true;
 }
 export function navigateTactical(e,now,dt,others,budget=null){
- const FLIGHT=flightFor(e);
  const config=configFor(e);
  const SAFE_ALTITUDE=worldFor(e).WALL_HEIGHT+AIR_HULL.bottom+8;
  const before={x:e.x,s:e.s,y:e.y,yaw:e.yaw};
@@ -200,7 +212,15 @@ export function navigateTactical(e,now,dt,others,budget=null){
     t.index++;
    }
    const waypoint=plan.route?.[t.index]||plan.goal,dist=distance(e,waypoint),vertical=Math.abs(waypoint.y-e.y),speed=Math.hypot(e.vx,e.vs);
-   const moving=dist>TACTICAL.arrivalDistance,heading=moving?-Math.atan2(waypoint.x-e.x,waypoint.s-e.s):waypoint.yaw;
+   const finalApproach=distance(waypoint,plan.goal)<STOMP_POSITION.arrivalMeters;
+   const arrival=finalApproach&&['pursue','strike','low-approach'].includes(plan.kind)?STOMP_POSITION.arrivalMeters:TACTICAL.arrivalDistance;
+   const offensive=['pursue','strike','low-approach'].includes(plan.kind)&&e.health>TACTICAL.retreatHealth;
+   // Brake at an already viable intercept instead of orbiting a precise
+   // waypoint or rotating back to a redundant planned heading.
+   const settling=offensive&&!!crushOpportunity(e,now,true);
+   const moving=!settling&&dist>arrival;
+   const clearAttackPose=finalApproach&&['pursue','strike','low-approach'].includes(plan.kind)&&aircraftPoseClear({...e,y:CRUSH.soleHeight},null,TACTICAL.clearance,worldFor(e));
+   const heading=settling||!moving&&clearAttackPose?null:offensive&&e.y>=SAFE_ALTITUDE?plan.goal.yaw:waypoint.yaw;
    advanceYaw(e,dt,heading);
    // Carry speed through straight route segments; only the next real corner
    // or final approach is a braking destination.
@@ -211,15 +231,16 @@ export function navigateTactical(e,now,dt,others,budget=null){
     travelDistance+=distance(previous,next);previous=next;
    }
    const max=e.y<SAFE_ALTITUDE?TACTICAL.lowSpeed:config.enemySpeed*TACTICAL.cruiseSpeedMultiplier;
-   // Heading steers thrust, not a stop/rotate/go gate. Arrival still brakes.
-   const target=moving?approachSpeed(e,heading,travelDistance,Math.min(max,travelDistance*.8)):0;
-   advanceFlight(e,dt,target?Math.min(FLIGHT.acceleration,FLIGHT.drag*target+Math.max(0,target-speed)*1.4):0,target?clamp((speed-target)/5,0,1):1);
+   // Translation is independent of facing; arrival still brakes normally.
+   const target=moving?Math.min(max,travelDistance*.8):0;
+   advanceFlightToward(e,dt,waypoint.x-e.x,waypoint.s-e.s,target);
    // Finish translation and alignment before descending into a confined area.
-   advanceLift(e,dt,moving||Math.abs(angleDelta(e.yaw,waypoint.yaw))>.08?Math.max(e.y,waypoint.y):waypoint.y);
-   // The final planned yaw is only a clearance aid. If the actual settled
-   // pose already has a clear drop, do not wait for a redundant stationary turn.
-   if(['strike','low-approach'].includes(plan.kind)&&distance(e,plan.goal)<TACTICAL.arrivalDistance&&Math.abs(e.y-plan.goal.y)<.3&&e.health>TACTICAL.retreatHealth)beginCrush(e,now,true);
-   if(dist<TACTICAL.arrivalDistance&&vertical<.3&&speed<.7&&Math.abs(e.vy)<.5&&Math.abs(angleDelta(e.yaw,waypoint.yaw))<TACTICAL.arrivalAngle){
+   advanceLift(e,dt,settling?e.y:moving||Math.abs(angleDelta(e.yaw,waypoint.yaw))>.08?Math.max(e.y,waypoint.y):waypoint.y);
+   // A safe attack opportunity belongs to local execution, including when
+   // JEV chose pursuit. beginCrush checks fresh sight, leadership, cooldown,
+   // braking drift and the entire oriented descent; a waypoint is not a gate.
+   if(['pursue','strike','low-approach'].includes(plan.kind)&&e.health>TACTICAL.retreatHealth)beginCrush(e,now,true);
+   if(dist<arrival&&vertical<.3&&speed<.7&&Math.abs(e.vy)<.5&&Math.abs(angleDelta(e.yaw,waypoint.yaw))<TACTICAL.arrivalAngle){
     if(t.index<(plan.route?.length||0)-1)t.index++;
     else{
      t.index=plan.route?.length||0;

@@ -1,10 +1,27 @@
 import { readFile, writeFile, readdir } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const docs = join(root, 'docs');
+// Upstream discovers only pages with an HTML shell. Generate missing shells
+// from content directories so new Markdown pages need no hand-authored HTML.
+async function createPageShells(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const names = new Set(entries.map(entry => entry.name));
+  if (!names.has('index.html') && (names.has('_index.md') || names.has('_index.json'))) {
+    const engine = relative(directory, join(docs, 'colvmn')).split('\\').join('/');
+    await writeFile(join(directory, 'index.html'), `<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="${engine}/style.css"></head><body><script src="${engine}/layout/bundle.js" defer></script></body></html>\n`);
+  }
+  for (const entry of entries) {
+    if (entry.isDirectory() && !entry.name.startsWith('.') && resolve(directory, entry.name) !== join(docs, 'colvmn')) {
+      await createPageShells(join(directory, entry.name));
+    }
+  }
+}
+await createPageShells(docs);
 execFileSync(process.execPath, ['docs/colvmn/static-gen.js', 'docs'], {
   cwd: root,
   stdio: 'inherit',

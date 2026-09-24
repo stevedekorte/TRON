@@ -4,9 +4,10 @@ import { createScenario } from '../src/levels/scenario.js';
 import { GameSession } from '../src/simulation/game-session.js';
 import { updateRecognizers } from '../src/simulation/recognizers.js';
 import { updateGroundTanks, escortSlot } from '../src/simulation/ground-tanks.js';
-import { moveTank, cannonPose, createRun, step } from '../src/simulation/run.js';
+import { moveTank, cannonPose, createRun, step, startPursuit } from '../src/simulation/run.js';
 import { airEscortSlot } from '../src/game/carrier.js';
 import { Autoplay } from '../src/simulation/autoplay.js';
+import { applyTacticalChoice } from '../src/simulation/tactical.js';
 import { visibleDebris, avoidDebris } from '../src/simulation/debris-avoidance.js';
 import { returningToCarrier } from '../src/simulation/carrier-escort.js';
 import { DebrisPhysics, debrisPhysicsReady } from '../src/simulation/debris-physics.js';
@@ -302,4 +303,114 @@ test('two close tactical Recognizers give one attacker room to complete a stomp'
   assert(committed);
   assert(r.crushed);
   session.dispose();
+});
+
+test('support formation stays assigned away from target and without personal line of sight',async()=>{
+ const {coordinateAttacks,attackSupportGoal}=await import('../src/simulation/attack-coordination.js');
+ const {maneuverOptions}=await import('../src/simulation/tactical.js');
+ const template=createRun(1982).recognizers[0];
+ const peers=Array.from({length:6},(_,id)=>({...template,id,x:-10000+id*8,s:-10020,y:80,health:3,canSee:true,memory:{x:-10000,s:-10000,vx:0,vs:0,seenAt:0},nextAttack:0}));
+ coordinateAttacks(peers,0);const leader=peers[0].attackAssignment.leaderId;
+ const supporters=peers.filter(e=>e.id!==leader),goals=supporters.map(e=>attackSupportGoal(e,e.memory));
+ assert.equal(supporters.filter(e=>e.attackAssignment.role==='spotter').length,1);
+ assert.ok(supporters.some(e=>e.attackAssignment.role==='cutoff'));
+ for(let i=0;i<goals.length;i++)for(let j=i+1;j<goals.length;j++)assert.ok(Math.hypot(goals[i].x-goals[j].x,goals[i].s-goals[j].s)>=59.9);
+ supporters.forEach((e,i)=>{Object.assign(e,goals[i]);e.canSee=false;});
+ // A satellite outside the old 140 m recruitment radius must not rejoin the attack pile.
+ supporters[0].x-=180;
+ coordinateAttacks(peers,1);
+ for(const e of supporters){
+  assert.equal(e.attackAssignment.leaderId,leader);
+  const choices=maneuverOptions(e,1,peers);assert.ok(choices.some(p=>p.kind==='support'));
+  assert.ok(!choices.some(p=>['strike','low-approach','search-track'].includes(p.kind)));
+ }
+ coordinateAttacks(peers,40);assert.ok(peers.every(e=>!e.attackAssignment));
+});
+
+for(const mode of ['local','jev'])test(`two distant ${mode} attackers keep a progressing lead long enough to finish the stomp`,()=>{
+ const session=new GameSession({settings:{vehicle:{aiMode:mode}}}),r=session.run;
+ Object.assign(r,{x:-10000,s:-10000,speed:0,enemyTanks:[],dataBeams:[]});r.recognizers=r.recognizers.slice(0,2);
+ r.recognizers.forEach((e,i)=>Object.assign(e,{x:r.x+(i?120:-120),s:r.s,y:80,yaw:i?Math.PI/2:-Math.PI/2,vx:0,vs:0,vy:0,yawVelocity:0,health:3,canSee:true,memory:{x:r.x,s:r.s,vx:0,vs:0,seenAt:0},nextSense:0,nextAttack:0,stompDisabled:false}));
+ let lead;
+ for(let i=0;i<2700&&!r.crushed;i++){
+  session.advance({},1/60);
+  if(mode==='jev')for(const e of r.recognizers){
+   const t=e.tactical;if(!t||t.requested===t.revision)continue;
+   const option=t.options?.find(o=>o.kind==='pursue');
+   if(option&&!e.attack)assert.ok(applyTacticalChoice(e,{id:option.id,confidence:1},t.revision,r.time,r.time));
+   t.requested=t.revision;
+  }
+  const assigned=r.recognizers.find(e=>e.attackAssignment)?.attackAssignment.leaderId;
+  lead??=assigned;assert.equal(assigned,lead,'progressing lead must not be rotated out');
+  assert.ok(r.recognizers.filter(e=>e.attack&&['fold','drop'].includes(e.attack.phase)).length<=1);
+ }
+ assert.ok(r.crushed,'must complete the approach and stomp within 45 seconds');session.dispose();
+});
+
+for(const choice of ['local','pursue','strike','low-approach'])test(`opening formation completes a prompt stomp with ${choice} decisions`,()=>{
+ const session=new GameSession({settings:{vehicle:{aiMode:choice==='local'?'local':'jev'}}}),r=session.run;
+ startPursuit(r);
+ for(let i=0;i<2400&&!r.crushed;i++){
+  session.advance({},1/60);
+  if(choice!=='local')for(const e of r.recognizers){
+   const t=e.tactical;if(!t||t.requested===t.revision)continue;
+   const option=t.options?.find(o=>o.kind===choice);
+   if(option&&!e.attack)assert.ok(applyTacticalChoice(e,{id:option.id,confidence:1},t.revision,r.time,r.time));
+   t.requested=t.revision;
+  }
+ }
+ assert.ok(r.crushed,`no stomp after ${r.time}s with ${choice}`);
+ assert.ok(r.recognizers.some(e=>e.attack?.phase==='hold'&&e.health===3),'stomping does not cost health');
+ session.dispose();
+});
+
+test('stomp landing crushes debris without self damage, but normal flight remains vulnerable',async()=>{
+ const {applyDebrisImpacts}=await import('../src/simulation/debris-damage.js');
+ const r=createRun(1982),e=r.recognizers[0],hit={target:`enemy:${e.id}`,energy:55000,point:{x:e.x,y:0,z:-e.s}};
+ for(const phase of ['drop','hold']){e.attack={phase};applyDebrisImpacts(r,[hit]);assert.equal(e.health,3);}
+ e.attack=null;applyDebrisImpacts(r,[hit]);assert.equal(e.health,2);
+});
+
+for(const choice of ['local','pursue','strike','low-approach'])test(`48-meter stomp respects normal yaw limits with ${choice} decisions`,()=>{
+ for(let direction=0;direction<8;direction++){
+  const session=new GameSession({settings:{vehicle:{aiMode:choice==='local'?'local':'jev'}}}),r=session.run;
+  Object.assign(r,{x:-10000,s:-10000,enemyTanks:[],dataBeams:[]});r.recognizers=r.recognizers.slice(0,1);
+  const e=r.recognizers[0];Object.assign(e,{x:r.x,s:r.s-48,y:80,yaw:direction*Math.PI/4,vx:0,vs:0,vy:0,yawVelocity:0,canSee:true,memory:{x:r.x,s:r.s,vx:0,vs:0,seenAt:0},nextSense:0});
+  for(let i=0;i<1200&&!r.crushed;i++){
+   const yawVelocity=e.yawVelocity,speed=Math.hypot(e.vx,e.vs);
+   session.advance({},1/60);
+   assert.ok(Math.hypot(e.vx,e.vs)<=speed+session.settings.flight.acceleration/60+1e-9,'close attacks must not boost thrust');
+   assert.ok(Math.abs(e.yawVelocity)<=session.settings.flight.turnRate+1e-9);
+   assert.ok(Math.abs(e.yawVelocity-yawVelocity)<=session.settings.flight.turnAcceleration/60+1e-9);
+   const t=e.tactical;
+   if(choice!=='local'&&t&&t.requested!==t.revision){
+    const option=t.options?.find(o=>o.kind===choice);
+    if(option&&!e.attack)assert.ok(applyTacticalChoice(e,{id:option.id,confidence:1},t.revision,r.time,r.time));
+    t.requested=t.revision;
+   }
+  }
+  assert.ok(r.crushed,`${choice}: heading ${direction*Math.PI/4} failed to complete the turn and stomp`);
+  assert.equal(e.health,3);session.dispose();
+ }
+});
+
+for(const mode of ['local','jev'])test(`approaching Clu is intercepted ahead of his path with ${mode} control`,()=>{
+ for(const lateral of [0,20,40]){
+  const session=new GameSession({settings:{vehicle:{aiMode:mode}}}),r=session.run;
+  Object.assign(r,{x:-10000,s:-10000,yaw:0,speed:22,enemyTanks:[],dataBeams:[]});r.recognizers=r.recognizers.slice(0,1);
+  const e=r.recognizers[0];Object.assign(e,{x:r.x+lateral,s:r.s+140,y:80,yaw:Math.PI,vx:0,vs:0,vy:0,yawVelocity:0,nextSense:0});
+  let leadAtCommit;
+  for(let i=0;i<480&&!r.crushed;i++){
+   session.advance({throttle:1},1/60);
+   if(e.attack&&leadAtCommit==null)leadAtCommit=e.s-r.s;
+   const t=e.tactical;
+   if(mode==='jev'&&t&&t.requested!==t.revision){
+    const option=t.options?.find(o=>o.kind==='pursue');
+    if(option&&!e.attack)assert.ok(applyTacticalChoice(e,{id:option.id,confidence:1},t.revision,r.time,r.time));
+    t.requested=t.revision;
+   }
+  }
+  assert.ok(leadAtCommit>40,'fold before the approaching target reaches the aircraft');
+  assert.ok(r.crushed,`missed approach from ${lateral} m sideways`);assert.equal(e.health,3);session.dispose();
+ }
 });

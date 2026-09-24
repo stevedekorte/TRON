@@ -1,12 +1,12 @@
 @font-face{font-family:FilmTerminal;src:url('/fonts/InterfaceRaster-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
-body.terminal{background:#020204;--terminal-top:27.5vh;--terminal-font-size:clamp(17px,2.8vw,56px)}
+body.terminal{background:#020204;--terminal-top:27.5vh;--terminal-font-size:min(1.5vw,2.15vh)}
 body.terminal .masthead,body.terminal #footer,body.terminal #game{visibility:hidden}
 body.terminal .overlay{background:#020204;padding:0;display:block}
 body.terminal .grain{opacity:.035}
 .terminal .intro{position:absolute;inset:0;max-width:none;padding:0;overflow:hidden}
 .terminal-grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .terminal-content{position:absolute;z-index:1;top:var(--terminal-top);left:20.4%;width:75%;font-family:FilmTerminal,monospace;color:#159ddd;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566}
-.terminal .terminal-copy{font:400 var(--terminal-font-size)/1.04 FilmTerminal,monospace;letter-spacing:.025em;margin:0;white-space:pre;min-height:2.08em;color:inherit;transform:none;transform-origin:0 0}
+.terminal .terminal-copy{font:400 var(--terminal-font-size)/1.12 FilmTerminal,monospace;letter-spacing:.025em;margin:0;white-space:pre;min-height:2.08em;color:inherit;transform:none;transform-origin:0 0}
 .terminal-cursor{display:inline-block;width:.48em;height:.78em;margin-left:.05em;vertical-align:-.04em;background:currentColor;box-shadow:0 0 5px #0a91db}
 .complete .terminal-cursor{animation:terminal-blink .85s steps(1) infinite}
 #terminal-actions{margin-top:clamp(32px,6vh,70px);animation:terminal-reveal .3s ease-out;color:#427d9f;text-shadow:0 0 6px #005b9540}
@@ -19,7 +19,7 @@ body.terminal .grain{opacity:.035}
 .terminal-notes:hover{color:#99d5f5}
 @keyframes terminal-blink{50%{opacity:0}}
 @keyframes terminal-reveal{from{opacity:0}to{opacity:1}}
-@media(max-width:700px){.terminal-content{left:7%;width:90%}body.terminal{--terminal-font-size:3.2vw;--terminal-top:28vh}.terminal-controls,.terminal-objective{font-size:14px}.terminal-start{font-size:21px}}
+@media(max-width:700px){.terminal-content{left:7%;width:90%}body.terminal{--terminal-top:28vh}.terminal-controls,.terminal-objective{font-size:14px}.terminal-start{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.complete .terminal-cursor{animation:none}#terminal-actions{animation:none}}
 
 body.entering #game{visibility:visible}
@@ -45,7 +45,7 @@ body.entering .overlay *{pointer-events:none!important}
 .terminal-copy{animation:terminal-reveal .5s ease-out both}
 @media(prefers-reduced-motion:reduce){.terminal-copy{animation:none}}
 
-.end-tribute{display:none;position:relative;width:93.333%;margin:2.08em 0 0;color:#159ddd;font:400 var(--terminal-font-size)/1.04 FilmTerminal,monospace;text-align:left;letter-spacing:.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9540;white-space:pre-wrap;}
+.end-tribute{display:none;position:relative;width:93.333%;margin:2.08em 0 0;color:#159ddd;font:400 var(--terminal-font-size)/1.12 FilmTerminal,monospace;text-align:left;letter-spacing:.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9540;white-space:pre-wrap;}
 body.detached:not(.entering) .end-tribute{display:grid;}
 .tribute-measure,.tribute-typed{grid-area:1/1;}
 .tribute-measure{visibility:hidden;}
@@ -55,3 +55,22 @@ body.detached .terminal-copy{transform:none;}
 
 .terminal-signoff,.end-tribute.signing-off .terminal-cursor{color:#ff3025;text-shadow:0 0 3px #e92115,0 0 10px #a5121266;}
 .end-tribute.signing-off .terminal-cursor{box-shadow:0 0 5px #e92115;}
+
+/* Victory is a continuous printer page; credits keep their original presentation. */
+body.victory .terminal-content{top:5vh;left:8%;width:84%;}
+body.victory .terminal-copy{min-height:0;}
+body.victory .intro{overflow:auto;}
+body.victory .end-tribute{display:none;}
+body.victory-credits .terminal-copy{display:none;}
+body.victory-credits .end-tribute{margin-top:0;}
+
+/* Cache completed printer lines independently instead of repainting the growing page. */
+body.victory .printer-line{display:inline-block;transform:translateZ(0);}
+
+/* Isolate glyph shaping; retain spaces without measuring font or DOM geometry. */
+body.victory .printer-character{display:inline-block;white-space:pre;contain:layout style;}
+
+/* Film-reference terminal signature; independent of the typed text layout. */
+.terminal-encom{display:none;position:fixed;right:4vw;bottom:15vh;width:clamp(85px,9.5vw,190px);height:auto;pointer-events:none;opacity:.8;filter:drop-shadow(0 0 2px #898fc9) drop-shadow(0 0 5px #626eb855);}
+body.terminal .terminal-encom{display:block;}
+body.entering .terminal-encom{opacity:calc(.8 * var(--opening-fade,1));}

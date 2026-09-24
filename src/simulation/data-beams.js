@@ -10,7 +10,8 @@ export function createDataBeams(random,world=DEFAULT_WORLD){
  return MAZE_INSTANCES.map(m=>{
   const candidates=OPEN_CELLS.filter(p=>p.mazeId===m.id&&Math.hypot(p.x-m.x,p.s-m.s)<MAZE_LENGTH*.28&&freePosition(p.x,p.s,DATA_BEAM.wallClearance)&&!used.has(`${p.c},${p.r}`));
   if(!candidates.length)throw new Error(`No clear central data-beam site in maze ${m.id}`);
-  const p=candidates[Math.floor(random()*candidates.length)];used.add(`${p.c},${p.r}`);
+  const p=m.beamPosition??candidates[Math.floor(random()*candidates.length)];
+  if(!freePosition(p.x,p.s,DATA_BEAM.wallClearance))throw new Error(`Blocked authored beam position in maze ${m.id}`);used.add(`${p.c},${p.r}`);
   return {id:m.id,x:p.x,s:p.s,collectedAt:null,transferStartedAt:null,ringOpened:false,waveRadius:0,waveHits:[],waveDistances:{}};
  });
 }
@@ -96,6 +97,9 @@ export function collectData(run,dt=0){
   if(run.time-beam.transferStartedAt<DATA_BEAM.transferSeconds)continue;
   beam.collectedAt=run.time;run.dataCollected++;run.transferActive=false;
   run.events.push({type:'dataCollected',id:beam.id,x:beam.x,s:beam.s,y:0});
+ }
+ if(!run.won&&!run.crushed&&run.dataBeams.length>0&&run.dataBeams.every(beam=>beam.collectedAt!==null)){
+  run.won=true;run.speed=0;run.events.push({type:'victory'});
  }
  damageRingContacts(run);updateDataWaves(run);
 }

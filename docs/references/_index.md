@@ -3,6 +3,14 @@ title: References
 subtitle: Visual direction and source images
 ---
 
+## Central labyrinth trace — September 23
+
+The user supplied [Big labyrinth](images/mazes/Big%20labyrinth.png) as the fifth maze blueprint. [Trace overlay](labyrinth-trace.svg) shows the extracted contours against the source. Blue regions become walls; dark regions remain open. The image yields 116 wall islands and three interior holes, simplified to a one-pixel contour tolerance, then scaled at 2.4 m/pixel with 54 m walls. This keeps the finer passages usable by tanks while preserving the circular court.
+
+`src/levels/labyrinth-outlines.js` contains the committed contour data. To retrace the PNG, run `scripts/trace-labyrinth.py` in a Python environment with `opencv-python-headless`. Normal builds require no Python: `npm run docs` regenerates the SVG from committed outlines. Both blueprint mazes share `src/levels/outline-maze.js` for collision and triangulation.
+
+
+
 ## Fixed reference studio
 
 Open [Reference studio](http://127.0.0.1:5173/reference.html) with the development server running. Front tank, rear tank, maze overview, wall-detail and driving views place the supplied film frame beside the actual game renderer. An overlay slider helps compare framing. All views share the runtime materials, lighting, floor and maze; only fixed camera placement and overview fog scaling differ.

@@ -1,3 +1,4 @@
+import {inPatrolRegion} from '../levels/patrol-region.js';
 import {enemyPlanningBudget} from './planning-budget.js';
 import {coordinateAttacks,supportingAttack,attackSupportGoal} from './attack-coordination.js';
 import {radioRangeFor} from '../game/communication.js';
@@ -14,7 +15,7 @@ import {beginSpotlight,updateSpotlight,spotlightOnTarget,SEARCHLIGHT} from './sp
 import {raiseAlert,searchlightStrength} from './alertness.js';
 import {formationTarget} from './formation.js';
 import {retireTarget} from './target-memory.js';
-import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor,approachSpeed} from './flight.js';
+import {advanceFlightToward,advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor,approachSpeed} from './flight.js';
 import {beginCrush,advanceCrush,resolveCrush,CRUSH,stompTarget,stompApproach} from './crush.js';
 const {MAZE_LENGTH}=DEFAULT_WORLD;
 import { config, RECOGNIZER_SCALE, angleDelta, clamp } from '../game/config.js';
@@ -24,7 +25,7 @@ function random(e) {e.seed=(Math.imul(e.seed,1664525)+1013904223)>>>0;return e.s
 export function createRecognizers(rng=Math.random,world=DEFAULT_WORLD) {
  const {OPEN_CELLS,WALL_HEIGHT}=world,RECOGNIZER_STARTS=recognizerStarts(world),CARRIER=carrierFor(world);
   return RECOGNIZER_STARTS.map((start,id)=>{
-    const cells=OPEN_CELLS.filter(p=>p.mazeId===(start.mazeId??0));
+    const cells=OPEN_CELLS.filter(p=>p.mazeId===(start.mazeId??0)&&inPatrolRegion(p,world.MAZE_INSTANCES[p.mazeId],start.patrolSector??null,world.MAZE_INSTANCES[p.mazeId].patrols?.airCount??1));
     const p=start.role==='patrol'?{...start,...cells[Math.floor(rng()*cells.length)]}:start;
     return attachWorld({...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s),
     alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.role==='escort'?CARRIER.speed:0,vs:0,vy:0,yawVelocity:0,seed:Math.floor(rng()*4294967296),
@@ -186,12 +187,9 @@ export function navigate(e,now,dt,others) {
   // Distance-only arrival settles behind it at the target's cruising speed.
   const targetMotion=e.canSee&&e.memory&&distance>0
     ?Math.max(0,((e.memory.vx||0)*dx+(e.memory.vs||0)*ds)/distance):0;
-  const targetSpeed=approachSpeed(e,desired,distance,Math.min(cruise,targetMotion+distance*.6));
-  const speed=Math.hypot(e.vx,e.vs),forward=-Math.sin(e.yaw)*e.vx+Math.cos(e.yaw)*e.vs;
-  const braking=clamp((speed-targetSpeed)/8,0,1);
-  const thrust=FLIGHT.drag*targetSpeed+Math.max(0,targetSpeed-forward)*1.2;
+  const targetSpeed=Math.min(cruise,targetMotion+distance*.6);
   const hold=settling||yielding;
-  advanceFlight(e,dt,hold?0:thrust,hold?1:braking);
+  advanceFlightToward(e,dt,headingX,headingS,hold?0:targetSpeed);
   // Feet clear the slabs, so patrols can physically fly across the whole maze.
   const altitude=WALL_HEIGHT+22*RECOGNIZER_SCALE+7+(e.state==='wander'?7:0)+Math.sin(now*.4+e.id)*1.8;
   advanceLift(e,dt,altitude);

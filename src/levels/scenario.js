@@ -1,6 +1,7 @@
 import { createMazeWorld } from './maze-world.js';
 import * as authored from './authored-maze.js';
 import * as blueprint from './blueprint-maze.js';
+import * as labyrinth from './labyrinth-maze.js';
 
 /** A serializable recipe. Browser preferences are resolved by bootstrap, never here. */
 export function scenarioSpec({
@@ -8,6 +9,7 @@ export function scenarioSpec({
   layoutSeed = 1982,
   runSeed = 1982,
   siteCount = 4,
+  centralLabyrinth = false,
   ...settings
 } = {}) {
   if (!['authored', 'blueprint'].includes(layout)) throw new Error(`Unknown maze: ${layout}`);
@@ -19,32 +21,34 @@ export function scenarioSpec({
     layoutSeed: layoutSeed >>> 0,
     runSeed: runSeed >>> 0,
     siteCount,
+    centralLabyrinth:!!centralLabyrinth,
   });
 }
 
 export function createScenario(options = {}) {
   const spec = scenarioSpec(options);
   const base = spec.layout === 'blueprint' ? blueprint : authored;
-  const geometry = createMazeWorld(base, spec.layoutSeed, spec.siteCount);
+  const geometry = createMazeWorld(base, spec.layoutSeed, spec.siteCount,spec.centralLabyrinth?labyrinth:null);
   const FLOOR_HALF = base.FLOOR_HALF || [base.HALF, base.HALF];
   const MAZE_LENGTH = Math.max(
     2 * FLOOR_HALF[0] * Math.hypot(base.BASIS.a, base.BASIS.c),
     2 * FLOOR_HALF[1] * Math.hypot(base.BASIS.b, base.BASIS.d),
   );
-  const patrols = geometry.instances.map((m) => ({
+  const patrols = geometry.instances.flatMap((m) => Array.from({length:m.patrols?.airCount??1},(_,patrolSector)=>({
     ...geometry.openCells.find((p) => p.mazeId === m.id),
     mazeId: m.id,
-  }));
+    patrolSector:m.patrols?patrolSector:undefined,
+  })));
   const world = {
     ...base,
     ...geometry,
     spec,
-    revision: `${spec.layout}:${spec.layoutSeed}:${spec.siteCount}`,
+    revision: `${spec.layout}:${spec.layoutSeed}:${spec.siteCount}:${spec.centralLabyrinth}`,
     MAZE_KIND: spec.layout,
     FLOOR_HALF,
     MAZE_LENGTH,
     PURSUER_COUNT: 5,
-    PATROL_COUNT: geometry.instances.length,
+    PATROL_COUNT: patrols.length,
     MAZE_INSTANCES: geometry.instances,
     WALLS: geometry.walls,
     OPEN_CELLS: geometry.openCells,
