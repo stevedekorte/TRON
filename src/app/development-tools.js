@@ -44,7 +44,14 @@ export function createDevelopmentTools({
         })),
         gunnerHit: view.gunnerHit,
         enemyOutlines: view.enemyOutline.enabled,
+        arena: view.arena?.position.toArray() ?? null,
+        cycleRendering: view.arena?.userData.cycleRace ? {
+          visible: view.arena.userData.cycleRace.root.visible,
+          bikes: view.arena.userData.cycleRace.bikes.map(b=>({visible:b.visible,position:b.getWorldPosition(view.camera.position.clone()).toArray()})),
+          trailCounts: view.arena.userData.cycleRace.trails.map(m=>m.count),
+        } : null,
         camera: {
+          free: view.cameraRig.freeCamera.active,
           beamCinematic: view.cameraRig.beamCinematic,
           aerialBlend: view.cameraRig.aerialBlend,
           rotation: view.camera.quaternion.toArray(),

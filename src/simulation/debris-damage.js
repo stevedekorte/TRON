@@ -30,7 +30,7 @@ export function applyDebrisImpacts(run,impacts){
    run.events.push({type:'hit',subject:'carrier',x,y,s:-z,damage,source:'debris'});continue;
   }
   const clu=impact.target==='clu',e=clu?run:[...run.recognizers,...run.enemyTanks].find(e=>`enemy:${e.id}`===impact.target);
-  if(!e||clu&&(run.crushed||run.teleport)||e.teleport||e.state==='destroyed'||e.state==='materializing'||e.health<=0)continue;
+  if(!e||clu&&(run.inspection||run.crushed||run.teleport)||e.teleport||e.state==='destroyed'||e.state==='materializing'||e.health<=0)continue;
   // A Recognizer's stomp can crush wreckage (including its victim's debris)
   // without taking landing damage. Weapon damage remains independent.
   if(!clu&&e.kind!=='ground'&&['drop','hold'].includes(e.attack?.phase))continue;

@@ -1,3 +1,4 @@
+import { FreeCamera } from './free-camera.js';
 import * as THREE from 'three';
 import { BeamCamera } from './beam-camera.js';
 import { config, GUNNER, gunnerAimScale } from '../game/config.js';
@@ -15,6 +16,7 @@ export class CameraRig {
   constructor(world) {
     this.world = world;
     this.camera = new THREE.PerspectiveCamera(config.fov, 1, 0.15, 2500);
+    this.freeCamera = new FreeCamera(this.camera);
     this.aerial = false;
     this.aerialZoom = 1;
     this.aerialBlend = 0;
@@ -27,6 +29,7 @@ export class CameraRig {
     this.reset();
   }
   reset() {
+    if (this.freeCamera.active) this.freeCamera.exit();
     this.beamCamera.reset();
     this.beamCinematic = null;
     this.zoomTransition = null;
@@ -51,6 +54,7 @@ export class CameraRig {
     );
   }
   begin(run, dt, mode) {
+    if (this.freeCamera.active) return this.frame = { cinematic: null, aerialMix: 1, preview: false, gunner: false };
     const cinematic = this.beamCamera.update(run, {
       yaw: run.yaw + run.turretYaw,
       blend: this.aerialBlend,
@@ -97,6 +101,7 @@ export class CameraRig {
     return this.frame;
   }
   update(run, previous, alpha, dt, mode, { x, s, yaw, turretYaw, fragments = [] }) {
+    if (this.freeCamera.active) return { tankVisible: true };
     const { cinematic, aerialMix, preview, gunner } = this.frame,
       { wallIntersection, lineOfSight } = this.world;
     let tankVisible = !run.crushed && !gunner;

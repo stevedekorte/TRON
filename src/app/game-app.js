@@ -1,3 +1,4 @@
+import { loadArena } from '../rendering/arena.js';
 import { SOLAR_SAILER, SOLAR_SAILER_DEFAULTS } from '../game/solar-sailer.js';
 import { loadSolarSailer } from '../rendering/solar-sailer.js';
 import { createDevelopmentTools } from './development-tools.js';
@@ -83,6 +84,7 @@ export function createGameApp() {
     outroFade = 0;
   let disposed = false;
   let mouseWasLocked = false;
+  let inspectWasPaused = false;
   const GUNNER_WHEEL = { threshold: 40, intervalMs: 180, resetMs: 250 };
   let zoomWheelDelta = 0,
     zoomWheelTime = -Infinity,
@@ -127,6 +129,8 @@ export function createGameApp() {
     inputController.fireQueued = false;
     if (next !== 'running') sound.silence();
     $('overlay').hidden = next === 'running';
+    $('loading').hidden = next !== 'loading';
+    if (!view?.cameraRig.freeCamera.active) $('free-camera-help').hidden = true;
     $('intro').hidden = !['ready', 'entering'].includes(next);
     $('paused').hidden = next !== 'paused';
     $('error').hidden = next !== 'error';
@@ -214,6 +218,30 @@ export function createGameApp() {
   listen(window, 'keydown', (event) => {
     idleTime = 0;
     if (mode === 'loading') return;
+    if (event.code === 'KeyC' && !event.ctrlKey && !event.metaKey && !event.altKey && ['running', 'paused'].includes(mode)) {
+      event.preventDefault();
+      if (!event.repeat) toggleInspection();
+      return;
+    }
+    if (view?.cameraRig.freeCamera.active) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      event.preventDefault();
+      if (event.code === 'Escape') { if (!event.repeat) toggleInspection(); }
+      else if (event.code === 'Space') {
+        if (!event.repeat) {
+          if (mode === 'paused') resume(); else pause();
+          $('overlay').hidden = true;
+          $('free-camera-help').hidden = false;
+        }
+      }
+      else if (event.code === 'Home' && view.arena) {
+        const camera = view.camera;
+        camera.position.copy(view.arena.position).add({ x: 700, y: 1000, z: 950 });
+        camera.lookAt(view.arena.position);
+        view.cameraRig.freeCamera.rotation.setFromQuaternion(camera.quaternion, 'YXZ');
+      } else keys.add(event.code);
+      return;
+    }
     if(event.code==='KeyN'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&['running','entering','paused'].includes(mode)){
       event.preventDefault();
       if(!event.repeat)setJevEnabled(config.aiMode!=='jev');
@@ -365,6 +393,26 @@ export function createGameApp() {
       keys.add(key);
     }
   });
+  function toggleInspection() {
+    const camera = view.cameraRig.freeCamera;
+    if (camera.active) {
+      camera.exit();
+      run.inspection = false;
+      keys.clear();
+      $('free-camera-help').hidden = true;
+      if (inspectWasPaused) setMode('paused');
+      else if (mode === 'paused') resume();
+    } else {
+      inspectWasPaused = mode === 'paused';
+      pause();
+      camera.enter();
+      run.inspection = true;
+      deathElapsed = 0;
+      sound.fadeMusic(0);
+      $('overlay').hidden = true;
+      $('free-camera-help').hidden = false;
+    }
+  }
   function setJevEnabled(enabled) {
     config.aiMode=enabled?'jev':'local';
     session.configure('vehicle',{aiMode:config.aiMode});
@@ -398,6 +446,7 @@ export function createGameApp() {
   });
   listen($('game'), 'pointerdown', (e) => {
     idleTime = 0;
+    if (view?.cameraRig.freeCamera.active) return;
     if (run.gunner && !GUNNER.mouseEnabled) return;
     if (['running', 'entering'].includes(mode) && e.button === 0) {
       if (run.gunner && document.pointerLockElement !== $('game')) {
@@ -409,6 +458,10 @@ export function createGameApp() {
     }
   });
   listen(document, 'mousemove', (event) => {
+    if (view?.cameraRig.freeCamera.active) {
+      if (event.buttons === 1) view.cameraRig.freeCamera.look(event.movementX, event.movementY);
+      return;
+    }
     if (
       !GUNNER.mouseEnabled ||
       mode !== 'running' ||
@@ -435,6 +488,7 @@ export function createGameApp() {
     $('game'),
     'wheel',
     (event) => {
+      if (view?.cameraRig.freeCamera.active) { event.preventDefault(); return; }
       if (run.gunner && !GUNNER.mouseEnabled) {
         event.preventDefault();
         return;
@@ -531,6 +585,7 @@ export function createGameApp() {
 
   function updateDeathTerminal(dt) {
     const fade = $('death-fade');
+    if (view.cameraRig.freeCamera.active) { deathElapsed = 0; fade.hidden = true; return; }
     if(mode==='ready'&&endingStage==='victory'){victoryPrinter.update();return;}
     if (mode === 'ready' && (run.crushed||endingStage==='credits')) {
       const music = sound.musicDirector.music;
@@ -635,8 +690,9 @@ export function createGameApp() {
             mouseLook: view.cameraRig.mouseLook,
             mouseTarget: view.mouseTarget,
           });
+          if (view.cameraRig.freeCamera.active) command = { ...command, throttle: 0, steer: 0, fire: false, firePressed: false, mouseTarget: null, turret: 0, aimPitch: 0 };
           if (autoplay.enabled)
-            command = mergeAutoplayInput(autoplay.input(run), command, keys, run);
+            command = mergeAutoplayInput(autoplay.input(run), command, view.cameraRig.freeCamera.active ? new Set() : keys, run);
           const events = session.advance(command, fixedStep);
           inputController.consume();
           for (const event of events) {
@@ -650,6 +706,7 @@ export function createGameApp() {
     if (!autoplay.enabled && (document.hidden || !windowFocused)) pause();
     if (view && mode !== 'error') updateDeathTerminal(dt);
     if (view && mode !== 'error') {
+      view.cameraRig.freeCamera.update(dt, keys);
       if (!document.hidden && !(mode==='ready'&&endingStage==='victory'))
         view.render(run, session.previous, mode === 'running' ? loop.alpha : 1, dt, mode);
       sound.update(run, view.camera, mode === 'running' || mode === 'entering');
@@ -679,14 +736,15 @@ export function createGameApp() {
         throw new Error(
           'This game needs WebGL 2. Try a current desktop browser with hardware acceleration enabled.',
         );
-      const [[tank, recognizer], carrier, cloud, solarSailer] = await Promise.all([
+      const [[tank, recognizer], carrier, cloud, solarSailer, arena] = await Promise.all([
         loadVehicles(),
         loadCarrier(),
         loadCloud(),
         loadSolarSailer(),
+        loadArena(map),
       ]);
       const physics = new DebrisPhysics(map.nearbyWalls);
-      view = new View($('game'), tank, recognizer, carrier, cloud, map, physics, solarSailer);
+      view = new View($('game'), tank, recognizer, carrier, cloud, map, physics, solarSailer, arena);
       session.attachDebris(physics, view.breakups);
       if (disposed) {
         view.dispose();
@@ -699,6 +757,8 @@ export function createGameApp() {
         view.cameraRig.reducedMotion = e.matches;
       });
 
+      // Warm the first scene frame while the loading terminal still covers it.
+      view.render(run, session.previous, 1, 0, 'ready');
       $('start').disabled = false;
       $('start').querySelector('span').textContent = 'ENTER THE MAZE';
       terminal.finish();

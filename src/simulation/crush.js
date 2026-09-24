@@ -101,7 +101,7 @@ export function resolveCrush(run,e) {
   if(e.stompDisabled){e.attack.impact=false;return;}
   e.attack.impact=false;
   run.events.push({type:'hit',x:e.x,y:.2,s:e.s});
-  if(!run.crushed&&!run.teleport&&Math.hypot(run.x-e.x,run.s-e.s)<CRUSH.hitRadius) {
+  if(!run.inspection&&!run.crushed&&!run.teleport&&Math.hypot(run.x-e.x,run.s-e.s)<CRUSH.hitRadius) {
     const speed=run.speed;run.crushed=true;run.speed=0;run.impact=1;retireTarget(e);
     run.events.push({type:'destroyed',subject:'tank',x:run.x,y:0,s:run.s,yaw:run.yaw,turretYaw:run.turretYaw,vx:-Math.sin(run.yaw)*speed,vs:Math.cos(run.yaw)*speed,hit:{x:run.x,y:2,z:-run.s}});
   }

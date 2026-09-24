@@ -9,7 +9,7 @@ const WALL_FACE_TONE=[.012,.022,.047];
 function distantFog(shader,falloff=200){
   shader.fragmentShader=shader.fragmentShader.replace('#include <fog_fragment>',THREE.ShaderChunk.fog_fragment.replace('fogDensity * fogDensity * vFogDepth * vFogDepth', 'fogDensity * fogDensity * readableDepth * readableDepth').replace('#ifdef FOG_EXP2', `#ifdef FOG_EXP2\n float readableDepth = vFogDepth <= 250. ? vFogDepth : 250. + ${falloff.toFixed(1)} * (1. - exp(-(vFogDepth - 250.) / ${falloff.toFixed(1)}));`));
 }
-export function createWorld(scene,world=DEFAULT_WORLD) {
+export function createWorld(scene,world=DEFAULT_WORLD,arena=null) {
   const {MAZE_INSTANCES,WALLS,WALL_HEIGHT,HALF,FLOOR_HALF,BASIS,wallAt}=world;
   const positions=[],colors=[],exposed=[],shadowIds=[];let shadowId=0;
   function quad(a,b,c,d,tone) {for(const p of [a,b,c,a,c,d]){positions.push(...p);colors.push(...tone);shadowIds.push(shadowId);}}
@@ -104,6 +104,11 @@ export function createWorld(scene,world=DEFAULT_WORLD) {
   floorMaterial.onBeforeCompile=shader=>{
     distantFog(shader);
     shader.uniforms.aerialView=aerialView;
+    if(arena){
+      shader.uniforms.arenaFootprint={value:new THREE.Vector3(arena.position.x,arena.position.z,466)};
+      shader.fragmentShader='uniform vec3 arenaFootprint;\n'+shader.fragmentShader;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n if(all(lessThan(abs(vGround.xz-arenaFootprint.xy),vec2(arenaFootprint.z)))) discard;');
+    }
     shader.uniforms.floorHighTint={value:new THREE.Color(0x233560)};
     shader.vertexShader='varying vec3 vGround;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvGround=(modelMatrix*vec4(position,1.)).xyz;');
