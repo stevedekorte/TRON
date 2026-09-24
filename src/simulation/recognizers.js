@@ -1,3 +1,4 @@
+import { returningToArena, flyArenaPatrol } from './arena-patrol.js';
 import {inPatrolRegion} from '../levels/patrol-region.js';
 import {enemyPlanningBudget} from './planning-budget.js';
 import {coordinateAttacks,supportingAttack,attackSupportGoal} from './attack-coordination.js';
@@ -27,7 +28,7 @@ export function createRecognizers(rng=Math.random,world=DEFAULT_WORLD) {
   return RECOGNIZER_STARTS.map((start,id)=>{
     const cells=OPEN_CELLS.filter(p=>p.mazeId===(start.mazeId??0)&&inPatrolRegion(p,world.MAZE_INSTANCES[p.mazeId],start.patrolSector??null,world.MAZE_INSTANCES[p.mazeId].patrols?.airCount??1));
     const p=start.role==='patrol'?{...start,...cells[Math.floor(rng()*cells.length)]}:start;
-    return attachWorld({...p,id,y:WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s),
+    return attachWorld({...p,id,y:p.y??WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.yaw??(p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s)),
     alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.role==='escort'?CARRIER.speed:0,vs:0,vy:0,yawVelocity:0,seed:Math.floor(rng()*4294967296),
     targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0},world);});
 }
@@ -218,7 +219,10 @@ export function updateRecognizers(run,dt) {
     e.lastBroadcast=e.memory.seenAt;e.nextRadio=now+SENSORS.radioInterval;
   }
   coordinateAttacks(active,now);
-  for(const e of active.filter(e=>e.kind!=='ground')){(returningToCarrier(e,now)?flyCarrierEscort:tacticalEnabled(run)?navigateTactical:navigate)(e,now,dt,active,enemyPlanningBudget(run));resolveCrush(run,e);}
+  for(const e of active.filter(e=>e.kind!=='ground')){
+    if(returningToArena(e,now)){flyArenaPatrol(e,now,dt);continue;}
+    e.arenaPatrolling=false;
+    (returningToCarrier(e,now)?flyCarrierEscort:tacticalEnabled(run)?navigateTactical:navigate)(e,now,dt,active,enemyPlanningBudget(run));resolveCrush(run,e);}
   // Physical clearance backs up steering avoidance when several observers converge.
   // Shoulder width and physical spacing grow together with model scale.
   const separation=48*RECOGNIZER_SCALE;

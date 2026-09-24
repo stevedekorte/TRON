@@ -197,17 +197,6 @@ export function cloneEnemyTank(source){
    const original=o.material;
    if(!materials.has(original)){
      const m=original.clone();m.onBeforeCompile=original.onBeforeCompile;
-     if(m.name.includes('Body_Black')){
-       m.color.setHex(m.name.startsWith('Upper')?0x192531:0x141e28);
-       m.emissive.setHex(0x101c2a);m.emissiveIntensity=.7;
-       m.specular.setHex(0x548092);m.shininess=32;
-     }else if(m.name.includes('Red_Emission')){
-       m.color.setHex(0xb13928);m.emissive.setHex(0x9a170b);m.emissiveIntensity=.3;
-     }else if(m.name==='White_Emission'){
-       m.color.setHex(0xff5343);m.emissive.setHex(0xa51e16);m.emissiveIntensity=.4;
-     }else if(m.name==='Wheels'){
-       m.emissive.setHex(0x21160a);m.emissiveIntensity=.5;
-     }
      materials.set(original,m);
    }
    o.material=materials.get(original);

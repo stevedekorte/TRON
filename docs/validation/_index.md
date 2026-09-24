@@ -3,6 +3,22 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Grounded cycle trail connection — September 24
+
+The latest film close-up corrected the trail shape: its leading edge has a tire-shaped recess, while its lower edge reaches the floor. Replaced the axle-height taper with a vertically subdivided, closed profile around the measured rear wheel, with 2.5 cm clearance. The top slopes toward the wheel; the bottom remains at arena floor height. `node tests/light-cycles.mjs` passed in headless Chromium on macOS, and the side-on wheel/trail capture was inspected. Seven focused cycle tests and production/documentation build passed.
+
+## Cycle trails, wheel cleanup and self-shadowing — September 24
+
+`node --test tests/light-cycles.test.js`: seven tests passed, including hold/flash/lower timing, releasing only a destroyed cycle's collision cells, opaque trail geometry lowering, and deterministic rounds. `node tests/light-cycles.mjs` passed in headless Chromium on macOS with the cycle shadow atlas active and no console/page errors. Inspected close-up renders for the smooth replacement hub caps, brighter blue, curved rear-wheel trail connection, visible thickness, fixed vertical bands and edges, and directional/self-shadow contrast. Cycles now use movement lanes independent of the floor grid. The floating scoreboard was removed after the visual check; it no longer allocates a canvas, texture or sign mesh.
+
+Production/documentation build and whitespace validation passed. Original source assets are unchanged. Small details elsewhere on the purchased model still retain the source geometry; this is not a complete model rebuild. Safari and live visual preference remain for user review.
+
+## Arena appearance and spectator safety — September 24
+
+On macOS, headless Chromium checks `node tests/light-cycles.mjs` and `node tests/arena-inspection.mjs` passed. Inspected the close-up cycle render: opaque amber/blue trails with pale rear flares, darker blue bike bodies, thicker grid lines at 4.32 m spacing and a dark navy floor. Browser checks cover pause/resume, six rendered racers, model dimensions, matching enemy/Clu tank materials, and suppression of the death terminal during inspection. Safari appearance remains for user review.
+
+The full simulation suite reported 283 passes and one outdated assertion that required a non-draw race after 180 seconds. With the smaller grid, that deterministic encounter draws; the test now verifies completed rounds, winner selection from surviving teams, score accounting and deterministic restart, including draws. All eight focused cycle/inspection tests then passed. Production build passed. Spectator damage tests cover bullets, debris and stomps, with normal damage restored on exit.
+
 ## Central labyrinth follow-up — September 23
 
 `npm test`: 276 passed after fixed courtyard beam placement, eight interior tank spawns and six air patrol spawns. Four layout seeds verify counts, interior regions, beam coordinates and clearance. Central tank spawn connectivity now targets the courtyard with a 40,000-node offline budget; using the old outer-maze exit budget rejected valid deep-interior positions.
@@ -1013,3 +1029,10 @@ Safari follow-up: victory text now appends one immutable `.printer-character` el
 - `npm test`: 274 passed. Local and simulated JEV pursuit choices intercept Clu travelling at 22 m/s from 140 m away, with lateral offsets 0/20/40 m. Tests require fold commitment while Clu remains more than 40 m away, successful impact within eight seconds of the encounter, and no attacker health loss. Local measured impacts: 5.02/5.60/6.18 seconds; no movement tuning changes.
 - Regression verifies holding a crossing during expected target motion and replanning immediately for a newly observed turn. Existing sight-loss, wall-clearance and post-commit miss tests remain covered.
 - `node tests/stomp-browser.mjs --approaching`: headless Chrome/macOS passed with accepted simulated JEV responses, CLU driving toward an offset aircraft, fold beginning more than 35 m ahead, and successful impact at 5.92 simulated seconds; attacker health remained 3. Capture: `test-results/approaching-stomp.png`. No page errors.
+
+## September 24 — light-cycle arena competition
+
+- `npm test`: 281 passed on the macOS development host. New cases cover deterministic six-bike rounds, shared trail/wall collision, simultaneous head-on crashes, perimeter patrol completion and contact-driven pursuit.
+- `node tests/light-cycles.mjs`: passed in headless Google Chrome on macOS. Verified six-cycle simulation, camera-only spectator run/pause, arena patrol presence, loaded model dimensions and matching player/enemy tank material colors. Inspected `test-results/light-cycle-models.png` and the closer `test-results/light-cycle-match.png` capture.
+- `npm run build`: passed; regenerated documentation from Markdown sources. Existing large-bundle warning remains.
+- The supplied cycle decal texture is absent; source diffuse color is used on that small surface. Safari race rendering, sound and human judgment of racing tactics remain unverified. Main-world vehicles do not collide with the separate race's trails or arena enclosure.

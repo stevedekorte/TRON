@@ -19,14 +19,18 @@
   </header>
 
   <main id="overlay" class="overlay">
-    <section class="intro" id="intro">
+    <section class="intro" id="loading" role="status" aria-live="polite">
+      <div class="terminal-content"><h1 class="terminal-copy complete">LOADING<span class="loading-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span><span class="terminal-cursor" aria-hidden="true"></span></h1></div>
+      <img class="terminal-encom" src="/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
+    </section>
+    <section class="intro" id="intro" hidden>
       <div class="terminal-content">
         <h1 class="terminal-copy complete" aria-label="Request access to Clu program. Code 6 password to memory 0222."><span id="terminal-text" aria-hidden="true">REQUEST ACCESS TO CLU PROGRAM
 CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="true"></span></h1>
   <p id="end-tribute" class="end-tribute"><span class="tribute-measure" aria-hidden="true"></span><span class="tribute-typed" aria-hidden="true"><span id="tribute-text"></span><span class="terminal-cursor"></span></span></p>
         <div id="terminal-actions" hidden>
           <button id="start" class="terminal-start" disabled><span>INITIALIZING</span><span aria-hidden="true"> [ENTER]</span></button>
-          <p class="terminal-controls">W A S D / ARROWS : DRIVE<br>J / L : TURN TURRET &nbsp; F : CENTER + LEVEL<br>SPACE / CLICK : FIRE CANNON<br>V : AERIAL VIEW<br>ESC : PAUSE</p>
+          <p class="terminal-controls">W A S D / ARROWS : DRIVE<br>J / L : TURN TURRET &nbsp; F : CENTER + LEVEL<br>SPACE / CLICK : FIRE CANNON<br>V : AERIAL VIEW &nbsp; C : FREE CAMERA<br>ESC : PAUSE</p>
           <p class="terminal-objective">EXPLORE THE MAZE. THERE IS NO ASSIGNED OBJECTIVE.</p>
           <a class="terminal-notes" href="./docs/index.html" target="_blank" rel="noopener">PROJECT NOTES</a>
         </div>
@@ -37,6 +41,7 @@ CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="
     <section id="error" class="result" hidden><div class="eyebrow">CONNECTION FAILED</div><h2>UNABLE TO ENTER.</h2><p id="error-message"></p><button class="primary" onclick="location.reload()">RELOAD</button></section>
   </main>
 
+    <div id="free-camera-help" hidden style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;color:#aac8df;background:#030912dd;padding:12px;font:12px monospace;white-space:nowrap">FREE CAMERA · WASD move · Q/E down/up · drag / arrows look · Shift fast · Home arena · Space run/pause · C / Esc return</div>
   <div id="death-fade" hidden aria-hidden="true"></div>
   <div id="gunner-sight" hidden aria-hidden="true">
     <svg viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet">
@@ -56,7 +61,7 @@ CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="
     <div id="system-warnings" role="status" aria-live="polite" aria-atomic="true" hidden></div>
     <div id="clu-health" class="turbo-indicator health-indicator"><span>HEALTH</span><div id="health-meter" class="turbo-meter" role="meter" aria-label="CLU health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="health-fill"></i></div></div>
     <div id="turbo" class="turbo-indicator"><span>T / TURBO</span><div class="turbo-meter"><i id="turbo-fill"></i></div></div>
-    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>P / GUNNER</span><span>O / ZOOM</span><span>IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>M / SOUND</span><span>B / SCREENSHOT</span><span>ESC / PAUSE</span></div>
+    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>C / FREE CAMERA</span><span>P / GUNNER</span><span>O / ZOOM</span><span>IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>M / SOUND</span><span>B / SCREENSHOT</span><span>ESC / PAUSE</span></div>
     <div id="survey" class="sim-survey" hidden><span>MAZE SURVEY / CLU POSITION</span><canvas id="map" width="500" height="500" aria-label="Maze layout and Clu position"></canvas><small>TAB TO CLOSE</small></div>
   </div>
 

@@ -16,6 +16,53 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 <a class="card" href="history/index.html"><h3>History</h3><p>Original milestones, earlier plans, and development notes.</p><span class="arrow">View &rarr;</span></a>
 </div>
 
+## Light cycle arena asset preparation — September 23
+
+- [x] Isolate Daniel Preti’s arena architecture from the supplied OBJ; preserve source scale and retain original files.
+- [x] Add a runtime film-reference edge treatment: near-black walls with blue-gray outlines and deep purple symbols with violet borders. Inspect the Chrome preview; retain original model materials in the GLB.
+- [x] Remove the dense modeled floor and render a separate white-on-black procedural grid with the existing game grid spacing, antialiasing and fade. Use this in both the arena preview and the game.
+- [x] Reload the 447 KB, 8,349-triangle standalone GLB in Chrome and inspect rendered overview/interior captures. Geometry excludes the original floor tiles, bikes, trails and exterior scenery.
+
+## Cycle trail and lighting follow-up — September 24
+
+- [x] Give opaque trails 18 cm thickness, a grounded curved recess around the rear wheel (with tire clearance, not an axle-height taper), brighter blue, periodic vertical bands and highlighted edges.
+- [x] Keep a destroyed cycle's barrier for three seconds, flash and settle over 0.24 seconds, then lower it to zero over 0.7 seconds. Release only that cycle's collision cells when the trail disappears.
+- [x] Keep sharp right-angle turns independent of the decorative floor grid. Remove the floating arena scoreboard; matches continue internally.
+- [x] Repair duplicate/quantized model surfaces, preserve authored smooth normals, and replace cracked hub caps with smooth geometry at measured source dimensions.
+- [x] Add a compact shadow tile per cycle for self-shadowing and reduce ambient wash on cycle materials. Dispose the atlas with the arena scene.
+
+## Arena visual refinements and uninterrupted inspection — September 24
+
+- [x] Make trail walls fully opaque with saturated amber/deep-blue bodies, a soft vertical gradient and a pale flare behind each bike. Match their height to the bike body (1.5 m). Interpolate and trim trail ends to the rear of each bike; brightness follows distance along the trail through corners.
+- [x] Darken the blue bike's painted body and trim while retaining white/silver components and original source materials in the GLB.
+- [x] Double arena grid-line width, reduce cell spacing by 10% to 4.32 m, and add a subtle navy floor tint. Cycle movement uses independent 4.8 m decision lanes so turns need not coincide with the 4.32 m floor grid.
+- [x] While free-camera inspection is active, protect Clu from bullets, stomps and debris damage and suppress end-screen transitions. Leaving inspection restores damage; restart clears inspection. This keeps running spectator matches from being interrupted by Clu's off-camera death.
+
+## Light-cycle competition and arena patrol — September 24
+
+- [x] Extract gold, blue and red bikes into standalone GLBs; use gold and blue for two teams of three inside the arena. Separate authored dimensions, simulation and rendering. Use 3.6 m bikes at 38.4 m/s on independent movement lanes.
+- [x] Use deterministic local steering with bounded free-space search, forward clearance, friendly-lane avoidance and opponent interception. All bikes share the arena map and visible trail occupancy; this race does not call JEV.
+- [x] Resolve each grid crossing simultaneously. Arena bounds, own trails, friendly trails and opposing trails eliminate bikes; head-on same-cell collisions eliminate both. Trails persist until the round resets. Last surviving team wins; after two minutes compare survivors, otherwise draw. Keep team scores, a three-second starting countdown and six-second result interval.
+- [x] Render imported bikes, team-colored trail walls and crash flashes. Cap trail geometry by maximum round travel. The race uses the fixed simulation timestep and resets with the game.
+- [x] Add one Recognizer circling above the arena wall with original flight dynamics. Sightings, radio contact and audible threats interrupt patrol; stale target knowledge returns it to the perimeter. The routing works in classic/local/JEV modes without querying JEV for routine patrol.
+- [x] In free-camera mode, Space runs/pauses the world while retaining camera control; camera keys do not drive or fire Clu. C/Home/Space provides a quick way to watch the arena.
+- [x] Enemy tanks clone Clu's colors and materials without the former enemy recoloring; materials remain independently owned.
+- Race obstacles and participants are confined to their own simulation: cycles do not fight Clu or become Recognizer targets yet. Source texture limitation is recorded in Models. Browser captures establish initial rendering; human play and Safari review remain pending.
+
+## Loading terminal — September 24
+
+- [x] Show a static LOADING... terminal before application initialization; keep the access terminal and start controls hidden until assets, physics, scene setup, and the first rendered frame are ready. Initial HTML supplies the loading text, with the shared terminal typography and ENCOM logo. Three fixed-position dots appear successively on a 1.8-second CSS opacity cycle; reduced-motion preferences show static dots. This is an activity indicator, not measured progress.
+
+## Arena placement and inspection camera — September 23
+
+- [x] Make the light-cycle floor grid five times denser (4.8 m cells), scale its line width down proportionally, and dim the lines. Preserve subpixel line coverage so distant grid lines do not expand into a glowing field.
+
+- [x] Place the arena east of the central labyrinth, grid-aligned with a narrow gap; avoid overlap with maze bounds for alternate layout seeds. Retain the imported scale, colored wall outlines, and white-on-black floor.
+- [x] Cut the arena footprint out of the main ground shader to remove overlapping floor surfaces. Add a continuous exterior enclosure behind the imported decorated inner walls, using the same near-black surface color and blue-gray edge outlines.
+- [x] C toggles a free inspection camera during play or pause. Freeze simulation and JEV planning while inspecting; restore the previous running/paused state on exit. WASD moves, Q/E descends/ascends, drag or arrow keys looks, Shift moves faster, Home frames the arena, C/Escape returns to Clu.
+- [x] Chrome browser regression verifies startup, arena loading, camera movement with frozen simulation, and restoring both running and paused states. Inspect the rendered arena/labyrinth overview. Production build passes.
+- Arena architecture is scenery to Clu and the main-world enemies; their wall collision and arena entrances are not yet implemented. The separate light-cycle race enforces its own arena bounds and solid trails. Safari visual review remains pending.
+
 ## Current direction — open-ended simulation
 
 ### Central labyrinth placement and population — September 23

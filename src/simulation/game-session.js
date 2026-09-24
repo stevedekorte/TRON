@@ -1,3 +1,4 @@
+import { createCycleRace, updateCycleRace } from './light-cycles.js';
 import { config, attachSettings } from '../game/config.js';
 import { FLIGHT } from './flight.js';
 import { HEARING } from '../game/hearing.js';
@@ -25,6 +26,7 @@ export class GameSession {
     this.debris?.clear();
     this.physics?.clear();
     this.run = createRun(seed, this.world, this.settings);
+    this.run.cycleRace = createCycleRace(this.world, this.run.seed);
     this.previous = { ...this.run };
     return this.run;
   }
@@ -39,6 +41,7 @@ export class GameSession {
     // step(): teleport/hearing, transfer lock, motors, carrier/enemies,
     // weapons, beam completion, teleport/hearing. Retain these same-tick boundaries.
     step(r, input, dt);
+    if (!r.won) updateCycleRace(r.cycleRace, dt);
     if (r.teleportRevision !== revision) this.previous = { ...r };
     // Existing debris moves before this tick's destruction events spawn new pieces.
     if (this.physics && !r.won) {

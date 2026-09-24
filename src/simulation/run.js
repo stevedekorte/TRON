@@ -22,7 +22,7 @@ export function createRun(seed=randomSeed(),world=DEFAULT_WORLD,settings=null) {
   const config=settings?.vehicle||configFor(null);
   const {SPAWN}=world;
   const random=seededRandom(seed);
-  const run={...SPAWN,seed,teleportPads:createTeleportPads(world.MAZE_INSTANCES,world.WALL_HEIGHT),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
+  const run={...SPAWN,seed,inspection:false,teleportPads:createTeleportPads(world.MAZE_INSTANCES,world.WALL_HEIGHT),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
     carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,won:false,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
   if(config.aiMode!=='classic'&&config.aiSmallEncounter){run.recognizers=run.recognizers.slice(0,2);run.enemyTanks=run.enemyTanks.filter(e=>e.role==='patrol'&&e.mazeId===0).slice(0,1);if(run.enemyTanks[0])Object.assign(run.enemyTanks[0],{id:100,index:0});}
   run.scenario={...world.spec,runSeed:seed,configuration:settings?structuredClone(settings):null};
@@ -145,7 +145,7 @@ export function updateWeapons(run,input,dt) {
       if(p.faction==='enemy'){
         if(run.enemyTanks.some(e=>e.id!==p.owner&&!e.teleport&&e.state!=='destroyed'&&Math.hypot(p.x-e.x,p.s-e.s)<3.5&&p.y<3.5)){p.life=0;continue;}
         if(!run.crushed&&!run.teleport&&Math.hypot(p.x-run.x,p.s-run.s)<3.5&&p.y<3.5){
-          p.life=0;run.health=Math.max(0,run.health-1);run.impact=1;run.events.push({type:'hit',subject:'tank',shotFrom,fatal:run.health<=0,x:p.x,y:p.y,s:p.s});
+          p.life=0;if(run.inspection)continue;run.health=Math.max(0,run.health-1);run.impact=1;run.events.push({type:'hit',subject:'tank',shotFrom,fatal:run.health<=0,x:p.x,y:p.y,s:p.s});
           if(run.health<=0){const speed=run.speed;run.crushed=true;run.speed=0;run.events.push({type:'destroyed',subject:'tank',x:run.x,y:0,s:run.s,yaw:run.yaw,turretYaw:run.turretYaw,vx:-Math.sin(run.yaw)*speed,vs:Math.cos(run.yaw)*speed,hit:{x:p.x,y:p.y,z:-p.s}});}
         }
         continue;

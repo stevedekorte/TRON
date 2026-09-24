@@ -50,6 +50,7 @@ export class View {
     map = DEFAULT_WORLD,
     physics = null,
     solarSailer = null,
+    arena = null,
   ) {
     this.map = map;
     const RECOGNIZER_STARTS = recognizerStarts(map),
@@ -77,7 +78,10 @@ export class View {
     const fill = new THREE.DirectionalLight(0x7b72ab, 0.9);
     fill.position.set(50, 15, -40);
     this.scene.add(fill);
-    this.world = createWorld(this.scene, map);
+    this.world = createWorld(this.scene, map, arena);
+    this.arena = arena;
+    this.arenaFloor = arena?.getObjectByName('Procedural_arena_floor');
+    if (arena) this.scene.add(arena);
     this.dataBeams = new DataBeams(this.scene, map);
     this.teleportPads = createTeleporters(this.world.floor.material, createTeleportPads(map.MAZE_INSTANCES, map.WALL_HEIGHT));
     this.solarSailer = solarSailer ? new SolarSailer(solarSailer, this.scene, map) : null;
@@ -282,6 +286,7 @@ export class View {
   render(run, previous, alpha, dt, mode) {
     const { wallIntersection, lineOfSight } = this.map;
     this.elapsed += dt;
+    this.arena?.userData.cycleRace.update(run.cycleRace);
     if (this.teleportRevision !== run.teleportRevision) {
       this.cameraRig.freshCamera = true;
       this.cameraRig.gunnerTransition = null;
@@ -338,6 +343,7 @@ export class View {
       t.visible = (Math.floor(run.s * 3) + i) % 3 !== 0;
     });
 
+    this.arenaFloor?.material.uniforms.fadeRange.value.set(160 + 1640 * aerialMix, 650 + 2350 * aerialMix);
     this.world.floor.position.set(x, -0.06, -s);
     this.world.floor.scale.setScalar(aerialMix > 0 ? Math.max(1, this.cameraRig.aerialZoom) : 1);
     this.ensureRecognizers(run.recognizers.length);
@@ -520,6 +526,7 @@ export class View {
     this.mazeShadows.update(this.renderer);
     this.recognizerShadows.update(this.renderer, this.breakups.bursts, this.camera.position);
     this.carrierShadows?.update(this.renderer);
+    this.arena?.userData.cycleRace.shadows.update(this.renderer);
     this.composer.render(dt);
   }
 
@@ -584,6 +591,8 @@ export class View {
     this.breakups.dispose();
     this.surfaceImpacts.dispose();
     this.clouds?.dispose();
+    this.arena?.userData.cycleRace.shadows.dispose();
+    this.arena?.userData.arenaStyle.dispose();
     disposeSceneResources(this.scene);
     for (const pass of this.composer.passes) pass.dispose?.();
     this.composer.dispose();

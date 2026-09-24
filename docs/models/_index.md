@@ -67,3 +67,37 @@ Run `node scripts/prepare-solar-sailer.mjs` with Vite on port 5173 to regenerate
 Reference reviewed: `docs/references/videos/carrier and solar sailer.mp4`, 1:34–1:46. Film-derived scale and exact visual fidelity remain approximations; this is scenery, not a new combat unit. Lane placement and cadence are named settings in `src/game/solar-sailer.js`.
 
 The first Solar Sailer pass starts at three simulation minutes and repeats every three minutes. Its beam eases in over the three seconds before each crossing and out over nine seconds afterward; both remain absent during the initial quiet period. Pause and restart use the same simulation clock.
+
+## Extracted light cycle arena — September 23
+
+[Standalone GLB](extra/tron_1982_light_cycle_arena.glb) · [Preview](extra/tron_1982_light_cycle_arena-preview.png)
+
+Extracted from the user-supplied `extra/tron_1982.glb`: seven architecture meshes (arena walls, broken-wall interiors, upper surfaces, lights, signs and graffiti), 9,329 triangles. Vehicles, light trails and surrounding scenery are excluded. Original materials, embedded textures, scale and proportions are preserved; the arena is centered in XZ with its base at Y=0. Bounds are approximately 168.05 × 12.33 × 168.05 in imported units. No new interior floor was fabricated.
+
+Original: **Tron 1982**, **jvouillon**, [Sketchfab source](https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88), **CC BY 4.0**, as recorded in the source GLB metadata. Attribution is also embedded in the extracted root's extras. Reproduce with `node scripts/extract-light-cycle-arena.mjs` while Vite runs on port 5173. The script reloads the exported bytes and renders the preview. The original file is unchanged; this asset is not integrated into the game.
+
+## Daniel Preti light cycle arena — September 23
+
+[Converted GLB](preti_light_cycle_arena.glb) · [Overview](preti-light-cycle-arena-preview.png) · [Interior](preti-light-cycle-arena-interior.png)
+
+Source: Daniel Preti's **TRON 1982 — Games Grid Lightcycles**, supplied locally in `TRON Game Sector+LightCycles-Obj`. This is a purchased model, not the CC-licensed jvouillon scene above; retain its seller license. The OBJ states meters. The isolated arena spans approximately 931.44 × 60 × 931.43 meters and is centered in XZ. It is an inspection asset, not yet integrated into gameplay.
+
+The conversion retains Group2 arena walls and signage only, excluding Component_55’s modeled floor, exterior Group1 scenery, cycles and trails. The source uses large concave polygons: they are triangulated with Earcut while preserving winding. Original MTL diffuse colors are mapped to nonmetallic glTF materials; double-sided rendering retains SketchUp back faces. The modeled floor is omitted entirely. `src/rendering/arena-floor.js` renders a separate white-on-black grid on one plane, using the game’s 24-meter spacing, 0.10-meter line half-width, derivative antialiasing and distance fade. Other authored colors are retained. The absent `TRON___LIGHTCYCLE.png` texture belongs only to omitted cycles, so the arena has no missing texture dependencies.
+
+Reproduce with `python3 scripts/prepare-preti-arena.py` (Python standard library plus the installed Three.js Earcut helper in Node), then `node scripts/preview-preti-arena.mjs` with Vite running. Chrome successfully reloads the standalone GLB and renders both views. The floor-free export contains 8,349 triangles and is 447,196 bytes, down from roughly 2.24 million triangles and 54 MB. The procedural grid is a runtime shader, intentionally separate from the GLB. Original OBJ/MTL files remain unchanged.
+
+### Arena edge treatment
+
+`src/rendering/arena-style.js` provides a reversible runtime material/edge adapter for the film reference. Walls use near-black fill and thin blue-gray outlines; authored `_23` symbols use deep purple fill and violet outlines. Geometry edges omit coplanar triangle diagonals. Depth-tested lines and a small polygon offset on the solid surfaces keep the outlines readable without showing through other walls. The adapter restores source materials and disposes its GPU resources when removed. Source GLB materials are unchanged.
+
+`node scripts/preview-preti-arena.mjs` passed in Chrome with no page errors; overview and interior previews were inspected. It draws 6,329 edge segments over the 8,349-triangle arena. Reference frames live in `docs/references/images/cycle arena/`. This treatment is currently in the standalone preview, pending arena gameplay integration.
+
+## Standalone Preti light cycles — September 24
+
+The supplied Daniel Preti OBJ contains three complete bikes. Extracted [gold](preti_light_cycle_gold.glb), [blue](preti_light_cycle_blue.glb), and [red](preti_light_cycle_red.glb) GLBs retain their authored proportions and materials, with separate wheel details included and the old trails omitted. They are centered, grounded and face local -Z. Regenerate with `python3 scripts/prepare-preti-arena.py --cycle gold` (or `blue`, `red`). Original meter scale is retained in the files; the game adapter scales each bike uniformly to 3.6 m long.
+
+These inherit the purchased arena asset's usage constraints and Daniel Preti attribution. The source references an absent `TRON___LIGHTCYCLE.png` texture on a small decal; that patch uses its source diffuse color. Gold and blue are loaded for the arena's two teams; red remains available as a separate model.
+
+The cycle rendering adapter removes duplicate/degenerate faces and gently smooths export quantization while pinning material seams and hard edges. The tiny hub caps had centimeter-quantized coordinates and cracked sliver faces; they are reconstructed as smooth ellipsoids at measured source bounds. Source GLBs remain unchanged. Authored smooth normals are retained, blue is adjusted toward the film reference, and cycle-only ambient attenuation and a compact per-bike depth atlas provide directional shading and self-shadowing.
+
+The original 158 MB arena OBJ was deleted at the user’s request on September 24 and is not stored in Git. The extracted GLBs, conversion scripts, material file and reference images are retained. Re-running the extraction requires restoring the purchased OBJ locally first.
