@@ -1,0 +1,41 @@
+{
+  "source": "docs/references/videos/Enter Cycle Arena.m4v",
+  "sha256": "0d4b51db14bde8700e6496c60e3cb0871a160d1731cc09b17122c171be6435d2",
+  "attribution": "TRON (1982), Walt Disney Productions; user-supplied reference.",
+  "useConstraints": "Film soundtrack excerpts; no redistribution license supplied.",
+  "note": "Dialogue timings located with local transcription. Effects selected against picture; mixed soundtrack, not isolated stems. Listening approval pending.",
+  "clips": [
+    {
+      "file": "cycle-prepare-transport.wav",
+      "startSeconds": 11.72,
+      "endSeconds": 14.28,
+      "channelSelection": "center duplicated to stereo",
+      "filters": "pan=mono|c0=FC,highpass=f=60,afade=t=in:d=0.012,afade=t=out:st=2.5249999999999986:d=0.035",
+      "peakTarget": 0.72
+    },
+    {
+      "file": "cycle-have-transport.wav",
+      "startSeconds": 17.32,
+      "endSeconds": 18.65,
+      "channelSelection": "center duplicated to stereo",
+      "filters": "pan=mono|c0=FC,highpass=f=60,afade=t=in:d=0.012,afade=t=out:st=1.2949999999999984:d=0.035",
+      "peakTarget": 0.72
+    },
+    {
+      "file": "cycle-transport.wav",
+      "startSeconds": 14.28,
+      "endSeconds": 17.32,
+      "channelSelection": "5.1 stereo downmix",
+      "filters": "highpass=f=60,afade=t=in:d=0.012,afade=t=out:st=3.005000000000001:d=0.035",
+      "peakTarget": 0.72
+    },
+    {
+      "file": "cycle-entry-startup.wav",
+      "startSeconds": 28.35,
+      "endSeconds": 31.408,
+      "channelSelection": "5.1 stereo downmix",
+      "filters": "highpass=f=60,afade=t=in:d=0.012,afade=t=out:st=3.0229999999999997:d=0.035",
+      "peakTarget": 0.72
+    }
+  ]
+}

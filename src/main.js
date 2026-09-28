@@ -1,3 +1,4 @@
+import './pwa/register.js';
 import { createGameApp } from './app/game-app.js';
 // Let the static loading terminal paint before synchronous world construction.
 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));

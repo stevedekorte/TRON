@@ -183,3 +183,15 @@ test('releasing a recenter chord one key at a time does not interrupt centering'
  input.release('KeyL');input.keys.add('KeyJ');step(r,input.command(r),1/60);
  assert(!r.turretLocked);assert(r.turretYaw>0);
 });
+
+test('assisted Recognizer marker follows only an acquired upward, visible target',async()=>{
+ const {assistedRecognizerTarget}=await import('../src/rendering/assist-target.js');
+ const {attachWorld,DEFAULT_WORLD}=await import('../src/levels/scenario.js');
+ const r=fixture();r.gunner=false;
+ const e={...createRun().recognizers[0],x:r.x,s:r.s+160,y:40,vx:0,vs:0,vy:0,state:'wander'};r.recognizers=[e];
+ assert.equal(assistedRecognizerTarget(r)?.id,e.id);
+ r.turretYaw=Math.PI/2;assert.equal(assistedRecognizerTarget(r),null);r.turretYaw=0;
+ r.gunner=true;assert.equal(assistedRecognizerTarget(r),null);r.gunner=false;
+ e.state='destroyed';assert.equal(assistedRecognizerTarget(r),null);e.state='wander';
+ attachWorld(r,{...DEFAULT_WORLD,lineOfSight:()=>false});assert.equal(assistedRecognizerTarget(r),null);
+});

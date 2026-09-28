@@ -79,6 +79,8 @@ export class GameLoop {
   }
   advance(dt, background, playing, step, fixedSeconds = LOOP_TIMING.fixedSeconds) {
     this.fixedSeconds = fixedSeconds;
+    // A cinematic hold must not become simulation catch-up on release.
+    if (!playing()) { this.resetAccumulator(); return; }
     this.accumulator += dt;
     let count = 0;
     const max = background
@@ -88,6 +90,7 @@ export class GameLoop {
       step(fixedSeconds);
       this.accumulator -= fixedSeconds;
     }
+    if (!playing()) this.resetAccumulator();
   }
   dispose() {
     if (this.disposed) return;

@@ -1,0 +1,105 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{
+ const page=await browser.newPage(),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:5173/');
+ await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
+ const geometryCheck=await page.evaluate(async()=>{
+   const T=await import('/node_modules/three/build/three.module.js');
+   const {GLTFLoader}=await import('/node_modules/three/examples/jsm/loaders/GLTFLoader.js');
+   const {applyCycleOpening}=await import('/src/rendering/cycle-opening.js');
+   const {loadRecognizer,createRecognizer}=await import('/src/rendering/models.js');
+   const {RECOGNIZER_TINTS}=await import('/src/game/recognizer-appearance.js');
+   const {scene}=await new GLTFLoader().loadAsync('/docs/models/preti_light_cycle_arena.glb');
+   scene.updateMatrixWorld(true);scene.traverse(o=>{if(o.isMesh)for(const m of [].concat(o.material))m.side=T.DoubleSide;});
+   const height=new T.Box3().setFromObject(scene).max.y;
+   const ray=new T.Raycaster(),p=new T.Vector3(),last=new T.Vector3(),look=new T.Vector3();let hits=0;
+   for(let i=0;i<=960;i++){
+     applyCycleOpening(i/960,{x:0,s:0},p,look);
+     if(i){const delta=p.clone().sub(last);ray.set(last,delta.clone().normalize());ray.far=delta.length();hits+=ray.intersectObject(scene,true).length;}
+     last.copy(p);
+   }
+   const template=await loadRecognizer(),black=createRecognizer(template),green=createRecognizer(template,{tintColor:RECOGNIZER_TINTS.green});
+   const trim=[];green.root.traverse(o=>{if(o.isMesh&&o.material.name!=='Base'&&o.material.emissive)trim.push([o.material,o.material.color.getHex(),o.material.emissive.getHex()]);});
+   const colors=[];for(const color of Object.values(RECOGNIZER_TINTS)){green.setTintColor(color);colors.push(green.material.color.getHex());}
+   return {height,hits,colors,expected:Object.values(RECOGNIZER_TINTS),black:black.material.color.getHex(),trimUnchanged:trim.every(([m,c,e])=>m.color.getHex()===c&&m.emissive.getHex()===e)};
+ });
+ assert.equal(geometryCheck.height,60);assert.equal(geometryCheck.hits,0,'camera swept path must clear the actual GLB triangles');
+ assert.deepEqual(geometryCheck.colors,geometryCheck.expected);assert.equal(geometryCheck.black,geometryCheck.expected[0]);assert(geometryCheck.trimUnchanged);
+ await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>document.body.classList.contains('cycle-loading')||__tron.state.playerVehicle==='cycle');
+ assert(await page.evaluate(()=>__tron.state.playerVehicle==='cycle'||getComputedStyle(document.querySelector('#game')).visibility==='hidden'));
+ await page.waitForFunction(()=>__tron.state.cycleOpening!==null,null,{timeout:60000});
+ assert(!(await page.evaluate(()=>getComputedStyle(document.body,'::after').content)).includes('LOADING'));
+ assert.equal(await page.locator('#cycle-controls').evaluate(el=>getComputedStyle(el).visibility),'hidden');
+ const start=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace,guard:__tron.state.recognizers.find(e=>e.role==='arena-patrol')}));
+ assert(start.camera.y>100&&start.camera.y<=111);
+ assert.equal(await page.evaluate(()=>__tron.state.tankVisible),false);
+ assert.deepEqual(await page.evaluate(()=>__tron.state.carrierMaterialization),{opacity:1,panel:false});
+ assert.equal(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
+ await page.waitForTimeout(500);
+ const middle=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace,guard:__tron.state.recognizers.find(e=>e.role==='arena-patrol')}));
+ assert(middle.camera.y<start.camera.y);
+ assert.equal(middle.race.time,start.race.time);
+ assert(middle.guard.s<start.guard.s-1,'patrol moves screen-left while race is held');
+ await page.screenshot({path:'test-results/cycle-opening.png'});
+ await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.cycleOpening);
+ await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>__tron.state.cycleOpening),paused);
+ await page.keyboard.press('Enter');
+ for(const [name,progress] of [['rim',4/16],['bank',7/16]]){
+   await page.waitForFunction(p=>__tron.state.cycleOpening>=p,progress);
+   await page.screenshot({path:`test-results/cycle-opening-${name}.png`});
+ }
+ await page.waitForFunction(()=>__tron.state.cycleOpeningAudio.includes('prepare-transport'));
+ await page.keyboard.press('Escape');
+ await page.waitForFunction(()=>__tron.state.cycleOpeningAudio.length===0);
+ await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>__tron.state.cycleOpeningAudio.includes('prepare-transport'));
+ await page.waitForFunction(()=>__tron.state.cycleOpening>=10.5/16);
+ await page.screenshot({path:'test-results/cycle-opening-grid.png'});
+ await page.waitForFunction(()=>__tron.state.cycleOpening>=14/16);
+ await page.screenshot({path:'test-results/cycle-opening-arrival.png'});
+ await page.waitForFunction(()=>__tron.state.cycleOpening>1.07);
+ const formation=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace,bikes:__tron.state.cycleRendering.bikes}));
+ assert.deepEqual(formation.bikes.map(b=>b.visible),[true,true,true,false,false,false]);
+ assert.equal(formation.race.time,start.race.time,'race remains held while gold team materializes');
+ await page.screenshot({path:'test-results/cycle-opening-formation.png'});
+ await page.waitForTimeout(300);
+ const heldCamera=await page.evaluate(()=>__tron.state.camera);
+ for(const axis of ['x','y','z'])assert.equal(heldCamera[axis],formation.camera[axis],'formation camera stays at the approach endpoint');
+ assert.deepEqual(await page.evaluate(()=>__tron.state.audioSampleErrors),[]);
+ for(const name of ['prepare-transport','have-transport','transport','entry-startup'])assert((await page.evaluate(()=>__tron.state.audioSamples)).includes('cycle-'+name));
+ await page.waitForFunction(()=>__tron.state.cycleOpening===null&&!document.body.classList.contains('cycle-intro'));
+ assert.deepEqual(await page.evaluate(()=>__tron.state.cycleOpeningAudio),[]);
+ assert.equal(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
+ assert((await page.evaluate(()=>__tron.state.camera.y))<20);
+ await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing');
+ await page.keyboard.down('KeyK');await page.waitForTimeout(400);await page.keyboard.up('KeyK');
+ assert((await page.evaluate(()=>__tron.state.camera.y))>7,'K raises the cycle camera toward aerial view');
+ await page.keyboard.down('KeyI');await page.waitForTimeout(500);await page.keyboard.up('KeyI');
+ await page.waitForTimeout(400);
+ assert((await page.evaluate(()=>__tron.state.camera.y))<5,'I returns to the normal cycle camera');
+ const timing=await page.evaluate(()=>({race:__tron.state.cycleRace.time,wall:performance.now()}));
+ await page.waitForTimeout(1000);
+ const elapsed=await page.evaluate(start=>({race:__tron.state.cycleRace.time-start.race,wall:(performance.now()-start.wall)/1000}),timing);
+ assert(elapsed.race<=elapsed.wall*1.15,`race advanced ${elapsed.race}s in ${elapsed.wall}s after intro`);
+ assert(elapsed.race>.3,'race advances after the hold');
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('http://127.0.0.1:5173/');
+ await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
+ await page.locator('#start-cycles').click();
+ await page.waitForFunction(()=>__tron.state.playerVehicle==='cycle');
+ assert.equal(await page.evaluate(()=>__tron.state.cycleOpening),null);
+ assert.equal(await page.evaluate(()=>__tron.state.tankVisible),false);
+ await page.locator('select[aria-label="Default tint preset"]').selectOption('red',{force:true});
+ await page.waitForFunction(()=>__tron.state.recognizers.filter(e=>e.role!=='arena-patrol').every(e=>e.faceTintColor===0x482626));
+ assert.equal(await page.evaluate(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor),0x354525);
+ await page.locator('select[aria-label="Arena patrol tint preset"]').selectOption('blue',{force:true});
+ await page.waitForFunction(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor===0x20334c);
+ await page.locator('#reset-tuning').dispatchEvent('click');
+ await page.waitForFunction(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor===0x354525);
+ assert.deepEqual(errors,[]);
+ console.log('Cycle opening: tank covered, backward maze-facing descent, held countdown, descending camera, pause/resume, and race handoff passed.');
+}finally{await browser.close();}

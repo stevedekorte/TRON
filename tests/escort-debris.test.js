@@ -394,8 +394,8 @@ for(const choice of ['local','pursue','strike','low-approach'])test(`48-meter st
  }
 });
 
-for(const mode of ['local','jev'])test(`near-head-on Clu is intercepted ahead of his path with ${mode} control`,()=>{
- // Wider crossings can now escape the half-speed lateral correction.
+for(const mode of ['local','jev'])test(`head-on interception and slower lateral pursuit with ${mode} control`,()=>{
+ // A 20 m offset can escape the new 3 m/s maneuver limit.
  for(const lateral of [0,20]){
   const session=new GameSession({settings:{vehicle:{aiMode:mode}}}),r=session.run;
   Object.assign(r,{x:-10000,s:-10000,yaw:0,speed:22,enemyTanks:[],dataBeams:[]});r.recognizers=r.recognizers.slice(0,1);
@@ -411,7 +411,8 @@ for(const mode of ['local','jev'])test(`near-head-on Clu is intercepted ahead of
     t.requested=t.revision;
    }
   }
-  assert.ok(leadAtCommit>40,'fold before the approaching target reaches the aircraft');
-  assert.ok(r.crushed,`missed approach from ${lateral} m sideways`);assert.equal(e.health,3);session.dispose();
+  if(lateral===0){assert.ok(leadAtCommit>40,'commit ahead of the head-on target');assert.ok(r.crushed);}
+  else assert.equal(r.crushed,false,'lateral crossing escapes slow maneuvering');
+  assert.equal(e.health,3);session.dispose();
  }
 });

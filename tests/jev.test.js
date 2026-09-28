@@ -83,3 +83,15 @@ test('local pacing and dollar budget have distinct messages and retry delays',as
  now=650;const capped=await invoke(middleware);assert.equal(capped.status,429);assert.match(capped.body.error,/rolling-hour budget/);
  now=3600000;assert.equal((await invoke(middleware,{method:'GET',url:'/api/jev/status'})).body.budget.remainingUsd,.0004);
 });
+
+test('Bit questions use fixed yes/no/unsure choices and the existing private relay',async()=>{
+ const question={controller:'bit',question:'Are you Bit?'};
+ const payload=jevQuestion(question);
+ assert.deepEqual(Object.keys(payload.questions.maneuver.criteria),['m0','m1','m2']);
+ assert.equal(JSON.parse(payload.state).question,question.question);
+ for(const value of ['',null,' '.repeat(10),'x'.repeat(1001)])assert.throws(()=>jevQuestion({controller:'bit',question:value}));
+ const middleware=createJevMiddleware({apiKey:'private-test',fetchImpl:async()=>Response.json({answers:{maneuver:{choice:'m1',confidence:.95}}})});
+ const response=await invoke(middleware,{body:question});
+ assert.equal(response.status,200);assert.equal(response.body.id,'m1');
+ assert.equal((await invoke(middleware,{body:question})).status,429);
+});

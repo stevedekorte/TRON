@@ -2,9 +2,11 @@ import {cyclePlayerPose} from '../simulation/light-cycles.js';
 import { FreeCamera } from './free-camera.js';
 import * as THREE from 'three';
 import { BeamCamera } from './beam-camera.js';
-import { config, GUNNER, gunnerAimScale } from '../game/config.js';
+import { config, GUNNER, gunnerAimScale, FOLLOW_ZOOM, AERIAL_ZOOM } from '../game/config.js';
 import { TANK } from '../game/tank.js';
 const CYCLE_CAMERA=Object.freeze({distanceMeters:10,heightMeters:4,lookAheadMeters:8,lookHeightMeters:1,responsePerSecond:8,glanceRadians:Math.PI*2/3,glanceResponsePerSecond:28,roadGlanceResponsePerSecond:4,turnLookRadians:Math.PI/5,turnLookResponsePerSecond:4,turnLookFullSpeedMetersPerSecond:5});
+import {applyCycleOpening} from './cycle-opening.js';
+export {CYCLE_OPENING} from './cycle-opening.js';
 const WORLD_UP = new THREE.Vector3(0,1,0);
 const AERIAL_CAMERA = Object.freeze({
   transitionSeconds: 1.2,
@@ -42,9 +44,11 @@ export class CameraRig {
     this.wasGunner = false;
     this.gunnerOpacity = 0;
     this.aerialBlend = 0;
+    this.followZoom = 1;
     this.encounterFocus = 0;
     this.encounterPitch = undefined;
     this.freshCamera = true;
+    this.cycleOpening = null;
     this.cycleAnchor = null;
     this.cycleGlanceInput = 0;
     this.cycleGlance = 0;
@@ -59,6 +63,13 @@ export class CameraRig {
       GUNNER.minPitch,
       GUNNER.maxPitch,
     );
+  }
+  cluAerialFraming(modeAerialMix){
+    const zoomMix=THREE.MathUtils.clamp((this.followZoom-FOLLOW_ZOOM.minScale)/(FOLLOW_ZOOM.maxScale-FOLLOW_ZOOM.minScale),0,1);
+    const aerialAmount=this.aerialZoom<1?(this.aerialZoom-AERIAL_ZOOM.minScale)/(1-AERIAL_ZOOM.minScale):this.aerialZoom;
+    const mix=THREE.MathUtils.lerp(zoomMix,THREE.MathUtils.clamp(aerialAmount,0,1),modeAerialMix);
+    const scale=THREE.MathUtils.lerp(AERIAL_ZOOM.maxScale,Math.max(1,aerialAmount),modeAerialMix);
+    return {mix,scale};
   }
   begin(run, dt, mode) {
     if (this.freeCamera.active) return this.frame = { cinematic: null, aerialMix: 1, preview: false, gunner: false };
@@ -133,19 +144,22 @@ export class CameraRig {
       const orbitYaw=lookYaw+this.cycleGlance;
       this.desired.set(pose.x+Math.sin(orbitYaw)*CYCLE_CAMERA.distanceMeters,CYCLE_CAMERA.heightMeters,-pose.s+Math.cos(orbitYaw)*CYCLE_CAMERA.distanceMeters);
       this.lookDesired.set(pose.x-Math.sin(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix),CYCLE_CAMERA.lookHeightMeters,-pose.s-Math.cos(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix));
-      const aerialMix=this.frame?.aerialMix??(this.aerial?1:0);
-      const aerialDistance=AERIAL_CAMERA.distance*this.aerialZoom;
-      this.desired.lerp(new THREE.Vector3(pose.x+Math.sin(pose.yaw)*aerialDistance,AERIAL_CAMERA.height*this.aerialZoom,-pose.s+Math.cos(pose.yaw)*aerialDistance),aerialMix);
+      const {mix:aerialMix,scale:aerialScale}=this.cluAerialFraming(this.frame?.aerialMix??(this.aerial?1:0));
+      const aerialDistance=AERIAL_CAMERA.distance*aerialScale;
+      this.desired.lerp(new THREE.Vector3(pose.x+Math.sin(pose.yaw)*aerialDistance,AERIAL_CAMERA.height*aerialScale,-pose.s+Math.cos(pose.yaw)*aerialDistance),aerialMix);
       this.lookDesired.lerp(new THREE.Vector3(pose.x,0,-pose.s),aerialMix);
-      const blend=this.freshCamera?1:1-Math.exp(-dt*CYCLE_CAMERA.responsePerSecond);
+      const openingRoll=this.cycleOpening===null?0:applyCycleOpening(this.cycleOpening,cycleRace.site,this.desired,this.lookDesired);
+      const blend=this.cycleOpening!==null||this.freshCamera?1:1-Math.exp(-dt*CYCLE_CAMERA.responsePerSecond);
       this.camera.position.lerp(this.desired,blend);this.look.lerp(this.lookDesired,blend);
       this.camera.lookAt(this.look);
-      this.camera.fov=config.fov;this.camera.updateProjectionMatrix();this.freshCamera=false;
+      this.camera.rotateZ(openingRoll);
+      this.camera.far=12000;this.camera.fov=config.fov;this.camera.updateProjectionMatrix();this.freshCamera=false;
       return {tankVisible:false};
     }
     this.cycleAnchor=null;
-    const { cinematic, aerialMix, preview, gunner } = this.frame,
+    const { cinematic, aerialMix:modeAerialMix, preview, gunner } = this.frame,
       { wallIntersection, lineOfSight } = this.world;
+    const {mix:aerialMix,scale:aerialScale}=this.cluAerialFraming(modeAerialMix);
     let tankVisible = !run.crushed && !gunner;
     let overhead = null;
     const cameraYaw = cinematic?.yaw ?? yaw + turretYaw;
@@ -180,7 +194,7 @@ export class CameraRig {
     } else {
       // A little extra distance makes room for both the tank and an overhead
       // craft; tilting alone would put Clu below the bottom of the frame.
-      const distance = config.cameraDistance + 32 * this.encounterFocus;
+      const distance = (config.cameraDistance + 32 * this.encounterFocus);
       this.desired.set(
         x + Math.sin(cameraYaw) * distance,
         config.cameraHeight,
@@ -197,11 +211,11 @@ export class CameraRig {
         const t = Math.max(0.05, hit - 0.06);
         this.desired.set(x + (end.x - x) * t, 3.5 + (end.y - 3.5) * t, -s - (end.s - s) * t);
       }
-      const distance = AERIAL_CAMERA.distance * this.aerialZoom;
+      const distance = AERIAL_CAMERA.distance * aerialScale;
       this.desired.lerp(
         new THREE.Vector3(
           x + Math.sin(cameraYaw) * distance,
-          AERIAL_CAMERA.height * this.aerialZoom,
+          AERIAL_CAMERA.height * aerialScale,
           -s + Math.cos(cameraYaw) * distance,
         ),
         aerialMix,

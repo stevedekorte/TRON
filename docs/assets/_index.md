@@ -149,3 +149,7 @@ Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The loc
 ## ENCOM terminal mark
 
 `public/images/encom-terminal.svg` is a project-authored vector approximation of the ENCOM mark visible in the user-supplied original-film still `docs/references/images/MCP terminal.png`. Paths and glow styling were authored locally; no external font or logo asset is loaded. The underlying film branding is not an original project design; no additional license is asserted.
+
+## Cycle arena entrance audio — September 28
+
+`scripts/extract-arena-entry-sfx.py` extracts four local WAVs from the user-supplied `docs/references/videos/Enter Cycle Arena.m4v`. `public/audio/cycle-entry-source.json` records source hash, exact cut boundaries, channel selection and processing. Dialogue uses the 5.1 center channel (11.72–14.28 s and 17.32–18.65 s); transport uses the stereo downmix at 14.28–17.32 s and startup at 28.35–31.408 s. All use short edge fades, 60 Hz high-pass filtering and peak normalization to 0.72. These are TRON (1982), Walt Disney Productions soundtrack excerpts; no redistribution license was supplied. Transcription located dialogue boundaries; subjective listening approval remains pending. The full source video is not included in the game build.

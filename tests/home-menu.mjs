@@ -29,31 +29,36 @@ try{
  const terminalTop=await page.locator('.terminal-content').last().evaluate(e=>e.getBoundingClientRect().top);
  await page.keyboard.press('Enter');
  await page.waitForFunction(()=>__tron.state.mode==='entering');
- const frozenTime=await page.evaluate(()=>__tron.state.time);
  assert.equal(await page.locator('.terminal-cursor:visible').count(),1);
  for(const id of ['hud','hint','autoplay-toggle','jev-stats','system-warnings'])assert.equal(await page.locator('#'+id).isVisible(),false);
  assert((await page.locator('#terminal-text').textContent()).length<60);
  assert.equal(await page.locator('.terminal-content').last().evaluate(e=>e.getBoundingClientRect().top),terminalTop);
+ // Hold the completed access message for one second, without confirmation.
  await page.waitForFunction(()=>document.querySelector('#terminal-text').textContent==='REQUEST ACCESS TO CLU PROGRAM\nCODE 6 PASSWORD TO MEMORY 0222');
- await page.waitForTimeout(2500);assert.equal(await page.evaluate(()=>__tron.state.mode),'entering');
- assert.equal(await page.evaluate(()=>__tron.state.time),frozenTime);
- assert.equal(await page.locator('#game-menu').isVisible(),false);
- await page.keyboard.press('KeyQ');
+ const holdStarted=Date.now();
+ await page.waitForTimeout(650);assert.equal(await page.evaluate(()=>__tron.state.mode),'entering');
+ // No confirming input after the initial program selection.
  await page.waitForFunction(()=>__tron.state.mode==='running');
+ assert(Date.now()-holdStarted>=850,'completed access text holds about one second');
  for(const selector of ['#hint','#hint span','#autoplay-toggle','#jev-stats span','#clu-health span']){
   const style=await page.locator(selector).first().evaluate(e=>({font:getComputedStyle(e).fontFamily,case:getComputedStyle(e).textTransform}));
   assert(style.font.includes('FilmTerminal'));assert.equal(style.case,'uppercase');
+  assert.equal(await page.locator(selector).first().evaluate(e=>getComputedStyle(e).fontSize),typography[0]);
  }
  assert(await page.locator('#autoplay-toggle').isVisible());
  assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
+ await page.screenshot({path:'test-results/clu-terminal-size-hud.png'});
  await home();await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await arena();
+ assert.equal(await page.locator('#cycle-controls').evaluate(e=>getComputedStyle(e).fontSize),typography[0]);
+ assert.equal(await page.locator('#turbo span').evaluate(e=>getComputedStyle(e).fontSize),typography[0]);
+ await page.screenshot({path:'test-results/cycle-terminal-size-hud.png'});
  await page.evaluate(()=>{const race=__tron.state.cycleRace;race.cycles[1].alive=false;race.phase='result';__tron.place({cycleRace:race});});
  await page.keyboard.press('Enter');await arena();
  await home();await page.locator('#start-cycles').tap();await arena();
  await home();await page.locator('#start').click();
- await page.waitForFunction(()=>document.body.classList.contains('access-ready'));
- await page.touchscreen.tap(600,400);await page.waitForFunction(()=>__tron.state.mode==='running');
+ await page.waitForFunction(()=>__tron.state.mode==='running');
  assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
+ await page.screenshot({path:'test-results/clu-terminal-size-hud.png'});
  for(const dismiss of [()=>page.keyboard.press('Enter'),()=>page.mouse.click(600,400),()=>page.touchscreen.tap(600,400)]){
   await page.keyboard.press('Shift+Digit8');
   await page.waitForFunction(()=>document.body.classList.contains('victory'));
@@ -69,8 +74,7 @@ try{
  assert.deepEqual(await page.evaluate(()=>__tron.state.teleportPads),[]);
  await page.emulateMedia({reducedMotion:'no-preference'});
  await page.keyboard.press('Enter');
- await page.waitForFunction(()=>document.body.classList.contains('access-ready'));
- await page.mouse.click(600,400);
+ await page.waitForFunction(()=>document.body.classList.contains('access-transition'));
  await page.waitForFunction(()=>!__tron.state.music.paused&&__tron.state.music.time>0,{},{timeout:2000});
  await page.waitForFunction(()=>document.body.classList.contains('access-transition'),{},{timeout:30000});
  assert.equal(await page.evaluate(()=>__tron.state.mode),'entering');
@@ -82,6 +86,13 @@ try{
  assert(opacity>0&&opacity<1);
  assert.notDeepEqual(await page.evaluate(()=>[__tron.state.camera.x,__tron.state.camera.y,__tron.state.camera.z]),cameraBefore);
  await page.screenshot({path:'test-results/clu-access-transition.png'});
+ const drivingBefore=await page.evaluate(()=>({speed:__tron.state.speed,yaw:__tron.state.yaw,turret:__tron.state.turretYaw,shots:__tron.state.shots,cruise:__tron.state.cruiseThrottle}));
+ const maxSpeed=await page.evaluate(async()=>(await import('/src/game/config.js')).config.maxSpeed);
+ assert.equal(drivingBefore.cruise,true);assert(Math.abs(drivingBefore.speed-maxSpeed)<.01);
+ await page.keyboard.down('KeyD');await page.keyboard.down('KeyL');await page.keyboard.press('Space');
+ await page.waitForTimeout(300);await page.keyboard.up('KeyD');await page.keyboard.up('KeyL');
+ const drivingAfter=await page.evaluate(()=>({mode:__tron.state.mode,yaw:__tron.state.yaw,turret:__tron.state.turretYaw,shots:__tron.state.shots}));
+ assert.equal(drivingAfter.mode,'entering');assert.notEqual(drivingAfter.yaw,drivingBefore.yaw);assert.notEqual(drivingAfter.turret,drivingBefore.turret);assert(drivingAfter.shots>drivingBefore.shots);
  await page.waitForFunction(()=>__tron.state.mode==='running');
  assert(await page.locator('#autoplay-toggle').isVisible());
  await page.keyboard.press('KeyV');
@@ -93,8 +104,19 @@ try{
  assert.equal(await page.locator('#pitch-hint').textContent(),'I/K / ZOOM');
  await page.keyboard.press('KeyV');
  const zoomOff=await page.evaluate(()=>__tron.state.aerialZoom);
+ const followBefore=await page.evaluate(()=>__tron.state.followZoom);
+ assert.equal(followBefore,1);
  await page.keyboard.down('KeyI');await page.waitForTimeout(150);await page.keyboard.up('KeyI');
+ assert.equal(await page.evaluate(()=>__tron.state.followZoom),1,'normal exterior is the closest view');
  assert.equal(await page.evaluate(()=>__tron.state.aerialZoom),zoomOff);
+ await page.keyboard.down('KeyK');await page.waitForTimeout(400);await page.keyboard.up('KeyK');
+ assert(await page.evaluate(()=>__tron.state.followZoom)>followBefore);
+ await page.keyboard.press('KeyP');
+ const gunnerZoom=await page.evaluate(()=>__tron.state.followZoom);
+ await page.keyboard.down('KeyI');await page.waitForTimeout(200);await page.keyboard.up('KeyI');
+ assert.equal(await page.evaluate(()=>__tron.state.followZoom),gunnerZoom);
+ assert(await page.evaluate(()=>__tron.state.aimPitch)>0);
+ await page.keyboard.press('KeyP');
  for(const order of [['KeyJ','KeyL'],['KeyL','KeyJ']]){
   await page.evaluate(()=>__tron.place({turretYaw:.5,aimPitch:.3,gunner:true,turretLocked:false,turretCentering:false,gunnerLeveling:false,recognizers:[],enemyTanks:[]}));
   await page.keyboard.down(order[0]);await page.keyboard.down(order[1]);
@@ -106,5 +128,6 @@ try{
  await page.evaluate(()=>{const r=__tron.state;__tron.place({dataBeams:r.dataBeams.map(b=>({...b,collectedAt:r.time})),recognizers:[],enemyTanks:[]});});
  await page.waitForFunction(()=>document.body.classList.contains('victory'));
  assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
+ await page.screenshot({path:'test-results/clu-terminal-size-hud.png'});
  assert.deepEqual(errors,[]);console.log('Home menu: keyboard selection, Return, mouse, touch, normal Clu start, intact six-bike arena, restart, and keyboard/mouse/touch credits dismissal passed.');
 }finally{await browser.close();}

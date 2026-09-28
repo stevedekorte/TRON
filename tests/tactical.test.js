@@ -188,15 +188,16 @@ test('Recognizer navigation translates through turns and smoothly reverses veloc
    e.tactical.plan={kind:'patrol',goal:{...goal,y:e.y,yaw:0},route:[]};
    e.tactical.nextPlan=100;e.tactical.source=control;
   }
-  const start={x:e.x,s:e.s,yaw:e.yaw};
+  const start={x:e.x,s:e.s,yaw:e.yaw};let traveled=0;
   for(let i=0;i<180;i++){
-   const velocity={x:e.vx,s:e.vs};
+   const velocity={x:e.vx,s:e.vs},position={x:e.x,s:e.s};
    (control==='classic'?navigate:control==='escort'?flyCarrierEscort:navigateTactical)(e,i/60,1/60,[e]);
    assert.ok(Math.hypot(e.vx-velocity.x,e.vs-velocity.s)<2,`${control}: inertial acceleration`);
+   traveled+=Math.hypot(e.x-position.x,e.s-position.s);
    assert.ok(aircraftPoseClear(e),`${control}: clear flight`);
   }
   assert.ok(e.vs>0,`${control}: moves toward goal even while turning`);
-  assert.ok(Math.hypot(e.x-start.x,e.s-start.s)>12.5,`${control}: travels through turn`);
+  assert.ok(traveled>3,`${control}: retains motion while slowing to turn`);
   assert.ok(Math.abs(e.yaw-start.yaw)>.7,`${control}: changes heading while moving`);
  }
 });
@@ -238,7 +239,7 @@ for(const kind of ['strike','pursue'])test(`recognizer completes a collision-fre
  assert.ok(run.crushed,JSON.stringify({x:e.x,s:e.s,y:e.y,yaw:e.yaw,plan:e.tactical}));
 });
 
-test('recognizer directional thrust strafes and reverses without yaw or a diagonal speed boost',async()=>{
+test('recognizer cruise stays forward while strafing and reverse are limited to slow maneuvers',async()=>{
  const {advanceFlightToward,FLIGHT_DEFAULTS}=await import('../src/simulation/flight.js');
  for(const [dx,ds] of [[0,1],[1,0],[-1,0],[0,-1],[1,-1]]){
   const e={x:0,s:0,vx:0,vs:0,yaw:0,yawVelocity:0};
@@ -248,7 +249,7 @@ test('recognizer directional thrust strafes and reverses without yaw or a diagon
   assert.equal(e.yaw,0);assert.equal(e.yawVelocity,0);
   assert.ok(e.x*dx+e.s*ds>20);
   if(ds===0)assert.equal(e.s,0);if(dx===0)assert.equal(e.x,0);
-  assert.ok(Math.abs(Math.hypot(e.vx,e.vs)-(ds===1?30:15))<.01);
+  assert.ok(Math.abs(Math.hypot(e.vx,e.vs)-(ds===1?30:FLIGHT_DEFAULTS.maneuverSpeedMetersPerSecond))<.01);
  }
 });
 

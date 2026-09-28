@@ -30,6 +30,7 @@ export function createDevelopmentTools({
         mode,
         opening: view.cameraRig.opening,
         carrier: view.carrier?.position.toArray(),
+        carrierMaterialization:view.carrier?{opacity:view.carrier.userData.rez.opacity,panel:view.carrier.userData.rez.rectangle.visible}:null,
         solarSailer: view.solarSailer ? { visible: view.solarSailer.root.visible && view.solarSailer.ship.visible, position: view.solarSailer.ship.position.toArray() } : null,
         tankVisible: view.tank.root.visible,
         enemyTankVisuals: view.enemyTanks.map((c) => ({
@@ -76,8 +77,9 @@ export function createDevelopmentTools({
           curtain: b.userData.effects.curtain.visible,
           waveRadius: b.userData.effects.ring.scale.x,
         })),
-        recognizers: run.recognizers.map((e) => ({
+        recognizers: run.recognizers.map((e,i) => ({
           ...e,
+          faceTintColor:view.recognizers[i]?.material.color.getHex(),
           memory: e.memory ? { ...e.memory } : null,
         })),
         renderer: {
@@ -122,6 +124,7 @@ export function createDevelopmentTools({
               error: sound.musicDirector.musicError || null,
             }
           : null,
+        cycleOpeningAudio: [...(sound.cycleOpeningAudio?.active.keys()??[])],
         audioSamples: Object.keys(sound.samples),
         audioSampleErrors: [...sound.sampleErrors],
         audioNodes: sound.sources.size,
@@ -133,6 +136,8 @@ export function createDevelopmentTools({
         audioSources: sound.recognizerVoices?.voices.length || 0,
         aerial: view.cameraRig.aerial,
         aerialZoom: view.cameraRig.aerialZoom,
+        followZoom: view.cameraRig.followZoom,
+        cycleOpening: view.cameraRig.cycleOpening,
       });
     },
     place(data) {

@@ -1,9 +1,12 @@
+import {Vector3} from 'three';
+import {assistedRecognizerTarget,ASSIST_MARKER} from '../rendering/assist-target.js';
 import { config, CLU_HEALTH, CLU_WEAPON, TURBO, GUNNER } from '../game/config.js';
 const $ = (id) => document.getElementById(id);
 const HEALTH_WARNING = { orange: 0.5, red: 0.25, critical: 0.1 };
 export class HudPresenter {
   constructor(world, warnings) {
     this.world = world;
+    this.assistPoint=new Vector3();
     this.warnings = warnings;
     this.mapContext = $('map').getContext('2d');
   }
@@ -53,15 +56,36 @@ export class HudPresenter {
     idleTime,
   }) {
     const cycleMode=run.playerVehicle==='cycle',race=run.cycleRace;
+    const marker=$('assist-marker'),rig=view.cameraRig;
+    const target=mode==='running'&&!rig.freeCamera.active&&rig.opening==null?assistedRecognizerTarget(run):null;
+    const lockId=target?.id??null;
+    if(lockId!==this.assistLockId){
+      this.assistFlash?.cancel();this.assistFlash=null;this.assistLockId=lockId;
+      if(target)this.assistFlash=marker.animate([
+        {opacity:ASSIST_MARKER.opacity,offset:0},
+        {opacity:ASSIST_MARKER.opacity,offset:.499},
+        {opacity:0,offset:.5},{opacity:0,offset:1},
+      ],{duration:ASSIST_MARKER.flashPeriodMilliseconds,iterations:ASSIST_MARKER.flashCount});
+    }
+    marker.hidden=true;
+    if(target){
+      const camera=view.camera.position;
+      this.assistPoint.set(target.x,target.y,-target.s).project(view.camera);
+      const p=this.assistPoint;
+      if(p.z>=-1&&p.z<=1&&Math.abs(p.x)<1&&Math.abs(p.y)<1&&this.world.lineOfSight({x:camera.x,y:camera.y,s:-camera.z},target)){
+        marker.hidden=false;marker.dataset.targetId=String(target.id);
+        marker.style.left=`${(p.x+1)*innerWidth/2}px`;marker.style.top=`${(1-p.y)*innerHeight/2}px`;
+      }
+    }
     document.body.classList.toggle('playing-cycle',cycleMode);
     const cycleControls=$('cycle-controls');cycleControls.hidden=!cycleMode&&!run.arenaWaiting;
     if(run.arenaWaiting)cycleControls.textContent='LOADING CYCLE ARENA...';
     else if(cycleMode){
       const status=race.phase==='countdown'?'LIGHT CYCLES · MATERIALIZING'
-        :race.cycles[race.playerId].alive&&race.cycles[race.playerId].escaped?'FREE RIDE · HOLD W/S / SPEED · X / BRAKE / REVERSE · I / TURBO · A/D / STEER · J/L / GLANCE'
+        :race.cycles[race.playerId].alive&&race.cycles[race.playerId].escaped?'FREE RIDE · HOLD W/S / SPEED · X / BRAKE / REVERSE · T / TURBO · A/D / STEER · J/L / GLANCE · I/K / ZOOM'
         :!race.cycles[race.playerId].alive?'CYCLE DESTROYED · SPECTATE · RETURN / NEW MATCH'
         :race.phase==='result'?'MATCH COMPLETE · RETURN / NEW MATCH'
-        :'LIGHT CYCLES · A/D OR ←/→ TURN · HOLD W/I / TURBO · S/X/K / SLOW · J/L / GLANCE · V / AERIAL · ESC / PAUSE';
+        :'LIGHT CYCLES · A/D OR ←/→ TURN · HOLD W/T / TURBO · S/X / SLOW · J/L / GLANCE · I/K / ZOOM · V / AERIAL · ESC / PAUSE';
       cycleControls.textContent=status+(import.meta.env.DEV?' · TAB / DYNAMICS':'');
     }
     $('gunner-sight').hidden =
@@ -83,7 +107,7 @@ export class HudPresenter {
     $('gunner-sight').classList.toggle('on-target', !!view.gunnerHit);
     $('gunner-sight').classList.toggle('critical-target', !!view.gunnerHit?.critical);
     $('gunner-zoom').textContent = ['1×', '2×', '4×', '8×'][run.gunnerZoom];
-    $('pitch-hint').textContent=view.cameraRig.aerial&&!cycleMode?'I/K / ZOOM':'IK / AIM';
+    $('pitch-hint').textContent=!run.gunner&&!cycleMode?'I/K / ZOOM':'IK / AIM';
     $('zoom-hint').hidden = !(view.cameraRig.aerial || (GUNNER.mouseEnabled && run.gunner));
     $('survey').hidden = !showSurvey;
     $('autoplay-toggle').textContent = autoplay.enabled
@@ -134,7 +158,7 @@ export class HudPresenter {
     const turbo = $('turbo'),
       boosting = cycleMode ? race.cycles[race.playerId].boosting : run.turboRemaining > 0,
       charging = cycleMode ? race.cycles[race.playerId].turboCharge < 1 : run.turboCooldown > 0;
-    turbo.querySelector('span').textContent = roadBike ? `I / TURBO · ${roadBike.reverseGear?'R':Math.round(roadBike.targetRoadSpeed*3.6)+' SET'} · ${Math.round(Math.abs(roadBike.roadSpeed)*3.6)} KM/H` : cycleMode ? 'W/I / TURBO' : 'T / TURBO';
+    turbo.querySelector('span').textContent = roadBike ? `T / TURBO · ${roadBike.reverseGear?'R':Math.round(roadBike.targetRoadSpeed*3.6)+' SET'} · ${Math.round(Math.abs(roadBike.roadSpeed)*3.6)} KM/H` : cycleMode ? 'W/T / TURBO' : 'T / TURBO';
     turbo.setAttribute(
       'aria-label',
       boosting ? 'Turbo active' : charging ? 'Turbo recharging' : 'Turbo ready',

@@ -89,11 +89,11 @@ test('boosted cycle cannot jump through an occupied trail cell',()=>{
  const startZ=b.z,width=173;race.occupied[(b.z-2+86)*width+b.x+86]=4;
  s.advance({cycleTurbo:true},.25);assert.equal(b.alive,false);assert.equal(b.z,startZ-1);assert.equal(race.crashes.filter(c=>c.id===1).length,1);
 });
-test('W/I control cycle turbo and S/K take priority for slowing',async()=>{
+test('W/T control cycle turbo, S takes priority, and I/K do not affect speed',async()=>{
  const {InputController}=await import('../src/app/input-controller.js');const input=new InputController();
- for(const key of ['KeyT','Space']){input.clear();input.keys.add(key);assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);}
- input.clear();input.keys.add('KeyI');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);
- input.keys.add('KeyK');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,true);
+ for(const key of ['KeyI','KeyK','Space']){input.clear();input.keys.add(key);assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,false);}
+ input.clear();input.keys.add('KeyT');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);
+ input.keys.add('KeyS');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,true);
  input.clear();input.keys.add('KeyW');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);
  input.keys.add('KeyS');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,true);
  assert.equal(input.command({}).cycleTurbo,false);input.clear();assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);
@@ -202,4 +202,14 @@ test('completing the central beam wins Clu without waiting for or entering the a
  assert.equal(events.filter(e=>e.type==='victory').length,1);
  assert(!events.some(e=>e.type==='cycleArrival'));
  assert(!s.advance({},1/60).some(e=>e.type==='victory'));
+});
+
+
+test('entrance hold advances the leftward arena patrol while keeping racers and other enemies frozen',()=>{
+ const s=session();enter(s);const r=s.run,guard=r.recognizers.find(e=>e.role==='arena-patrol');
+ const initialS=guard.s,race=JSON.stringify(r.cycleRace),others=JSON.stringify(r.recognizers.filter(e=>e!==guard));
+ for(let i=0;i<16*120;i++)s.advance({},1/120,{holdCycleRace:true});
+ assert(guard.s<initialS-50,'southbound along the west ledge, screen-left in the entrance view');
+ assert.equal(JSON.stringify(r.cycleRace),race);
+ assert.equal(JSON.stringify(r.recognizers.filter(e=>e!==guard)),others);
 });

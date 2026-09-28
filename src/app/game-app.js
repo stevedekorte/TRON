@@ -1,3 +1,5 @@
+import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
+import {CYCLE_OPENING} from '../rendering/camera-rig.js';
 import { LoadingTimings } from './loading-timings.js';
 import { CYCLE_TESTING } from '../game/light-cycles.js';
 import {CycleTuning} from '../ui/cycle-tuning.js';
@@ -30,7 +32,7 @@ import { View } from '../rendering/view.js';
 import { Sound } from '../audio/sound.js';
 import { FLIGHT, FLIGHT_DEFAULTS } from '../simulation/flight.js';
 import { startPursuit, boostTank } from '../simulation/run.js';
-import { config, defaults, GUNNER, AERIAL_ZOOM } from '../game/config.js';
+import { config, defaults, GUNNER, AERIAL_ZOOM, FOLLOW_ZOOM } from '../game/config.js';
 
 export function createGameApp() {
   performance.mark('tron:startup');
@@ -80,8 +82,8 @@ export function createGameApp() {
     if (controlsFirstKey === null) controlsFirstKey = run.time;
     else if (run.time - controlsFirstKey >= 10) idleReminderArmed = true;
   }
-  const openingDuration = 5.5, terminalFadeSeconds = 1.1;
-  let openingTime = 0, openingTransition = false;
+  const openingDuration = 5.5, terminalFadeSeconds = 1.1, accessHoldSeconds = 1;
+  let openingTime = 0, openingTransition = false, accessHoldTime = 0;
   let pausedFrom = 'running';
 
   const DEATH_TERMINAL = {
@@ -154,6 +156,7 @@ export function createGameApp() {
       throw new Error(`Unknown application mode: ${next}`);
     if (next === 'paused' || next === 'error') inputController.startingThrottle = false;
     mode = next;
+    if(['ready','error'].includes(next))document.body.classList.remove('cycle-intro','cycle-loading');
     if (next !== 'running') {
       clearMouseAim();
       releaseMouse();
@@ -182,6 +185,10 @@ export function createGameApp() {
   }
 
   async function start() {
+    if(mode==='ready'&&selectedGame==='bit'){
+      window.location.assign(new URL('./bit/index.html',document.baseURI).href);
+      return;
+    }
     if (mode === 'entering') return;
     const fromTerminal = mode === 'ready',
       opening = fromTerminal && !(selectedGame === 'cycles' && run.cycleRace);
@@ -210,7 +217,7 @@ export function createGameApp() {
     loadingTimings.checkpoint('Start requested');
     run = loadingTimings.sync('New game simulation reset',()=>session.reset());
     run.speed = config.maxSpeed;
-    if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
+    if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({entranceFormation:!testCycleStart,startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
     else startPursuit(run);
     loadArenaInBackground();
     inputController.startingThrottle = true;
@@ -220,11 +227,13 @@ export function createGameApp() {
     if(opening)sound.prepareMusic();
     view.cameraRig.aerial = false;
     view.cameraRig.aerialZoom = 1;
-    openingTime=0;openingTransition=false;
+    openingTime=0;openingTransition=false;accessHoldTime=0;
     document.body.classList.remove('access-transition','access-ready');
     accessPrinter.reset();
     if(opening)accessPrinter.start();
     view.cameraRig.opening = null;
+    document.body.classList.toggle('cycle-intro',selectedGame==='cycles'&&!testCycleStart);
+    document.body.classList.toggle('cycle-loading',selectedGame==='cycles');
     document.body.style.setProperty('--opening-fade', '1');
     setMode(opening ? 'entering' : 'running');
     if(!opening&&!run.arenaWaiting)sound.startMusic();
@@ -256,7 +265,7 @@ export function createGameApp() {
     setMode('error');
   }
 
-  const gameChoices=[$('start'),$('start-cycles')];
+  const gameChoices=[$('start'),$('start-cycles'),$('start-bit')];
   function selectGame(game,{focus=false}={}){
     selectedGame=game;
     for(const button of gameChoices){
@@ -271,7 +280,7 @@ export function createGameApp() {
   }
   selectGame(selectedGame);
   listen(window,'click',event=>{
-    if(mode==='entering'){event.preventDefault();event.stopImmediatePropagation();beginCluGame();return;}
+    if(mode==='entering'&&!openingTransition){event.preventDefault();event.stopImmediatePropagation();beginCluGame();return;}
     if(!creditsVisible())return;
     event.preventDefault();event.stopImmediatePropagation();returnToProgramSelection();
   },true);
@@ -280,22 +289,28 @@ export function createGameApp() {
   listen(window, 'keydown', (event) => {
     idleTime = 0;
     if (mode === 'loading') return;
-    if(mode==='entering'){event.preventDefault();if(!event.repeat)beginCluGame();return;}
+    if(mode==='entering'&&!openingTransition){event.preventDefault();if(!event.repeat)beginCluGame();return;}
     if(creditsVisible()){event.preventDefault();if(!event.repeat)returnToProgramSelection();return;}
     if(mode==='ready'&&!endingStage&&!document.body.classList.contains('detached')&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter'].includes(event.code)){
       event.preventDefault();
       if(!event.repeat){
         if(event.code==='Enter')void start();
-        else selectGame(selectedGame==='space'?'cycles':'space',{focus:true});
+        else {
+          const direction=['ArrowUp','ArrowLeft'].includes(event.code)?-1:1;
+          const index=gameChoices.findIndex(button=>button.dataset.game===selectedGame);
+          selectGame(gameChoices[(index+direction+gameChoices.length)%gameChoices.length].dataset.game,{focus:true});
+        }
       }
       return;
     }
+    if(mode==='running'&&(run.arenaWaiting||view.cameraRig.cycleOpening!==null)&&event.code!=='Escape'){event.preventDefault();return;}
     if(cycleTuning?.open)return;
     if(event.code==='Tab'&&cycleTuning&&run.playerVehicle==='cycle'&&['running','paused'].includes(mode)){
       event.preventDefault();if(!event.repeat)cycleTuning.show();return;
     }
-    if (event.code === 'KeyC' && !event.ctrlKey && !event.metaKey && !event.altKey && ['running', 'paused'].includes(mode)) {
+    if (event.code === 'KeyC' && !event.ctrlKey && !event.metaKey && !event.altKey && ['running', 'entering', 'paused'].includes(mode)) {
       event.preventDefault();
+      if(mode==='entering')finishOpening();
       if (!event.repeat) toggleInspection();
       return;
     }
@@ -388,7 +403,7 @@ export function createGameApp() {
     if (event.target instanceof HTMLInputElement) return;
     const key = event.code;
     if(run.playerVehicle==='cycle'&&!view.cameraRig.freeCamera.active&&['running','entering'].includes(mode)){
-      if(['KeyW','KeyS','KeyX'].includes(key)){
+      if(['KeyW','KeyS','KeyX','KeyT'].includes(key)){
         event.preventDefault();keys.add(key);
         if(!event.repeat){
           if(key==='KeyX'&&run.cycleRace.cycles[run.cycleRace.playerId].escaped)inputController.cycleReverseQueued=Math.abs(run.cycleRace.cycles[run.cycleRace.playerId].roadSpeed)<.01;
@@ -445,7 +460,8 @@ export function createGameApp() {
       run.turretLocked = true;
       return;
     }
-    if (key === 'KeyV' && mode === 'running') {
+    if (key === 'KeyV' && ['running','entering'].includes(mode)) {
+      if(mode==='entering')finishOpening();
       view.cameraRig.beamCamera.cancel();
       run.gunner = false;
       clearMouseAim();
@@ -560,7 +576,7 @@ export function createGameApp() {
     idleTime = 0;
     if (view?.cameraRig.freeCamera.active) return;
     if (run.gunner && !GUNNER.mouseEnabled) return;
-    if (mode === 'running' && e.button === 0) {
+    if ((mode === 'running'||mode==='entering'&&openingTransition) && e.button === 0) {
       if (run.gunner && document.pointerLockElement !== $('game')) {
         captureMouse();
         return;
@@ -699,7 +715,7 @@ export function createGameApp() {
     document.body.classList.remove('detached','victory','victory-credits');endingStage=null;
     $('terminal-text').textContent=openingMessage;
     $('terminal-text').parentElement.setAttribute('aria-label',openingMessage.replaceAll('\n','. '));
-    deathElapsed=0;outroFade=0;openingTransition=false;openingTime=0;
+    deathElapsed=0;outroFade=0;openingTransition=false;openingTime=0;accessHoldTime=0;
     document.body.classList.remove('access-transition','access-ready');
     $('death-fade').hidden=true;
     selectGame(selectedGame);setMode('ready');
@@ -771,8 +787,9 @@ export function createGameApp() {
   }
 
   function beginCluGame(){
-    if(mode!=='entering'||accessPrinter.active||openingTransition)return;
+    if(mode!=='entering'||accessPrinter.active||openingTransition||accessHoldTime<accessHoldSeconds)return;
     inputController.clear();
+    run.speed=config.maxSpeed;run.cruiseThrottle=true;inputController.startingThrottle=false;
     sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
     sound.startMusic();
     document.body.classList.remove('access-ready');
@@ -805,22 +822,31 @@ export function createGameApp() {
         document.body.style.setProperty('--opening-fade',String(Math.max(0,1-openingTime/terminalFadeSeconds)));
         if(openingTime>=openingDuration||view.cameraRig.reducedMotion)finishOpening();
       }else if(accessPrinter.active)accessPrinter.update();
-      else document.body.classList.add('access-ready');
+      else {accessHoldTime+=dt;beginCluGame();}
     }
 
-    if(mode==='running'&&run.playerVehicle!=='cycle'&&view.cameraRig.aerial&&!view.cameraRig.freeCamera.active){
+    if((mode==='running'||mode==='entering'&&openingTransition)&&!run.gunner&&view.cameraRig.cycleOpening===null&&!view.cameraRig.freeCamera.active){
       const direction=Number(keys.has('KeyK'))-Number(keys.has('KeyI'));
-      view.cameraRig.aerialZoom=Math.max(AERIAL_ZOOM.minScale,Math.min(AERIAL_ZOOM.maxScale,view.cameraRig.aerialZoom*Math.exp(direction*dt*AERIAL_ZOOM.keyboardExponentPerSecond)));
+      const rig=view.cameraRig,field=rig.aerial?'aerialZoom':'followZoom',limits=rig.aerial?AERIAL_ZOOM:FOLLOW_ZOOM;
+      rig[field]=Math.max(limits.minScale,Math.min(limits.maxScale,rig[field]*Math.exp(direction*dt*limits.keyboardExponentPerSecond)));
     }
     view.cameraRig.cycleGlanceInput = mode === 'running' && !view.cameraRig.freeCamera.active
       ? Number(keys.has('KeyL')) - Number(keys.has('KeyJ')) : 0;
+    if(mode==='running'&&view.cameraRig.cycleOpening!==null&&(!sound.context||sound.cycleSamplesReady)){
+      view.cameraRig.cycleOpening+=dt/CYCLE_OPENING.durationSeconds;
+      if(view.cameraRig.cycleOpening>=1+CYCLE_OPENING.formationSeconds/CYCLE_OPENING.durationSeconds){
+        view.cameraRig.cycleOpening=null;view.cameraRig.freshCamera=true;
+        run.cycleRace.remaining=0;inputController.clear();
+        document.body.classList.remove('cycle-intro');
+      }
+    }
     if (mode === 'running'||mode==='entering'&&openingTransition) {
       if (frameTimes.length >= 3600) frameTimes.shift();
       if (dt > 0) frameTimes.push(dt * 1000);
       loop.advance(
         dt,
         background,
-        () => !run.won && (mode === 'running' || mode === 'entering'),
+        () => !run.won && (view.cameraRig.cycleOpening===null||!sound.context||sound.cycleSamplesReady) && (mode === 'running' || mode === 'entering'),
         (fixedStep) => {
           let command = inputController.command(run, {
             mouseLook: view.cameraRig.mouseLook,
@@ -829,12 +855,15 @@ export function createGameApp() {
           if (view.cameraRig.freeCamera.active) command = { ...command, cycleTurbo: false, cycleSlow: false, cycleRoad: {}, throttle: 0, steer: 0, fire: false, firePressed: false, mouseTarget: null, turret: 0, aimPitch: 0 };
           if (autoplay.enabled)
             command = mergeAutoplayInput(autoplay.input(run), command, view.cameraRig.freeCamera.active ? new Set() : keys, run);
-          const events = session.advance(command, fixedStep);
+          const events = session.advance(command, fixedStep, {holdCycleRace:view.cameraRig.cycleOpening!==null});
           inputController.consume();
           for (const event of events) {
             if(event.type==='cycleArrival'){loadingTimings.checkpoint('Player entered cycle arena');loadingTimings.print();}
             if(event.type==='cycleArrival'||event.type==='cycleRetry'){
               setAutoplay(false);inputController.clear();releaseMouse();clearMouseAim();view.cameraRig.reset();view.cameraRig.aerial=false;
+              document.body.classList.remove('cycle-loading');
+              if(event.type==='cycleArrival'&&document.body.classList.contains('cycle-intro')&&!view.cameraRig.reducedMotion)view.cameraRig.cycleOpening=0;
+              else document.body.classList.remove('cycle-intro');
             }
             view.event(event);
             sound.effect(event.type, event);
@@ -850,6 +879,8 @@ export function createGameApp() {
       view.cameraRig.freeCamera.update(dt, keys);
       if (!document.hidden && !(mode==='ready'&&endingStage==='victory'))
         view.render(run, session.previous, mode === 'running' ? loop.alpha : 1, dt, mode);
+      sound.cycleOpeningSeconds=view.cameraRig.cycleOpening===null?null:view.cameraRig.cycleOpening*CYCLE_OPENING.durationSeconds;
+      sound.cycleOpeningAudio?.update(sound.cycleOpeningSeconds,mode==='running');
       sound.update(run, view.camera, mode === 'running'||mode==='entering'&&openingTransition);
       hud.update({
         run,
@@ -905,6 +936,7 @@ export function createGameApp() {
       performance.mark('tron:first-frame');
       $('start').disabled = false;
       $('start-cycles').disabled = false;
+      $('start-bit').disabled = false;
       terminal.finish();
       setMode('ready');
       loadingTimings.checkpoint('Opening terminal ready');
@@ -959,6 +991,7 @@ export function createGameApp() {
     const flightRanges = {
       turnRate: [0.1, 3, 0.02, 'rad/s'],
       turnAcceleration: [0.1, 6, 0.05, 'rad/s²'],
+      maneuverSpeedMetersPerSecond: [1, 6, 0.25, 'm/s'],
       sidewaysSpeedRatio: [0.1, 1, 0.05, '×'],
       reverseSpeedRatio: [0.1, 1, 0.05, '×'],
       liftAcceleration: [2, 30, 1, 'm/s²'],
@@ -1004,11 +1037,26 @@ export function createGameApp() {
       });
       $('sliders').append(label);
     }
+    const tintFields=document.createElement('fieldset');
+    tintFields.innerHTML='<legend>Recognizer face tints</legend>';
+    const tintInputs=[];
+    for(const [key,title] of [['recognizerTintColor','Default'],['arenaPatrolTintColor','Arena patrol']]){
+      const label=document.createElement('label');
+      label.innerHTML=`<span>${title}</span><input type="color" aria-label="${title} face tint"><select aria-label="${title} tint preset">${Object.keys(RECOGNIZER_TINTS).map(name=>`<option>${name}</option>`).join('')}</select>`;
+      const input=label.querySelector('input'),select=label.querySelector('select');
+      const sync=()=>{input.value='#'+config[key].toString(16).padStart(6,'0');select.value=Object.keys(RECOGNIZER_TINTS).find(name=>RECOGNIZER_TINTS[name]===config[key])??'';};
+      const change=color=>{config[key]=color;session.configure('vehicle',{[key]:color});sync();};
+      listen(input,'input',()=>change(parseInt(input.value.slice(1),16)));
+      listen(select,'change',()=>change(RECOGNIZER_TINTS[select.value]));
+      sync();tintInputs.push(sync);tintFields.append(label);
+    }
+    $('sliders').after(tintFields);
     listen($('reset-tuning'), 'click', () => {
       Object.assign(config, defaults, {
         aiMode: config.aiMode,
         aiSmallEncounter: config.aiSmallEncounter,
       });
+      tintInputs.forEach(sync=>sync());
       Object.assign(SOLAR_SAILER, SOLAR_SAILER_DEFAULTS);
       Object.assign(FLIGHT, FLIGHT_DEFAULTS);
       Object.assign(HEARING, HEARING_DEFAULTS);

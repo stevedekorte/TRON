@@ -4,9 +4,8 @@ const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'
 try{
  const page=await browser.newPage({reducedMotion:'reduce'});
  await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);
- await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('access-ready'));
- assert.equal(await page.evaluate(()=>__tron.state.extraShots),3);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
+ assert.equal(await page.evaluate(()=>__tron.state.extraShots),3);
  await page.evaluate(()=>__tron.place({x:-5000,s:-5000,speed:0,recognizers:[],enemyTanks:[],extraShots:3,cooldown:10,shotRest:0}));
  await page.waitForFunction(()=>document.querySelectorAll('#shots-meter .ready').length===3);
  const initial=await page.evaluate(()=>__tron.state.shots);

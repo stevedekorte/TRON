@@ -101,3 +101,86 @@ test('cycle aerial view shares Clu height, offset and zoom instead of a separate
  assert(Math.abs(Math.hypot(rig.camera.position.x-pose.x,rig.camera.position.z+pose.s)-Math.hypot(180,320)*2)<1e-6);
  assert(rig.look.distanceTo(new Vector3(pose.x,0,-pose.s))<1e-6);
 });
+
+test('16-second film entrance descends, pans right and down, then accelerates across the grid',async()=>{
+ const {applyCycleOpening,CYCLE_OPENING}=await import('../src/rendering/cycle-opening.js');
+ const site={x:1400,s:2600};
+ const sample=seconds=>{const p=new Vector3(),look=new Vector3();const roll=applyCycleOpening(seconds/16,site,p,look);return {p,d:look.sub(p).normalize(),roll};};
+ for(let i=0;i<=1000;i++){
+  const {p,roll}=sample(i*16/1000);
+  if(p.x-site.x<=-409&&p.x-site.x>=-466)assert(p.y>65,'clear the actual 60 m wall crest with margin');
+  assert(p.y>=4);assert.equal(roll,0);
+ }
+ const before=sample(5),down=sample(10.5),arrival=sample(16);
+ assert(before.d.x<-.9,'initially face the maze');
+ assert(down.d.y<-.9,'look steeply down at the grid before accelerating');
+ assert(down.d.z<0&&Math.abs(down.d.x)<.1,'pan right toward the far end');
+ assert(sample(12).p.distanceTo(sample(14).p)>sample(7).p.distanceTo(sample(9).p)*2,'rapid floor traverse follows slow descent');
+ for(let t=7;t<12;t+=.05)assert(sample(t+.05).p.distanceTo(sample(t).p)/.05>35,'keep moving through the downward turn');
+ assert.deepEqual(arrival.p.toArray(),[1400,4,-2970]);
+ assert(Math.abs(arrival.d.y)<1e-6);
+ assert.equal(CYCLE_OPENING.durationSeconds,16);assert.equal(CYCLE_OPENING.raceReleaseFraction,1);
+});
+
+test('entrance audio pauses and resumes inside a cue without duplicate voices',async()=>{
+ const {CycleOpeningAudio}=await import('../src/audio/cycle-opening.js');
+ const sources=[];
+ const context={createGain:()=>({gain:{value:0},connect(){},disconnect(){}}),createBufferSource:()=>{
+  const source={connect(){},disconnect(){},start(when,offset){this.offset=offset;},stop(){this.stopped=true;}};sources.push(source);return source;
+ }};
+ const audio=new CycleOpeningAudio(context,{}, {'cycle-prepare-transport':{duration:2.56}});
+ audio.update(10,true);assert.equal(sources.length,1);assert(Math.abs(sources[0].offset-.7)<1e-8);
+ audio.update(10.1,true);assert.equal(sources.length,1);
+ audio.update(10.1,false);assert(sources[0].stopped);assert.equal(audio.active.size,0);
+ audio.update(10.1,true);assert.equal(sources.length,2);assert(Math.abs(sources[1].offset-.8)<1e-8);
+ audio.update(null,true);assert(sources[1].stopped);assert.equal(audio.active.size,0);
+ audio.update(10,true);audio.reset();assert(sources[2].stopped);assert.equal(audio.active.size,0);
+});
+
+
+test('entry path passes safely above the moving arena patrol',async()=>{
+ const {applyCycleOpening}=await import('../src/rendering/cycle-opening.js');
+ const {createRecognizers}=await import('../src/simulation/recognizers.js');
+ const {flyArenaPatrol}=await import('../src/simulation/arena-patrol.js');
+ const {arenaSite}=await import('../src/levels/arena.js');
+ const {createScenario}=await import('../src/levels/scenario.js');
+ const {world}=createScenario({layout:'blueprint',centralLabyrinth:true});
+ const {RECOGNIZER_SCALE}=await import('../src/game/config.js');
+ const guard=createRecognizers(()=>.5,world).find(e=>e.role==='arena-patrol'),site=arenaSite(world);let closest=Infinity;
+ for(let i=0;i<=960;i++){
+   if(i)flyArenaPatrol(guard,i/60,1/60);
+   const p=new Vector3(),look=new Vector3();applyCycleOpening(i/960,site,p,look);
+   const distance=Math.hypot(p.x-guard.x,p.z+guard.s);closest=Math.min(closest,distance);
+   if(distance<12)assert(p.y>guard.y+8*RECOGNIZER_SCALE+8,'clear the crown while flying overhead');
+ }
+ assert(closest<4,'cross directly over the moving patrol');
+});
+
+test('Clu exterior zoom starts at the normal camera and reaches the aerial range continuously',async()=>{
+ const {createRun}=await import('../src/simulation/run.js');
+ const {DEFAULT_WORLD}=await import('../src/levels/scenario.js');
+ const {config,FOLLOW_ZOOM,AERIAL_ZOOM}=await import('../src/game/config.js');
+ const run=createRun();Object.assign(run,{x:-5000,s:-5000,yaw:0,turretYaw:0,recognizers:[],enemyTanks:[]});
+ const sample=zoom=>{const rig=new CameraRig(DEFAULT_WORLD);rig.followZoom=zoom;rig.begin(run,1/60,'running');rig.update(run,run,1,1/60,'running',run);return rig;};
+ const near=sample(1);assert.equal(near.camera.position.y,config.cameraHeight);
+ assert(Math.abs(near.camera.position.z+run.s-config.cameraDistance)<1e-8);
+ const aerialNear=new CameraRig(DEFAULT_WORLD);Object.assign(aerialNear,{aerial:true,aerialBlend:1,aerialZoom:AERIAL_ZOOM.minScale});
+ aerialNear.begin(run,1/60,'running');aerialNear.update(run,run,1,1/60,'running',run);
+ assert(aerialNear.camera.position.distanceTo(near.camera.position)<1e-8);
+ const middle=sample(32),far=sample(FOLLOW_ZOOM.maxScale);
+ assert(middle.camera.position.y>500);assert(middle.camera.position.y<far.camera.position.y);
+ assert.equal(far.camera.position.y,2400);assert.equal(far.look.y,0);
+});
+
+test('cycle follow zoom has matching arena and road framing and returns to normal at minimum',()=>{
+ const positions=[];
+ for(const escaped of [false,true]){
+  const {bike,run,rig}=setup();bike.previousZ=bike.z;bike.escaped=escaped;bike.roadSpeed=0;
+  frame(rig,run,1/60);const normal=rig.camera.position.clone();
+  rig.followZoom=128;rig.freshCamera=true;frame(rig,run,1/60);
+  assert.equal(rig.camera.position.y,2400);positions.push(rig.camera.position.clone());
+  rig.followZoom=1;rig.freshCamera=true;frame(rig,run,1/60);
+  assert(rig.camera.position.distanceTo(normal)<1e-8);
+ }
+ assert(positions[0].distanceTo(positions[1])<1e-8);
+});

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>ENCOM TERMINAL</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta name="theme-color" content="#000000">
+        <style>
+            @font-face {
+                font-family: "VT323";
+                src: url("../fonts/VT323-Regular.ttf") format("truetype");
+                font-weight: normal;
+                font-style: normal;
+                font-display: swap;
+            }
+
+            body {
+                --terminal-font-size: min(1.5vw, 2.15vh);
+                background-color: #000000;
+                margin: 0px;
+                overflow: hidden;
+                cursor: none;
+                font-family: "VT323", monospace;
+                /*background-image: url("images/gifs/00.gif");*/
+                background-repeat: no-repeat;
+                background-size: cover;    
+                background-position: center center; 
+            }
+
+            .terminal-content {
+                position: absolute;
+                z-index: 1;
+                top: calc(clamp(64px, 12vh, 140px) - 1.12em);
+                --terminal-left: max(24px, calc(50vw - var(--bit-heading-width, 12ch) / 2));
+                left: var(--terminal-left);
+                width: calc(100vw - var(--terminal-left) - 24px);
+                overflow-wrap: anywhere;
+                margin: 0;
+                font-family: "VT323", monospace;
+                font-size: var(--terminal-font-size);
+                font-weight: 400;
+                line-height: 1.12;
+                letter-spacing: 0.025em;
+                text-align: left;
+                text-transform: uppercase;
+                color: #159ddd;
+                text-shadow: 0 0 3px #0a91db, 0 0 10px #005b9566;
+                user-select: none;
+                pointer-events: none;
+            }
+
+            .terminal-content div {
+                min-height: 1.12em;
+            }
+
+            .terminal-encom {
+                position: fixed;
+                z-index: 1;
+                right: 4vw;
+                bottom: 15vh;
+                width: clamp(85px, 9.5vw, 190px);
+                height: auto;
+                pointer-events: none;
+                opacity: 0.8;
+                filter: drop-shadow(0 0 2px #898fc9) drop-shadow(0 0 5px #626eb855);
+            }
+        #instructions{visibility:hidden}
+body.bit-ready #instructions{visibility:visible}
+body.awaiting-microphone #instructions::after{content:'';display:inline-block;width:.65ch;height:.95em;margin-left:.5ch;background:currentColor;vertical-align:-.1em;box-shadow:0 0 4px #159ddd;animation:bit-cursor 1s steps(1,end) infinite}
+@keyframes bit-cursor{50%{opacity:0}}
+@media(prefers-reduced-motion:reduce){body.awaiting-microphone #instructions::after{animation:none}}
+.exit-hint{visibility:hidden;position:fixed;bottom:5vh;left:0;width:100%;text-align:center;color:#159ddd;font:400 var(--terminal-font-size)/1.12 VT323,monospace;letter-spacing:0.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566;transition:opacity 0.5s;pointer-events:none}
+body.bit-started .exit-hint{visibility:visible}
+#answer{transition:opacity 0.5s}
+</style>
+	<script src="config.js"></script>
+<script src="integration.js" defer></script>
+</head>
+	<body>
+	    <div id=controls class=terminal-content>
+            <div id=instructions>REQUESTING MICROPHONE ACCESS</div>
+	        <div id=input></div>
+	        <div id=answer></div>
+        </div>
+        <img class=terminal-encom src="../images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
+	    
+        <div class="exit-hint">ESCAPE KEY TO EXIT</div>
+<!-- All scripts loaded sequentially -->
+        
+        <!-- External Libraries -->
+		<script src="js/external_libs/keypress-2.1.3.min.js"></script>
+
+        <!-- 3d -->
+		<script src="js/external_libs/threejs/three.min.js"></script>
+		<script src="js/external_libs/threejs/loaders/DDSLoader.js"></script>
+		<script src="js/external_libs/threejs/loaders/MTLLoader.js"></script>
+		<script src="js/external_libs/threejs/loaders/OBJLoader.js"></script>
+        
+        <!-- transitions -->
+		<script src="js/external_libs/Tween.js"></script>
+        
+        <!-- libraries -->
+        <script src="js/libs/ideal.js"></script>
+
+
+        <!-- Application -->
+		<script src="js/app/Object3DPlus.js"></script>
+		<script src="js/app/VizApp.js"></script>
+        
+        <!-- app specific -->
+        <script src="js/app/SharedResources.js"></script>
+        <script src="js/app/Obj3dAnimation.js"></script>
+	    <script src="js/app/Obj3d.js"></script>
+        <script src="js/app/Obj3dThing.js"></script>
+	    <script src="js/app/Bit.js"></script>
+		
+	</body>
+</html>

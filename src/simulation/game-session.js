@@ -48,21 +48,25 @@ export class GameSession {
     Object.assign(r,cyclePlayerPose(race));this.previous={...r};
     r.events.push({type:'cycleRetry'});return true;
   }
-  requestCycleEntry({startOutside=false,startWithBreach,hideMiddleOpponent}={}) {
+  requestCycleEntry({startOutside=false,startWithBreach,hideMiddleOpponent,entranceFormation=false}={}) {
     if(!this.run.cycleRace)return;
-    Object.assign(this.run.cycleRace,{startOutside,startWithBreach,hideMiddleOpponent});
+    Object.assign(this.run.cycleRace,{startOutside,startWithBreach,hideMiddleOpponent,entranceFormation});
     this.run.cycleEntryRequested=true;this.run.arenaWaiting=true;this.run.speed=0;
   }
   attachDebris(physics, presentation) {
     this.physics = physics;
     this.debris = presentation;
   }
-  advance(input, dt) {
+  advance(input, dt, {holdCycleRace=false}={}) {
     const r = this.run,
       revision = r.teleportRevision;
     this.previous = { x: r.x, s: r.s, yaw: r.yaw, turretYaw: r.turretYaw, aimPitch: r.aimPitch };
     // step(): teleport/hearing, transfer lock, motors, carrier/enemies,
     // weapons, beam completion, teleport/hearing. Retain these same-tick boundaries.
+    if(r.playerVehicle==='cycle'&&holdCycleRace){
+      r.time+=dt;updateCycleArenaPatrol(r,dt);
+      return r.events.splice(0);
+    }
     if(r.playerVehicle==='cycle'){
       if(!r.won&&!r.crushed){
         r.time+=dt;updateCycleRace(r.cycleRace,dt,input.cycleTurn,input.cycleTurbo,input.cycleSlow,input.cycleRoad);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRun,step} from '../src/simulation/run.js';
 import {collectData} from '../src/simulation/data-beams.js';
-import {TerminalPrinter,VICTORY_PRINT} from '../src/ui/terminal.js';
+import {TerminalPrinter,VICTORY_PRINT,EXTENDED_CREDIT_PRINT} from '../src/ui/terminal.js';
 test('only all completed beams win, once; victory freezes the round and resets',()=>{
  const run=createRun(1982);run.dataBeams[0].collectedAt=0;collectData(run);assert.equal(run.won,false);
  run.dataBeams.forEach(b=>b.collectedAt=0);collectData(run);assert.equal(run.won,true);
@@ -18,17 +18,18 @@ function printerOutput(){
   replaceChildren(){this.children=[];},appendChild(child){this.children.push(child);},appendData(chunk){this.data+=chunk;}};}
  return node();
 }
-test('victory printer reveals individual characters without catch-up word bursts',()=>{
+test('victory printer matches extended-credit speed with bounded catch-up',()=>{
  const output=printerOutput(),text='A. B\n\n  C'.repeat(100);let now=0;
+ assert.equal(VICTORY_PRINT.charactersPerSecond,1/EXTENDED_CREDIT_PRINT.secondsPerCharacter);
  const printer=new TerminalPrinter(output,text,{clock:()=>now});
  printer.start();
  for(let frame=1;frame<=120;frame++){
   now=frame*1000/60;const before=output.textContent.length;printer.update(.1);
-  assert.ok(output.textContent.length-before<=1);
+  assert.ok(output.textContent.length-before<=Math.ceil(VICTORY_PRINT.charactersPerSecond/60));
  }
  assert.ok(Math.abs(output.textContent.length-2*VICTORY_PRINT.charactersPerSecond)<=1);
  const firstLine=output.children[0],savedText=firstLine.textContent,before=output.textContent.length;
- now+=2000;printer.update(.1);assert.equal(output.textContent.length,before+1);
+ now+=2000;printer.update(.1);assert.equal(output.textContent.length,before+Math.ceil(VICTORY_PRINT.charactersPerSecond*VICTORY_PRINT.maxCatchUpSeconds));
  for(let frame=0;frame<2000;frame++){now+=1000/60;printer.update();}
  assert.equal(output.children[0],firstLine);assert.equal(firstLine.textContent,savedText);
  assert.equal(output.textContent,text);assert.equal(printer.active,false);

@@ -29,7 +29,8 @@ export function resetCycleRound(r){
   if((r.startWithBreach??CYCLE_TESTING.startWithBreach)&&r.playerId!==undefined)r.breaches.push({axis:'z',sign:-1,along:0,id:0,time:r.time});
   const startRow=Math.floor((ARENA_WALL.innerMeters-C.lengthMeters/2-C.startWallClearanceMeters)/C.cellMeters);
   r.cycles=Array.from({length:6},(_,id)=>{
-    const team=id<3?0:1,x=(id%3-1)*12,z=team===0?startRow:-startRow,dir=team===0?0:2;
+    const team=id<3?0:1,north=r.entranceFormation?team===0:team===1;
+    const x=(id%3-1)*(r.entranceFormation&&team===0?C.entranceFormationSpacingCells:12),z=north?-startRow:startRow,dir=north?2:0;
     const active=!((r.hideMiddleOpponent??CYCLE_TESTING.hideMiddleOpponent)&&r.playerId!==undefined&&id===4);
     if(active)r.occupied[cell(x,z)]=id+1;
     return {id,team,x,z,previousX:x,previousZ:z,dir,alive:active,turns:0,straight:0,progress:0,speedMultiplier:1,turboCharge:1,boosting:false};
