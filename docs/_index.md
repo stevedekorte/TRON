@@ -790,3 +790,214 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Limit sideways/backward desired flight speed to half forward speed using a hull-relative elliptical envelope. Preserve momentum, bounded acceleration, and normal turning toward travel; expose both speed ratios in development tuning. Intercept travel estimates account for directional speed. Wider crossings can escape slower lateral correction; near-head-on interception remains covered.
 - [x] Beam-to-victory follow-up: Chrome `node tests/home-menu.mjs` and production build passed for direct victory without entering the cycle match.
 - [x] Validation: `npm test` passes all 355 tests, including directional flight speed, near-head-on interception, searchlight suppression and reserve timing; `npm run build` passes (existing chunk-size warning). Recognizer flight feel still needs human play review.
+
+## Continuous chase-camera zoom — September 27
+
+- [x] Holding I/K zooms Clu's normal chase camera in/out continuously as well as the V aerial camera. Chase zoom scales distance and height around the tank anchor from 0.5× to 4×, retaining wall clipping and smoothing. Each camera retains its own zoom across mode switches; resetting the view restores chase zoom.
+- [x] Preserve first-person gunner I/K elevation and cycle driving inputs; suppress chase zoom while paused or using free camera. Update the HUD hint for chase mode.
+- [x] Validation: 27 camera/gunner tests pass; Chrome `node tests/home-menu.mjs` verifies held I/K in both chase and aerial views, independent zoom settings, and preserved gunner elevation. `npm run build` passes with the existing chunk-size warning.
+
+## Installable Space Paranoids PWA — September 27
+
+- [x] Add a relative manifest scoped to the deployed game path, standalone launch, dark startup colors, and project-authored T icons (192/512 PNG, maskable, 180-pixel Apple touch icon, editable SVG). Keep the existing desktop keyboard/mouse gameplay.
+- [x] Generate a content-versioned production service worker and complete local game asset list during build. Cache 88 files / 48.8 MiB, including models and music, for offline starts after installation completes. Support audio byte ranges, exclude remote APIs and documentation, and scope cache cleanup to this game. Development does not register a worker.
+- [x] Wait for old game windows to close before activating a new release; never force-refresh a running game.
+- [x] Validation: production build passes. `node tests/pwa.mjs` passes in headless Chrome with a temporary persistent profile: no installability errors, correct subdirectory scope and PNG dimensions, offline Clu and light-cycle launches, ranged cached audio, and a waiting update while gameplay continues. Physical home-screen installation on iOS/Android remains untested.
+
+## Faster victory terminal — September 27
+
+- [x] Triple victory typing from 45 to 135 characters per second. Allow several characters per rendered frame so the speed is attainable at 60 Hz, with bounded catch-up after frame stalls. Clu access typing and credits retain their separate timing.
+- [x] Validation: `node --test tests/victory.test.js` passes all five tests, including two seconds of 60 Hz typing and a simulated two-second frame stall.
+
+## Matched terminal speed and model attribution — September 27
+
+- [x] Supersede the 135-character/second victory setting: win text now shares the extended credits' 18 ms per character timing (about 56 characters/second).
+- [x] Label each imported model artist's displayed credit explicitly as 3D MODEL or 3D MODELS. Remove adaptation/behavior wording from these pages so the credit clearly identifies the supplied artwork. Preserve full provenance in the archival credits.
+- [x] Validation: all five `tests/victory.test.js` checks pass, including shared typing speed and the eight-line credit limit.
+
+## Top-centered terminal text — September 28
+
+- [x] Center the first line of the home, loading and Clu access text horizontally, with a shared top margin of 12vh bounded to 64–140px. Keep subsequent lines and the program menu left-aligned under the first line; fixed character-width offsets prevent the typing animation from moving the text block. Existing victory and credit layouts retain their margins.
+- [x] Validation: Chrome `node tests/home-menu.mjs` passes. Inspected the 1280×800 menu capture: the first line is centered and the remaining text stays left-aligned below it.
+
+## BIT program integration and terminal correction — September 28
+
+- [x] Restore TRON home/loading/access text to its previous left-offset position and top margin. The top-centered request was intended for the separate Bit application; retain that layout only in the integrated Bit program.
+- [x] Copy the Bit project into `public/bit`, preserving its MIT license, legacy renderer, models, animation and sounds. Add BIT as the third program, with keyboard, mouse and tap selection. Escape unloads Bit and returns to the home menu.
+- [x] Remove obsolete copied code variants, the standalone server/TLS files, key-entry UI, duplicate font/logo assets and separate service worker. Reuse the host assets and PWA cache. Extend the shared budgeted Jev protocol with bounded yes/no/unsure questions; retain server-side credentials and quotas. The public worker requires its corresponding update when deploying.
+- [x] Use the existing ENCOM logo for all PWA icon sizes, with dark square backing and mask-safe padding; generate directly from the shared SVG source.
+- [x] Validation: all 357 simulation tests pass; Chrome `tests/bit.mjs` verifies keyboard/mouse/tap selection, rendered Bit, mocked yes/no/unsure responses and repeated Escape returns. `tests/home-menu.mjs` passes with restored terminal positioning. Production build and Worker dry-run pass; `tests/pwa.mjs` validates installability, icons, offline Bit entry/Escape, offline tank/cycle starts, audio ranges and waiting updates. Speech was mocked; live microphone/provider responses were not exercised.
+
+## Bit activation and microphone permission — September 28
+
+- [x] Add a blinking block cursor to the activation prompt. Query microphone permission silently on entry: granted permission launches Bit immediately; prompt/denied/unsupported permission queries show activation text and wait for a gesture. Keep the prompt hidden while checking to avoid a flash for returning users.
+- [x] Activation requests microphone permission before constructing Bit; release the temporary permission-check stream before speech recognition starts. Denial keeps Bit unlaunched with a clear retry instruction. Escape remains available throughout.
+- [x] Validation: Chrome `tests/bit.mjs` passes with mocked granted/prompt/denied/unsupported permission cases, deferred permission resolution, cursor visibility, track release, activation and Escape. Production build passes. No live microphone or paid provider calls were used.
+
+## Center Bit's changing heading — September 28
+
+- [x] Measure the current Bit instruction text instead of centering a fixed 12-character label. Recenter after heading changes, font loading and window resizing; keep question/answer lines at the same left edge.
+- [x] Validation: Chrome `tests/bit.mjs` passes, including centering within one pixel at 1280px and 390px widths for activation, running and permission-denied headings, with aligned following lines.
+
+## Bit exit hint — September 28
+
+- [x] Display ESCAPE KEY TO EXIT using the same responsive font size, line height, spacing and glow as the top instructions. Fade both together over 0.5 seconds when the first accepted spoken question hides the instructions.
+- [x] Validation: Chrome `tests/bit.mjs` passes, checking exact hint wording, equal computed font sizes and both elements fading to zero after simulated speech.
+
+## Bit hint and answer timing — September 28
+
+- [x] Hide the Escape hint until Bit launches, then fade it with the top instructions on the first accepted spoken question.
+- [x] Hold YES, NO, unsure and unavailable response text for two seconds, then fade over 0.5 seconds. Cancel the previous fade when a new question starts so an old timer cannot hide THINKING or a newer response; clear the timer on exit.
+- [x] Validation: production build and Chrome `tests/bit.mjs` pass. The browser check verifies hidden-before-start/visible-after-start hint behavior, each answer still opaque after 1.6 seconds and subsequently fading to zero, and the hint/instruction fade on simulated speech.
+
+## Light Cycles arena opening — September 28
+
+- [x] Cover the canvas with a black loading terminal while the arena loads, preventing the Clu tank scene from appearing when Light Cycles is selected.
+- [x] Add a 4.5-second smooth camera descent from 600 meters above and 680 meters behind the arena to the player's cycle view. Hold the race for the first 65% of the move, then begin the countdown/race as the camera approaches the cycle inside the arena. Suppress driving/view inputs and HUD during the move; Escape pauses and resumes the camera.
+- [x] Reduced-motion preference skips the descent. Explicit road-test entry keeps its existing immediate camera behavior.
+- [x] Validation: 28 cycle camera/player tests pass; Chrome `tests/cycle-opening.mjs` verifies loading coverage, hidden tank mesh, descending camera, held race time, pause/resume, race handoff and reduced-motion bypass. Inspected the arena approach capture. Production build passes.
+
+## Film-reference cycle entrance and sound — September 28
+
+- [x] Replace the earlier overhead zoom with a shallow approach, a bank over the rear arena rim, and a low grid arrival based on the supplied `Enter Cycle Arena.m4v`. Travel takes 13 seconds; the complete entrance lasts 20 seconds to accommodate the dialogue/transport/startup cues and a smooth handoff. Wall crossing stays above the 50 m rim; the race releases at 92% of the entrance.
+- [x] Extract “Prepare to transport to light cycle grid” and “We have transport” from the 5.1 center channel, plus stereo transport and cycle startup effects. Named cue times, local preloading, master mute, pause/resume offsets, reset/disposal, and suppression of duplicate materialization/launch cues keep playback tied to the entrance. Reduced-motion mode skips the cinematic and its timed audio.
+- [x] Validation: 30 camera/player/audio lifecycle unit checks pass, including wall clearance, exact camera handoff, and mid-cue pause/resume. Chrome entrance checks and rendered approach/bank/grid captures pass. Dialogue boundaries were located using local transcription; effects were selected against the film frames, not isolated production stems. Subjective sound balance remains for user audition.
+
+## Cycle entrance reference correction — September 28
+
+- [x] Re-read the supplied film clip frame by frame and replace forward flight with a backward, maze-facing descent over the west wall. Keep camera viewing direction independent of travel: reveal the broad ledge, drop past the decorated inner wall with a restrained bank, then turn across the grid and ease into the player's view. The existing arena placement already presents this wall to the labyrinth; no world rotation is required. Preserve the 20-second entrance, audio cues, pause/resume and reduced-motion bypass.
+- [x] Give the arena's horizontal crest surfaces the reference's muted blue-violet (`#343548`) while preserving the dark vertical faces and symbols. Apply in the presentation material so existing breach cuts and restores retain the treatment.
+- Validation: on local macOS, 33 camera/player/audio/breach unit checks pass. Headless Chrome `node tests/cycle-opening.mjs` passes for loading coverage, descent, frozen race, pause/resume including mid-dialogue, audio loading, race handoff and reduced-motion bypass. Inspected rim, bank and grid captures against extracted film frames. The reconstruction preserves the existing authored maze and arena geometry; subjective motion and sound review remains with the user.
+- Production build passes with the existing chunk-size advisory; `git diff --check` passes.
+
+## Recreate only the first sixteen seconds — September 28
+
+- [x] Supersede the previous entrance with a timed 00:00–00:16 camera study: retreat from the maze, descend along the wall while panning right and pitching down to 65 degrees, then accelerate across the floor and lift the view at the far staging area. Separate timed position, yaw and pitch tracks; remove aircraft roll and the invented blend toward the player during the film shot. Preserve the blue-violet wall crest.
+- [x] Hold the race throughout the sixteen-second shot. At its end, cut back to the existing gameplay camera; later film shots and player/cycle formation are outside this pass. Existing audio cues remain tied to elapsed time; the later startup cue lies outside this shorter shot.
+- Validation: 30 camera/player/audio unit checks pass, including wall clearance, steep downward pitch, rightward pan, accelerated traverse and the sixteen-second duration. Browser and rendered review results follow below.
+- Headless Chrome `node tests/cycle-opening.mjs` passes on local macOS, including pause/resume, held countdown, audio loading and reduced-motion bypass. Inspected 3/7/10.5/14-second captures; the 10.5-second view is dominated by the downward-facing grid and the arrival faces the opposite wall. Production build passes with the existing chunk-size advisory; whitespace checks pass. Film-motion fidelity still needs the user's review.
+
+## Cycle launch timing and continuous entrance — September 28
+
+- [x] Fix accelerated race startup: the fixed-step loop accumulated the entire cinematic hold and replayed it after release. Discard accumulated time when simulation is held, including holds triggered within a step. Preserve the normal 38.4 m/s cycle speed and turbo tuning.
+- [x] Remove the centered arena-loading wording; retain a plain black cover until assets are ready. Hide cycle control hints throughout the cinematic.
+- [x] Keep the sixteen-second reference study, rightward/downward pan and fast floor traverse, but spread forward travel through the turn instead of slowing almost to a stop before accelerating. Regression checks require continuous motion through the turn as well as faster travel across the grid.
+- Validation: 41 camera/player/audio/loop checks pass, including a sixteen-second hold followed by one second of real-time simulation and a hold triggered inside a simulation step. Browser and production results follow below.
+- Headless Chrome `node tests/cycle-opening.mjs` passes on local macOS, including normal simulation time versus wall-clock time after launch, hidden entrance hints, loading text removal, pause/resume and reduced-motion bypass. Inspected updated turn and downward-grid captures. Production build passes with the existing chunk-size advisory; `git diff --check` passes. Subjective motion matching remains for user review.
+
+## Wall clearance, overhead patrol and Recognizer face tints — September 28
+
+- [x] Correct the entrance's assumed wall height from 50 to the imported model's actual 60 meters. Raise the crossing, retain clearance over the wall's full thickness, and descend only after entering the arena. Check the swept camera path against the source GLB triangles.
+- [x] Move the arena patrol's initial position to the west ledge beneath the cinematic crossing, facing along the perimeter. Preserve autonomous patrol after the cinematic hold; the camera passes above its crown with clearance.
+- [x] Add a per-Recognizer `tintColor` override and `createRecognizer(template, {tintColor})` presentation parameter. Default and arena-patrol colors have separate development-panel color pickers with black, green, blue and red presets. Arena patrol uses muted green; other units retain the original dark default. Only solid face materials change; trim and damage flashes remain independent, as do cloned vehicle materials. Tuning reset/export includes the colors.
+- Validation: headless Chrome on local macOS checked 960 swept camera segments against the actual arena GLB with no intersections, all four tint colors, unchanged trim and independent clone colors. Inspected the green patrol crossing capture. Final tests/build results follow below.
+- Final validation: 39 camera/player/patrol/audio tests pass, including full patrol traversal and camera-over-crown clearance. Chrome `tests/cycle-opening.mjs` also passes tint picker/preset/reset checks, verifies independent default and arena colors, and retains normal launch timing, pause/resume and reduced-motion coverage. Production build and whitespace checks pass (existing chunk-size advisory).
+
+## Compact ENCOM E app icon — September 28
+
+- [x] Replace the full ENCOM wordmark on the PWA icon with its E and wrapping curved outline. Adapt the existing SVG lettering and border into a square mark, preserving pale lavender strokes, dark backing and maskable padding. Keep the terminal's full wordmark intact.
+- [x] Store the editable mark in `public/images/encom-app.svg`; regenerate `public/icons/icon.svg` and the 180/192/512 PNG sizes with `node scripts/generate-app-icons.mjs`. Inspected the rendered 512-pixel icon in Chrome on local macOS.
+- Icon validation: production build and whitespace checks pass; verified PNG dimensions at 180, 192 and 512 pixels.
+
+## Match Light Cycles and Clu HUD typography — September 28
+
+- [x] Share one typography rule for Clu's control hints and Light Cycles' control/status text: 9 px, 1.8 line height and 0.6 px letter spacing. Replace Light Cycles' larger 11 px text. Both modes already share the same turbo indicator and FilmTerminal font.
+- Validation: reviewed the shared CSS rule; production build and whitespace results follow below.
+- Production build passes with the existing chunk-size advisory; `git diff --check` passes.
+
+## Terminal-sized resume prompt — September 28
+
+- [x] Replace the two-part STAND BY / ANY KEY TO RESUME pause text with only ANY KEY TO RESUME. Share the terminal's responsive font-size variable, typeface, line height and letter spacing. Keep the existing top-centered placement and resume behavior.
+- Validation: reviewed the markup and shared responsive CSS; production build and whitespace checks pass (existing chunk-size advisory).
+
+## Simplify initialization copy — September 28
+
+- [x] Remove AWAITING CARRIER from the initial loading terminal and attach the existing animated three dots directly to DIALING HOST. Preserve ENCOM REMOTE ACCESS and the cursor.
+- Validation: reviewed loading markup; production build and whitespace checks pass (existing chunk-size advisory).
+
+## Moving arena entrance patrol — September 28
+
+- [x] Advance the arena patrol at the fixed simulation timestep throughout the sixteen-second entrance while keeping cycle countdown, racers and tank combat held. Pause freezes the camera and patrol together; race release remains free of simulation catch-up.
+- [x] Start the green Recognizer already traveling south along the west ledge, toward screen-left in the maze-facing shot. Offset its initial position by three seconds of cruise travel so the camera still crosses above it. Continue the normal perimeter patrol afterward.
+- Validation: 40 camera/player/patrol tests pass, including moving-patrol crown clearance, patrol direction during the entrance, unchanged racer state and unchanged other enemies. Browser/build results follow below.
+- Moving-patrol browser validation: Chrome entrance checks pass, including leftward patrol movement while racers remain held and normal timing after release. Production build passed before the subsequent flight/HUD changes.
+
+## Forward cruise and slow Recognizer maneuvering — September 28
+
+- [x] Cap desired sideways and backward travel at a named 3 m/s maneuver speed. Preserve forward cruise, bounded acceleration and momentum through turns; do not snap existing velocity to the new limit. Expose the maneuver-speed cap in development tuning.
+- [x] At open-flight altitude, tactical navigation faces its travel direction. Retain wall-aligned hull orientation for low-speed corridor positioning. A wider lateral crossing can now escape; preserve head-on interception without restoring high-speed strafing.
+- Validation: 133 camera/player/patrol/tactical/simulation/interception tests pass. Updated previous half-cruise strafe expectations to the requested slow-maneuver behavior, retaining acceleration, obstacle clearance, head-on interception and continuous turn checks.
+
+## Solid carrier for Light Cycles — September 28
+
+- [x] Show the carrier fully materialized for explicit cycle entry and cycle play, including the arena entrance. Preserve Clu's carrier materialization.
+- Validation: Chrome entrance test confirms full solid opacity and hidden materialization panel during the opening; normal entry, moving patrol, pause/resume and race release still pass.
+
+## Terminal-sized gameplay text — September 28
+
+- [x] Supersede the previous 9 px hint-only match: all HUD text in Clu and Light Cycles now shares the terminal's responsive font-size variable. Include health/turbo/shot labels, hints, status/warnings, sight text, map text, pause prompt and development panels. Widen meter labels for the larger type.
+- Browser layout and production verification results follow below.
+- Final verification: headless Chrome `tests/home-menu.mjs` passes and confirms computed HUD/control font sizes match the terminal in both modes. Inspected desktop label/control captures; production build and whitespace checks pass with the existing chunk-size advisory. The earlier Chrome entrance run also verifies the solid carrier and moving patrol. Human flight-feel review remains pending.
+
+## Detectable PWA icon revisions — September 28
+
+- [x] Generate content-versioned icon filenames and update manifest, favicon and Apple touch icon URLs whenever artwork changes. Preserve the app's manifest identity, launch URL and scope. Keep stable icon copies for existing references. This fixes replacing icon bytes without changing the manifest's icon entries, which Chrome 144+ treats as unchanged.
+- Deployment and installed-device status remain unconfirmed: local updates alone cannot update an installation from the public site. Chrome may offer Review app update for identity changes. Reference: https://developer.chrome.com/blog/improvements-to-web-app-updates .
+
+## Automatic Clu entry after access typing — September 28
+
+- [x] Remove the confirmation wait after REQUEST ACCESS TO CLU PROGRAM finishes typing. Automatically start the existing dissolve/camera approach and music; reduced-motion mode enters directly. Keep the initial menu selection gesture and consume input during typing.
+- Update menu, offline PWA and cannon-reserve browser checks for automatic entry. Verification results follow below.
+
+## Exterior-to-aerial Clu zoom — September 28
+
+- [x] Make normal-view I/K zoom continuously from the existing exterior tank camera up to the same high aerial framing available in V mode. The closest setting is exactly the normal exterior distance and height; remove the previous closer-than-normal endpoint. Blend the look target down toward the tank as the camera rises instead of scaling a shallow chase angle. Preserve V as an aerial shortcut, gunner elevation, and cycle pedal controls.
+- Verification results follow below.
+- Automatic-entry and icon validation: Chrome home-menu checks pass, including no confirmation gesture and uninterrupted opening music. Production PWA checks pass with content-versioned icon URLs, correct dimensions, offline automatic Clu entry and waiting updates. Installed-device icon acceptance is unverified; installation URL/platform was requested but not supplied.
+- Zoom follow-up: V-mode zoom also reaches the normal exterior endpoint. Share the effective aerial blend with fog and floor presentation so zoomed-out terrain remains visible. Camera endpoint and gunner/cycle controls are covered by unit tests.
+
+## Assisted Recognizer targeting marker — September 28
+
+- [x] Display a red downward V above the crown of the Recognizer selected by Clu's upward assisted cannon solution. Use the same narrow-cone, obstruction and lead constraints as firing. Project the marker into screen space; hide it off-screen, behind walls, during manual gunner view, cycle play, pause/opening or after target loss/destruction.
+- [x] Use a small SVG graphic with no input handlers or GPU allocations. Reuse one projection vector; keep simulation targeting unchanged.
+- Verification results follow below.
+- Validation: 34 camera/gunner/marker tests pass, including visible assisted acquisition and rejection of blocked targets. Chrome `tests/assist-marker.mjs` passes acquisition, lost alignment, manual gunner and destroyed-target cases; inspected the red V capture. Reserved extra HUD space beside the wider meters. Production build and whitespace checks pass (existing chunk-size advisory).
+
+## One-second completed Clu access hold — September 28
+
+- [x] Hold the fully typed Clu access terminal for one second before its existing dissolve/camera approach. Continue automatically; no extra input is required, and input cannot shorten the hold. Apply the hold before reduced-motion entry too; reset its timer on a new session or return to program selection.
+- Installed-icon diagnosis: the local Chrome app is `~/Applications/Chrome Apps.localized/Space Paranoids.app`, launching `http://localhost:5173/`. Its app.icns already contains the new E artwork; the Dock's ENCOM TERMINAL entry points to this same bundle. Restarted Dock to refresh its displayed icon. Use localhost when opening this installed app's origin; 127.0.0.1 is a separate origin.
+- Verification results follow below.
+
+## Subtler targeting chevron — September 28
+
+- [x] Compress the targeting V from 18 to 12 CSS pixels tall while retaining its 30-pixel width. Set overall marker opacity to 0.5, including glow; let the SVG stretch vertically so its width stays unchanged.
+- Validation: reviewed SVG sizing and CSS opacity; production build and whitespace checks pass. Chrome home-menu checks also pass with the one-second completed-access hold and automatic transition.
+
+## Smaller marker with acquisition flashes — September 28
+
+- [x] Halve the targeting V to 15 × 6 CSS pixels, retaining 0.5 steady opacity. A newly acquired Recognizer lock flashes three times at a 400 ms period, then holds steady. Losing the lock cancels the animation; acquiring a different target or reacquiring after loss starts a fresh sequence. Ordinary updates to the same lock do not restart it.
+- Use the browser animation timeline with named timing values; no timers or recurring callbacks are added.
+- Validation: Chrome `tests/assist-marker.mjs` passes exact 15 × 6 sizing, three on/off flashes, steady 0.5 opacity without retriggering, fresh flashes after reacquisition, and disappearance on manual gunner/destruction. Production build and whitespace checks pass with the existing chunk-size advisory.
+
+## Automatic Bit microphone request — September 28
+
+- [x] Selecting Bit now requests microphone access on entry without an extra activation key/click. Show REQUESTING MICROPHONE ACCESS while the browser prompt is pending; launch after approval and stop the temporary permission-check stream. Already-granted permission still launches directly.
+- [x] On denial, remain unlaunched and offer an explicit retry after microphone permission is enabled. Preserve Escape during pending permission and avoid launching after leaving. The browser's own permission prompt remains authoritative.
+- Update integration tests and README to describe automatic activation. Browser requests and speech remain mocked during verification.
+- Validation: Chrome `tests/bit.mjs` passes automatic entry, microphone approval/denial, temporary stream release, heading alignment, answers and Escape return. Production build and whitespace checks pass with the existing chunk-size advisory. No real microphone recording or paid provider requests were used.
+
+## Arena opening carrier and faster target flashes — September 28
+
+- [x] Stage the carrier beyond the maze on the right of the 16-second cycle entrance, using the supplied original-film still. Preserve model scale, expose the open bow on the right, and move along its heading. Keep this cinematic placement scoped to the opening; ordinary world transit resumes at the gameplay cut. Extend the cycle camera far plane to retain the distant ship.
+- [x] Double the targeting V blink rate: three 200 ms flashes (600 ms total), then steady at 0.5 opacity. Size and reacquisition behavior stay unchanged.
+- Validation: Chrome `tests/assist-marker.mjs` passes the exact 200 ms period, three flashes and steady state. Chrome `tests/cycle-opening.mjs` passes entrance, wall clearance, moving patrol, pause and gameplay handoff; inspected opening and carrier-angle captures. Full film-motion fidelity remains subject to visual review.
+
+## Gold-team formation and active Clu approach — September 28
+
+- [x] After the 16-second cycle camera move, hold its exact endpoint for a 2.75-second materialization of the three gold cycles, then cut immediately to the player's cycle view. Keep racers frozen throughout; skip the second countdown reveal. Use the actual gold starting row on the north side with 14.4-meter spacing, facing into the arena, and team-colored reveal lines. Reduced-motion entry keeps its existing shortcut.
+- [x] Use I/K to zoom in/out consistently inside and outside the arena, from normal cycle follow framing to the aerial range. Reserve T for turbo in both modes; retain W turbo and S/X slow in the arena, and W/S speed control plus X brake/reverse outside. Update control help and meter labels. This supersedes the earlier I/K speed aliases.
+- [x] Enable keyboard driving, turret and firing controls during Clu's camera approach, plus mouse firing. Start the approach at normal maximum forward speed with the same persistent cruise flag as Shift+W. Camera-mode selections can leave the approach immediately; terminal typing and its one-second hold still complete automatically before controls activate.
+- Validation: 33 camera/player simulation checks pass. Chrome entrance checks pass the stationary three-cycle formation, paused race, immediate handoff and I/K zoom. Further browser and build results follow.
+- Final validation: all 365 `npm test` checks pass. Chrome `tests/home-menu.mjs` verifies maximum-speed cruise, steering, turret movement and firing during Clu's approach; `tests/cycle-player.mjs` verifies the north-side start, turning, turbo and restart. Target marker and entrance browser checks pass. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS; rendered carrier-angle, entrance and formation captures inspected. Human driving/sound and exact film fidelity still require review.
+- Commit review: newly staged imported Bit sources/assets retain upstream whitespace, which `git diff --cached --check` flags. The earlier whitespace check covered tracked edits; these vendor-format warnings do not affect the passing build/browser checks.

@@ -1,3 +1,4 @@
+import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
 import * as THREE from 'three';
 import {tagRecognizerBlocks} from './recognizer-blocks.js';
 import { TANK } from '../game/tank.js';
@@ -108,7 +109,7 @@ export async function loadRecognizer() {
   legs.forEach((leg,i)=>{leg.name=i?'right-leg':'left-leg';root.add(leg);});
   for (const mesh of meshes) {
     if(mesh.material.name==='Base') {
-      mesh.material.color.setHex(0x101922); mesh.material.roughness=.65;
+      mesh.material.color.setHex(RECOGNIZER_TINTS.black); mesh.material.roughness=.65;
     } else mesh.material.emissiveIntensity=.8;
     // The GLB is two material meshes, not a rig. Split whole triangles at the
     // shoulder seam, retaining the original normals, UVs and luminous trim.
@@ -134,7 +135,7 @@ export async function loadRecognizer() {
   return root;
 }
 
-export function createRecognizer(template) {
+export function createRecognizer(template, {tintColor=RECOGNIZER_TINTS.black}={}) {
   const root=template.clone(true);
   let material;const materials=new Map();
   root.traverse(mesh=>{
@@ -167,7 +168,9 @@ export function createRecognizer(template) {
       leg.position.set(side*15*(1-Math.cos(angle))-side*13*smooth,0,side*15*Math.sin(angle));
     });
   }
-  return {root,material,legs,pose};
+  const setTintColor=color=>material.color.set(color);
+  setTintColor(tintColor);
+  return {root,material,legs,pose,setTintColor};
 }
 
 // Release a completed sibling load if the other file fails.

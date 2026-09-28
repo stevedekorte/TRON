@@ -23,6 +23,7 @@ import { mouseTarget } from './mouse-target.js';
 import { groundTankCount } from '../simulation/ground-tanks.js';
 import { Searchlights } from './searchlights.js';
 import { updateCarrier } from './carrier.js';
+import { applyCycleOpeningCarrier, CYCLE_OPENING } from './cycle-opening.js';
 import { Breakups } from './breakup.js';
 import { createMuzzleFlash } from './muzzle-flash.js';
 import * as THREE from 'three';
@@ -294,7 +295,8 @@ export class View {
     this.elapsed += dt;
     this.arena?.userData.breaches.update(run.cycleRace);
     const cycleRace=interpolateCycleRace(run.cycleRace,alpha);
-    this.arena?.userData.cycleRace.update(cycleRace);
+    const opening=this.cameraRig.cycleOpening;
+    this.arena?.userData.cycleRace.update(cycleRace,opening===null?null:Math.max(0,(opening-1)*CYCLE_OPENING.durationSeconds));
     if (this.teleportRevision !== run.teleportRevision) {
       this.cameraRig.freshCamera = true;
       this.cameraRig.gunnerTransition = null;
@@ -303,7 +305,8 @@ export class View {
     }
     this.teleportPads.visible = mode !== 'ready';
     this.teleportPads.update(run.teleportPads, run.time);
-    const { cinematic, aerialMix, preview, gunner } = this.cameraRig.begin(run, dt, mode);
+    const { cinematic, aerialMix:modeAerialMix, preview, gunner } = this.cameraRig.begin(run, dt, mode);
+    const aerialMix=this.cameraRig.cluAerialFraming(modeAerialMix).mix;
     this.clouds?.update(run.time, run.seed, !preview);
     this.solarSailer?.update(run.time, !preview);
     if (this.carrier) {
@@ -315,7 +318,9 @@ export class View {
         Math.max(0, 1 - (run.time - run.carrierHitAt) / 1.2),
         this.map,
       );
-      this.carrier.userData.rez.updateTransit(run.time, carrierFor(this.map).speed);
+      if(this.cameraRig.cycleOpening!==null&&run.cycleRace)applyCycleOpeningCarrier(this.carrier,this.cameraRig.cycleOpening,run.cycleRace.site);
+      if(run.playerVehicle==='cycle'||run.cycleEntryRequested)this.carrier.userData.rez.update();
+      else this.carrier.userData.rez.updateTransit(run.time, carrierFor(this.map).speed);
     }
     if (run.teleport) previous = { ...run };
     const x = previous.x + (run.x - previous.x) * alpha;
@@ -353,7 +358,7 @@ export class View {
 
     this.arenaFloor?.material.uniforms.fadeRange.value.set(160 + 1640 * aerialMix, 650 + 2350 * aerialMix);
     this.world.floor.position.set(x, -0.06, -s);
-    this.world.floor.scale.setScalar(aerialMix > 0 ? Math.max(1, this.cameraRig.aerialZoom) : 1);
+    this.world.floor.scale.setScalar(aerialMix > 0 ? Math.max(1,this.cameraRig.cluAerialFraming(modeAerialMix).scale) : 1);
     this.ensureRecognizers(run.recognizers.length);
     this.recognizers.forEach((c, i) => {
       if (!run.recognizers[i]) {
@@ -368,6 +373,7 @@ export class View {
       craft.root.position.set(e.x, e.y, -e.s);
       craft.root.rotation.set(0, e.yaw, 0);
       craft.pose(e.fold || 0);
+      craft.setTintColor(e.tintColor ?? (e.role==='arena-patrol'?config.arenaPatrolTintColor:config.recognizerTintColor));
       craft.rez?.update(
         e.state === 'materializing' ? run.time - e.rezStarted : null,
         vehicleTeleportPad(e, run.teleportPads, true),

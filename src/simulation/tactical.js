@@ -220,7 +220,8 @@ export function navigateTactical(e,now,dt,others,budget=null){
    const settling=offensive&&!!crushOpportunity(e,now,true);
    const moving=!settling&&dist>arrival;
    const clearAttackPose=finalApproach&&['pursue','strike','low-approach'].includes(plan.kind)&&aircraftPoseClear({...e,y:CRUSH.soleHeight},null,TACTICAL.clearance,worldFor(e));
-   const heading=settling||!moving&&clearAttackPose?null:offensive&&e.y>=SAFE_ALTITUDE?plan.goal.yaw:waypoint.yaw;
+   const heading=settling||!moving&&clearAttackPose?null:moving&&e.y>=SAFE_ALTITUDE&&dist>TACTICAL.arrivalDistance
+     ?-Math.atan2(waypoint.x-e.x,waypoint.s-e.s):waypoint.yaw;
    advanceYaw(e,dt,heading);
    // Carry speed through straight route segments; only the next real corner
    // or final approach is a braking destination.
@@ -231,7 +232,7 @@ export function navigateTactical(e,now,dt,others,budget=null){
     travelDistance+=distance(previous,next);previous=next;
    }
    const max=e.y<SAFE_ALTITUDE?TACTICAL.lowSpeed:config.enemySpeed*TACTICAL.cruiseSpeedMultiplier;
-   // Translation is independent of facing; arrival still brakes normally.
+   // Cruise faces travel; hull-aligned corridor strafing stays at maneuver speed.
    const target=moving?Math.min(max,travelDistance*.8):0;
    advanceFlightToward(e,dt,waypoint.x-e.x,waypoint.s-e.s,target);
    // Finish translation and alignment before descending into a confined area.

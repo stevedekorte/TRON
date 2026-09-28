@@ -29,7 +29,7 @@ export function createRecognizers(rng=Math.random,world=DEFAULT_WORLD) {
     const cells=OPEN_CELLS.filter(p=>p.mazeId===(start.mazeId??0)&&inPatrolRegion(p,world.MAZE_INSTANCES[p.mazeId],start.patrolSector??null,world.MAZE_INSTANCES[p.mazeId].patrols?.airCount??1));
     const p=start.role==='patrol'?{...start,...cells[Math.floor(rng()*cells.length)]}:start;
     return attachWorld({...p,id,y:p.y??WALL_HEIGHT+22*RECOGNIZER_SCALE+12,yaw:p.yaw??(p.role==='escort'?-Math.PI/2:p.role==='patrol'?rng()*Math.PI*2:-Math.atan2(-p.x,-p.s)),
-    alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.role==='escort'?CARRIER.speed:0,vs:0,vy:0,yawVelocity:0,seed:Math.floor(rng()*4294967296),
+    alertUntil:0,state:p.role==='escort'?'escort':'wander',health:3,hit:0,vx:p.vx??(p.role==='escort'?CARRIER.speed:0),vs:p.vs??0,vy:0,yawVelocity:0,seed:Math.floor(rng()*4294967296),
     targetGone:false,neutralizationSent:false,attack:null,fold:0,nextAttack:0,memory:null,canSee:false,goal:null,goalUntil:0,nextSense:id*.037,nextRadio:0,lastBroadcast:-Infinity,searchIndex:0},world);});
 }
 export function canSeeClu(e,clu) {

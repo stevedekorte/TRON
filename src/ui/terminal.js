@@ -1,3 +1,5 @@
+export const EXTENDED_CREDIT_PRINT=Object.freeze({secondsPerCharacter:.018});
+
 // Static access text; the opening dissolve is handled by the main view.
 export class Terminal {
  constructor(text,actions){this.text=text;this.actions=actions;this.done=true;}
@@ -46,7 +48,7 @@ export class TerminalTribute {
    if(this.reducedMotion&&this.elapsed>=this.nextCharacter)this.count=message.length;
    while(this.elapsed>=this.nextCharacter&&this.count<message.length){
     const character=message[this.count++];
-    this.nextCharacter+=this.index>=this.extendedStart?.018:.045+Math.random()*.10+(character==='\n'?.45:/[.!?]/.test(character)?.3:/[,;:]/.test(character)?.14:0);
+    this.nextCharacter+=this.index>=this.extendedStart?EXTENDED_CREDIT_PRINT.secondsPerCharacter:.045+Math.random()*.10+(character==='\n'?.45:/[.!?]/.test(character)?.3:/[,;:]/.test(character)?.14:0);
    }
    appendPrintedText(this,message.slice(previous,this.count));
    if(this.count<message.length)return false;
@@ -87,7 +89,7 @@ export class TerminalTribute {
 }
 
 // Constant character cadence, including punctuation and line breaks.
-export const VICTORY_PRINT=Object.freeze({charactersPerSecond:45});
+export const VICTORY_PRINT=Object.freeze({charactersPerSecond:1/EXTENDED_CREDIT_PRINT.secondsPerCharacter,maxCatchUpSeconds:1/30});
 export class TerminalPrinter {
  constructor(output,message,{clock=()=>performance.now()}={}){
   this.output=output;this.message=message.replace(/\r\n?/g,'\n').trimEnd();this.clock=clock;this.reset();
@@ -96,11 +98,12 @@ export class TerminalPrinter {
  start(){this.reset();this.startedAt=this.clock();this.nextCharacterAt=this.startedAt+1000/VICTORY_PRINT.charactersPerSecond;this.active=true;this.output.replaceChildren();}
  update(){
   if(!this.active)return;
-  // Show at most one character per rendered frame; never dump a backlog as words.
+  // Match extended-credit typing speed and bound catch-up after stalls.
   const now=this.clock(),interval=1000/VICTORY_PRINT.charactersPerSecond;
   if(now<this.nextCharacterAt)return;
-  const count=Math.min(this.message.length,this.count+1);
-  this.nextCharacterAt=Math.max(this.nextCharacterAt+interval,now);
+  const due=Math.min(Math.ceil(VICTORY_PRINT.charactersPerSecond*VICTORY_PRINT.maxCatchUpSeconds),1+Math.floor((now-this.nextCharacterAt)/interval));
+  const count=Math.min(this.message.length,this.count+due);
+  this.nextCharacterAt=Math.max(this.nextCharacterAt+due*interval,now);
   if(count<=this.count)return;
   appendPrintedText(this,this.message.slice(this.count,count));
   this.count=count;

@@ -1,3 +1,4 @@
+import {CycleOpeningAudio, CYCLE_ENTRY_CUES} from './cycle-opening.js';
 import { CycleVoices } from './cycle-voices.js';
 import { MusicDirector } from './music-director.js';
 import { RecognizerVoices } from './recognizer-voices.js';
@@ -132,6 +133,7 @@ export class Sound {
       noiseBuffer: this.noiseBuffer,
       source: this.source.bind(this),
     });
+    this.cycleOpeningAudio = new CycleOpeningAudio(c, this.master, this.samples);
     this.cycleVoices = new CycleVoices(c, this.master, this.samples);
     this.loading = this.loadSamples();
   }
@@ -179,14 +181,14 @@ export class Sound {
 
   loadCycleSamples() {
     if(!this.context)return Promise.resolve();
-    return this.cycleLoading ??= Promise.all(['materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down'].map(async name=>{
+    return this.cycleLoading ??= Promise.all(['materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
       try {
         const response=await fetch(import.meta.env.BASE_URL+'audio/cycle-'+name+'.wav'+(name==='drive-cabin'?'?v=4':['drive','turn','explosion'].includes(name)?'?v=2':''));
         if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.context.decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;
       }catch(e){if(!this.disposed)this.sampleErrors.push('cycle-'+name+': '+e.message);}
-    }));
+    })).then(()=>{this.cycleSamplesReady=true;});
   }
   update(run, camera, playing) {
     const CARRIER = carrierFor(this.world);
@@ -280,7 +282,7 @@ export class Sound {
       l.setPosition(ear.x, ear.y, -ear.s);
       l.setOrientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
     }
-    this.cycleVoices.update(run.cycleRace,playing,ear);
+    this.cycleVoices.update(run.cycleRace,playing,ear,this.cycleOpeningSeconds!==null&&this.cycleOpeningSeconds!==undefined);
     this.recognizerVoices.update(cycleMode ? {recognizers:run.recognizers.filter(e=>e.role==='arena-patrol')} : run, ear);
     if (run.impact > 0.2 && (!this.lastImpact || run.time - this.lastImpact > 0.25)) {
       this.effect('impact');
@@ -558,6 +560,7 @@ export class Sound {
     this.musicDirector.fadeMusic(progress);
   }
   reset() {
+    this.cycleOpeningAudio?.reset();
     this.musicDirector.reset();
     this.cycleVoices?.reset();
     this.turretServo?.reset();
@@ -576,6 +579,7 @@ export class Sound {
     this.disposed = true;
     this.turretServo?.dispose();
     this.recognizerVoices?.dispose();
+    this.cycleOpeningAudio?.reset();
     this.cycleVoices?.dispose();
     this.musicDirector.dispose();
     this.context?.close();

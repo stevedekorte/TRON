@@ -1,4 +1,5 @@
 import {CarrierMaterialization} from './carrier-materialization.js';
+import {CYCLE_OPENING} from './cycle-opening.js';
 import {CycleTireTraces} from './cycle-tire-traces.js';
 import {materializationDuration,materializationPhase} from '../game/materialization.js';
 import { CycleExplosions } from './cycle-explosions.js';
@@ -46,6 +47,7 @@ export class LightCycleRaceView {
     this.root=new THREE.Group();this.root.name='Light cycle competition';arena.add(this.root);
     this.bikes=Array.from({length:6},(_,id)=>{const root=models[id<3?0:1].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);return root;});
     this.materializations=this.bikes.map(root=>new CarrierMaterialization(root,{axis:'z',reverse:false,isLiveMaterial:()=>false}));
+    this.materializations.forEach((rez,id)=>rez.lineMaterial.color.setHex(C.colors[id<3?0:1]));
     const receivers=[...floorReceivers];
     const crafts=this.bikes.map(root=>{const casters=[];root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude){casters.push(o);receivers.push(o);}});return {root,casters,radius:2.6,distance:8};});
     this.shadows=new RecognizerShadows(crafts,receivers,0,{size:512,prefix:'cycleShadow',darkness:.65,filterEdges:true,depthBias:.002});
@@ -58,7 +60,7 @@ export class LightCycleRaceView {
     }});
 
   }
-  update(r){
+  update(r,openingFormationAge=null){
     this.root.visible=!!r&&r.phase!=='idle';if(!this.root.visible){this.tireTraces.update(null);return;}
     const fraction=r.phase==='racing'?r.accumulator/(C.cellMeters/C.speedMetersPerSecond):1;
     for(const b of r.cycles){const fraction=cycleFraction(r,b);const mesh=this.bikes[b.id];mesh.visible=b.alive;
@@ -67,11 +69,11 @@ export class LightCycleRaceView {
       const floor=onArena?this.arenaFloor:this.groundFloor;
       mesh.position.set(x,(floor?.position.y??0)+(mesh.userData.groundOffsetMeters??0),z);mesh.rotation.set(0,b.yaw??-b.dir*Math.PI/2,b.lean??0);
       const rez=this.materializations[b.id];
-      const age=r.phase==='countdown'?Math.max(0,C.countdownSeconds-r.remaining):null;
-      mesh.visible=b.alive&&(age===null||age>0);
+      const age=openingFormationAge??(r.phase==='countdown'?Math.max(0,C.countdownSeconds-r.remaining):null);
+      mesh.visible=b.alive&&(age===null||age>0)&&(openingFormationAge===null||b.team===0);
       if(age===null)rez.update(null);
       else {
-        const phase=materializationPhase(age/C.countdownSeconds*materializationDuration());
+        const phase=materializationPhase(age/(openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds)*materializationDuration());
         rez.update(age,null,{phase,cut:THREE.MathUtils.lerp(rez.bounds.min.z,rez.bounds.max.z,phase.wire)});
 
       }

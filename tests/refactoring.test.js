@@ -294,3 +294,16 @@ test('120 Hz is confined to arena racing; the outside world uses its normal 60 H
  r.cycleRace.cycles[0].alive=false;assert.equal(simulationStepSeconds(r),1/60);
  r.cycleRace.cycles[0].escaped=false;assert.equal(simulationStepSeconds(r),1/120);
 });
+
+
+test('cinematic holds discard elapsed time instead of accelerating the simulation afterward',()=>{
+ const loop=new GameLoop({frame:()=>{}});let elapsed=0,playing=false;
+ const step=dt=>elapsed+=dt;
+ for(let i=0;i<960;i++)loop.advance(1/60,false,()=>playing,step,1/120);
+ assert.equal(elapsed,0);assert.equal(loop.alpha,0);
+ playing=true;
+ for(let i=0;i<60;i++)loop.advance(1/60,false,()=>playing,step,1/120);
+ assert(Math.abs(elapsed-1)<1e-9,'one real second advances one simulation second');
+ loop.advance(.1,false,()=>playing,()=>{playing=false;},1/120);
+ assert.equal(loop.alpha,0,'a hold triggered inside a step clears the remainder too');
+});

@@ -47,6 +47,7 @@ export async function loadCarrier(){
 }
 export function updateCarrier(ship,time,health=100,hit=0,world=DEFAULT_WORLD){
  const CARRIER=carrierFor(world);
+ ship.rotation.set(0,0,0);
  for(const {material,color} of ship.userData.armorMaterials||[]){material.color.copy(color).multiplyScalar(.5+.5*health/100);material.emissiveIntensity=.28+hit*2;}ship.position.set(CARRIER.startX+CARRIER.speed*time,CARRIER.altitude,-CARRIER.s);
  // Approximation from the final moving shot: roughly one pulse per second,
  // with a short bright interval and groups out of phase. Outlines stay steady.

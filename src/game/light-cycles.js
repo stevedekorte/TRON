@@ -6,6 +6,7 @@ export const LIGHT_CYCLES = Object.freeze({
   lengthMeters: 3.6, trailHeightMeters: 1.5, startWallClearanceMeters: .5,
   trailHoldSeconds: 3, trailFlashSeconds: .24, trailLowerSeconds: .7,
   playerAttempts: 3,
+  entranceFormationSpacingCells: 3,
   slowSpeedMultiplier: .5, speedResponsePerSecond: 8, speedStepSeconds: 1 / 120,
   turboDurationSeconds: 5, turboRechargeSeconds: 60, turboSpeedMultiplier: 2.5,
   countdownSeconds: .3, roundSeconds: 120, restartSeconds: 6,

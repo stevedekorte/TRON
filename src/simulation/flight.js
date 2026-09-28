@@ -3,7 +3,7 @@ import {clamp,angleDelta,RECOGNIZER_SCALE} from '../game/config.js';
 // Thrust/lift acceleration: m/s²; yaw rate: rad/s; yaw acceleration: rad/s²;
 // response and drag: inverse seconds; vertical speed: m/s.
 // Thrust authority supports the 10% higher cruise/pursuit speeds against drag.
-export const FLIGHT_DEFAULTS=Object.freeze({acceleration:24.2,sidewaysSpeedRatio:.5,reverseSpeedRatio:.5,turnRate:.62,turnAcceleration:.8,turnResponse:1.8,liftAcceleration:14,liftSpeed:22,liftResponse:1.4,drag:.7,brakeDrag:2.4,avoidanceRadius:130*RECOGNIZER_SCALE});
+export const FLIGHT_DEFAULTS=Object.freeze({acceleration:24.2,maneuverSpeedMetersPerSecond:3,sidewaysSpeedRatio:.5,reverseSpeedRatio:.5,turnRate:.62,turnAcceleration:.8,turnResponse:1.8,liftAcceleration:14,liftSpeed:22,liftResponse:1.4,drag:.7,brakeDrag:2.4,avoidanceRadius:130*RECOGNIZER_SCALE});
 export const FLIGHT={...FLIGHT_DEFAULTS};
 export function advanceFlight(e,dt,thrust=0,braking=0) {
   thrust=clamp(thrust,0,flightFor(e).acceleration);
@@ -30,10 +30,12 @@ export function directionalFlightSpeed(e,dx,ds,speed){
  const flight=flightFor(e),distance=Math.hypot(dx,ds);
  if(!distance)return 0;
  // Elliptical speed envelope in hull coordinates: full forward speed,
- // half sideways/reverse speed, with no extra speed from diagonal travel.
+ // lateral/reverse motion is limited to slow positioning, even at cruise.
  const forward=(-Math.sin(e.yaw)*dx+Math.cos(e.yaw)*ds)/distance;
  const lateral=(Math.cos(e.yaw)*dx+Math.sin(e.yaw)*ds)/distance;
- return speed/Math.hypot(forward/(forward>=0?1:flight.reverseSpeedRatio),lateral/flight.sidewaysSpeedRatio);
+ const lateralSpeed=Math.min(speed*flight.sidewaysSpeedRatio,flight.maneuverSpeedMetersPerSecond);
+ const reverseSpeed=Math.min(speed*flight.reverseSpeedRatio,flight.maneuverSpeedMetersPerSecond);
+ return 1/Math.hypot(forward/(forward>=0?speed:reverseSpeed),lateral/lateralSpeed);
 
 }
 

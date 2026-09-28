@@ -69,3 +69,11 @@ test('disabled, exhausted or unavailable budget never calls provider',async()=>{
   const f=fixture({env}),r=await f.invoke();assert.equal(r.status,code);assert.ok(Number(r.headers.get('Retry-After'))>0);assert.equal(f.calls.length,0);
  }
 });
+
+test('public Bit questions share the existing budget and response contract',async()=>{
+ const f=fixture(),response=await f.invoke({body:{controller:'bit',question:'Are you Bit?'}});
+ assert.equal(response.status,200);assert.equal((await response.json()).id,'m0');
+ assert.deepEqual(Object.keys(JSON.parse(f.calls[0].body).questions.maneuver.criteria),['m0','m1','m2']);
+ await Promise.all(f.pending);
+ assert.equal((await f.invoke({body:{controller:'bit',question:'Can you speak?'}})).status,429);
+});

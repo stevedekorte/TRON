@@ -1,0 +1,32 @@
+{
+  "id": "./",
+  "name": "ENCOM TERMINAL",
+  "short_name": "ENCOM TERMINAL",
+  "description": "Explore the TRON-inspired grid in Clu's tank or compete in the light-cycle arena.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#080c16",
+  "icons": [
+    {
+      "src": "icons/encom-e-727c3ea9d1f1-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/encom-e-727c3ea9d1f1-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/encom-e-727c3ea9d1f1-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

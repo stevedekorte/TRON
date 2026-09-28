@@ -214,3 +214,17 @@ Use `/?maze=blueprint&layoutSeed=1982&runSeed=1982` (or `maze=authored`) to repl
 `node scripts/replay-autoplay.mjs` runs an enemy-free local-controller replay without JEV calls and writes route diagnostics to `test-results/autoplay-replay.json`. Optional flags: `--layout`, `--layout-seed`, `--seed`, `--seconds`, `--output`. The later-maze hold remains a known issue.
 
 `npm run test:browser -- --refactor` checks pause, view modes, detached debug state and restart resource counts. See `docs/refactoring/_index.md` for current ownership and `docs/validation/_index.md` for measured coverage and remaining human checks.
+
+### Installable web app
+
+Production builds include a scoped web app manifest and service worker for Space Paranoids. Serve `dist` over HTTPS (localhost also works), then use your browser's install/Add to Home Screen command. The application opens in a standalone window. Gameplay remains designed for desktop keyboard and mouse.
+
+On the first online visit, the worker downloads approximately 49 MiB of local game code, models, fonts and audio. Once installation completes, both game modes can launch offline. Remote Jev services and uncached documentation still require a connection. New releases wait until all game windows/tabs using the old worker close; the next launch uses the update. Only this game's scoped caches are cleaned up. Vite development does not register the worker.
+
+`npm run build` generates the offline asset list and content revision after assembling the game. `node tests/pwa.mjs` serves the production build under `/fun/TRON/` and checks Chrome installability, icons, offline starts, audio byte ranges, and waiting updates. The PWA icon uses the compact E-and-outline mark in `public/images/encom-app.svg`, centered on a dark square with mask-safe padding. Icon generation updates content-versioned PNG/SVG URLs in the manifest and HTML so installed browsers can detect artwork changes. Run `node scripts/generate-app-icons.mjs` to regenerate the 180, 192 and 512 pixel PNGs.
+
+### BIT program
+
+Select **BIT** from the terminal to open the integrated program in `public/bit`. Bit requests microphone access automatically on entry; grant the browser permission prompt to begin. Escape returns to program selection. The copy preserves the original MIT license and assets while removing the standalone server, stored-key dialog, obsolete code variants and separate PWA. The original sibling project is left intact.
+
+Bit uses the same private, budgeted Jev relay as the game. Both local and Worker protocols accept `{controller: "bit", question: "..."}` with a 1,000-character limit and fixed yes/no/unsure choices. Deploy the updated Worker alongside the client to enable public answers. Browser speech recognition and AI answers need network access; static Bit assets are available offline. `node tests/bit.mjs` tests entry, mocked speech/answers, repeat entry and Escape without live AI charges.

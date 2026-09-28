@@ -5,10 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080c16">
   <meta name="description" content="A tank. A canyon. Something enormous overhead. An open-ended maze simulation inspired by TRON, 1982.">
-  <title>Space Paranoids</title>
+  <title>ENCOM TERMINAL</title>
   <style>html,body{margin:0;background:#000;color:#9eb6ce}body{visibility:hidden}</style>
   <link rel="stylesheet" href="/src/ui/style.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23f17a59' d='M3 5h26v5H19v18h-6V10H3z'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="./icons/encom-e-727c3ea9d1f1.svg">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/encom-e-727c3ea9d1f1-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body class="terminal">
   <canvas id="game" aria-label="Three-dimensional tank chase"></canvas>
@@ -21,8 +25,7 @@
   <main id="overlay" class="overlay">
     <section class="intro" id="loading" role="status" aria-live="polite">
       <div class="terminal-content"><h1 class="terminal-copy complete">ENCOM REMOTE ACCESS
-DIALING HOST
-AWAITING CARRIER<span class="loading-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span><span class="terminal-cursor" aria-hidden="true"></span></h1></div>
+DIALING HOST<span class="loading-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span><span class="terminal-cursor" aria-hidden="true"></span></h1></div>
       <img class="terminal-encom" src="/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
     </section>
     <section class="intro" id="intro" hidden>
@@ -36,12 +39,13 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
           <div id="game-menu" role="group" aria-label="Choose a game">
             <button id="start" class="terminal-start game-choice" data-game="space" aria-pressed="true" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>SPACE PARANOIDS</span></button>
             <button id="start-cycles" class="terminal-start game-choice" data-game="cycles" aria-pressed="false" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>LIGHT CYCLES</span></button>
+            <button id="start-bit" class="terminal-start game-choice" data-game="bit" aria-pressed="false" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>BIT</span></button>
           </div>
         </div>
       </div>
       <img class="terminal-encom" src="/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
     </section>
-    <section id="paused" class="standby" role="status" tabindex="-1" hidden>STAND BY <span>ANY KEY TO RESUME</span></section>
+    <section id="paused" class="standby" role="status" tabindex="-1" hidden>ANY KEY TO RESUME</section>
     <section id="error" class="result" hidden><div class="eyebrow">CONNECTION FAILED</div><h2>UNABLE TO ENTER.</h2><p id="error-message"></p><button class="primary" onclick="location.reload()">RELOAD</button></section>
   </main>
 
@@ -65,6 +69,7 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
     <div id="system-warnings" role="status" aria-live="polite" aria-atomic="true" hidden></div>
     <div id="clu-health" class="turbo-indicator health-indicator"><span>HEALTH</span><div id="health-meter" class="turbo-meter" role="meter" aria-label="CLU health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="health-fill"></i></div></div>
     <div id="cycle-controls" hidden></div>
+    <div id="assist-marker" hidden role="img" aria-label="Recognizer targeted"><svg viewBox="0 0 30 18" preserveAspectRatio="none" aria-hidden="true"><path d="M3 3L15 15L27 3"/></svg></div>
     <div id="clu-shots" class="turbo-indicator shots-indicator"><span>STORED SHOTS</span><div id="shots-meter" role="meter" aria-label="CLU stored shots" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i></i><i></i><i></i></div></div>
     <div id="turbo" class="turbo-indicator"><span>T / TURBO</span><div class="turbo-meter"><i id="turbo-fill"></i></div></div>
     <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F OR J+L / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>C / FREE CAMERA</span><span>P / GUNNER</span><span>O / ZOOM</span><span id="pitch-hint">IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>M / SOUND</span><span>B / SCREENSHOT</span><span>ESC / PAUSE</span></div>
