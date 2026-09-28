@@ -62,7 +62,7 @@ export class RecognizerShadows {
      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\n${wallId}=shadowWallId;`);
      shader.fragmentShader=`varying float ${wallId};\n`+shader.fragmentShader;
     }
-    const occlusion=this.occlusion?mazeLightVisibility(this.occlusion,prefix+'Maze',prefix+'World',wallReceiver?wallId:null,authoredNormal?surfaceNormal:null):null;
+    const occlusion=this.occlusion&&!receiver.userData.exactMazeFloorShadow?mazeLightVisibility(this.occlusion,prefix+'Maze',prefix+'World',wallReceiver?wallId:null,authoredNormal?surfaceNormal:null):null;
     if(occlusion){Object.assign(shader.uniforms,occlusion.uniforms);shader.fragmentShader=occlusion.declarations+'\n'+shader.fragmentShader;}
     const tests=this.entries.map((_,i)=>`{
      vec4 projected=recShadowMatrices[${i}]*vec4(recShadowWorld,1.);vec3 p=projected.xyz/projected.w;
@@ -93,7 +93,7 @@ export class RecognizerShadows {
     const emissive=shader.fragmentShader.includes('totalEmissiveRadiance')?' + totalEmissiveRadiance*(1.-recShadowShade)':'';
     shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>',named(`float recShadowShade=1.;\n${occlusion?.code||''}\n${tests}\n${occlusion?`recShadowShade=mix(1.,recShadowShade,${occlusion.visible});`:''}\ngl_FragColor.rgb=gl_FragColor.rgb*recShadowShade${emissive};\n#include <tonemapping_fragment>`));
    };
-   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v8:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}:occlusion${this.occlusion?.entries.length||0}`;
+   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v9:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}:exactFloor${!!receiver.userData.exactMazeFloorShadow}:occlusion${this.occlusion?.entries.length||0}`;
    // A rebuilt atlas can reuse the same shader source/key. Evict the old
    // material program bindings so Three invokes onBeforeCompile again with
    // this atlas and its current matrices instead of a disposed texture.

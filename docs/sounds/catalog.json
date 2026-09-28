@@ -496,6 +496,102 @@
       "license": "Film-derived reference; no standalone redistribution license supplied",
       "playback": "../../audio/carrier-derez-loop.wav",
       "disk": "public/audio/carrier-derez-loop.wav"
+    },
+    {
+      "title": "Light cycle startup",
+      "group": "Current game sounds",
+      "status": "Archived startup candidate; replaced by materialization cue",
+      "use": "Cycle startup",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
+      "disk": "public/audio/cycle-startup.wav",
+      "playback": "../../public/audio/cycle-startup.wav",
+      "source": "../references/videos/TRON%20light%20cycles.mp4",
+      "author": "TRON (1982), Walt Disney Productions",
+      "license": "Film reference; no redistribution license supplied"
+    },
+    {
+      "title": "Light cycle launch",
+      "group": "Current game sounds",
+      "status": "Film-mix candidate; wired into gameplay",
+      "use": "Cycle launch",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
+      "disk": "public/audio/cycle-launch.wav",
+      "playback": "../../public/audio/cycle-launch.wav",
+      "source": "../references/videos/TRON%20light%20cycles.mp4",
+      "author": "TRON (1982), Walt Disney Productions",
+      "license": "Film reference; no redistribution license supplied"
+    },
+    {
+      "title": "Light cycle driving loop",
+      "group": "Current game sounds",
+      "status": "Film-mix candidate; wired into gameplay",
+      "use": "Cycle driving loop",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:47\u20130:48; 0.1-second seam crossfade.",
+      "disk": "public/audio/cycle-drive.wav",
+      "playback": "../../public/audio/cycle-drive.wav",
+      "source": "../references/videos/TRON%20light%20cycles.mp4",
+      "author": "TRON (1982), Walt Disney Productions",
+      "license": "Film reference; no redistribution license supplied"
+    },
+    {
+      "title": "Light cycle turn",
+      "group": "Current game sounds",
+      "status": "Film-mix candidate; wired into gameplay",
+      "use": "Cycle turn",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:51\u20130:52; 12 ms edge fades.",
+      "disk": "public/audio/cycle-turn.wav",
+      "playback": "../../public/audio/cycle-turn.wav",
+      "source": "../references/videos/TRON%20light%20cycles.mp4",
+      "author": "TRON (1982), Walt Disney Productions",
+      "license": "Film reference; no redistribution license supplied"
+    },
+    {
+      "title": "Light cycle explosion",
+      "group": "Current game sounds",
+      "status": "Film-mix candidate; wired into gameplay",
+      "use": "Cycle explosion",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. Extended to two seconds (1:15.85\u20131:17.85), 1.15 seconds longer than the initial extract.",
+      "disk": "public/audio/cycle-explosion.wav",
+      "playback": "../../public/audio/cycle-explosion.wav",
+      "source": "../references/videos/TRON%20light%20cycles.mp4",
+      "author": "TRON (1982), Walt Disney Productions",
+      "license": "Film reference; no redistribution license supplied"
+    },
+    {
+      "title": "Light cycle trail deactivation",
+      "group": "Current game sounds",
+      "status": "Film-mix candidate; wired into gameplay",
+      "use": "Cycle trail deactivation",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
+      "disk": "public/audio/cycle-wall-down.wav",
+      "playback": "../../public/audio/cycle-wall-down.wav",
+      "source": "../references/videos/TRON%20light%20cycles.mp4",
+      "author": "TRON (1982), Walt Disney Productions",
+      "license": "Film reference; no redistribution license supplied"
+    },
+    {
+      "title": "Light cycle player cabin loop",
+      "group": "Current game sounds",
+      "status": "Film-mix candidate; wired into gameplay",
+      "use": "Player cycle driving",
+      "notes": "Restored film waveform after the synthesized drone was rejected as harsh and irritating. Uses 1:36.7\u20131:37.8 of the user-selected 1:36\u20131:38 interval, with a 0.2-second equal-power crossfade and stereo-linked RMS leveling. Finished loop: 0.9 seconds. The recording\u2019s pitch variation remains unresolved; volume smoothing does not fix it. Other cycles retain 0:47\u20130:48.",
+      "disk": "public/audio/cycle-drive-cabin.wav",
+      "playback": "../../public/audio/cycle-drive-cabin.wav",
+      "source": "../references/videos/TRON%20light%20cycles.mp4",
+      "author": "TRON (1982), Walt Disney Productions",
+      "license": "Film reference; no redistribution license supplied"
+    },
+    {
+      "title": "Light cycle materialization",
+      "group": "Current game sounds",
+      "status": "Film-mix candidate; wired into gameplay",
+      "use": "Fast cycle reveal before launch",
+      "notes": "Single materialization beat from 26.7\u201327.4 seconds in the supplied film clip; avoids repeating the full intercut team sequence. One team cue accompanies the 0.3-second reveal and its tail carries into launch. Film-mix candidate; auditory review pending. Reproduce with scripts/extract-cycle-sfx.py.",
+      "disk": "public/audio/cycle-materialize.wav",
+      "playback": "../../public/audio/cycle-materialize.wav",
+      "source": "../references/videos/TRON%20light%20cycles.mp4",
+      "author": "TRON (1982), Walt Disney Productions",
+      "license": "Film reference; no redistribution license supplied"
     }
   ]
 }

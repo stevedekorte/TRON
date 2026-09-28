@@ -157,3 +157,29 @@ test('gunner cue handles airborne targets, critical regions, range and blocking 
  const wall=WALLS[0],center=wall.points.reduce((a,p)=>({x:a.x+p.x/wall.points.length,s:a.s+p.s/wall.points.length}),{x:0,s:0});
  Object.assign(r,center);Object.assign(enemy,{x:center.x,s:center.s+100,y:pose.y});assert.equal(gunnerSolution(r),null);
 });
+
+test('Clu elevation is capped at 45 degrees and overhead targets receive no assisted lock',()=>{
+ assert.equal(GUNNER.maxPitch,Math.PI/4);
+ const r=fixture();r.gunner=false;
+ const e={...createRun().recognizers[0],x:r.x,s:r.s+30,y:100,vx:0,vs:0,vy:0};r.recognizers=[e];
+ assert.equal(cannonTarget(r).lock,false);
+ e.s=r.s+200;assert.equal(cannonTarget(r).lock,true);
+ r.gunner=true;
+ for(let i=0;i<180;i++)step(r,{aimPitch:1},1/60);
+ assert.equal(r.aimPitch,Math.PI/4);
+ updateWeapons(r,{fire:true},0);
+ const shot=r.projectiles.at(-1);
+ assert(Math.atan2(shot.vy,Math.hypot(shot.vx,shot.vs))<=Math.PI/4+1e-10);
+});
+
+test('releasing a recenter chord one key at a time does not interrupt centering',async()=>{
+ const {InputController}=await import('../src/app/input-controller.js');
+ const input=new InputController(),r=fixture();
+ Object.assign(r,{turretYaw:.5,aimPitch:.3,turretLocked:true,turretCentering:true,gunnerLeveling:true});
+ input.keys.add('KeyJ');input.keys.add('KeyL');input.turretCenterChord=true;
+ input.release('KeyJ');
+ for(let i=0;i<240;i++)step(r,input.command(r),1/60);
+ assert(r.turretLocked);assert(Math.abs(r.turretYaw)<.001);assert(Math.abs(r.aimPitch)<.001);
+ input.release('KeyL');input.keys.add('KeyJ');step(r,input.command(r),1/60);
+ assert(!r.turretLocked);assert(r.turretYaw>0);
+});

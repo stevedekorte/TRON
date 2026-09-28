@@ -41,6 +41,7 @@ export class MusicDirector {
     const c = (this.context = context),
       limiter = output;
     this.music = new Audio(musicUrl);
+    this.currentMusicUrl = musicUrl;
     this.music.preload = 'auto';
     this.music.loop = false;
     this.musicMaster = c.createGain();
@@ -57,6 +58,10 @@ export class MusicDirector {
     });
   }
   updateMusic(run, camera, playing) {
+    if(run.playerVehicle==='cycle'){
+      if(this.musicMode==='gameplay'||this.musicTransition)this.stopGameplay();
+      return;
+    }
     const now = this.context.currentTime;
     const wasPursued = this.pursued;
     this.pursued = activelyPursued(run);
@@ -212,6 +217,11 @@ export class MusicDirector {
     gain.linearRampToValueAtTime(0, now + duration);
     this.musicTransition = { url, category, beamId, at: now + duration };
   }
+  prepareGameplay(){
+    if(!this.music||this.currentMusicUrl===musicUrl)return;
+    this.music.pause();this.music.src=musicUrl;this.currentMusicUrl=musicUrl;
+    this.music.load();
+  }
   startMusic(mode = 'gameplay', clipUrl = null, beamId = null) {
     if (!this.music) return;
     const url = clipUrl || (mode === 'terminal' ? endMusicUrl : musicUrl);
@@ -241,6 +251,12 @@ export class MusicDirector {
       });
   }
 
+  stopGameplay() {
+    this.musicTransition=null;this.pursued=false;this.closeEncounter=false;this.musicPlaying=false;
+    this.musicStarted=false;this.musicMode=null;this.musicCategory=null;
+    this.music?.pause();
+    if(this.musicGain){const now=this.context.currentTime;this.musicGain.gain.cancelScheduledValues(now);this.musicGain.gain.setValueAtTime(0,now);}
+  }
   reset() {
     this.mazeCueHistory = new Map();
     this.explorationPlayed = false;

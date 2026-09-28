@@ -251,7 +251,7 @@ test('attack lease hands off a blocked lead and expires when no attack progresse
   coordinateAttacks(peers, 14);
   assert.equal(peers[0].attackAssignment.leaderId, first);
 });
-test('radio and tactical ally visibility use each active world maze width', async () => {
+test('radio and tactical ally visibility use a quarter of each active world maze width', async () => {
   const { radioRangeFor } = await import('../src/game/communication.js');
   const { knownAllies } = await import('../src/simulation/tactical.js');
   for (const layout of ['authored', 'blueprint']) {
@@ -259,7 +259,7 @@ test('radio and tactical ally visibility use each active world maze width', asyn
     const session = new GameSession({ world }),
       [a, b] = session.run.recognizers;
     const radius = radioRangeFor(a);
-    assert.equal(radius, world.MAZE_LENGTH);
+    assert.equal(radius, world.MAZE_LENGTH*.25);
     Object.assign(a, { x: 0, s: 0, y: 80 });
     Object.assign(b, { x: radius - 0.1, s: 0, y: 80 });
     assert(knownAllies(a, [a, b]).includes(b));
@@ -394,8 +394,9 @@ for(const choice of ['local','pursue','strike','low-approach'])test(`48-meter st
  }
 });
 
-for(const mode of ['local','jev'])test(`approaching Clu is intercepted ahead of his path with ${mode} control`,()=>{
- for(const lateral of [0,20,40]){
+for(const mode of ['local','jev'])test(`near-head-on Clu is intercepted ahead of his path with ${mode} control`,()=>{
+ // Wider crossings can now escape the half-speed lateral correction.
+ for(const lateral of [0,20]){
   const session=new GameSession({settings:{vehicle:{aiMode:mode}}}),r=session.run;
   Object.assign(r,{x:-10000,s:-10000,yaw:0,speed:22,enemyTanks:[],dataBeams:[]});r.recognizers=r.recognizers.slice(0,1);
   const e=r.recognizers[0];Object.assign(e,{x:r.x+lateral,s:r.s+140,y:80,yaw:Math.PI,vx:0,vs:0,vy:0,yawVelocity:0,nextSense:0});

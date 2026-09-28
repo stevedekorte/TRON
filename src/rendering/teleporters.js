@@ -4,6 +4,7 @@ import {GROUND_GRID_LINE_HALF_WIDTH,GROUND_GRID_AA_SCALE} from '../levels/ground
 // Paint the borders directly into the floor. Sharing its depth and derivatives
 // eliminates the competing near-coplanar surface at shallow camera angles.
 export function createTeleporters(material,layoutPads){
+ if(!layoutPads.length)return {visible:false,update(){}};
  const visible={value:1},pulses={value:new Float32Array(layoutPads.length)},previous=material.onBeforeCompile,key=material.customProgramCacheKey();
  material.onBeforeCompile=shader=>{
   previous?.(shader);shader.uniforms.teleportPadsVisible=visible;shader.uniforms.teleportPadPulse=pulses;

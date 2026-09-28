@@ -1,3 +1,4 @@
+import {ArenaBreaches} from './arena-breaches.js';
 import { loadLightCycles, LightCycleRaceView } from './light-cycles.js';
 import { arenaSite } from '../levels/arena.js';
 export { arenaSite } from '../levels/arena.js';
@@ -7,7 +8,7 @@ import modelUrl from '../../docs/models/preti_light_cycle_arena.glb?url';
 import { createArenaFloor } from './arena-floor.js';
 import { styleArena } from './arena-style.js';
 
-export async function loadArena(world) {
+export async function loadArena(world,floorReceivers=[]) {
   const site = arenaSite(world);
   if (!site) return null;
   const [{ scene }, cycles] = await Promise.all([new GLTFLoader().loadAsync(modelUrl), loadLightCycles()]);
@@ -40,6 +41,7 @@ export async function loadArena(world) {
   }
   const style = styleArena(architecture);
   group.userData.arenaStyle = style;
-  group.userData.cycleRace = new LightCycleRaceView(cycles, group);
+  group.userData.breaches = new ArenaBreaches(architecture,style);
+  group.userData.cycleRace = new LightCycleRaceView(cycles, group,[floor,...floorReceivers],{arenaFloor:floor,groundFloor:floorReceivers[0]});
   return group;
 }

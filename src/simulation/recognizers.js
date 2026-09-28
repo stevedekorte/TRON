@@ -197,7 +197,7 @@ export function navigate(e,now,dt,others) {
 }
 export function updateRecognizers(run,dt) {
   const now=run.time,active=[...run.recognizers,...(run.enemyTanks||[])].filter(e=>!e.teleport&&e.state!=='destroyed'&&e.state!=='materializing');
-  // Deliver immutable, delayed observations. Relays never refresh their timestamps.
+  // Deliver immutable, delayed observations without refreshing their timestamps.
   const waiting=[];
   for(const message of run.radio) {
     if(message.deliverAt>now){waiting.push(message);continue;}
@@ -212,7 +212,8 @@ export function updateRecognizers(run,dt) {
       run.radio.push({kind:'neutralized',to:other.id,deliverAt:now+SENSORS.radioDelay});
     e.neutralizationSent=true;
   }
-  for(const e of active)if((!e.spotlight||e.spotlight.confirmedAt!=null)&&e.memory&&e.memory.seenAt>e.lastBroadcast&&now>=e.nextRadio) {
+  // Only firsthand sightings recruit neighbors; received reports do not cascade.
+  for(const e of active)if((!e.spotlight||e.spotlight.confirmedAt!=null)&&e.memory&&e.memory.source===e.id&&e.memory.seenAt>e.lastBroadcast&&now>=e.nextRadio) {
     for(const other of active)if(other!==e&&Math.hypot(other.x-e.x,other.s-e.s,other.y-e.y)<=radioRangeFor(e)) {
       run.radio.push({to:other.id,deliverAt:now+SENSORS.radioDelay,sighting:{...e.memory}});
     }

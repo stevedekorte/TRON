@@ -140,8 +140,12 @@ test('maze tanks follow a Recognizer radio contact without seeing hidden Clu',as
   const session=new GameSession({world,settings:{vehicle:{aiMode}}}),r=session.run;
   try{
    const target=world.OPEN_CELLS.find(p=>p.mazeId===0),sender=r.recognizers[0];
-   Object.assign(r,{x:-30000,s:-30000,recognizers:[sender],enemyTanks:r.enemyTanks.filter(e=>e.mazeId===0),dataBeams:[]});
+   Object.assign(r,{x:-30000,s:-30000,recognizers:[sender],enemyTanks:r.enemyTanks.filter(e=>e.mazeId===0).slice(0,1),dataBeams:[]});
    Object.assign(sender,{...target,y:100,nextSense:Infinity,nextAttack:Infinity,stompDisabled:true,canSee:true,memory:{x:target.x,s:target.s,vx:0,vs:0,seenAt:0,source:sender.id}});
+   // The observed target may be distant; transmit from inside the newly
+   // reduced radio radius of the receiving patrols.
+   sender.x=r.enemyTanks.reduce((sum,e)=>sum+e.x,0)/r.enemyTanks.length;
+   sender.s=r.enemyTanks.reduce((sum,e)=>sum+e.s,0)/r.enemyTanks.length;
    const starts=r.enemyTanks.map(e=>({x:e.x,s:e.s}));
    for(const e of r.enemyTanks){e.nextSense=Infinity;assert.equal(e.memory,null);}
    for(let i=0;i<900;i++)session.advance({},dt);

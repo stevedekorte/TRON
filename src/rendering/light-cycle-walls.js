@@ -74,11 +74,12 @@ export class LightCycleWalls {
       const life=cycleTrailState(bike.alive||!crash?-1:r.time-crash.time);
       if(life.height<=0)continue;
       const offsets=[];let totalPath=0;for(const t of segments){offsets.push(totalPath);totalPath+=Math.hypot(t.x2-t.x1,t.z2-t.z1)*C.cellMeters;}
-      let trim=bike.alive?(1-fraction)*C.cellMeters+CYCLE_WALL_STYLE.rearAxleBehindMeters:0;
-      let behind=bike.alive?0:1e6;
+      const active=r.trails[bike.segment],span=active?.joining?Math.hypot(active.x2-active.x1,active.z2-active.z1)*C.cellMeters:C.cellMeters;
+      let trim=bike.alive&&!bike.escaped?(1-(r.phase==='racing'?(bike.progress??fraction):fraction))*span+CYCLE_WALL_STYLE.rearAxleBehindMeters:0;
+      let behind=bike.alive&&!bike.escaped?0:1e6;
       for(let i=segments.length-1;i>=0;i--){
         const t=segments[i],dx=(t.x2-t.x1)*C.cellMeters,dz=(t.z2-t.z1)*C.cellMeters,total=Math.hypot(dx,dz);
-        if(trim>=total){trim-=total;continue;}
+        if(trim>=total){trim-=total;if(t.startsRun){trim=0;behind=1e6;}continue;}
         const length=total-trim;trim=0;
         const ux=dx/total,uz=dz/total;
         const taperPart=Math.min(length,Math.max(0,CYCLE_WALL_STYLE.connectionLengthMeters-behind));
@@ -99,6 +100,7 @@ export class LightCycleWalls {
           used+=piece;
         }
         behind+=length;
+        if(t.startsRun){trim=0;behind=1e6;}
       }
     }
     this.meshes.forEach((mesh,i)=>{mesh.count=counts[i];mesh.instanceMatrix.needsUpdate=true;mesh.geometry.attributes.trailDistance.needsUpdate=true;mesh.geometry.attributes.deathFlash.needsUpdate=true;mesh.geometry.attributes.trailPattern.needsUpdate=true;});

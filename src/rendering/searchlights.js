@@ -53,7 +53,7 @@ export class Searchlights {
  update(enemies,time,camera,dt,visible){
   this.beams.forEach((beam,i)=>{
    const pose=visible&&enemies[i]?this.poseFor(enemies[i],time):null;
-   if(enemies[i]?.targetGone)beam.strength=0;
+   if(!pose)beam.strength=0;
    beam.strength=THREE.MathUtils.lerp(beam.strength,pose?.strength||0,1-Math.exp(-dt*5));
    if(pose)beam.pose=pose;
    beam.mesh.visible=visible&&beam.strength>.005&&!!beam.pose&&enemies[i]?.state!=='destroyed';

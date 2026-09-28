@@ -101,3 +101,7 @@ These inherit the purchased arena asset's usage constraints and Daniel Preti att
 The cycle rendering adapter removes duplicate/degenerate faces and gently smooths export quantization while pinning material seams and hard edges. The tiny hub caps had centimeter-quantized coordinates and cracked sliver faces; they are reconstructed as smooth ellipsoids at measured source bounds. Source GLBs remain unchanged. Authored smooth normals are retained, blue is adjusted toward the film reference, and cycle-only ambient attenuation and a compact per-bike depth atlas provide directional shading and self-shadowing.
 
 The original 158 MB arena OBJ was deleted at the user’s request on September 24 and is not stored in Git. The extracted GLBs, conversion scripts, material file and reference images are retained. Re-running the extraction requires restoring the purchased OBJ locally first.
+
+## Arena signature archive — September 24
+
+The four Daniel Preti signature/date inscriptions are preserved in `preti_arena_signatures.glb`, at their original arena coordinates. They are no longer in the runtime arena GLB. `python3 scripts/split-arena-signatures.py` reproduces the split from the converter output: 116 inscription meshes / 4,884 triangles archived; three architecture meshes / 3,465 triangles remain. Materials and author metadata are retained in both files.

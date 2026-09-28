@@ -1,0 +1,16 @@
+#cycle-tuning{color:#c4dfed;background:#08131ef5;border:1px solid #50788d;border-radius:6px;width:min(640px,calc(100vw - 32px));max-height:85vh;padding:0;font:12px/1.5 monospace;box-shadow:0 18px 80px #000a}
+#cycle-tuning::backdrop{background:#01070b60}
+#cycle-tuning header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 22px;border-bottom:1px solid #304b5b}
+#cycle-tuning h2{margin:0;font-size:18px;font-weight:500;letter-spacing:.06em}
+#cycle-tuning p{font-size:11px;color:#91afc0;margin:6px 0}
+#cycle-tuning .cycle-tuning-note{margin:14px 22px}
+#cycle-tuning .cycle-tuning-fields{padding:0 22px 14px}
+#cycle-tuning details{border-top:1px solid #243b49;padding:12px 0}
+#cycle-tuning summary{cursor:pointer;color:#c8eaf7;margin-bottom:10px}
+#cycle-tuning .cycle-tuning-row{display:grid;grid-template-columns:1fr 82px;align-items:center;gap:4px 14px;margin:12px 0}
+#cycle-tuning .cycle-tuning-row>span{grid-column:1/-1}
+#cycle-tuning input[type=range]{width:100%;accent-color:#76bfdc}
+#cycle-tuning input[type=number]{min-width:0;width:100%;padding:5px;color:#d3e9f5;background:#102332;border:1px solid #365c70;font:inherit}
+#cycle-tuning button{padding:7px 10px;background:#142c3a;color:#d3e9f5;border:1px solid #426779;font:inherit;letter-spacing:0}
+#cycle-tuning footer{position:sticky;bottom:0;left:auto;right:auto;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;padding:14px 22px;background:#0b1925;border-top:1px solid #304b5b;letter-spacing:0;font-size:11px}
+#cycle-tuning [role=status]{flex-basis:100%;color:#9dccde;min-height:1.5em}

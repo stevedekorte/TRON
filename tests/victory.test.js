@@ -37,3 +37,35 @@ test('victory printer reveals individual characters without catch-up word bursts
  }
  printer.start();assert.equal(output.textContent,'');printer.reset();now+=10000;printer.update();assert.equal(output.textContent,'');
 });
+
+test('human terminal printing varies keystrokes, pauses at line breaks, and never bursts after a stall',async()=>{
+ const {HumanTerminalPrinter}=await import('../src/ui/terminal.js');
+ const output=printerOutput();let now=0,index=0;
+ const printer=new HumanTerminalPrinter(output,'A\nB',{clock:()=>now,random:()=>[0,.5,1][index++%3]});
+ printer.start();const first=printer.nextCharacterAt;assert.equal(first,22.5);
+ now=first;printer.update();assert.equal(output.textContent,'A');
+ assert.equal(printer.nextCharacterAt-now,47.5);
+ now=printer.nextCharacterAt;printer.update();assert.equal(output.textContent,'A\n');
+ assert.equal(printer.nextCharacterAt-now,247.5);
+ now+=20000;printer.update();assert.equal(output.textContent,'A\nB');assert(!printer.active);
+ printer.start();printer.reset();now+=20000;printer.update();assert.equal(output.textContent,'');
+});
+
+test('extended credits keep one entry per page and omit URLs, including inline links',async()=>{
+ const {creditPages}=await import('../src/ui/terminal.js');
+ const text='MODEL ARTISTS\n-------------\n\nArtist A\n  Model One\n  https://example.com/one\n  MIT. https://example.com/license\n\n  Model Two\n  Adapted by the same artist.\n\nArtist B\n  Model Three\n\nProject source repository:\nhttps://example.com/repo\n\na@1.0 — MIT\nb@2.0 — ISC';
+ const pages=creditPages(text);
+ assert.deepEqual(pages,['MODEL ARTISTS','Artist A\n  Model One\n  MIT.','Artist A\n  Model Two\n  Adapted by the same artist.','Artist B\n  Model Three','a@1.0 — MIT','b@2.0 — ISC']);
+});
+
+test('display credits keep a brief Cloudflare mention and no entry exceeds eight lines',async()=>{
+ const {creditPages}=await import('../src/ui/terminal.js');
+ const {readFileSync}=await import('node:fs');
+ const source=readFileSync(new URL('../docs/credits_display.txt',import.meta.url),'utf8');
+ const pages=creditPages(source),display=pages.join('\n');
+ assert(display.includes('DANIEL PRETI'));assert(display.includes('THREE.JS'));
+ assert.equal(pages.find(p=>p.startsWith('CLOUDFLARE')).split('\n').length,2);
+ assert(!/wrangler|NPM DEPENDENCY INVENTORY|https?:\/\//i.test(display));
+ assert(pages.every(p=>p.split('\n').length<=8&&p.split('\n').every(line=>line.length<=60)));
+ assert(pages.length<30);
+});

@@ -1,6 +1,6 @@
 import { createMazeWorld } from './maze-world.js';
 import * as authored from './authored-maze.js';
-import * as blueprint from './blueprint-maze.js';
+import {blueprintSource} from './blueprint-source.js';
 import * as labyrinth from './labyrinth-maze.js';
 
 /** A serializable recipe. Browser preferences are resolved by bootstrap, never here. */
@@ -10,6 +10,7 @@ export function scenarioSpec({
   runSeed = 1982,
   siteCount = 4,
   centralLabyrinth = false,
+  outerMazes = true,
   ...settings
 } = {}) {
   if (!['authored', 'blueprint'].includes(layout)) throw new Error(`Unknown maze: ${layout}`);
@@ -22,13 +23,14 @@ export function scenarioSpec({
     runSeed: runSeed >>> 0,
     siteCount,
     centralLabyrinth:!!centralLabyrinth,
+    outerMazes:!centralLabyrinth||!!outerMazes,
   });
 }
 
 export function createScenario(options = {}) {
   const spec = scenarioSpec(options);
-  const base = spec.layout === 'blueprint' ? blueprint : authored;
-  const geometry = createMazeWorld(base, spec.layoutSeed, spec.siteCount,spec.centralLabyrinth?labyrinth:null);
+  const base = spec.layout === 'blueprint' ? blueprintSource(spec.outerMazes) : authored;
+  const geometry = createMazeWorld(base, spec.layoutSeed, spec.siteCount,spec.centralLabyrinth?labyrinth:null,spec.outerMazes);
   const FLOOR_HALF = base.FLOOR_HALF || [base.HALF, base.HALF];
   const MAZE_LENGTH = Math.max(
     2 * FLOOR_HALF[0] * Math.hypot(base.BASIS.a, base.BASIS.c),
@@ -39,11 +41,18 @@ export function createScenario(options = {}) {
     mazeId: m.id,
     patrolSector:m.patrols?patrolSector:undefined,
   })));
+  let spawn=base.SPAWN,opening=base.RECOGNIZER_STARTS.slice(0,5);
+  if(spec.centralLabyrinth&&!spec.outerMazes){
+    const center=geometry.instances[0],approachDistance=-base.SPAWN.s-FLOOR_HALF[1];
+    spawn={...base.SPAWN,x:center.x+base.SPAWN.x,s:center.bounds.minS-approachDistance};
+    const dx=spawn.x-base.SPAWN.x,ds=spawn.s-base.SPAWN.s;
+    opening=opening.map(p=>({...p,x:p.x+dx,s:p.s+ds}));
+  }
   const world = {
     ...base,
     ...geometry,
     spec,
-    revision: `${spec.layout}:${spec.layoutSeed}:${spec.siteCount}:${spec.centralLabyrinth}`,
+    revision: `${spec.layout}:${spec.layoutSeed}:${spec.siteCount}:${spec.centralLabyrinth}:${spec.outerMazes}`,
     MAZE_KIND: spec.layout,
     FLOOR_HALF,
     MAZE_LENGTH,
@@ -52,7 +61,8 @@ export function createScenario(options = {}) {
     MAZE_INSTANCES: geometry.instances,
     WALLS: geometry.walls,
     OPEN_CELLS: geometry.openCells,
-    RECOGNIZER_STARTS: [...base.RECOGNIZER_STARTS.slice(0, 5), ...patrols],
+    SPAWN:spawn,
+    RECOGNIZER_STARTS: [...opening, ...patrols],
   };
   return { spec, world };
 }

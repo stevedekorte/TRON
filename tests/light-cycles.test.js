@@ -77,3 +77,18 @@ test('dead trail rendering lowers opaque geometry and removes it at expiry',asyn
  r.time=4;walls.update(r,1);assert.equal(walls.meshes[0].count,0);
  for(const mesh of walls.meshes){mesh.geometry.dispose();mesh.material.dispose();}
 });
+
+test('cycle explosions follow film cadence and reset without allocating new effects',async()=>{
+ const T=await import('three');const {CycleExplosions,explosionFrame}=await import('../src/rendering/cycle-explosions.js');
+ const {disposeSceneResources}=await import('../src/rendering/scene-resources.js');
+ assert.equal(explosionFrame(.03),0);assert.equal(explosionFrame(1/24),1);
+ const root=new T.Group(),bursts=new CycleExplosions(root),count=root.children.length;
+ const r={time:0,crashes:[{id:0,x:2,z:3,time:0,dir:1}]};bursts.update(r);
+ const effect=bursts.effects[0];assert(effect.group.visible);assert(effect.rays.visible);assert(!effect.arcs[0].visible);
+ r.time=5/24;bursts.update(r);assert(effect.arcs.every(a=>a.visible));
+ const matrices=Array.from(effect.chips.instanceMatrix.array);bursts.update(r);assert.deepEqual(Array.from(effect.chips.instanceMatrix.array),matrices);
+ r.time=10/24;bursts.update(r);assert(!effect.rays.visible);assert(effect.group.visible);
+ r.time=1;bursts.update(r);assert(!effect.group.visible);
+ r.time=0;r.crashes=[];bursts.update(r);assert(bursts.effects.every(e=>!e.group.visible));assert.equal(root.children.length,count);
+ disposeSceneResources(root);
+});

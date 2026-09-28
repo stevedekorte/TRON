@@ -1,6 +1,6 @@
 // Preserve the sample's stereo channels as two nearby world-space emitters.
 // Each ear receives Web Audio HRTF filtering, distance attenuation and motion.
-export function stereoEmitter(c,destination,refDistance=35) {
+export function stereoEmitter(c,destination,refDistance=35,halfWidth=2.4) {
   const input=c.createChannelSplitter(2),gain=c.createGain();gain.gain.value=0;gain.connect(destination);
   const panners=[0,1].map(channel=>{
     const p=c.createPanner();p.panningModel='HRTF';p.distanceModel='inverse';
@@ -9,7 +9,7 @@ export function stereoEmitter(c,destination,refDistance=35) {
   });
   return {input,gain,panners,position(x,y,z,yaw){
     panners.forEach((p,i)=>{
-      const offset=(i?1:-1)*2.4,px=x+Math.cos(yaw)*offset,pz=z-Math.sin(yaw)*offset;
+      const offset=(i?1:-1)*halfWidth,px=x+Math.cos(yaw)*offset,pz=z-Math.sin(yaw)*offset;
       if(p.positionX){p.positionX.value=px;p.positionY.value=y;p.positionZ.value=pz;}
       else p.setPosition(px,y,pz);
     });

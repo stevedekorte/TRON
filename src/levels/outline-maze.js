@@ -19,6 +19,19 @@ const WALLS=shapes.map(({outline,holes=[]},id)=>{
  const holePoints=holes.map(ring=>{const p=ring.map(pixelToWorld);if(ShapeUtils.isClockWise(p.map(v=>new Vector2(v.x,v.s)))===false)p.reverse();return p;});
  const vertices=[...points,...holePoints.flat()];
  const triangles=ShapeUtils.triangulateShape(points.map(p=>new Vector2(p.x,p.s)),holePoints.map(r=>r.map(p=>new Vector2(p.x,p.s)))).map(t=>edges(t.map(i=>vertices[i])));
+ // Conservative bounds for the SAME padded half-plane triangles used below.
+ // Acute triangulation corners can expand farther than `padding`; include
+ // their miter displacement instead of incorrectly using a plain padded AABB.
+ for(const t of triangles){
+  let expandX=0,expandS=0;
+  for(let i=0;i<3;i++){
+   const a=t[i],b=t[(i+2)%3],det=a.nx*b.ns-b.nx*a.ns;
+   const dx=Math.abs(det)>1e-12?Math.abs((b.ns-a.ns)/det):Infinity;
+   const ds=Math.abs(det)>1e-12?Math.abs((a.nx-b.nx)/det):Infinity;
+   expandX=Math.max(expandX,dx);expandS=Math.max(expandS,ds);
+  }
+  t.bounds={minX:Math.min(...t.map(e=>e.a.x)),maxX:Math.max(...t.map(e=>e.a.x)),minS:Math.min(...t.map(e=>e.a.s)),maxS:Math.max(...t.map(e=>e.a.s)),expandX,expandS};
+ }
  return {id,c:id,r:0,points,holes:holePoints,edges:[...edges(points),...holePoints.flatMap(edges)],triangles,height:WALL_HEIGHT,
  minX:Math.min(...points.map(p=>p.x)),maxX:Math.max(...points.map(p=>p.x)),minS:Math.min(...points.map(p=>p.s)),maxS:Math.max(...points.map(p=>p.s))};
 });
@@ -46,17 +59,20 @@ const OPEN_CELLS=[];
 for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){const p=cellCenter(c,r);if(Math.abs(p.s)<FLOOR_HALF[1]&&freePosition(p.x,p.s,4))OPEN_CELLS.push({...p,c,r});}
 // Concave wall outlines retain their perimeter for driving. Their triangulation
 // is used only for segment/prism clipping, so notches remain open to sight/fire.
-function wallIntersection(a,b,padding=0){
+function wallIntersection(a,b,padding=0,anyHit=false){
  if(Math.min(a.y,b.y)>WALL_HEIGHT+padding)return null;
  let nearest=null;
+ const minX=Math.min(a.x,b.x),maxX=Math.max(a.x,b.x),minS=Math.min(a.s,b.s),maxS=Math.max(a.s,b.s);
  for(const w of WALLS){
  if(Math.max(a.x,b.x)<w.minX-padding||Math.min(a.x,b.x)>w.maxX+padding||Math.max(a.s,b.s)<w.minS-padding||Math.min(a.s,b.s)>w.maxS+padding)continue;
  for(const triangle of w.triangles){
+ const bounds=triangle.bounds,px=padding?padding*bounds.expandX:0,ps=padding?padding*bounds.expandS:0;
+ if(maxX<bounds.minX-px-BOUNDARY_EPSILON_METERS||minX>bounds.maxX+px+BOUNDARY_EPSILON_METERS||maxS<bounds.minS-ps-BOUNDARY_EPSILON_METERS||minS>bounds.maxS+ps+BOUNDARY_EPSILON_METERS)continue;
  let enter=0,leave=1;
  const clip=(start,delta,limit)=>{if(Math.abs(delta)<1e-10){if(start>limit+BOUNDARY_EPSILON_METERS)enter=2;return;}const t=(limit-start)/delta;if(delta<0)enter=Math.max(enter,t);else leave=Math.min(leave,t);};
  clip(a.y,b.y-a.y,WALL_HEIGHT+padding);clip(-a.y,a.y-b.y,1);
  for(const e of triangle)clip((a.x-e.a.x)*e.nx+(a.s-e.a.s)*e.ns,(b.x-a.x)*e.nx+(b.s-a.s)*e.ns,padding);
- if(enter<=leave&&leave>=0&&enter<=1&&(nearest===null||enter<nearest))nearest=Math.max(0,enter);
+ if(enter<=leave&&leave>=0&&enter<=1&&(nearest===null||enter<nearest)){nearest=Math.max(0,enter);if(anyHit)return nearest;}
  }}
  return nearest;
 }

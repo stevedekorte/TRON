@@ -10,7 +10,8 @@ try{
  assert.equal(await page.locator('.terminal-encom').isVisible(),true);
  await page.screenshot({path:'test-results/terminal-encom.png'});
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
- await page.evaluate(()=>{const r=__tron.state;__tron.place({dataBeams:r.dataBeams.map(b=>({...b,collectedAt:r.time})),recognizers:[],enemyTanks:[],projectiles:[]});});
+ // Beam completion now wins Clu directly; the full session path is covered by home-menu.mjs.
+ await page.keyboard.press('Shift+Digit8');
  await page.waitForFunction(()=>document.body.classList.contains('victory'));
  assert.equal(await page.evaluate(()=>__tron.state.crushed),false);
  await page.evaluate(()=>{window.printSamples=[];window.printSampleTimer=setInterval(()=>{window.printSamples.push({ms:performance.now(),count:document.querySelector('#terminal-text').textContent.length});},200);});
@@ -40,5 +41,5 @@ try{
  assert.equal(await page.evaluate(()=>__tron.state.mode),'ready');
  await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('victory-credits'));
  assert.deepEqual(errors,[]);
- console.log('All-blue win freezes play, prints exact victory page, Return starts credits/music without detached message, and restart clears victory.');
+ console.log('Victory freezes play, prints exact victory page, Return starts credits/music without detached message, and restart clears victory.');
 }finally{await browser.close();}

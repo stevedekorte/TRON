@@ -1,9 +1,14 @@
 export const LOOP_TIMING = Object.freeze({
   fixedSeconds: 1 / 60,
+  cycleFixedSeconds: 1 / 120,
   foregroundLimitSeconds: 0.1,
   backgroundLimitSeconds: 1,
   backgroundIntervalMs: 250,
 });
+// Arena turns need 120 Hz. Road movement already substeps at 120 Hz internally;
+// keep the surrounding enemy simulation at the normal 60 Hz world cadence.
+export const simulationStepSeconds=run=>run.playerVehicle==='cycle'&&!run.cycleRace?.cycles[run.cycleRace.playerId]?.escaped
+  ?LOOP_TIMING.cycleFixedSeconds:LOOP_TIMING.fixedSeconds;
 /** Owns exactly one scheduled callback and the fixed-step accumulator. */
 export class GameLoop {
   constructor({
@@ -27,6 +32,7 @@ export class GameLoop {
       clearTimer,
     });
     this.accumulator = 0;
+    this.fixedSeconds = LOOP_TIMING.fixedSeconds;
     this.lastTime = null;
     this.disposed = false;
     this.running = false;
@@ -36,7 +42,7 @@ export class GameLoop {
     this.accumulator = 0;
   }
   get alpha() {
-    return this.accumulator / LOOP_TIMING.fixedSeconds;
+    return this.accumulator / this.fixedSeconds;
   }
   start() {
     if (this.disposed || this.running) return;
@@ -71,15 +77,16 @@ export class GameLoop {
       this.timerId = this.setTimer(() => tick(this.clock()), LOOP_TIMING.backgroundIntervalMs);
     else this.frameId = this.requestFrame(tick);
   }
-  advance(dt, background, playing, step) {
+  advance(dt, background, playing, step, fixedSeconds = LOOP_TIMING.fixedSeconds) {
+    this.fixedSeconds = fixedSeconds;
     this.accumulator += dt;
     let count = 0;
     const max = background
-      ? Math.ceil(LOOP_TIMING.backgroundLimitSeconds / LOOP_TIMING.fixedSeconds)
-      : 6;
-    while (this.accumulator >= LOOP_TIMING.fixedSeconds && count++ < max && playing()) {
-      step(LOOP_TIMING.fixedSeconds);
-      this.accumulator -= LOOP_TIMING.fixedSeconds;
+      ? Math.ceil(LOOP_TIMING.backgroundLimitSeconds / fixedSeconds)
+      : Math.ceil(LOOP_TIMING.foregroundLimitSeconds / fixedSeconds);
+    while (this.accumulator >= fixedSeconds && count++ < max && playing()) {
+      step(fixedSeconds);
+      this.accumulator -= fixedSeconds;
     }
   }
   dispose() {

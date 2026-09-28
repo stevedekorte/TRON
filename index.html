@@ -20,19 +20,23 @@
 
   <main id="overlay" class="overlay">
     <section class="intro" id="loading" role="status" aria-live="polite">
-      <div class="terminal-content"><h1 class="terminal-copy complete">LOADING<span class="loading-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span><span class="terminal-cursor" aria-hidden="true"></span></h1></div>
+      <div class="terminal-content"><h1 class="terminal-copy complete">ENCOM REMOTE ACCESS
+DIALING HOST
+AWAITING CARRIER<span class="loading-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span><span class="terminal-cursor" aria-hidden="true"></span></h1></div>
       <img class="terminal-encom" src="/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
     </section>
     <section class="intro" id="intro" hidden>
       <div class="terminal-content">
-        <h1 class="terminal-copy complete" aria-label="Request access to Clu program. Code 6 password to memory 0222."><span id="terminal-text" aria-hidden="true">REQUEST ACCESS TO CLU PROGRAM
-CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="true"></span></h1>
+        <h1 class="terminal-copy complete" aria-label="ENCOM system. User access granted. Select program."><span id="terminal-text" aria-hidden="true">ENCOM SYSTEM
+USER ACCESS GRANTED
+
+SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h1>
   <p id="end-tribute" class="end-tribute"><span class="tribute-measure" aria-hidden="true"></span><span class="tribute-typed" aria-hidden="true"><span id="tribute-text"></span><span class="terminal-cursor"></span></span></p>
         <div id="terminal-actions" hidden>
-          <button id="start" class="terminal-start" disabled><span>INITIALIZING</span><span aria-hidden="true"> [ENTER]</span></button>
-          <p class="terminal-controls">W A S D / ARROWS : DRIVE<br>J / L : TURN TURRET &nbsp; F : CENTER + LEVEL<br>SPACE / CLICK : FIRE CANNON<br>V : AERIAL VIEW &nbsp; C : FREE CAMERA<br>ESC : PAUSE</p>
-          <p class="terminal-objective">EXPLORE THE MAZE. THERE IS NO ASSIGNED OBJECTIVE.</p>
-          <a class="terminal-notes" href="./docs/index.html" target="_blank" rel="noopener">PROJECT NOTES</a>
+          <div id="game-menu" role="group" aria-label="Choose a game">
+            <button id="start" class="terminal-start game-choice" data-game="space" aria-pressed="true" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>SPACE PARANOIDS</span></button>
+            <button id="start-cycles" class="terminal-start game-choice" data-game="cycles" aria-pressed="false" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>LIGHT CYCLES</span></button>
+          </div>
         </div>
       </div>
       <img class="terminal-encom" src="/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
@@ -60,8 +64,10 @@ CODE 6 PASSWORD TO MEMORY 0222</span><span class="terminal-cursor" aria-hidden="
     <div id="jev-stats" title="This round; requests/sec over the last 10 seconds. Cost in USD; ~ includes estimated usage."><span>JEV / 0 REQUESTS · 0.0/s</span><span>$0.00000 USD</span></div>
     <div id="system-warnings" role="status" aria-live="polite" aria-atomic="true" hidden></div>
     <div id="clu-health" class="turbo-indicator health-indicator"><span>HEALTH</span><div id="health-meter" class="turbo-meter" role="meter" aria-label="CLU health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="health-fill"></i></div></div>
+    <div id="cycle-controls" hidden></div>
+    <div id="clu-shots" class="turbo-indicator shots-indicator"><span>STORED SHOTS</span><div id="shots-meter" role="meter" aria-label="CLU stored shots" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i></i><i></i><i></i></div></div>
     <div id="turbo" class="turbo-indicator"><span>T / TURBO</span><div class="turbo-meter"><i id="turbo-fill"></i></div></div>
-    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>C / FREE CAMERA</span><span>P / GUNNER</span><span>O / ZOOM</span><span>IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>M / SOUND</span><span>B / SCREENSHOT</span><span>ESC / PAUSE</span></div>
+    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F OR J+L / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>C / FREE CAMERA</span><span>P / GUNNER</span><span>O / ZOOM</span><span id="pitch-hint">IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>M / SOUND</span><span>B / SCREENSHOT</span><span>ESC / PAUSE</span></div>
     <div id="survey" class="sim-survey" hidden><span>MAZE SURVEY / CLU POSITION</span><canvas id="map" width="500" height="500" aria-label="Maze layout and Clu position"></canvas><small>TAB TO CLOSE</small></div>
   </div>
 

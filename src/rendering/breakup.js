@@ -6,7 +6,7 @@ import {createBlast} from './blast.js';
 
 // Blast impulses and effect lifetimes; all detached parts use shared Earth gravity.
 const BREAKUP_MOTION={
- recognizer:{impulseScale:18,spinScale:2.2,lift:1,liftVariation:2,delay:.04,flash:.1,life:5,lifeVariation:1,fade:1},
+ recognizer:{impulseScale:18,spinScale:2.2,delay:.04,flash:.1,life:5,lifeVariation:1,fade:1},
  tank:{impulseScale:1,spinScale:1,lift:3,liftVariation:5,delay:.12,flash:.22,life:10,lifeVariation:2,fade:2},
 };
 
@@ -125,23 +125,23 @@ export class Breakups {
    if(!mesh.isMesh)continue;
    const shadow=new THREE.Mesh(mesh.geometry,groundShadow);shadow.name='debris-ground-shadow';shadow.frustumCulled=false;shadow.renderOrder=-1;shadow.userData.breakupExclude=true;mesh.add(shadow);
   }
-  const blastBias=new THREE.Vector3(Math.random()-.5,0,Math.random()-.5).multiplyScalar(.45);
   const inheritedVelocity=new THREE.Vector3(event.vx??0,event.vy??0,-(event.vs??0));
   const pieces=groups.map((group,index)=>{
    const fragmented=fracture&&parts[index]===hitPart;
-   // Intact Recognizer sections blast away from the craft's center instead of
-   // all travelling to the same side of an off-center bullet impact.
-   const origin=!fragmented&&motion===BREAKUP_MOTION.recognizer?craft.root.position:impact;
-   const direction=group.position.clone().sub(origin).normalize();
-   if(motion===BREAKUP_MOTION.recognizer)direction.add(blastBias).normalize();
+   // The world-space impact is the center of the blast, including for intact
+   // Recognizer blocks. No shared bias or lift may skew this radial impulse.
+   const direction=group.position.clone().sub(impact);
+   if(direction.lengthSq()<1e-12)direction.set(0,1,0);
+   direction.normalize();
    const impulse=(fragmented?5+Math.random()*11:2+Math.random()*4)*motion.impulseScale;
-   // Faster outward separation without kicking debris twice as high.
-   direction.y/=motion.impulseScale;
+   // Preserve tank tuning; Recognizer impulses remain radial in all three axes.
+   if(fracture)direction.y/=motion.impulseScale;
    const spin=new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar((fragmented?3:.8)*motion.spinScale);
    // Long, intact sections tip end-over-end; small shards spin more freely.
    if(!fragmented&&motion===BREAKUP_MOTION.recognizer)spin.y*=.2;
    const delay=motion===BREAKUP_MOTION.recognizer&&!fragmented?.03+Math.random()*.12:Math.random()*motion.delay;
-   return {group,part:parts[index],fragmented,inheritedVelocity:inheritedVelocity.clone(),velocity:direction.multiplyScalar(impulse).add(inheritedVelocity).add(new THREE.Vector3(0,motion.lift+Math.random()*motion.liftVariation,0)),spin,delay};
+   const lift=fracture?motion.lift+Math.random()*motion.liftVariation:0;
+   return {group,part:parts[index],fragmented,inheritedVelocity:inheritedVelocity.clone(),velocity:direction.multiplyScalar(impulse).add(inheritedVelocity).add(new THREE.Vector3(0,lift,0)),spin,delay};
   });
   for(const piece of pieces)this.physics.add(piece);
   while(this.bursts.length&&this.bursts.reduce((n,b)=>n+b.pieces.length,0)+pieces.length>DEBRIS_PHYSICS.maxPieces)this.remove(this.bursts[0]);

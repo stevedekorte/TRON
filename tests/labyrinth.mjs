@@ -6,6 +6,10 @@ try{
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:5173/?layoutSeed=1982');
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled,{},{timeout:120000});
+ assert.equal(await page.evaluate(()=>__tron.state.dataBeams.length),1);
+ assert.equal(await page.evaluate(()=>__tron.state.teleportPads.length),4);
+ await page.goto('http://127.0.0.1:5173/?layoutSeed=1982&outerMazes=1');
+ await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled,{},{timeout:120000});
  assert.equal(await page.evaluate(()=>__tron.state.dataBeams.length),5);
  assert.equal(await page.evaluate(()=>__tron.state.teleportPads.length),20);
  await page.route('**/labyrinth-render',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0;background:black"></body>'}));

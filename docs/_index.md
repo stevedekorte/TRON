@@ -4,6 +4,8 @@ topTitle: TRON
 subtitle: Current simulation scope, decisions, and acceptance criteria
 ---
 
+Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
+
 ## Project documents
 
 <div class="card-grid cols-2">
@@ -22,6 +24,17 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 - [x] Add a runtime film-reference edge treatment: near-black walls with blue-gray outlines and deep purple symbols with violet borders. Inspect the Chrome preview; retain original model materials in the GLB.
 - [x] Remove the dense modeled floor and render a separate white-on-black procedural grid with the existing game grid spacing, antialiasing and fade. Use this in both the arena preview and the game.
 - [x] Reload the 447 KB, 8,349-triangle standalone GLB in Chrome and inspect rendered overview/interior captures. Geometry excludes the original floor tiles, bikes, trails and exterior scenery.
+
+## Hit-centered Recognizer explosions — September 24
+
+- [x] Use the projectile impact as the world-space blast center. Each detached section receives an outward impulse from that point in all three dimensions, without a shared directional bias or added upward kick.
+- [x] Preserve vehicle momentum, existing impulse magnitude tuning, Earth gravity, section timing and debris cleanup. Explosions without a recorded hit use the vehicle origin.
+
+## Film-style cycle explosions — September 24
+
+- [x] Replace the expanding crash ball with a white-blue needle burst, two staggered red semicircular arcs, tumbling bright chips and wheel rings, and fragment ground silhouettes.
+- [x] Use the supplied `references/images/cycle explosion` frames as the visual reference. Assuming consecutive captures at 24 fps, the main rays occupy nine frames (0.375 s); fragments fade out by one second. Effect animation uses 24 fps samples without changing gameplay simulation cadence.
+- [x] Pool six bursts, derive motion from crash age and stable IDs, orient arcs using the crashed cycle's heading, and retain the existing independent three-second trail hold/flash/lowering sequence.
 
 ## Cycle trail and lighting follow-up — September 24
 
@@ -416,3 +429,364 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Keep the lead's attack plan when only supporting positions change. Supporting units still refresh their own routes.
 - [x] Preserve a useful wall-aligned facing during overhead translation. Start folding while Clu approaches; commitment still requires fresh personal sight and a physically clear descent, and a committed drop cannot track an evasive maneuver.
 - All existing speeds, accelerations, fold/drop timing and health rules remain unchanged.
+
+## Stored shots and extended credits — September 24
+
+- [x] Add a three-segment stored-shot meter beneath health. Keep CLU’s normal cannon cooldown at 1.14 seconds. Restore one stored shot per ten seconds without firing, up to three; firing resets the next-shot timer but preserves banked shots.
+- [x] Follow the normal credits with `credits_extended.txt`, in bounded terminal pages, before the final END OF LINE. Preserve normal credits pacing; print the longer acknowledgments faster.
+- [x] Archive all four arena signature/date inscriptions in a separate GLB instead of loading their geometry with the arena.
+
+## Carrier and maze ground-shadow overlap — September 24
+
+- [x] Stop cutting moving ground shadows with the coarse maze visibility atlas where the floor already receives exact geometric maze shadows. This removes mismatched sawtooth boundaries at overlaps; ground layers multiply smoothly. Keep atlas occlusion for maze walls and vehicle receivers.
+
+## Optional outer mazes — September 24
+
+- [x] Default browser gameplay to the central labyrinth only. Restore all four smaller mazes with `?outerMazes=1`; authored/reference scenarios keep their existing layouts.
+- [x] Filter disabled placements before constructing walls, collision data, open cells, patrols, beams, pads, geometry and shadow maps. Build the blueprint wall source lazily only when enabled; retain lightweight layout metadata for stable placement and opening coordinates.
+- [x] Preserve the central labyrinth’s position and retain the original outer placement/spacing algorithm. Reindex active sites consistently for navigation. With one maze, connect each of its four teleport pads to the opposite pad.
+
+## Tank-to-cycle progression and deferred scenery — September 24
+
+- [x] Completing the central labyrinth beam transfers the player to the middle gold cycle, with a three-second countdown. The arena race remains inactive beforehand. A/D or left/right queue 90-degree turns; forward motion is automatic. V offers an aerial view, Escape pauses.
+- [x] A destroyed player cycle waits for the team result. A gold-team win opens the victory terminal; losses/draws consume one of three match chances and reset the match after six seconds. Exhausting all three chances opens the existing loss terminal. Tank combat/JEV planning stop during the cycle stage.
+- [x] Defer the arena/cycle module and assets until tank play begins. Wait safely with a loading message if the beam finishes before they are ready. Load the solar sailer after 30 simulation seconds, before its first pass at 180 seconds. Dispose late arrivals if the app has closed.
+- [x] Move the initial tank position south of the central labyrinth, preserving the previous south-edge approach distance (about 1,338 m), with opening Recognizers translated by the same offset.
+
+
+## Cycle testing, turbo and audio — September 24
+
+- [x] Temporarily start new browser games in the cycle arena. `CYCLE_TESTING.startInArena` in `src/game/light-cycles.js` owns this switch; `?cycleStart=0` restores the maze-first game, `?cycleStart=1` explicitly selects the test start. Entry waits safely for deferred arena assets, skips the opening pursuit/camera fly-in, and starts a three-chance player match without marking the beam collected.
+- [x] Hold **I** for player-cycle turbo, including partial charge. Releasing I immediately preserves remaining charge and resumes recharging. Capacity is 10 seconds, refill 60 seconds, speed 2.5×; no automatic boost or full-charge prerequisite. Holding an empty tank stays at normal speed until released, avoiding repeated boost/recharge pulses. Each retry resets charge. T remains the tank-only turbo key.
+- [x] Per-cycle movement progress and chronological cell crossings keep boosted movement, trails, camera and collision checks aligned. Other cycles retain their normal speed. The top-right meter shows I / TURBO in the arena.
+- [x] Extract six short film-mix sound candidates (startup, launch, drive loop, turn, crash, trail deactivation) and connect them to spatial cycle playback. Reproduce with `python3 scripts/extract-cycle-sfx.py`; timestamps, source hash, filters and attribution are in `public/audio/cycle-source.json`. These are picture-selected extracts, not isolated stems; auditory review remains pending.
+- [x] Arena entry stops music and clears queued transitions. Tank gameplay music cannot requeue during the match; terminal credits music remains available. Cycle audio stops on pause, death, reset and disposal, and resumes engines without replaying launch events.
+
+
+## Cycle arena patrol and sample corrections — September 24
+
+- [x] Keep the live arena Recognizer on its perimeter flight route during cycle matches, including countdowns and retries. The cycle-stage simulation previously suspended this guard along with the tank encounter. Clear its obsolete tank attack/spotlight state, unfold gradually and retain normal patrol flight constraints; destroyed guards stay destroyed. Other tank enemies remain paused. Restore the guard's spatial flight sound during cycle play.
+- [x] Replace the driving-loop source with the user-selected 0:47–0:48 video interval (0.1-second seam crossfade, 0.9-second finished loop) and the turn cue with 0:51–0:52 (one second, short edge fades). Version the two URLs to bypass stale cached WAVs. Other sound selections remain as before.
+
+- [x] Extend the cycle explosion to 2.0 seconds (75.85–77.85), preserving its tail. Add a separate player cabin loop from 1:36–1:38 (1.9 seconds after seam crossfade), retaining 0:47–0:48 for other cycles.
+- [x] Preserve stereo source channels through paired HRTF emitters 0.6 m apart. Drive, launch and turn emitters follow their cycle; explosions/trail collapse stay at the crash position. Apply smoothly changing Doppler from source/listener radial velocity to other cycles, keeping the player's cabin pitch stable apart from turbo. Camera motion supplies listener velocity.
+
+## Loading diagnostics and cycle spectator flow — September 24
+
+- [x] Print plain-text `[TRON loading]` phase timings and complete copyable reports. `tronLoadingReport()` returns the current report in Safari's console, including browser, viewport, navigation-to-app delay, maze setup, enemy placement, physics wait, model fetch/decode/adaptation, rendering-world creation, first render submission, opening readiness and deferred arena/player entry. Parallel model durations are labeled non-additive; first render submission is not a GPU completion measurement.
+- [x] With the temporary cycle-testing start enabled, begin loading the arena and launch its countdown automatically, without Return. Normal `?cycleStart=0` maze play still uses the opening terminal. Browser audio gesture restrictions may still require a click/key before sound can play.
+- [x] On player-cycle destruction, enter a movable spectator camera while the team match continues: WASD, Q/E, drag/arrows, Shift, Home and Space pause. Restore the follow camera and clear spectator inputs at the next automatic round. Victory or exhausted chances exits spectator mode so end screens are not blocked.
+- Collision timing and trail-ending changes were withdrawn after the user's correction; behavior remains unchanged.
+
+## Cycle camera stability — September 24
+
+- [x] Translate the follow camera and its look target with the exact visible cycle pose; smooth only the relative orbit and height. Easing absolute camera positions independently of fixed-step cycle movement caused vertical screen bob, amplified by turbo. Preserve eased turns and aerial changes, and clear the tracking anchor on reset.
+- [x] Add smoothed J/L left/right and I/K up/down spectator camera controls. Post-death WASD/QE movement uses 36 m/s with eased acceleration/deceleration; ordinary free inspection retains its existing speed.
+- Safari's supplied loading report isolates 19.442 seconds in initial simulation/enemy placement out of 20.849 seconds to opening readiness. Model loading is comparatively small; startup placement optimization remains outstanding.
+
+## Startup search acceleration and cycle glances — September 24
+
+- [x] Accelerate ground-route obstruction tests by stopping at the first wall hit when only a clear/blocked answer is needed. Preserve nearest-hit queries for projectiles and other callers. Reject triangle bounds conservatively, including the extended corners of padded acute triangles; skip stale A* entries instead of expanding them repeatedly.
+- [x] Hold J/L in cycle follow view for a fast, smooth 120-degree left/right rear-quarter glance. Release to return forward; both held cancel. The camera turns in place without steering the bike. Post-death spectator J/L remains free-camera steering.
+- [x] Shorten full player-cycle turbo capacity to five seconds; retain 2.5× speed, partial-charge use on I and 60-second recharge.
+- Local WebKit initial placement fell from the earlier 1,820 ms to 529 ms; opening readiness from 3,202 to 2,246 ms. Reload measured 506 ms placement / 2,146 ms opening. These are local Playwright WebKit measurements, not a new run of the user's actual Safari (previously 19,442 ms placement). Actual Safari confirmation remains pending.
+
+## Cycle motion and level-horizon glance refinement — September 24
+
+- [x] Run cycle matches at a 1/120-second fixed timestep; retain 1/60 second in tank mode. Catch-up budgets cover the same elapsed duration and render alpha follows the active step size.
+- [x] Interpolate live cycle poses and trail endpoints between simulation steps, with the follow camera using the same presentation pose. Preserve right-angle paths through corners and leave collision state untouched. Destroyed cycles use their collision pose immediately.
+- [x] Make J/L glances faster (28/s response), rotating around world-up to keep the horizon level. Release returns smoothly to forward view. No camera banking.
+- [x] Keep tank combat suspended during cycle matches and avoid starting the solar-sailer background load there. Retain the arena Recognizer patrol.
+- Actual Safari 26.6.2 user confirmation: initial placement **2,995 ms** (previously 19,442); opening ready **4,463 ms** (previously 20,849); arena ready **5,048 ms** (previously 21,398), same reported 1262×1424 viewport / DPR 2 at startup.
+
+## Cycle pedals and repeatable materialization launch — September 24
+
+- [x] W is cycle turbo; S is a half-speed pedal. Both approach their targets with 8/s exponential response (about 0.38 seconds to 95%), including return to cruise and boost depletion. S takes priority when both are held, without spending turbo. Preserve five-second turbo capacity, 2.5× maximum speed and partial charge use. Engine pitch follows actual speed; tank controls are unchanged.
+- [x] Temporarily disable cycle win/loss endings via `CYCLE_TESTING.endingsEnabled=false`. Player death permits free-camera spectating; Return starts a fresh match immediately. Completed team matches wait for Return, with no attempt limit. The original ending rules remain available through the session setting.
+- [x] Replace the three-second countdown with a 0.3-second hidden-to-wireframe-to-solid materialization using the carrier's translucent scan panel/yellow border treatment, then launch immediately. Each bike owns reveal materials/uniforms; reset repeats the effect and disposal releases depth resources.
+- [x] Extract the materialization beat at 26.7–27.4 seconds from the supplied TRON light cycles video. Play one team cue during the reveal, with its sound tail continuing into launch; avoid stacking six identical copies. This is a picture-selected film-mix extract, not an isolated stem, and listening review remains pending. Keep the camera steady.
+
+## Breakable cycle arena enclosure — September 24
+
+- [x] A cycle striking intact arena enclosure dies and leaves a jagged, full-depth opening. Subsequent cycles can pass through beside the fallen cycle's persistent trail; trail collisions retain their separate timing.
+- [x] Subtract the opening from actual inner-wall, symbol and exterior-shell mesh triangles at runtime, preserving material groups and regenerating outlines. Add exposed fracture surfaces through the wall thickness. The original GLB stays unchanged; each new match restores its original geometry.
+- [x] Share the opening profile and dimensions between collision and presentation. Keep intact wall portions solid, store trail occupancy beyond the arena grid, and retain collisions with maze geometry outside. Escape continues into the outer world for now; no transition or JEV control is added.
+- [x] Perform mesh surgery only for new breaches, not every frame. Restore/dispose replacement geometry and exposed surfaces on restart/disposal.
+
+## Motorcycle handling after arena escape — September 25
+
+- [x] Once a cycle fully clears the enclosure, stop extending its trail and switch to continuous road handling outside. Arena reentry restores racing behavior as of September 26. Retain the existing trail and its collision/death lifetime. Preserve exit speed and displayed position; remove queued arena turns.
+- [x] Outside: W throttle, S brake (priority over throttle), A/D or arrows steer. Releasing throttle coasts with rolling/aerodynamic drag. Acceleration tapers with speed; braking can stop the bike without reversing. Speed-dependent steering limits lateral acceleration and the bike leans into turns, easing upright afterward. The follow camera remains level.
+- [x] Share interpolated road poses with the model and camera; engine pitch/Doppler use actual speed and heading. Replace the turbo meter with a km/h speed display outside. Retain swept wall, maze, trail and live-cycle body checks. Road riding continues when the arena match reaches a result; Return after death restores the original arena match.
+- Tunables live in `ROAD_CYCLE`: 18 m/s² nominal drive acceleration, 26 m/s² brake deceleration, 14 m/s² lateral acceleration limit, with drag and steering/lean response. These are an initial superbike-inspired approximation, awaiting driving-feel review.
+
+## Breach interior finish — September 25
+
+- [x] Apply the same arena styling adapter to exposed fracture surfaces: near-black wall faces and blue-gray edge outlines, including edges along the passage through the wall. Dispose both edge and face materials on rebuild/reset.
+- Crack shapes currently use one fixed authored jagged profile translated to each impact, not random generation. Collision clearance and the mesh cut share that profile.
+
+- [x] End the arena grid at the inner wall boundary; use a continuous dark teal floor through the wall thickness, visible in breach passages. Keep the existing outer-world ground beyond the enclosure.
+- [x] I/K also operate cycle turbo/slow alongside W/S, with slow taking priority. Outside the arena they also mirror throttle/brake. Spectator I/K camera controls remain available.
+
+- [x] Hide the sweeping rectangle and its border for cycle materialization only. Preserve the fast wireframe/solid reveal and the carrier materialization plate.
+
+## Film-inspired arena crack — September 25
+
+- [x] Replace the short opening with a tall, kinked central split and five tapered splinter branches radiating from the impact, based on the supplied film close-up. Retain the driveable base, dark passage and colored edge outlines. The authored pattern remains deterministic.
+- [x] Cut branches through the wall and remove buried lining faces where they intersect. Reject disjoint/coplanar polygons before subdivision to avoid duplicate geometry at shared profile boundaries.
+
+- [x] Remove spurious coplanar outline seams after fracture cuts: split collinear outline fragments at shared endpoints and cancel paired overlaps, preserving true silhouette/crease edges. This runs when geometry changes, not per frame.
+
+- [x] Temporary escape-testing setup: `CYCLE_TESTING.startWithBreach` opens the far wall straight ahead of the player’s starting lane in each player match, including Return restarts. Set it to false to restore intact starts.
+
+## Cycle escape testing and progressive steering — September 25
+
+- [x] Temporarily disable the middle opposing cycle in player matches via `CYCLE_TESTING.hideMiddleOpponent`, including its occupied starting cell; retain stable cycle IDs and restore other cycles normally on restart.
+- [x] Reuse the cycle shadow atlas for both the procedural arena floor and outer-world ground, preserving materialization clipping and cycle self-shadows.
+- [x] Road steering builds continuously with held A/D input. Full input takes approximately 0.6 × (1 + speed / 35 m/s) seconds; release eases upright. Apply this normalized demand to the speed-dependent cornering limit, avoiding immediate saturation of lean at high speed.
+- [x] Retain W/I turbo outside the arena with the same charge/recharge timings; it doubles drive acceleration and raises the speed ceiling from 100 to 140 m/s. S/K braking overrides turbo. Keep the charge bar, with speed also shown in its label; release coasts and recharges.
+
+## Outside-arena cycle impact damage — September 25
+
+- [x] Replace unconditional road collision death with normal-impact-speed response. Direct impact at 18 m/s (64.8 km/h) or accumulated health depletion destroys the cycle. Below 2 m/s normal speed, bumps do no damage; intermediate damage increases quadratically. These are gameplay tunables, not a real-world safety model.
+- [x] Nonfatal contacts retain 80% of tangential speed and bounce with 0.15 normal restitution; very small residual motion stops. Keep the bike at its last safe position and deflect its heading before the next swept step. Arena racing collisions retain their previous lethal behavior.
+- [x] Show remaining cycle health outside the arena. Initialize full health on escape/new match.
+
+## Low-speed cycle steering — September 25
+
+- [x] Blend low-speed kinematic steering (yaw rate = speed × tan(steering angle) / wheelbase) into the existing progressive cornering controller between 3 and 12 m/s. Low-speed input reaches full steering in 0.18 s; faster riding retains speed-dependent hold buildup. No pivoting at rest.
+- [x] Derive lean from actual lateral acceleration: atan(speed × yaw rate / gravity). This allows small-radius slow turns with modest banking, rather than imposing a fixed lean per key press. A simplified steady-turn approximation; it does not simulate rider countersteering, tire deformation or balance.
+- Research: [Georgia Tech / GDOT, curve analysis, pp. 38–40](https://rosap.ntl.bts.gov/view/dot/88895/dot_88895_DS1.pdf) relates speed, radius and equilibrium lean. [MSF Motorcycle Operator Manual](https://msf-usa.org/wp-content/uploads/2023/02/motorcycle-operator-manual.pdf) distinguishes slow tight-turn rider counterbalancing. Input-response/blend thresholds are game tuning choices, not values taken from these sources.
+
+## Escape simulation handoff — September 25
+
+- [x] On player escape, pause arena competitors and match progression, stop their engine loops, and continue the player’s road handling. Existing destruction effects finish and expired trails release their collision cells.
+- [x] Resume carrier sensors, Recognizers, ground tanks, reinforcements, projectiles and hearing against the current cycle position/speed. Outside enemy damage feeds cycle health and the cycle explosion/spectator flow; no tank controller or beam/teleport objectives run. Allow enemy JEV requests and deferred solar-sailer loading again.
+- [x] Return restart clears the handoff and pauses outside combat while the next arena match runs.
+
+## Road reverse, orbit glances and wall clearance — September 25
+
+- [x] S/K brakes forward travel to zero, then accelerates slowly in reverse up to 3 m/s; release stops reverse motion. W/I brakes reverse motion before driving forward. Small unpowered residual speeds settle to zero, with no stationary steering pivot.
+- [x] J/L glances orbit around the cycle, keeping it in frame and the horizon level. Outside the arena the glance/return response is 4/s versus 28/s inside.
+- [x] Road cycle maze collision sweeps the authored perimeter segments with the cycle radius instead of expanding triangulation half-planes, avoiding oversized acute-corner wedges. Contacts permit movement away from a slightly overlapping wall boundary.
+
+## Looking into road turns — September 25
+
+- [x] Outside the arena, bias camera position and look-ahead toward the intended bend as steering builds (up to 36 degrees), smoothing with a 4/s response. Ease back on release, fade anticipation at walking pace/rest, and retain a level horizon with the cycle visible. Deliberate J/L glances take priority; aerial view does not add turn anticipation.
+
+## Road driving control revision — September 25
+
+- [x] Outside only: W/S taps change held target speed by 5 m/s (18 km/h); key repeat does not add steps. X held brakes and clears the target to zero. A fresh X press at rest latches 3 m/s reverse. W/S leave reverse (W sets 5 m/s forward, S stops). I remains held turbo. Arena controls remain unchanged.
+- [x] Smoothly approach target speed rather than applying full turbo whenever accelerating. Normal acceleration 8 m/s², turbo multiplier 1.6, normal/turbo ceilings 55/80 m/s. Roll-off drag increased; turbo release returns gradually toward the selected speed. These supersede the earlier road acceleration/maximum settings.
+- [x] At road speed derive turning rate from developing lean, so the visible bike and path respond together. Preserve quick low-speed steering and progressive hold input.
+- [x] V now uses Clu’s aerial height, trailing offset, transition blend and wheel zoom for cycles, replacing the separate 40 m overhead view.
+
+## Patrol recovery after player destruction — September 25
+
+- [x] Confirmed player destruction clears committed tactical attack/search routes, attack assignments, threat holds and hearing investigations. Recognizers finish any required stomp recovery and resume their normal patrol or escort behavior. Preserve visual confirmation and delayed, range-limited destruction reports.
+- [x] Return from cycle spectating clears old destruction reports and allows enemies to detect the next player again.
+- Validation: `node --test tests/tactical.test.js tests/cycle-player.test.js tests/simulation.test.js` — 83/83 passed. Covers stale tactical choices, road-cycle destruction/radio propagation, continued patrol simulation during spectating, and restart awareness. Node simulation checks only; no new browser or visual review.
+
+## Direct road-cycle testing start — September 25
+
+- [x] Temporary automatic cycle entry starts stationary, facing away from the arena, 20 m beyond its far outer wall. Road handling is active immediately; arena competitors stay paused. Return after death repeats this position with full health and turbo.
+- [x] Gate this shortcut through `CYCLE_TESTING.startOutsideArena`; set it false to restore the arena testing start. `?cycleStart=0` still preserves normal maze-first entry.
+- Validation: inline Node assertions using `GameSession` checked outside road mode, zero initial speed, maze-wall clearance, forward acceleration and repeatable Return restart. Browser driving-feel review remains pending.
+
+## Cycle tire contact with the floor — September 25
+
+- [x] Replace the fixed 8 cm cycle elevation with the actual supporting floor height and the repaired model's measured bottom. The arena floor is at +2 cm; outside ground is at −6 cm. Select by rendered position within the arena floor footprint so returning through a breach also restores the correct height.
+- Validation: `node /tmp/tron-cycle-grounding.mjs` in headless Chrome on local macOS verified model bottoms at +0.02/−0.06/+0.02 m for inside/outside/inside positions, checked the running game's outside player height, and rendered an inspected low-angle capture at `/tmp/tron-cycle-grounding.png`. Lean dynamics are unchanged.
+
+## Return to arena racing — September 26
+
+- [x] Once the whole road cycle clears the inner wall, restore cardinal turns, normal arena speed, W/I turbo, S/K slow, lethal arena collision rules and trail emission. Clear road lean/steering/reverse state and queued turns. Join the nearest cardinal lane over the first short span without teleporting the bike; sweep that span before reserving its collision cells.
+- [x] Start a separate trail section at reentry; preserve older trails without drawing a wall across the outside drive. Resume paused arena competitors and suspend the outside combat handoff. Repeated exits/reentries remain supported; reentry after a completed round reopens racing with a fresh round timer.
+- Validation: `node --test tests/cycle-road.test.js tests/cycle-player.test.js tests/light-cycles.test.js tests/cycle-camera.test.js` — 46/46 passed. `node tests/cycle-reentry.mjs` — headless Chrome on local macOS, 1280×800, passed actual breach traversal, restored keyboard controls and trail-render checks with no page errors. Inspected `test-results/cycle-reentry.png`. Manual driving-feel review remains pending.
+
+## Steadier player-cycle drone — September 26
+
+- [x] Remove the repeated opening swell from the player cabin sample by narrowing the existing 1:36–1:38 source selection to 1:36.7–1:37.8. Apply a 0.2-second equal-power seam overlap and circular, stereo-linked 100 ms RMS leveling; the finished loop is 0.9 seconds. Match the previous integrated loudness (RMS approximately 0.118) and version its URL to refresh cached audio. Preserve speed-related pitch and the separate external-cycle loop.
+- [x] Keep extraction reproducible through `python3 scripts/extract-cycle-sfx.py`; record processing and source/use constraints in `public/audio/cycle-source.json` and the sound catalog.
+- Validation: `node tests/cycle-audio.mjs` passed in headless Chrome on local macOS. Decoded cabin-loop level spread is 0.507 dB across 100 ms windows; stereo loading, event counts, pause/resume and reset cleanup passed with no sample/page errors. This measures playback and level stability; listening approval remains pending.
+
+## Remove recorded pitch wobble — September 26
+
+**Rejected in listening review:** the user found the synthesized tone terrible and irritating. The September 26 rollback below supersedes this experiment.
+
+- [x] The volume-only correction above did not satisfy listening review: the recording still changed pitch at constant speed. Replace the cabin recording loop with stationary harmonic resynthesis from its averaged stereo spectrum, implemented in `scripts/cycle_drone.py`. Use fixed 367.5 Hz harmonics and exact 120-sample waveform periods, retaining source spectral balance, stereo differences and RMS 0.118. This is a synthesized approximation of the film timbre, not an isolated original engine stem.
+- [x] Loop whole waveform periods with no crossfade, and update the asset cache version. Speed-related playback pitch remains; player Doppler remains disabled.
+- Validation: `node tests/cycle-audio.mjs` passed in headless Chrome on local macOS. Every decoded waveform period matches exactly; 120 playback updates at constant player speed keep pitch at 1× despite listener motion. Level spread is 0.018 dB; loading, event counts and pause/reset cleanup pass. Listening review of the revised timbre remains pending.
+
+## Restore film cycle sound — September 26
+
+- [x] Remove harmonic resynthesis and restore the preceding film-derived cabin loop, retaining its seam crossfade and volume smoothing. Refresh the audio URL cache version. Frequency steadiness remains unresolved; do not treat objective periodicity as proof of acceptable sound.
+
+## Road tire traces and cycle dynamics window — September 26
+
+- [x] Outside the arena, leave a faint 13 cm rear-tire trace that fades over eight seconds of simulation time. Sample the rendered contact path every 45 cm into a bounded 8,192-segment pool. Marks follow the supporting floor, stop during arena racing/death, do not bridge teleports, clear on restart, and never affect collision. Pause freezes their age; disposal releases geometry/material resources.
+- [x] In development builds, Tab while controlling a cycle opens the Cycle dynamics window; Escape or Close returns to play. Pause while editing, preserve an existing pause, retain normal Tab navigation within the window, and isolate all game keyboard/mouse controls while it is open. Tank Tab retains the survey map.
+- [x] Expose road speed/acceleration/braking/drag, steering buildup and release, wheelbase, low-speed blending, cornering and lean limits, reverse, and contact response with labeled units, sliders and numeric fields. Keep Earth gravity fixed. Validate positive denominators and related thresholds before changing settings. Speed hold compensates drag; drag adjustments are most apparent under turbo.
+- [x] Own road settings per GameSession, retain them over restarts, and save valid changes locally in this browser. Provide Reset defaults and Copy settings. Arena dynamics remain separate. Defaults moved to `src/game/cycle-road.js`, with the existing simulation-module export retained for compatibility.
+- Validation: `npm test` — 337/337 passed; `npm run build` passed (existing large-chunk advisory). `node tests/cycle-tuning.mjs` — headless Chrome on local macOS, 1440×1000, passed tire-trace rendering, dialog opening/closing, input isolation, pause restoration, settings changes, reload persistence and defaults reset. Inspected `test-results/cycle-tuning.png` and the close driving-camera `test-results/cycle-tire-traces.png`. Driver preference for trace intensity and tuned handling remains subject to play review.
+
+## Tire trace attachment and transparency — September 26
+
+- [x] Replace the guessed 1.05 m rear-wheel offset with the repaired model's measured rear contact (approximately 1.23 m behind the origin). Transform that contact with the displayed bike pose, after applying its yaw and lean. Keep a live final segment attached between the 45 cm history samples; this removes the changing gap at the tire.
+- [x] Reduce peak opacity from 24% to 6%. Add derivative-based edge coverage with an expanded transparent envelope to reduce subpixel shimmer, and strengthen floor depth bias with a 15 mm surface offset. The live segment ages while stopped instead of refreshing forever; its buffers dispose with the history.
+- Validation: `node --test tests/cycle-tuning.test.js tests/cycle-camera.test.js` — 11/11 passed, including live endpoint placement between samples and fade at rest. `node tests/cycle-tuning.mjs` passed in headless Chrome on local macOS at 1440×1000; inspected the updated close driving-camera capture `test-results/cycle-tire-traces.png`. User confirmation of flicker on their display remains pending.
+
+## Road-bike performance and shorter enemy radio — September 26
+
+- [x] Profile live road riding versus post-death spectating. Browser CPU samples identify enemy route planning and wall-intersection queries as the dominant live-bike work. The whole outside enemy world had inherited the arena's 120 Hz step; the bike's isolated motion/collision cost was very small.
+- [x] Keep arena simulation at 120 Hz; restore the outside world's normal 60 Hz cadence. Road movement and swept collision retain their bounded 120 Hz internal substeps and shared render interpolation. Reentry restores the arena cadence.
+- [x] Wall queries copy only endpoint coordinates, rather than whole unit/search-node objects. Compute the world-space query bounds once, and stop on the first wall hit for boolean ground-clearance and line-of-sight checks. Nearest-hit projectile queries retain their behavior.
+- [x] At the user's additional request, halve enemy-to-enemy communication range from one maze width to half a maze width, including vertical separation. Use the shared radio-range configuration for aircraft, tanks, tactical allies, carrier reports and arrival synchronization; retain report delays and observation timestamps.
+- Validation: `npm test` — 339/339 passed. `node tests/cycle-performance.mjs` profiles headless Chrome on local macOS at 1280×800 with layout seed 1982. Approximately five-second live-bike samples: simulation CPU **1,572 ms before → 177.5 ms after** the combined changes; median step **2.6 → 0.4 ms**, p95 **4.5 → 0.7 ms**. Post-death CPU **639 → 216 ms**. Both baseline and updated runs maintained roughly 60 fps locally; this measures CPU headroom, not an established user-device framerate gain. Final measurements ran without the test suite competing for CPU. JSON and CPU profiles are in `test-results/cycle-performance.json` and `test-results/cycle-{alive,dead}.cpuprofile`. User-browser confirmation remains pending.
+
+## Stronger road brakes and arena pedal isolation — September 26
+
+- [x] Double default road braking from 18 to 36 m/s² and downward held-speed response from 2 to 4 /s. Keep acceleration response separate. Expose braking response in Tab tuning. Upgrade previously saved default braking without replacing custom handling settings.
+- [x] Route W/S/X directly through cycle controls. Inside the arena, S/X/K request the existing half-speed minimum and override turbo; road braking and reverse commands are empty. Update the control hint. Ordinary arena wall/trail collisions remain lethal.
+- Validation: `npm test` — 342/342 passed, including twice-strength braking at low/high speeds, saved-default migration, and S/X arena survival. `node tests/cycle-reentry.mjs` passed in headless Chrome on local macOS at 1280×800: breach reentry, cardinal turn, turbo, S/X slowing and survival, and trail rendering. `npm run build` passed (existing large-chunk advisory). The originally reported S/X destruction was not reproduced; its specific cause remains unconfirmed.
+
+## Closer aerial zoom — September 26
+
+- [x] Halve V-mode's minimum zoom scale from 0.25 to 0.125, bringing the closest camera position twice as close to the vehicle. The shared wheel control applies to both tank and cycle aerial views.
+- Validation: `node --test tests/cycle-camera.test.js` passed. In-browser framing at the new closest distance has not been reviewed.
+
+## Local sighting response — September 26
+
+- [x] Reduce shared enemy radio radius from half to one quarter of the active maze width (about 334 m in the default blueprint world). This halves the previous range and reduces its horizontal coverage area to one quarter.
+- [x] Broadcast only firsthand sightings. Receiving a radio report still starts pursuit, but does not forward that report to another neighborhood. A recipient that independently spots Clu may broadcast its own sighting. Preserve report delays, timestamps and destruction notifications.
+- Chase size remains emergent: multiple direct observers and tightly grouped units can still respond together. No fixed pursuer cap is imposed. User play review of encounter density remains pending.
+- Validation: `npm test` — 343/343 passed, including 3D radio boundaries and a three-unit chain that stops at the firsthand observer's neighbors while allowing a new direct sighting to recruit locally. Updated the tank-radio fixture to place its receiver within the reduced range. `npm run build` passed with the existing large-chunk advisory. No browser encounter-density playtest performed.
+
+## Gentler low-speed cycle steering — September 26
+
+- [x] Reduce the road bike's low-speed steering limit from 0.65 to 0.45 radians. At full steering below the blend threshold, this widens the nominal turn radius from approximately 2.8 m to 4.3 m (about 36% less yaw rate at the same speed). Preserve input buildup and the high-speed steering branch; blend smoothly between 3 and 12 m/s.
+- [x] Upgrade the previous saved steering default so existing browser tuning receives the change; retain other customized values. The limit remains adjustable in Tab's Cycle dynamics window.
+- Validation: `node --test tests/cycle-road.test.js tests/cycle-tuning.test.js` passed, including the revised low-speed radius and continuity at both blend boundaries. Driving feel awaits user play review.
+
+## Home game selection — September 27
+
+- [x] Show Space Paranoids and Light Cycles on the home terminal using FilmTerminal, with a `>` beside the selected choice. Arrow keys select and Return starts; native buttons support mouse, touch, focus and keyboard activation. Update the displayed controls for the selected game.
+- [x] Default to Space Paranoids and wait at the menu. Space Paranoids starts the normal Clu maze/pursuit. Light Cycles enters the arena as gold player 1, with two gold teammates, all three blue opponents, and no initial wall breach. Preserve this setup when restarting a match.
+- [x] Keep the explicit `?cycleStart=1` road-testing shortcut separate from menu entry. Update road browser fixtures to request it explicitly. Ending terminals hide the menu.
+- Validation: `npm test` — 344/344 passed. `node tests/home-menu.mjs` passed in headless Chrome on local macOS at 1280×800 with touch enabled: home waits, arrow selection, Return, mouse click, touch tap, normal maze start, six-bike intact arena and match restart. Inspected `test-results/home-menu.png` with the terminal font and selection marker. Touch verification uses browser emulation, not physical mobile hardware. `npm run build` passed with the existing large-chunk advisory.
+
+## Plain ENCOM home terminal — September 27
+
+- [x] Replace the home access request with `ENCOM SYSTEM`, `USER ACCESS GRANTED`, and `SELECT PROGRAM`. Remove controls, navigation help, objective copy and project-notes link from the home screen.
+- [x] Match both choices to the terminal text's font size, line height and letter spacing. Remove boxes, padding and extra row spacing; retain the `>` selection indicator and keyboard/click/tap behavior.
+- [x] Show the Clu access request only after selecting Space Paranoids. Keep it visible briefly even with reduced motion, then enter the game without a camera transition in that mode. Returning home restores the ENCOM greeting.
+- Validation: `node tests/home-menu.mjs` passed in headless Chrome on local macOS, including matching computed typography, no button outline/border, removed help, the post-selection access message, keyboard/mouse/emulated-touch activation and both game starts. Inspected the updated 1280×800 home capture. `npm run build` passed with the existing large-chunk advisory.
+
+## Uppercase terminal typography — September 27
+
+- [x] Apply uppercase text presentation to the shared terminal content, including home choices, loading/access messages, victory and credits. Keep source strings and typing cadence unchanged.
+- Validation: shared terminal selector reviewed; `git diff --check` passed.
+
+## Program selection cursor — September 27
+
+- [x] Replace the `>` marker with the terminal's blinking block cursor beside the selected program. Arrow-key selection moves it between entries. Hide the heading cursor on the home screen; retain access and ending cursors. Honor reduced-motion preference with a steady selection cursor.
+- Validation: `node tests/home-menu.mjs` passed in headless Chrome on local macOS (reduced-motion mode), covering arrow selection, keyboard/mouse/emulated-touch activation and both game starts. `git diff --check` passed.
+
+## Typed Clu access and shared game font — September 27
+
+- [x] Space Paranoids prints its access message one glyph at a time with variable 45–145 ms keystroke spacing, extra space pauses and a longer carriage return. Retain the previous screen's top margin and opaque background. Hold the complete message for two seconds, then enter the Clu game. Inputs do not skip this sequence; simulation, enemy decisions and gameplay audio remain stopped during it.
+- [x] Use FilmTerminal for all game HUD text and controls, including paused screens, while retaining existing text sizes. Keep Light Cycles' direct start and the victory printer's uniform cadence.
+- Validation: `npm test` passed 344/344 before adding the new printer-specific check; `node --test tests/victory.test.js` then passed 3/3, including human timing, line-break pause and reset. `node tests/home-menu.mjs` passed in headless Chrome on local macOS: equal terminal top position, partial then complete text, at least two-second hold, frozen simulation time and computed FilmTerminal HUD font, plus keyboard/mouse/emulated-touch entry and intact six-bike arena restart.
+- `npm run build` passed with the existing large-chunk advisory; `git diff --check` passed.
+
+## Explicit uppercase program titles — September 27
+
+- [x] Correct the mixed-case menu titles shown in Safari: store `SPACE PARANOIDS` and `LIGHT CYCLES` directly in the markup and explicitly apply uppercase styling to the buttons rather than relying on inherited terminal styling.
+- Validation: confirmed both uppercase strings in `index.html`; `git diff --check` passed.
+
+## Access cursor and controls visibility — September 27
+
+- [x] Hide the program menu with `display:none` during access typing, preventing its selected cursor's explicit visibility from leaking through. Retain the single text cursor beside the access message.
+- [x] Keep the HUD hidden until the typed access screen and two-second hold finish. Only running gameplay reveals the control hint. This also prevents explicitly visible HUD children from appearing over the terminal.
+- [x] Apply FilmTerminal and uppercase directly throughout game/pause controls and both tuning panels, including native form controls.
+- Controls validation: `node tests/home-menu.mjs` passed in headless Chrome on local macOS, including exactly one visible cursor during typing, hidden HUD/control elements until gameplay, and computed uppercase FilmTerminal control labels. `npm run build` and `git diff --check` passed.
+
+## Clu cannon elevation limit — September 27
+
+- [x] Cap manual and mouse elevation at 45 degrees above horizontal. Exclude assisted intercepts requiring more than 45 degrees, and clamp assisted-shot spread to the same ceiling. Targets within the allowed elevation retain normal lead assistance.
+- Elevation validation: `npm test` passed 346/346; targeted gunner/mouse checks and production build passed. Regression coverage verifies manual 45-degree saturation, no overhead assisted lock, and retained assistance below the limit.
+
+## Teleporter pads disabled — September 27
+
+- [x] Disable pad creation in live simulation and presentation through `TELEPORTERS.enabled=false`. There are no active transfer volumes or rendered floor borders. Keep layout generation, transfer behavior and rendering implementation for possible future use.
+- [x] Skip floor shader injection for an empty pad layout. Existing isolated teleport tests explicitly supply pads so the retained implementation remains covered.
+- Teleporter removal validation: `npm test` passed 348/348, including pad-free normal runs and no floor shader modification for an empty layout. Retained teleport behavior passes with explicit test pads.
+
+## Credits dismissal — September 27
+
+- [x] Any fresh key press, mouse click or touch-generated click on victory or post-death credits returns to program selection. Consume the dismissal event so Return or a click cannot also start a game. Reset credit printing, music, input, simulation and ending state through the same path used by the automatic credits exit.
+- Credits validation: headless Chrome menu checks passed for keyboard, click and emulated-touch dismissal, returning to the greeting without starting a game.
+
+## Restore tank-camera opening — September 27
+
+- [x] After typed access and its two-second hold, restore the original 1.1-second terminal dissolve and 5.5-second camera approach to the tank. Keep controls hidden until the approach completes. Reduced-motion mode retains the direct transition after the hold.
+
+## Big-maze music footprint — September 27
+
+- [x] Use each maze instance's own basis and floor dimensions when detecting exploration. The previous shared small-maze footprint excluded most of the larger central labyrinth. Preserve pursuit priority and the existing beam music progression.
+- Validation: `node --test tests/music-selection.test.js` passed 7/7, including all four big-maze edge entries with outer mazes enabled and disabled, plus rejection just outside its boundary.
+- Music browser validation: `node tests/maze-music.mjs` passed in headless Chrome at the large labyrinth edge, then through exploration, hidden approach, visible beam, entry, afterglow and pursuit playback transitions.
+
+## Readable, incremental extended credits — September 27
+
+- [x] Preserve the existing left margin and set the credit column's right margin to match, including the mobile breakpoint. Wrap long text within that column.
+- [x] Append immutable glyphs and retain completed line nodes instead of replacing the entire credit text every frame. Reuse the victory printer's incremental rendering and line isolation. Clear nodes only when changing entries.
+- [x] Display one authored credit at a time. Use `credits_display.txt` for 27 concise entries, all five lines or fewer (below the requested eight-line limit). Keep URLs and the full dependency inventory in the unchanged archival `credits_extended.txt`; omit them on screen. Retain a two-line Cloudflare credit.
+- Validation: `node --test tests/victory.test.js` passed 5/5, covering entry boundaries, URL filtering, a brief Cloudflare mention, and line/length limits. `node tests/extended-credits.mjs` passed in headless Chrome on local macOS: complete credits progression, immutable retained glyphs with no removed nodes while typing, desktop/mobile equal margins and no horizontal overflow. The longest entry rendered within eight lines. Early/late mean append work measured about 0.018/0.017 ms per frame; this does not measure total GPU painting or establish performance on the user's device. Inspected `test-results/extended-credits-layout.png`.
+- Final browser verification: `node tests/home-menu.mjs` passed with the restored terminal fade and changing camera coordinates before gameplay controls appear, plus keyboard/click/tap credits dismissal and pad-free game state. `npm run build` passed with the existing large-chunk advisory; `git diff --check` passed.
+- Final simulation verification: `npm test` passed 351/351 when rerun without concurrent browser/build work. The earlier concurrent run failed one ground-tank patrol-distance assertion; no unrelated simulation code was changed for that retry.
+
+## ENCOM loading copy — September 27
+
+- [x] Replace `LOADING` with `ENCOM REMOTE ACCESS`, `DIALING HOST`, and `AWAITING CARRIER`. This is a text-only change; retain the existing terminal presentation and loading behavior.
+- Validation: reviewed loading markup; `git diff --check` passed.
+
+## Cycle lineups at their walls — September 27
+
+- [x] Start gold and blue lineups at the nearest safe grid row to their respective arena walls, facing inward. Derive the row from the inner wall position, bike length and a named minimum clearance rather than a fixed interior position. Apply on initial entry and round restarts; preserve the explicit outside-road test spawn.
+- Validation: `node --test tests/cycle-player.test.js tests/light-cycles.test.js tests/cycle-road.test.js` passed, covering round resets, arena movement/collisions and road transitions. Updated the collision fixture to assert displacement relative to its starting row.
+
+## Faster Clu access typing — September 27
+
+- [x] Halve Clu access keystroke delays, including space and line-break pauses, while retaining their natural variation. Preserve the two-second completed-text hold and subsequent camera opening.
+- Validation: `node --test tests/victory.test.js` passed 5/5, including the revised typing delays and unchanged victory printing.
+
+## Confirm Clu entry and start music with the opening — September 27
+
+- [x] Replace the automatic two-second access-screen countdown with an indefinite wait after typing. A fresh key press, click or tap starts the original terminal dissolve/camera approach; input during typing is consumed. Keep simulation frozen while waiting and prevent the confirming input from firing the cannon.
+- [x] Start music directly in that confirming user gesture and enable audio during the camera approach, rather than waiting until the approach ends. Do not restart music when the camera arrives. Preload the opening track during access typing, restoring it after terminal/credits music, and avoid reassigning an already-loaded initial track URL.
+- Clu-entry validation: `node tests/home-menu.mjs` passed in headless Chrome, including waiting beyond the old countdown with frozen simulation, key/tap/click confirmation, music playback during the camera approach and no forced restart at camera arrival. Production build and whitespace checks passed.
+
+## Clu aerial keyboard zoom — September 27
+
+- [x] While Clu uses V-mode aerial view, hold I to zoom in and K to zoom out continuously. Share the wheel's 0.125–4 scale limits through named zoom configuration. Preserve other modes and cycle pedal controls. Switch the displayed I/K hint from aim to zoom in Clu aerial view.
+- Validation: `node tests/home-menu.mjs` passed in headless Chrome, including I zooming in, K zooming out, updated aerial hint, and unchanged zoom when holding I outside V mode. `npm run build` and `git diff --check` passed.
+
+## J + L turret recenter shortcut — September 27
+
+- [x] Pressing J while holding L, or L while holding J, invokes the same center, level and lock action as F in the Clu game. Register both held keys so their steering inputs cancel during centering. Preserve cycle glance and free-camera controls. Update the control hint.
+- Keep the chord latched until both keys are released, so staggered releases do not cancel centering; clearing input also clears the latch. Browser verification passed in both key orders. Targeted gunner/refactoring tests passed, including staggered release followed by normal manual aiming. Production build passed before the final input-clear refactor, followed by targeted tests and `git diff --check`.
+
+## Beam completion returns to Clu victory — September 27
+
+- [x] Completing the central labyrinth beam now wins the Clu game rather than entering Light Cycles. Normal layouts without a central labyrinth retain the all-beams win condition. Arena asset readiness cannot delay the victory.
+- [x] Restrict cycle entry to explicit requests from the Light Cycles menu/testing path; preserve its gold-team lineup and independent restarts. Update cycle fixtures to enter explicitly.
+- Validation: `npm test` passed 353/353, including exactly one victory event after central-beam completion, no arena handoff/wait, and continued explicit cycle entry.
+
+## Charged cannon reserve and Recognizer behavior — September 27
+
+- [x] Start Clu with all three stored shots available. Recharge each spent slot in five seconds (previously ten), with continuous HUD fill; firing still resets the next slot's timer and pause freezes recharge. Chrome `node tests/cannon-reserve.mjs` verifies full startup, real key consumption, progressive fill, paused fill, and all three natural recharges.
+- [x] Show Recognizer searchlights only during search/investigation without a confirmed visible enemy. Patrol, pursuit and visible contact suppress even existing projector phases immediately; observation confirmation and information-limited aiming remain intact.
+- [x] Limit sideways/backward desired flight speed to half forward speed using a hull-relative elliptical envelope. Preserve momentum, bounded acceleration, and normal turning toward travel; expose both speed ratios in development tuning. Intercept travel estimates account for directional speed. Wider crossings can escape slower lateral correction; near-head-on interception remains covered.
+- [x] Beam-to-victory follow-up: Chrome `node tests/home-menu.mjs` and production build passed for direct victory without entering the cycle match.
+- [x] Validation: `npm test` passes all 355 tests, including directional flight speed, near-head-on interception, searchlight suppression and reserve timing; `npm run build` passes (existing chunk-size warning). Recognizer flight feel still needs human play review.

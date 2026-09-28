@@ -46,7 +46,7 @@ test('Recognizer vision has range and field of view; occlusion freezes the sight
 });
 
 test('radio delivers delayed sighting copies within range and never renews old timestamps',()=>{
-  const r=createRun();Object.assign(r,{x:-1850,s:-1700,time:1});
+  const r=createRun(1982);r.enemyTanks=[];Object.assign(r,{x:-1850,s:-1700,time:1});
   const [a,b,c]=r.recognizers;r.recognizers=[a,b,c];
   Object.assign(a,{x:-1850,s:-1800,y:73,yaw:0,nextSense:0});Object.assign(b,{x:-2050,s:-1700,nextSense:100});Object.assign(c,{x:900,s:900,nextSense:100});
   updateRecognizers(r,1/60);assert.ok(a.memory);assert.equal(b.memory,null);assert.equal(c.memory,null);
@@ -232,7 +232,7 @@ test('confirmed crush clears pursuit by radio and old sightings cannot revive it
 });
 
 
-test('radio reports stop at one maze width, including vertical separation',()=>{
+test('radio reports stop at a quarter maze width, including vertical separation',()=>{
  const radius=radioRangeFor(null);assert.equal(SENSORS.radioRange,radius);
  const r=createRun();Object.assign(r,{x:-4000,s:-4000,enemyTanks:[]});
  r.recognizers=r.recognizers.slice(0,4);
@@ -479,4 +479,18 @@ test('Recognizer turn and lift controllers remain close across bounded timesteps
  const advance=dt=>{const e={yaw:0,yawVelocity:0,y:60,vy:5};for(let i=0;i<3/dt;i++){advanceYaw(e,dt,1.5);advanceLift(e,dt,90);}return e;};
  const a=advance(1/60),b=advance(1/120);
  assert.ok(Math.abs(a.yaw-b.yaw)<.02);assert.ok(Math.abs(a.y-b.y)<.2);
+});
+
+test('secondhand sightings recruit no further neighbors beyond the original observer range',()=>{
+ const radius=radioRangeFor(null),r=createRun();
+ Object.assign(r,{x:-10000,s:-10000,enemyTanks:[],time:1});
+ const [a,b,c]=r.recognizers;r.recognizers=[a,b,c];
+ for(const [i,e] of r.recognizers.entries())Object.assign(e,{x:-3000+i*radius*.75,s:-3000,y:80,nextSense:Infinity,memory:null,lastBroadcast:-Infinity,nextRadio:0,spotlight:null});
+ a.memory={x:-3000,s:-2900,vx:0,vs:0,seenAt:1,source:a.id};
+ updateRecognizers(r,0);assert.deepEqual(r.radio.map(m=>m.to),[b.id]);
+ r.time+=SENSORS.radioDelay+.01;updateRecognizers(r,0);
+ assert.equal(b.memory.source,a.id);assert.equal(c.memory,null);assert.equal(r.radio.length,0);
+ // A recipient's own later sighting may recruit its local neighbors.
+ b.memory={...b.memory,seenAt:r.time,source:b.id};updateRecognizers(r,0);
+ assert(r.radio.some(m=>m.to===c.id));
 });

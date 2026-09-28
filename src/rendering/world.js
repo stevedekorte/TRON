@@ -100,12 +100,13 @@ export function createWorld(scene,world=DEFAULT_WORLD,arena=null) {
   };
   const slabs=new THREE.Mesh(geometry,slabMaterial);slabs.userData.shadowPositions=shadowPositions;slabs.userData.shadowIds=casterShadowIds;scene.add(slabs);
   const aerialView={value:0};
+  const arenaFootprint={value:new THREE.Vector3(arena?.position.x??0,arena?.position.z??0,arena?466:0)};
   const floorMaterial=new THREE.MeshBasicMaterial({color:0x2b4362});
   floorMaterial.onBeforeCompile=shader=>{
     distantFog(shader);
     shader.uniforms.aerialView=aerialView;
-    if(arena){
-      shader.uniforms.arenaFootprint={value:new THREE.Vector3(arena.position.x,arena.position.z,466)};
+    {
+      shader.uniforms.arenaFootprint=arenaFootprint;
       shader.fragmentShader='uniform vec3 arenaFootprint;\n'+shader.fragmentShader;
       shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n if(all(lessThan(abs(vGround.xz-arenaFootprint.xy),vec2(arenaFootprint.z)))) discard;');
     }
@@ -132,6 +133,6 @@ export function createWorld(scene,world=DEFAULT_WORLD,arena=null) {
       float gridFade=1.-smoothstep(mix(160.,1800.,aerialView),mix(650.,3000.,aerialView),length(cameraPosition-vGround));
       diffuseColor.rgb=mix(diffuseColor.rgb*wash*visibility,vec3(.65,.76,.95),grid*outside*mix(.95,.045,aerialView)*gridFade);`);
   };
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),floorMaterial);floor.rotation.x=-Math.PI/2;floor.position.y=-.06;floor.renderOrder=-2;scene.add(floor);
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),floorMaterial);floor.rotation.x=-Math.PI/2;floor.position.y=-.06;floor.renderOrder=-2;floor.userData.arenaFootprint=arenaFootprint;scene.add(floor);
   return {floor,slabs,seams,aerialView};
 }

@@ -4,6 +4,7 @@ const { MAZE_INSTANCES, WALL_HEIGHT } = DEFAULT_WORLD;
 
 // Exactly two floor-grid cells per side; preserve exterior clearance when snapping.
 export const TELEPORTERS = Object.freeze({
+  enabled: false,
   size: 2 * GROUND_GRID_METERS,
   wallClearance: 45,
   height: 4 * WALL_HEIGHT,
@@ -37,8 +38,11 @@ export function createTeleportPads(sites = MAZE_INSTANCES, wallHeight = WALL_HEI
             : Math.round(s / GROUND_GRID_METERS)) * GROUND_GRID_METERS,
       size: TELEPORTERS.size,
       height: 4 * wallHeight,
-      destination: `${sites[(index + 1 + (side % Math.max(1, sites.length - 1))) % sites.length].id}:${side}`,
+      destination: sites.length===1 ? `${m.id}:${(side+2)%4}` : `${sites[(index + 1 + (side % Math.max(1, sites.length - 1))) % sites.length].id}:${side}`,
     }));
   });
 }
 export const TELEPORT_PADS = createTeleportPads();
+
+// Keep authored layouts available for future use and isolated teleport tests.
+export const createActiveTeleportPads = (sites,wallHeight) => TELEPORTERS.enabled ? createTeleportPads(sites,wallHeight) : [];

@@ -1,9 +1,14 @@
+// Explicit road-testing shortcut: ?cycleStart=1 bypasses the home menu.
+export const CYCLE_TESTING = Object.freeze({ startInArena: false, startOutsideArena: true, outsideStartClearanceMeters: 20, endingsEnabled: false, startWithBreach: true, hideMiddleOpponent: true });
 /** Arena-local meters; directions in X/Z, forward model axis -Z. */
 export const LIGHT_CYCLES = Object.freeze({
   cellMeters: 4.8, halfCells: 86, speedMetersPerSecond: 38.4,
-  lengthMeters: 3.6, trailHeightMeters: 1.5,
+  lengthMeters: 3.6, trailHeightMeters: 1.5, startWallClearanceMeters: .5,
   trailHoldSeconds: 3, trailFlashSeconds: .24, trailLowerSeconds: .7,
-  countdownSeconds: 3, roundSeconds: 120, restartSeconds: 6,
+  playerAttempts: 3,
+  slowSpeedMultiplier: .5, speedResponsePerSecond: 8, speedStepSeconds: 1 / 120,
+  turboDurationSeconds: 5, turboRechargeSeconds: 60, turboSpeedMultiplier: 2.5,
+  countdownSeconds: .3, roundSeconds: 120, restartSeconds: 6,
   lookAheadCells: 45, floodCells: 360,
   colors: [0xffc52e, 0x48baff],
 });
@@ -17,3 +22,6 @@ export function cycleTrailState(age) {
   const t=Math.min(1,(flashAge-LIGHT_CYCLES.trailFlashSeconds)/LIGHT_CYCLES.trailLowerSeconds);
   return {height:1-t,flash:0};
 }
+
+export const cycleFraction = (race, bike) => bike.escaped ? 1 : race.phase === "racing" && bike.alive
+  ? (bike.progress ?? race.accumulator / (LIGHT_CYCLES.cellMeters / LIGHT_CYCLES.speedMetersPerSecond)) : 1;

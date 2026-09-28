@@ -1,0 +1,30 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/api/jev/**',r=>r.fulfill({status:503,body:'test'}));
+ const ready=()=>page.waitForFunction(()=>{try{return __tron.state.mode==='running'&&__tron.state.playerVehicle==='cycle'&&__tron.state.cycleRace.cycles[1].escaped;}catch{return false;}},{},{timeout:60000});
+ await page.goto('http://127.0.0.1:5173/?layoutSeed=1982&cycleStart=1');await ready();
+ await page.evaluate(()=>__tron.place({recognizers:[],enemyTanks:[]}));
+ await page.keyboard.down('KeyW');await page.waitForTimeout(1800);await page.keyboard.up('KeyW');
+ await page.keyboard.down('KeyD');await page.waitForTimeout(650);await page.keyboard.up('KeyD');
+ assert(await page.evaluate(()=>__tron.state.cycleRendering.tireTraceCount)>0);
+ await page.keyboard.press('Tab');const panel=page.locator('#cycle-tuning');await panel.waitFor({state:'visible'});
+ assert.equal(await page.evaluate(()=>__tron.state.mode),'paused');
+ const paused=await page.evaluate(()=>__tron.state.time);await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>__tron.state.time),paused);
+ const acceleration=panel.locator('[data-value="accelerationMetersPerSecondSquared"]');await acceleration.fill('12');await acceleration.press('Tab');
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRace.roadConfig.accelerationMetersPerSecondSquared),12);
+ await page.keyboard.press('KeyW');await page.keyboard.press('KeyC');assert.equal(await page.evaluate(()=>__tron.state.mode),'paused');
+ await panel.screenshot({path:'test-results/cycle-tuning.png'});
+ await page.keyboard.press('Escape');await panel.waitFor({state:'hidden'});await page.waitForFunction(()=>__tron.state.mode==='running');
+ await page.waitForTimeout(250);await page.keyboard.press('Escape');
+ await page.screenshot({path:'test-results/cycle-tire-traces.png'});
+ await page.keyboard.press('Tab');await panel.waitFor({state:'visible'});await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>__tron.state.mode),'paused','Opening while paused must not resume on close');
+ await page.reload();await ready();
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRace.roadConfig.accelerationMetersPerSecondSquared),12);
+ await page.keyboard.press('Tab');await panel.locator('[data-reset]').click();assert.equal(await acceleration.inputValue(),'8');
+ await page.keyboard.press('Escape');
+ assert.deepEqual(errors,[]);console.log('Chrome: road trace rendering, Tab dialog, input isolation, live settings, pause restoration, reload persistence and reset passed.');
+}finally{await browser.close();}

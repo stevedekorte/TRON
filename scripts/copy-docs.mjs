@@ -2,7 +2,7 @@ import { cp, mkdir } from 'node:fs/promises';
 
 // Include the readable docs with the static game build without shipping a Git checkout.
 await mkdir('dist/docs/colvmn/layout', { recursive: true });
-for (const name of ['index.html','_index.md','llms.txt','llms-full.txt','sitemap.xml','references','assets','sounds','validation','jev','history']) {
+for (const name of ['credits_extended.txt','index.html','_index.md','llms.txt','llms-full.txt','sitemap.xml','references','assets','sounds','validation','jev','history']) {
   await cp(`docs/${name}`, `dist/docs/${name}`, { recursive: true, filter: source => !source.split('/').some(part=>part==='videos'||part==='music') });
 }
 await mkdir('dist/docs/models', { recursive: true });

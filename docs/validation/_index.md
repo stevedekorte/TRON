@@ -3,6 +3,28 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Carrier/maze ground-shadow overlap — September 24
+
+`node tests/carrier-maze-overlap.mjs` passed in headless Chrome on macOS. With both shadow layers present, the corrected render matches the reference without coarse floor masking exactly (zero differing channels); restoring the old atlas cutout differs in 34,080 channels. Inspected the low-angle rendered overlap. `node tests/recognizer-shadow-occlusion.mjs` passed wall/debris occlusion checks; its floorless fixture initially exposed an unconditional floor access, now guarded. Production/documentation build passed. Safari at the reported gameplay location remains for user confirmation.
+
+## Sequential stored-shot recharge — September 24
+
+Changed idle recharge to one stored shot every ten seconds, capped at three. Firing resets progress toward the next shot without discarding existing reserves; full reserves do not bank extra recharge time. Seven focused cannon tests passed. `node tests/cannon-reserve.mjs` passed in headless Chrome on macOS, naturally waiting through the full recharge and checking one, two and three illuminated segments at 10, 20 and 30 simulation seconds, plus pause and firing behavior. Production/documentation build passed.
+
+## Stored shots, extended credits and arena signatures — September 24
+
+Seven cannon reserve simulation tests passed with the 1.14-second cooldown and 30-second idle refill. `node tests/cannon-reserve.mjs` passed in headless Chrome on macOS, checking actual key presses, segment counts, accessible meter values, held fire and pause/refill behavior. Its initial run missed startup readiness; the test now waits for the enabled start button.
+
+`node tests/extended-credits.mjs` passed: normal tribute followed by extended pages, repository credit present, bounded 70-column/10-line pages, final signoff, and both split GLBs loaded through Three.js. All 8,349 original triangles are preserved across the two files: 3,465 in the arena and 4,884 in the archived inscriptions. Runtime arena has no signature nodes. Production/documentation build passed. Extended sequence verification advances a detached terminal fixture; full-duration playback remains for user review.
+
+## Hit-centered Recognizer debris — September 24
+
+`node --test tests/debris-inheritance.test.js tests/debris-physics.test.js`: all 13 tests passed, including radial impulses from multiple world-space hit locations on a rotated craft, inherited velocity, Earth gravity and cleanup. `node tests/breakup.mjs` passed in headless Chromium on macOS: fifteen connected sections, varied explosions, tumbling/falling, pause freeze and geometry release after expiry. The impulse is now fully radial vertically as well as horizontally; the new visual distribution remains for user review in play.
+
+## Cycle explosion sequence — September 24
+
+`node --test tests/light-cycles.test.js`: eight tests passed, including exact 24 fps effect sampling, staggered arc visibility, ray cutoff, debris lifetime, deterministic repeated updates and reset/pool reuse. `node tests/light-cycles.mjs` passed in headless Chromium on macOS with no page/console errors. Captured explosion frames 0, 5, 8, 12 and 20 and inspected the opening, expanding arc/starburst, and debris-only stages against the supplied film stills. Preview captures use direct rendering; the game's existing bloom adds glow in play. Screenshot filenames are capture times, not movie timecodes, so the assumed consecutive-frame timing remains an approximation. Production/documentation build passed.
+
 ## Grounded cycle trail connection — September 24
 
 The latest film close-up corrected the trail shape: its leading edge has a tire-shaped recess, while its lower edge reaches the floor. Replaced the axle-height taper with a vertically subdivided, closed profile around the measured rear wheel, with 2.5 cm clearance. The top slopes toward the wheel; the bottom remains at arena floor height. `node tests/light-cycles.mjs` passed in headless Chromium on macOS, and the side-on wheel/trail capture was inspected. Seven focused cycle tests and production/documentation build passed.
@@ -1036,3 +1058,121 @@ Safari follow-up: victory text now appends one immutable `.printer-character` el
 - `node tests/light-cycles.mjs`: passed in headless Google Chrome on macOS. Verified six-cycle simulation, camera-only spectator run/pause, arena patrol presence, loaded model dimensions and matching player/enemy tank material colors. Inspected `test-results/light-cycle-models.png` and the closer `test-results/light-cycle-match.png` capture.
 - `npm run build`: passed; regenerated documentation from Markdown sources. Existing large-bundle warning remains.
 - The supplied cycle decal texture is absent; source diffuse color is used on that small surface. Safari race rendering, sound and human judgment of racing tactics remain unverified. Main-world vehicles do not collide with the separate race's trails or arena enclosure.
+
+## Central-maze cycle stage and deferred models — September 24
+
+`node tests/labyrinth.mjs` passed browser checks for one default maze/beam/four pads and the restored five-maze/five-beam/twenty-pad layout. Tests cover preserved central/arena placement, starting clearance, translated opening units, and collision/patrol membership with outer sites absent.
+
+`node tests/cycle-player.mjs` passed in headless Chrome on macOS: no arena/cycle/solar-sailer requests before opening readiness, actual beam completion, safe wait for deliberately delayed arena assets, player turns, pause, retry, and gold-team victory. Inspected the chase-camera capture. Unit tests cover three attempts, a crashed player's team winning, draws, loss, reset, and delayed-asset handoff.
+
+Measured local startup marks: app start 254 ms, asset loading begins 2,935 ms, required assets ready 3,062 ms, rendered world built 4,008 ms, first frame 4,191 ms after navigation. This warm local measurement is not a cold-network or Safari benchmark; synchronous maze/enemy construction dominates the remaining startup. Solar sailer request begins only after 30 seconds of play.
+
+Final verification: `npm test` passed all 295 tests; production/documentation build passed. The browser check also confirmed the solar sailer asset request after advancing play past its deferred-load threshold. Fixed an existing nondeterministic radio test fixture by using a fixed seed and excluding unrelated tank radio senders; the test continues to assert delayed delivery and stale timestamps. Spawn-offset comparisons use floating-point tolerance.
+
+
+## Cycle turbo/audio and test start — September 24
+
+Chrome headless on this Mac: `node tests/cycle-audio.mjs` decoded all six stereo WAVs and verified one startup/launch/turn/crash/trail-collapse cue, one engine per live cycle, no voices during pause or after reset, engine-only resume, and cleared/paused music after arrival. `node tests/cycle-player.mjs` verified the normal beam handoff, I-key boost/release and meter, pause, retry and victory. Source clip selection used timestamped video contact sheets; no claim of auditory fidelity is made. Listening/tuning the mixed-film samples remains outstanding.
+
+Simulation tests cover partial-charge activation, charge exhaustion, release/recharge/reuse, faster player motion without accelerating allies, collision with an intervening occupied cell, exclusive I-key control, and safe deferred test entry without advancing the tank encounter. Final verification: `npm test` passed 300/300; `npm run build` passed (existing large-chunk advisory). The expanded `node tests/cycle-player.mjs` also passed the default arena start, confirming three chances, full turbo and no beam collection. The paused cycle capture in `test-results/cycle-player.png` was visually inspected; Chrome reported no page errors.
+
+
+## Arena patrol and revised cycle sound checks — September 24
+
+`node --test tests/cycle-player.test.js tests/light-cycles.test.js`: 21/21 passed, including all four guard waypoints over 260 simulated seconds, frozen non-arena enemies, no revival of a destroyed guard, and approaching/receding/transverse Doppler with stable player pitch. `node tests/cycle-player.mjs` (Chrome headless, macOS) passed guard movement during the test start and exact position/state freeze when paused, alongside its existing handoff/turbo/retry coverage. `npm run build` passed with the existing chunk-size advisory.
+
+Revised audio checks decode seven stereo clips, verify the 0.9-second exterior and 1.9-second cabin loops, one-second turn and two-second explosion, player cabin selection, paired stereo emitters, event deduplication, pause/resume/reset cleanup and paused music with an empty transition queue. AudioParam instantaneous gain reads are not used as a playback assertion: rendering-quantum timing can leave the previous value visible even after music is paused and automation cancelled. Human listening remains the fidelity check.
+
+## Cycle follow camera — September 24
+
+- `node --test tests/cycle-camera.test.js tests/inspection.test.js`: 7/7 pass on macOS / Node 22. Projected cycle screen height stays constant across irregular render cadence, repeated simulation poses and normal/turbo movement; turns retain orbit easing, reset clears the old anchor. Spectator keyboard direction, easing and slower movement also pass.
+- The supplied real Safari 26.6.2 report measures initial simulation/enemy placement at 19,442 ms and opening readiness at 20,849 ms. This is still an unresolved startup bottleneck, not a model-download delay.
+- `node tests/cycle-spectator.mjs`: Chrome headless passed automatic launch, live spectator movement, pause/resume, automatic retry/follow-camera restoration and spectator victory. Follow-camera perceptual review in actual Chrome/Safari remains for the user; no claim of an automated Safari visual check.
+- `npm run build` and documentation generation passed; existing bundle-size advisory remains. `git diff --check` passed.
+
+## Startup acceleration / cycle glances — September 24
+
+- Node 22 fixed layout/run seed 1982: initial `createRun` about 2,792 ms before changes, 675 ms afterward. Same labyrinth and enemy population; connected placement checks remain enabled.
+- `node tests/loading-timings.mjs` passed in local Playwright WebKit (1280×800, DPR 1): first placement 529 ms, opening 2,246 ms; reload placement 506 ms, opening 2,146 ms. Previous sequential WebKit first run was 1,820 / 3,202 ms. User Safari at DPR 2 remains to be remeasured.
+- Added 10,000 deterministic collision comparisons against exhaustive clipping with zero/padded rays, stationary points, holes, acute triangles and height changes. Nearest-hit values and early obstruction booleans match. Added cycle glance direction/easing/release tests and adjusted turbo charge expectations for five-second capacity.
+- `npm test`: 308/308 passed after startup optimization and five-second turbo adjustment.
+- After the cycle-only 120 Hz step and interpolated presentation changes, `node --test tests/cycle-camera.test.js tests/cycle-player.test.js tests/refactoring.test.js`: 27/27 passed. Covers unchanged horizon during glances, right-angle interpolation/trail progress, timestep switching and existing cycle gameplay/lifecycle invariants.
+- User-supplied actual Safari 26.6.2 confirmation (DPR 2): placement 2,995 ms, opening 4,463 ms, arena ready 5,048 ms; previous values 19,442 / 20,849 / 21,398 ms. This supersedes the earlier pending-Safari note.
+- `node tests/cycle-spectator.mjs`: Chrome headless passed J/L glance and release-to-forward checks, automatic launch, spectator movement/pause, next-round camera restoration and victory. `npm run build` passed (existing bundle-size advisory); `git diff --check` passed. Perceived motion comfort/smoothness still needs user review in Chrome/Safari.
+
+## Cycle pedals, materialization and unlimited restarts — September 24
+
+- `npm test`: 313/313 passed. Includes eased turbo/slow response, S priority, charge preservation, swept cell collision and repeated manual match restart without endings.
+- Chrome `tests/cycle-spectator.mjs` passed glances, spectator controls, Return restart, launch after materialization and disabled victory. `tests/cycle-audio.mjs` passed eight stereo sample decodes, one materialization cue, launch/turn/crash/wall sounds, pause/resume/reset and music suppression. The materialization cue is 0.7 seconds from 26.7–27.4 in the supplied film mix; auditory fidelity not yet confirmed.
+
+## Arena breaches — September 24
+
+- `npm test`: 315/315 passed before the final outside flood-fill key adjustment; targeted cycle tests rerun afterward. New invariants: initial impact destroys its cycle, following cycle can escape in an adjacent lane while the dead trail remains, adjoining enclosure stays solid, restart restores boundary; mesh clipping removes the opening while retaining adjacent triangles.
+- `node tests/arena-breaches.mjs`: Chrome headless, 1200×800, loaded actual GLB. Center ray hits changed from 2 to 0, adjacent ray still hit twice, and restoration recovered center hits. One breach update took 33.5 ms. Rendered capture `test-results/arena-breach.png` inspected: jagged inner opening and exposed full-depth passage visible. No claim of film-perfect fracture animation; the opening is instantaneous with the existing cycle crash effect.
+
+## Escaped-cycle road dynamics — September 25
+
+- Added tests for exit-speed preservation, throttle/coast/brake response, gradual turning and lean, swept collision rejection, trail cutoff and continued riding after arena results.
+- Chrome `tests/cycle-spectator.mjs` now also forces an escaped player outside the enclosure, holds W+D to confirm acceleration/continuous yaw/lean, checks the trail stays unchanged, then brakes with S. Passed alongside existing glance, spectator and Return-restart checks. Rendered `test-results/cycle-road.png` inspected: bike banks while horizon stays level; free-ride controls and km/h meter visible. Feel and audio require user review.
+
+## Passage floor and cycle pedal aliases — September 25
+
+- `node --test tests/cycle-player.test.js`: 15/15 passed, including I/K aliases and slow priority.
+- `node tests/arena-breaches.mjs`: Chrome headless on macOS passed opening/adjacent-wall/reset checks; inspected `test-results/arena-breach.png` for dark teal passage floor without grid and outlined dark fracture surfaces. Geometry update approximately 42 ms in this run.
+
+## Branching arena fracture — September 25
+
+- `node --test tests/arena-breaches.test.js`: opening, follower escape, adjacent solid wall, upper/side branches and reset checks passed.
+- `node tests/arena-breaches.mjs`: Chrome headless on macOS passed mesh raycast/reset checks; inspected the rendered crack. Update measured about 33 ms in the first successful branching-profile run.
+
+### Fracture outline cleanup
+
+- `node --test tests/arena-breaches.test.js`: 3/3 passed, including a coplanar T-junction regression and preservation of box crease edges.
+- `node tests/arena-breaches.mjs`: Chrome headless on macOS passed; inspected `test-results/arena-breach.png` confirming removal of wall/symbol triangulation lines while retaining the branching crack outline. Breach update measured 54 ms.
+
+## Cycle floor shadows, progressive steering and road turbo — September 25
+
+- `npm test`: 321/321 passed, including duration/speed-dependent lean, release recovery and road turbo charge/recharge/brake priority.
+- `node tests/cycle-spectator.mjs`: Chrome headless on macOS passed hidden-opponent, glances, road controls/turbo, spectator and Return restart checks with no shader/page errors. The first run missed a short glance timing assertion during startup; a repeat passed, then the test was updated to allow shader warmup and passed again.
+- Inspected `test-results/cycle-floor-shadows.png` and `test-results/cycle-road.png`: floor shadows visible inside and outside the arena, horizon level while bike banks. Driving feel awaits user review; Safari was not tested in this change.
+
+## Road collision response — September 25
+
+- `node --test tests/cycle-road.test.js tests/arena-breaches.test.js`: 9/9 passed, covering harmless bumps, moderate damage/bounce, shallow high-speed deflection, severe impact death, accumulated damage death and retained safe position.
+- `node tests/cycle-spectator.mjs`: Chrome headless/macOS control, rendering, spectator and restart checks passed. Collision feel still needs user review.
+
+## Low-speed steering research and tuning — September 25
+
+- `node --test tests/cycle-road.test.js`: 7/7 passed. Low-speed test at 3 m/s checks radius under 3 m, lean under 20 degrees, faster heading response than at 40 m/s, no stationary pivot, and continuous blend boundaries.
+- `node tests/cycle-spectator.mjs`: Chrome headless/macOS passed, including a 3 m/s half-second turn and existing road turbo/controls/lifecycle checks. Inspected `test-results/cycle-slow-turn.png`; actual feel remains subject to user review.
+
+## Escape simulation handoff — September 25
+
+- `node --test tests/cycle-player.test.js tests/cycle-road.test.js`: 23/23 passed, including frozen competitor positions/match timer, continued player travel, resumed non-patrol enemy movement, and reversal on restart.
+- `node tests/cycle-spectator.mjs`: Chrome headless/macOS passed outside controls, turbo, low-speed turn, spectator and Return restart flow.
+
+## Reverse, orbit glances and perimeter collision — September 25
+
+- `npm test`: 327/327 passed, including reverse limits/stop/forward recovery, visible cycle throughout glances, slower outside camera response, wall clearance, swept crossings and withdrawal from contact.
+- `node tests/cycle-spectator.mjs`: Chrome headless/macOS passed, including slow reverse, stationary release, orbit glance capture and restart. Inspected `test-results/cycle-road-glance.png`; the bike remains visible at rest. Exact user screenshot location was not reproduced; the inflated-triangle clearance path was replaced.
+
+## Turn-anticipating road camera — September 25
+
+- `node --test tests/cycle-camera.test.js`: 7/7 passed, including left/right anticipation, cycle visibility, level horizon, release/rest/reset behavior.
+- `node tests/cycle-spectator.mjs`: Chrome headless/macOS passed driving, glances, reverse/rest and restart checks. Inspected `test-results/cycle-road.png` for the turn camera. `npm run build` passed. User review remains the measure of camera comfort.
+
+## Road cruise control and Clu-style aerial camera — September 25
+
+- `npm test`: full suite passed, including target-speed holding, X brake-versus-reverse gating, W/S reverse exit, and shared aerial dimensions/zoom.
+- `node tests/cycle-spectator.mjs`: Chrome headless/macOS passed I turbo, X braking/reverse, S reverse exit, stop, orbit glance, V aerial transition/wheel zoom, spectator and restart checks. Handling remains a game approximation and awaits user driving feedback.
+## Road tire traces and dynamics window — September 26
+
+`npm test`: 337/337 passed, including per-session tuning isolation, observable acceleration changes, invalid-setting rejection, restart retention, and tire-trace lifetime/reset/disposal. `npm run build` passed with the existing large-chunk advisory.
+
+`node tests/cycle-tuning.mjs` passed in headless Chrome on local macOS at 1440×1000. Checked visible road traces, Tab dialog, frozen simulation during editing, keyboard isolation, live parameter application, preservation of an existing pause, browser-local persistence after reload, and Reset defaults. No page errors. Inspected `test-results/cycle-tuning.png` and `test-results/cycle-tire-traces.png`; the latter shows the faint trace under the rear tire from the normal driving camera. Trace visibility and tuning preferences still need user play review.
+
+## Road-bike CPU investigation and half-range radio — September 26
+
+`npm test`: 339/339 passed after the outside-world cadence, wall-query optimizations and radio-range reduction. Updated radio fixtures explicitly check half of the active world's maze width and place transmitters within the reduced radius. A cadence regression checks tank/road/spectator 60 Hz versus arena 120 Hz.
+
+`node tests/cycle-performance.mjs`: Chrome, local macOS, 1280×800, seed 1982, engine sound/renderer and the existing tire traces enabled. Five-second live-bike CPU totals decreased from 1,572 to 177.5 ms; post-death totals from 639 to 216 ms. Samples include a moving live bike and the same session after death, with JEV requests intercepted for repeatability. Both before and after were approximately 60 fps on this machine. These are combined-change CPU measurements, not proof that the user's browser slowdown is eliminated. Final capture ran after the unit tests completed; artifacts are in `test-results/cycle-performance.json` and `test-results/cycle-{alive,dead}.cpuprofile`.

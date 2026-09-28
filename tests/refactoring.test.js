@@ -1,8 +1,9 @@
+import {createTeleportPads} from '../src/levels/teleporters.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createScenario } from '../src/levels/scenario.js';
 import { GameSession } from '../src/simulation/game-session.js';
-import { GameLoop, LOOP_TIMING } from '../src/app/game-loop.js';
+import { GameLoop, LOOP_TIMING, simulationStepSeconds } from '../src/app/game-loop.js';
 import { InputController } from '../src/app/input-controller.js';
 import { RouteFollower } from '../src/simulation/route-follower.js';
 import { Autoplay } from '../src/simulation/autoplay.js';
@@ -22,8 +23,8 @@ test('authored and blueprint sessions coexist, replay placements, and isolate co
   const x = new GameSession({ world: a.world }),
     y = new GameSession({ world: b.world, seed: 1982 }),
     replay = new GameSession({ world: b.world });
-  assert.equal(x.run.teleportPads.length, 4);
-  assert.equal(y.run.teleportPads.length, 16);
+  assert.equal(x.run.teleportPads.length, 0);
+  assert.equal(y.run.teleportPads.length, 0);
   assert.equal(x.run.dataBeams.length, 1);
   assert.equal(y.run.dataBeams.length, 4);
   assert.equal(x.run.enemyTanks.length, 5);
@@ -86,6 +87,7 @@ test('session preserves debris/event ordering, drains once, and suppresses telep
   assert.equal(events[0].type, 'fixture');
   assert.equal(session.run.events.length, 0);
   assert(!session.advance({}, 1 / 60).some((e) => e.type === 'fixture'));
+  session.run.teleportPads=createTeleportPads();
   const pad = session.run.teleportPads[0];
   session.place({ x: pad.x, s: pad.s, speed: 0 });
   const revision = session.run.teleportRevision;
@@ -272,4 +274,23 @@ test('transport never binds native fetch to the transport instance', async () =>
   });
   await transport.request({}, new AbortController().signal);
   assert.equal(receiver, undefined);
+});
+
+test('cycle-only 120 Hz steps preserve elapsed time and render alpha',()=>{
+ const loop=new GameLoop({frame:()=>{}}),steps=[];
+ loop.advance(1/60,false,()=>true,dt=>steps.push(dt),LOOP_TIMING.cycleFixedSeconds);
+ assert.equal(steps.length,2);assert(steps.every(dt=>dt===1/120));
+ loop.advance(1/240,false,()=>true,()=>{},LOOP_TIMING.cycleFixedSeconds);
+ assert(Math.abs(loop.alpha-.5)<1e-9);
+ loop.advance(1/60,false,()=>true,()=>{});
+ assert(Math.abs(loop.alpha-.25)<1e-9);
+});
+
+test('120 Hz is confined to arena racing; the outside world uses its normal 60 Hz step',()=>{
+ const r={playerVehicle:'tank'};assert.equal(simulationStepSeconds(r),1/60);
+ r.playerVehicle='cycle';r.cycleRace={playerId:0,cycles:[{escaped:false,alive:true}]};
+ assert.equal(simulationStepSeconds(r),1/120);
+ r.cycleRace.cycles[0].escaped=true;assert.equal(simulationStepSeconds(r),1/60);
+ r.cycleRace.cycles[0].alive=false;assert.equal(simulationStepSeconds(r),1/60);
+ r.cycleRace.cycles[0].escaped=false;assert.equal(simulationStepSeconds(r),1/120);
 });

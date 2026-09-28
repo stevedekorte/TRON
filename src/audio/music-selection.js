@@ -27,12 +27,13 @@ export function closeRecognizer(run,wasClose){
 export function quietMazeExploration(run){
  const {MAZE_INSTANCES,BASIS,FLOOR_HALF}=worldFor(run);
  if(run.crushed||activelyPursued(run))return false;
- const determinant=BASIS.a*BASIS.d-BASIS.b*BASIS.c;
  return MAZE_INSTANCES.some(m=>{
+  const basis=m.basis??BASIS,floorHalf=m.floorHalf??FLOOR_HALF;
+  const determinant=basis.a*basis.d-basis.b*basis.c;
   const dx=run.x-m.x,ds=run.s-m.s,c=Math.cos(m.angle),s=Math.sin(m.angle);
   const x=c*dx+s*ds,z=-s*dx+c*ds;
-  const u=(BASIS.d*x-BASIS.b*z)/determinant,v=(-BASIS.c*x+BASIS.a*z)/determinant;
-  return Math.abs(u)<FLOOR_HALF[0]&&Math.abs(v)<FLOOR_HALF[1];
+  const u=(basis.d*x-basis.b*z)/determinant,v=(-basis.c*x+basis.a*z)/determinant;
+  return Math.abs(u)<floorHalf[0]&&Math.abs(v)<floorHalf[1];
  });
 }
 

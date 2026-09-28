@@ -1,8 +1,11 @@
+import {cyclePlayerPose} from '../simulation/light-cycles.js';
 import { FreeCamera } from './free-camera.js';
 import * as THREE from 'three';
 import { BeamCamera } from './beam-camera.js';
 import { config, GUNNER, gunnerAimScale } from '../game/config.js';
 import { TANK } from '../game/tank.js';
+const CYCLE_CAMERA=Object.freeze({distanceMeters:10,heightMeters:4,lookAheadMeters:8,lookHeightMeters:1,responsePerSecond:8,glanceRadians:Math.PI*2/3,glanceResponsePerSecond:28,roadGlanceResponsePerSecond:4,turnLookRadians:Math.PI/5,turnLookResponsePerSecond:4,turnLookFullSpeedMetersPerSecond:5});
+const WORLD_UP = new THREE.Vector3(0,1,0);
 const AERIAL_CAMERA = Object.freeze({
   transitionSeconds: 1.2,
   height: 600,
@@ -42,6 +45,10 @@ export class CameraRig {
     this.encounterFocus = 0;
     this.encounterPitch = undefined;
     this.freshCamera = true;
+    this.cycleAnchor = null;
+    this.cycleGlanceInput = 0;
+    this.cycleGlance = 0;
+    this.cycleTurnLook = 0;
   }
   moveMouseAim(dx, dy, run) {
     if (!this.mouseLook) this.mouseLook = { yaw: run.yaw + run.turretYaw, pitch: run.aimPitch };
@@ -100,8 +107,43 @@ export class CameraRig {
     this.frame = { cinematic, aerialMix, preview, gunner };
     return this.frame;
   }
-  update(run, previous, alpha, dt, mode, { x, s, yaw, turretYaw, fragments = [] }) {
-    if (this.freeCamera.active) return { tankVisible: true };
+  update(run, previous, alpha, dt, mode, { x, s, yaw, turretYaw, fragments = [], cycleRace = run.cycleRace }) {
+    if (this.freeCamera.active) return { tankVisible: run.playerVehicle!=='cycle' };
+    if(run.playerVehicle==='cycle'){
+      const pose=cyclePlayerPose(cycleRace);
+      // Track translation with the same pose used by the cycle mesh. Smoothing
+      // absolute positions makes fixed simulation steps bob against the camera,
+      // especially at turbo speed. Only ease the orbit/height relative to it.
+      if(this.cycleAnchor&&!this.freshCamera){
+        const moveX=pose.x-this.cycleAnchor.x,moveZ=this.cycleAnchor.s-pose.s;
+        this.camera.position.x+=moveX;this.camera.position.z+=moveZ;
+        this.look.x+=moveX;this.look.z+=moveZ;
+      }
+      this.cycleAnchor=pose;
+      const bike=cycleRace.cycles.find(b=>b.id===cycleRace.playerId),escaped=bike?.escaped;
+      const glanceTarget=-(this.cycleGlanceInput||0)*CYCLE_CAMERA.glanceRadians;
+      const glanceResponse=escaped?CYCLE_CAMERA.roadGlanceResponsePerSecond:CYCLE_CAMERA.glanceResponsePerSecond;
+      this.cycleGlance+=(glanceTarget-this.cycleGlance)*(1-Math.exp(-dt*glanceResponse));
+      const glanceMix=Math.min(1,Math.abs(this.cycleGlance)/(Math.PI/3));
+      // Anticipate the intended bend rather than waiting for chassis yaw.
+      // Fade at walking pace/rest and give deliberate J/L glances priority.
+      const turnTarget=escaped&&!this.aerial?-(bike.steering||0)*CYCLE_CAMERA.turnLookRadians*Math.min(1,Math.max(0,bike.roadSpeed||0)/CYCLE_CAMERA.turnLookFullSpeedMetersPerSecond):0;
+      this.cycleTurnLook+=(turnTarget-this.cycleTurnLook)*(1-Math.exp(-dt*CYCLE_CAMERA.turnLookResponsePerSecond));
+      const lookYaw=pose.yaw+this.cycleTurnLook*(1-glanceMix);
+      const orbitYaw=lookYaw+this.cycleGlance;
+      this.desired.set(pose.x+Math.sin(orbitYaw)*CYCLE_CAMERA.distanceMeters,CYCLE_CAMERA.heightMeters,-pose.s+Math.cos(orbitYaw)*CYCLE_CAMERA.distanceMeters);
+      this.lookDesired.set(pose.x-Math.sin(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix),CYCLE_CAMERA.lookHeightMeters,-pose.s-Math.cos(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix));
+      const aerialMix=this.frame?.aerialMix??(this.aerial?1:0);
+      const aerialDistance=AERIAL_CAMERA.distance*this.aerialZoom;
+      this.desired.lerp(new THREE.Vector3(pose.x+Math.sin(pose.yaw)*aerialDistance,AERIAL_CAMERA.height*this.aerialZoom,-pose.s+Math.cos(pose.yaw)*aerialDistance),aerialMix);
+      this.lookDesired.lerp(new THREE.Vector3(pose.x,0,-pose.s),aerialMix);
+      const blend=this.freshCamera?1:1-Math.exp(-dt*CYCLE_CAMERA.responsePerSecond);
+      this.camera.position.lerp(this.desired,blend);this.look.lerp(this.lookDesired,blend);
+      this.camera.lookAt(this.look);
+      this.camera.fov=config.fov;this.camera.updateProjectionMatrix();this.freshCamera=false;
+      return {tankVisible:false};
+    }
+    this.cycleAnchor=null;
     const { cinematic, aerialMix, preview, gunner } = this.frame,
       { wallIntersection, lineOfSight } = this.world;
     let tankVisible = !run.crushed && !gunner;

@@ -6,8 +6,23 @@ import {WALLS,WALL_HEIGHT,freePosition,OPEN_CELLS} from '../src/levels/maze.js';
 import {aircraftPoseClear,aircraftSweepClear,corridorRoute,overheadRoute,SAFE_ALTITUDE,AIR_HULL} from '../src/simulation/maneuver-geometry.js';
 import {maneuverOptions,chooseManeuver,applyTacticalChoice,tacticalSnapshot} from '../src/simulation/tactical.js';
 import {TACTICAL} from '../src/game/tactical.js';
+import {retireTarget} from '../src/simulation/target-memory.js';
 const box=(x0,s0,x1,s1)=>({height:54,points:[{x:x0,s:s0},{x:x1,s:s0},{x:x1,s:s1},{x:x0,s:s1}]});
 function mode(value,fn){const before=config.aiMode;config.aiMode=value;try{return fn();}finally{config.aiMode=before;}}
+test('confirmed destruction cancels committed tactical routes and pending choices',()=>{
+ const r=createRun(1982),e=r.recognizers[0];
+ const goal={x:e.x+100,s:e.s,y:e.y,yaw:e.yaw};
+ const strike={id:'old-strike',kind:'strike',goal,route:[goal],score:100};
+ Object.assign(e,{memory:{x:e.x,s:e.s,seenAt:0,vx:0,vs:0},canSee:true,
+  threatUntil:100,attackAssignment:{leaderId:e.id},
+  tactical:{revision:4,plan:strike,options:[strike],index:0,started:0,nextPlan:100}});
+ retireTarget(e);
+ assert.equal(e.threatUntil,0);assert.equal(e.attackAssignment,null);
+ assert.equal(applyTacticalChoice(e,{id:strike.id,confidence:1},4,0,1),false);
+ const plan=chooseManeuver(e,1,[e]);
+ assert(!plan||['patrol','hold'].includes(plan.kind));
+ assert.equal(e.memory,null);assert.equal(e.canSee,false);
+});
 test('oriented footprint fits beside walls but rejects broadside turns and swept crossings',()=>{
  const walls=[box(-100,-50,100,0)],pose={x:0,s:6,y:22,yaw:0};
  assert.ok(aircraftPoseClear(pose,walls));assert.equal(aircraftPoseClear({...pose,yaw:Math.PI/2},walls),false);
@@ -181,7 +196,7 @@ test('Recognizer navigation translates through turns and smoothly reverses veloc
    assert.ok(aircraftPoseClear(e),`${control}: clear flight`);
   }
   assert.ok(e.vs>0,`${control}: moves toward goal even while turning`);
-  assert.ok(Math.hypot(e.x-start.x,e.s-start.s)>25,`${control}: travels through turn`);
+  assert.ok(Math.hypot(e.x-start.x,e.s-start.s)>12.5,`${control}: travels through turn`);
   assert.ok(Math.abs(e.yaw-start.yaw)>.7,`${control}: changes heading while moving`);
  }
 });
@@ -225,15 +240,15 @@ for(const kind of ['strike','pursue'])test(`recognizer completes a collision-fre
 
 test('recognizer directional thrust strafes and reverses without yaw or a diagonal speed boost',async()=>{
  const {advanceFlightToward,FLIGHT_DEFAULTS}=await import('../src/simulation/flight.js');
- for(const [dx,ds] of [[1,0],[-1,0],[0,-1],[1,-1]]){
+ for(const [dx,ds] of [[0,1],[1,0],[-1,0],[0,-1],[1,-1]]){
   const e={x:0,s:0,vx:0,vs:0,yaw:0,yawVelocity:0};
   advanceFlightToward(e,1/60,dx,ds,30);
   assert.ok(Math.hypot(e.vx,e.vs)<=FLIGHT_DEFAULTS.acceleration/60);
-  for(let i=1;i<180;i++)advanceFlightToward(e,1/60,dx,ds,30);
+  for(let i=1;i<600;i++)advanceFlightToward(e,1/60,dx,ds,30);
   assert.equal(e.yaw,0);assert.equal(e.yawVelocity,0);
   assert.ok(e.x*dx+e.s*ds>20);
   if(ds===0)assert.equal(e.s,0);if(dx===0)assert.equal(e.x,0);
-  assert.ok(Math.hypot(e.vx,e.vs)<=30+1e-6);
+  assert.ok(Math.abs(Math.hypot(e.vx,e.vs)-(ds===1?30:15))<.01);
  }
 });
 
