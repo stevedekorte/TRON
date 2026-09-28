@@ -237,6 +237,102 @@ Sark and MCP.mp4, 52.75–54.25 s. Filtered mixed soundtrack, stretched to about
 
 [Source](../references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
 
+### Light cycle startup
+
+**Archived startup candidate; replaced by materialization cue** · Cycle startup
+
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
+
+<audio controls preload="none" aria-label="Light cycle startup" src="../../public/audio/cycle-startup.wav"></audio>
+
+[Open audio file](../../public/audio/cycle-startup.wav)
+
+[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+
+### Light cycle launch
+
+**Film-mix candidate; wired into gameplay** · Cycle launch
+
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
+
+<audio controls preload="none" aria-label="Light cycle launch" src="../../public/audio/cycle-launch.wav"></audio>
+
+[Open audio file](../../public/audio/cycle-launch.wav)
+
+[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+
+### Light cycle driving loop
+
+**Film-mix candidate; wired into gameplay** · Cycle driving loop
+
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:47–0:48; 0.1-second seam crossfade.
+
+<audio controls preload="none" aria-label="Light cycle driving loop" src="../../public/audio/cycle-drive.wav"></audio>
+
+[Open audio file](../../public/audio/cycle-drive.wav)
+
+[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+
+### Light cycle turn
+
+**Film-mix candidate; wired into gameplay** · Cycle turn
+
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:51–0:52; 12 ms edge fades.
+
+<audio controls preload="none" aria-label="Light cycle turn" src="../../public/audio/cycle-turn.wav"></audio>
+
+[Open audio file](../../public/audio/cycle-turn.wav)
+
+[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+
+### Light cycle explosion
+
+**Film-mix candidate; wired into gameplay** · Cycle explosion
+
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. Extended to two seconds (1:15.85–1:17.85), 1.15 seconds longer than the initial extract.
+
+<audio controls preload="none" aria-label="Light cycle explosion" src="../../public/audio/cycle-explosion.wav"></audio>
+
+[Open audio file](../../public/audio/cycle-explosion.wav)
+
+[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+
+### Light cycle trail deactivation
+
+**Film-mix candidate; wired into gameplay** · Cycle trail deactivation
+
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
+
+<audio controls preload="none" aria-label="Light cycle trail deactivation" src="../../public/audio/cycle-wall-down.wav"></audio>
+
+[Open audio file](../../public/audio/cycle-wall-down.wav)
+
+[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+
+### Light cycle player cabin loop
+
+**Film-mix candidate; wired into gameplay** · Player cycle driving
+
+Restored film waveform after the synthesized drone was rejected as harsh and irritating. Uses 1:36.7–1:37.8 of the user-selected 1:36–1:38 interval, with a 0.2-second equal-power crossfade and stereo-linked RMS leveling. Finished loop: 0.9 seconds. The recording’s pitch variation remains unresolved; volume smoothing does not fix it. Other cycles retain 0:47–0:48.
+
+<audio controls preload="none" aria-label="Light cycle player cabin loop" src="../../public/audio/cycle-drive-cabin.wav"></audio>
+
+[Open audio file](../../public/audio/cycle-drive-cabin.wav)
+
+[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+
+### Light cycle materialization
+
+**Film-mix candidate; wired into gameplay** · Fast cycle reveal before launch
+
+Single materialization beat from 26.7–27.4 seconds in the supplied film clip; avoids repeating the full intercut team sequence. One team cue accompanies the 0.3-second reveal and its tail carries into launch. Film-mix candidate; auditory review pending. Reproduce with scripts/extract-cycle-sfx.py.
+
+<audio controls preload="none" aria-label="Light cycle materialization" src="../../public/audio/cycle-materialize.wav"></audio>
+
+[Open audio file](../../public/audio/cycle-materialize.wav)
+
+[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+
 ## Experiments
 
 ### Carrier rumble — archived film candidate

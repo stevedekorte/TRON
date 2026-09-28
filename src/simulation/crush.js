@@ -2,7 +2,7 @@ import {supportingAttack} from './attack-coordination.js';
 import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
 import {aircraftSweepClear} from './maneuver-geometry.js';
 import {retireTarget} from './target-memory.js';
-import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor} from './flight.js';
+import {advanceFlight,advanceYaw,advanceLift,FLIGHT,flightFor,directionalFlightSpeed} from './flight.js';
 import {clamp,RECOGNIZER_SCALE} from '../game/config.js';
 
 // Meters and seconds; model-local distances track the rendered scale.
@@ -41,7 +41,8 @@ export function stompIntercept(e,now,speed){
  const brakingSeconds=Math.log1p(Math.hypot(e.vx||0,e.vs||0))/(flight.drag+flight.brakeDrag);
  for(let wait=0;wait<=STOMP_INTERCEPT.horizonSeconds;wait+=STOMP_INTERCEPT.sampleSeconds){
   const point=stompTarget(e,now,wait),distance=Math.hypot(point.x-e.x,point.s-e.s);
-  const travel=Math.max(distance/cruise,Math.sqrt(2*distance/flight.acceleration))+brakingSeconds+STOMP_INTERCEPT.settleSeconds;
+  const directionalCruise=directionalFlightSpeed(e,point.x-e.x,point.s-e.s,cruise);
+  const travel=Math.max(distance/Math.max(.01,directionalCruise),Math.sqrt(2*distance/flight.acceleration))+brakingSeconds+STOMP_INTERCEPT.settleSeconds;
   if(travel<=wait)return {...point,approachSeconds:wait};
  }
  return stompApproach(e,now,cruise);

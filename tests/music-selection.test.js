@@ -51,3 +51,19 @@ test('beam visibility requires the base inside the camera view',()=>{
  assert.equal(beamBaseVisible({x:10000,s:-9990},camera),true);
  assert.equal(beamBaseVisible({x:10000,s:-10010},camera),false);
 });
+
+test('big labyrinth exploration uses its own footprint at every entrance edge',async()=>{
+ const {createScenario,attachWorld}=await import('../src/levels/scenario.js');
+ for(const outerMazes of [false,true]){
+  const {world}=createScenario({layout:'blueprint',centralLabyrinth:true,outerMazes});
+  const m=world.MAZE_INSTANCES.find(m=>m.kind==='labyrinth');
+  const r=attachWorld({recognizers:[],enemyTanks:[],dataBeams:[]},world);
+  for(const [u,v] of [[.98,0],[-.98,0],[0,.98],[0,-.98]]){
+   const x=m.basis.a*u*m.floorHalf[0]+m.basis.b*v*m.floorHalf[1],s=m.basis.c*u*m.floorHalf[0]+m.basis.d*v*m.floorHalf[1];
+   Object.assign(r,world.toWorld({x,s},m));
+   assert(quietMazeExploration(r));assert.equal(mazeMusicCue(r,()=>false).category,'exploration');
+  }
+  Object.assign(r,world.toWorld({x:m.floorHalf[0]*1.02,s:0},m));
+  assert(!quietMazeExploration(r));
+ }
+});

@@ -49,5 +49,16 @@ try{
  await page.screenshot({path:'test-results/light-cycle-models.png'});
  await page.evaluate(()=>{const {renderer,scene,camera}=window.cyclePreview;camera.position.set(-7,1.4,1);camera.lookAt(-1.5,.75,.5);renderer.render(scene,camera);});
  await page.screenshot({path:'test-results/light-cycle-wheel-closeup.png'});
+ await page.evaluate(async()=>{
+  const {CycleExplosions}=await import('/src/rendering/cycle-explosions.js');
+  const {scene,camera,renderer}=window.cyclePreview;
+  const fx=new CycleExplosions(scene);window.explosionPreview=fx;
+  camera.position.set(12,10,16);camera.lookAt(0,2,0);
+  fx.update({time:0,crashes:[{id:0,x:0,z:0,time:0,dir:0}]});renderer.render(scene,camera);
+ });
+ for(const frame of [0,5,8,12,20]){
+  await page.evaluate(frame=>{const {scene,camera,renderer}=window.cyclePreview;window.explosionPreview.update({time:frame/24,crashes:[{id:0,x:0,z:0,time:0,dir:0}]});renderer.render(scene,camera);},frame);
+  await page.screenshot({path:`test-results/cycle-explosion-${frame}.png`});
+ }
  assert.deepEqual(errors,[]);console.log('Six cycles racing, spectator pause/resume, arena patrol, imported model dimensions and matching tank materials passed.');
 }finally{await browser.close();}

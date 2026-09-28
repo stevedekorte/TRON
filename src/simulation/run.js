@@ -1,6 +1,6 @@
 import {surfaceImpact} from './surface-impact.js';
 import {configFor,attachSettings} from '../game/config.js';
-import {createTeleportPads} from '../levels/teleporters.js';
+import {createActiveTeleportPads as createTeleportPads} from '../levels/teleporters.js';
 import {worldFor,DEFAULT_WORLD,attachWorld} from '../levels/scenario.js';
 import {updateHearing} from './hearing.js';
 import {TELEPORT_PADS,updateTeleporters} from './teleporters.js';
@@ -23,7 +23,7 @@ export function createRun(seed=randomSeed(),world=DEFAULT_WORLD,settings=null) {
   const {SPAWN}=world;
   const random=seededRandom(seed);
   const run={...SPAWN,seed,inspection:false,teleportPads:createTeleportPads(world.MAZE_INSTANCES,world.WALL_HEIGHT),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,won:false,crushed:false,cooldown:0,extraShots:0,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
+    carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,won:false,crushed:false,cooldown:0,extraShots:CLU_WEAPON.maxExtraShots,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
   if(config.aiMode!=='classic'&&config.aiSmallEncounter){run.recognizers=run.recognizers.slice(0,2);run.enemyTanks=run.enemyTanks.filter(e=>e.role==='patrol'&&e.mazeId===0).slice(0,1);if(run.enemyTanks[0])Object.assign(run.enemyTanks[0],{id:100,index:0});}
   run.scenario={...world.spec,runSeed:seed,configuration:settings?structuredClone(settings):null};
   if(settings){attachSettings(run,settings);for(const e of [...run.recognizers,...run.enemyTanks])attachSettings(e,settings);}
@@ -96,6 +96,7 @@ export function cannonTarget(run) {
     if(!lineOfSight(pose,{x:e.x,s:e.s,y:targetY}))continue;
     const aim=intercept(pose,{x:e.x,s:e.s,y:targetY},{x:e.vx,y:e.vy,s:e.vs},CLU_WEAPON.speed,CLU_WEAPON.lifetime);
     if(!aim||!lineOfSight(pose,aim))continue;
+    if(Math.atan2(aim.y-pose.y,Math.hypot(aim.x-pose.x,aim.s-pose.s))>GUNNER.maxPitch)continue;
     if(!best||error<best.error)best={...aim,id:e.id,distance,error,lock:true};
   }
   return best||{id:null,x:pose.x-Math.sin(pose.yaw)*160,s:pose.s+Math.cos(pose.yaw)*160,y:pose.y,distance:160,lock:false};
@@ -105,10 +106,14 @@ export function updateWeapons(run,input,dt) {
  const {wallIntersection,lineOfSight}=worldFor(run);
   for(const e of run.recognizers)e.hit=Math.max(0,e.hit-dt*4);
   run.cooldown=Math.max(0,run.cooldown-dt);run.recoil=Math.max(0,run.recoil-dt*4);
-  if(!run.crushed){
-    run.shotRest=Math.min(CLU_WEAPON.reserveRecharge,run.shotRest+dt);
-    if(run.shotRest+1e-8>=CLU_WEAPON.reserveRecharge)run.extraShots=CLU_WEAPON.maxExtraShots;
+  if(!run.crushed&&run.extraShots<CLU_WEAPON.maxExtraShots){
+    run.shotRest+=dt;
+    while(run.shotRest+1e-8>=CLU_WEAPON.reserveRecharge&&run.extraShots<CLU_WEAPON.maxExtraShots){
+      run.extraShots++;
+      run.shotRest=Math.max(0,run.shotRest-CLU_WEAPON.reserveRecharge);
+    }
   }
+  if(run.extraShots>=CLU_WEAPON.maxExtraShots)run.shotRest=0;
   // Held fire keeps its normal cadence; fresh presses can spend stored shots.
   const pressed=input.firePressed??(input.fire&&!run.fireWasDown);
   run.fireWasDown=!!input.fire;
@@ -126,7 +131,7 @@ export function updateWeapons(run,input,dt) {
       const random=seededRandom((run.seed^Math.imul(run.shots+1,2654435761))>>>0);
       const shotYaw=-Math.atan2(dx,ds)+(random()*2-1)*CLU_WEAPON.yawSpread;
       const pitch=Math.atan2(dy,Math.hypot(dx,ds));
-      const shotPitch=Math.max(0,pitch+(Math.abs(pitch)>1e-8?(random()*2-1)*CLU_WEAPON.pitchSpread:0));
+      const shotPitch=clamp(pitch+(Math.abs(pitch)>1e-8?(random()*2-1)*CLU_WEAPON.pitchSpread:0),GUNNER.minPitch,GUNNER.maxPitch);
       dx=-Math.sin(shotYaw)*Math.cos(shotPitch);ds=Math.cos(shotYaw)*Math.cos(shotPitch);dy=Math.sin(shotPitch);
     }
     const length=Math.hypot(dx,ds,dy);
@@ -250,4 +255,11 @@ export function step(run,input,dt) {
   updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateReinforcements(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run,dt);updateTeleporters(run);updateHearing(run);
   if(run.crushed)run.health=0;
   else if(run.health>0&&run.health<CLU_HEALTH.max)run.health=Math.min(CLU_HEALTH.max,run.health+CLU_HEALTH.max*dt/CLU_HEALTH.rechargeSeconds);
+}
+
+/** Resume the outside world without advancing the tank controller or objectives. */
+export function stepCycleWorld(run,dt){
+ updateHearing(run);
+ updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateReinforcements(run,dt);
+ updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,{},dt);updateHearing(run);
 }

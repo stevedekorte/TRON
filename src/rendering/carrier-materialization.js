@@ -18,12 +18,13 @@ export const CARRIER_REZ_PANEL = Object.freeze({
 // The carrier travels along +X. In the reveal frame, z=-x, so the bow is
 // revealed first. Moving the local cut at ship speed cancels world translation.
 export class CarrierMaterialization extends Materialization {
-  constructor(root) {
+  constructor(root,options={}) {
     super(root, {
       axis: 'x', reverse: true, wireFog: false,
       // Keep the revealed running lights/trim emissive while armor is wireframe.
       // They emerge through the same plane, never ahead of the incoming bow.
       isLiveMaterial: material => material.name.startsWith('TxTC') && !material.name.startsWith('TxTC01'),
+      ...options,
     });
     this.lineMaterial.color.setRGB(...CARRIER.materializationWireColorLinear);
     // Film reference, Carrier derezed 2:37–2:38: a milky translucent field,

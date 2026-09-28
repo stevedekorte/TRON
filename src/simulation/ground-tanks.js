@@ -96,7 +96,7 @@ function patrolGoal(e,now,others){
  }
  return {x:e.x,s:e.s};
 }
-const clear=(a,b,world=worldFor(a))=>world.wallIntersection({...a,y:2},{...b,y:2},configFor(a).tankRadius+.5)===null;
+const clear=(a,b,world=worldFor(a))=>world.wallIntersection({x:a.x,s:a.s,y:2},{x:b.x,s:b.s,y:2},configFor(a).tankRadius+.5,true)===null;
 // Impact direction is a local clue, not knowledge of the hidden shooter's position.
 export function reactToGroundHit(e,projectile,now){
  if(e.targetGone)return;

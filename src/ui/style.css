@@ -1,4 +1,5 @@
 @import url('./ui.css');
+@import url('./cycle-tuning.css');
 @import url('./terminal.css');
 #system-warnings{position:fixed;top:158px;right:24px;width:min(240px,calc(100vw - 48px));z-index:5;pointer-events:none;display:grid;gap:10px;font:10px/1.5 monospace;text-align:right;visibility:visible}
 .system-notice{color:#e8b56e;text-shadow:0 1px 4px #000}
@@ -55,3 +56,20 @@ body.paused #health-fill{animation-play-state:paused}body.entering #clu-health{d
 
 #jev-stats{position:fixed;left:24px;top:60px;z-index:5;display:grid;gap:4px;padding:6px 8px;border:1px solid #56708d66;background:#020710bb;text-align:left;color:#91bdd9;font:10px/1.5 monospace;pointer-events:auto}
 @media(max-width:800px){.sim-hint{top:120px}}
+
+.shots-indicator{top:104px;z-index:4}
+#shots-meter{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;height:3px}
+#shots-meter i{background:#91a9c126}
+#shots-meter i::before{content:'';display:block;height:100%;background:#91bcd0;transform-origin:left;transform:scaleX(var(--charge,0))}
+body.entering #clu-shots{display:none}
+
+#cycle-controls{position:fixed;top:24px;left:25%;right:25%;text-align:center;color:#91bcd0;font:11px/1.5 monospace;z-index:5;pointer-events:none}
+body.playing-cycle #hint,body.playing-cycle #clu-health,body.playing-cycle #clu-shots,body.playing-cycle #autoplay-toggle{display:none}
+body.terminal #cycle-controls{display:none}
+
+body.playing-cycle #jev-stats,body.playing-cycle #system-warnings{display:none}
+
+body.playing-cycle.cycle-road #clu-health{display:block}
+
+/* Share the terminal typeface throughout the game HUD and its controls. */
+body.playing *,body.paused *,#hud *,#tuning *,#cycle-tuning *{font-family:FilmTerminal,monospace!important;text-transform:uppercase!important}

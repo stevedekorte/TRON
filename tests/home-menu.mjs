@@ -1,0 +1,110 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1280,height:800},hasTouch:true,reducedMotion:'reduce'}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/api/jev/**',r=>r.fulfill({status:503,body:'test'}));
+ const home=async()=>{
+  await page.goto('http://127.0.0.1:5173/?layoutSeed=1982');
+  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
+  await page.locator('#start-cycles').waitFor({state:'visible'});
+ };
+ const arena=async()=>{
+  await page.waitForFunction(()=>{try{return __tron.state.playerVehicle==='cycle'&&__tron.state.cycleRace.phase==='racing';}catch{return false;}},{},{timeout:60000});
+  const r=await page.evaluate(()=>__tron.state.cycleRace);
+  assert.equal(r.playerId,1);assert.equal(r.cycles[1].team,0);assert(!r.cycles[1].escaped);
+  assert.equal(r.breaches.length,0);assert.equal(r.cycles.filter(b=>b.team===1&&b.alive).length,3);
+ };
+ await home();
+ assert.equal(await page.locator('#start').getAttribute('aria-pressed'),'true');
+ assert((await page.locator('#terminal-text').textContent()).includes('ENCOM SYSTEM'));
+ assert.equal(await page.locator('.terminal-controls,.terminal-menu-help').count(),0);
+ const typography=await page.evaluate(()=>{const a=getComputedStyle(document.querySelector('.terminal-copy')),b=getComputedStyle(document.querySelector('#start'));return [a.fontSize,a.lineHeight,a.letterSpacing,b.fontSize,b.lineHeight,b.letterSpacing,b.borderWidth,b.outlineStyle];});
+ assert.deepEqual(typography.slice(0,3),typography.slice(3,6));assert.equal(typography[6],'0px');assert.equal(typography[7],'none');
+ await page.waitForTimeout(300);assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('terminal')),true);
+ await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-cycles').getAttribute('aria-pressed'),'true');
+ await page.keyboard.press('ArrowUp');assert.equal(await page.locator('#start').getAttribute('aria-pressed'),'true');
+ await page.screenshot({path:'test-results/home-menu.png'});
+ const terminalTop=await page.locator('.terminal-content').last().evaluate(e=>e.getBoundingClientRect().top);
+ await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>__tron.state.mode==='entering');
+ const frozenTime=await page.evaluate(()=>__tron.state.time);
+ assert.equal(await page.locator('.terminal-cursor:visible').count(),1);
+ for(const id of ['hud','hint','autoplay-toggle','jev-stats','system-warnings'])assert.equal(await page.locator('#'+id).isVisible(),false);
+ assert((await page.locator('#terminal-text').textContent()).length<60);
+ assert.equal(await page.locator('.terminal-content').last().evaluate(e=>e.getBoundingClientRect().top),terminalTop);
+ await page.waitForFunction(()=>document.querySelector('#terminal-text').textContent==='REQUEST ACCESS TO CLU PROGRAM\nCODE 6 PASSWORD TO MEMORY 0222');
+ await page.waitForTimeout(2500);assert.equal(await page.evaluate(()=>__tron.state.mode),'entering');
+ assert.equal(await page.evaluate(()=>__tron.state.time),frozenTime);
+ assert.equal(await page.locator('#game-menu').isVisible(),false);
+ await page.keyboard.press('KeyQ');
+ await page.waitForFunction(()=>__tron.state.mode==='running');
+ for(const selector of ['#hint','#hint span','#autoplay-toggle','#jev-stats span','#clu-health span']){
+  const style=await page.locator(selector).first().evaluate(e=>({font:getComputedStyle(e).fontFamily,case:getComputedStyle(e).textTransform}));
+  assert(style.font.includes('FilmTerminal'));assert.equal(style.case,'uppercase');
+ }
+ assert(await page.locator('#autoplay-toggle').isVisible());
+ assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
+ await home();await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await arena();
+ await page.evaluate(()=>{const race=__tron.state.cycleRace;race.cycles[1].alive=false;race.phase='result';__tron.place({cycleRace:race});});
+ await page.keyboard.press('Enter');await arena();
+ await home();await page.locator('#start-cycles').tap();await arena();
+ await home();await page.locator('#start').click();
+ await page.waitForFunction(()=>document.body.classList.contains('access-ready'));
+ await page.touchscreen.tap(600,400);await page.waitForFunction(()=>__tron.state.mode==='running');
+ assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
+ for(const dismiss of [()=>page.keyboard.press('Enter'),()=>page.mouse.click(600,400),()=>page.touchscreen.tap(600,400)]){
+  await page.keyboard.press('Shift+Digit8');
+  await page.waitForFunction(()=>document.body.classList.contains('victory'));
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(()=>document.body.classList.contains('victory-credits'));
+  await dismiss();
+  await page.locator('#game-menu').waitFor({state:'visible'});
+  await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(()=>__tron.state.mode),'ready');
+  assert((await page.locator('#terminal-text').textContent()).includes('ENCOM SYSTEM'));
+  assert.equal(await page.locator('#end-tribute').isVisible(),false);
+ }
+ assert.deepEqual(await page.evaluate(()=>__tron.state.teleportPads),[]);
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>document.body.classList.contains('access-ready'));
+ await page.mouse.click(600,400);
+ await page.waitForFunction(()=>!__tron.state.music.paused&&__tron.state.music.time>0,{},{timeout:2000});
+ await page.waitForFunction(()=>document.body.classList.contains('access-transition'),{},{timeout:30000});
+ assert.equal(await page.evaluate(()=>__tron.state.mode),'entering');
+ assert.equal(await page.locator('#hud').isVisible(),false);
+ const musicBefore=await page.evaluate(()=>__tron.state.music);
+ const cameraBefore=await page.evaluate(()=>[__tron.state.camera.x,__tron.state.camera.y,__tron.state.camera.z]);
+ await page.waitForTimeout(500);
+ const opacity=await page.locator('#intro .terminal-content').evaluate(e=>Number(getComputedStyle(e).opacity));
+ assert(opacity>0&&opacity<1);
+ assert.notDeepEqual(await page.evaluate(()=>[__tron.state.camera.x,__tron.state.camera.y,__tron.state.camera.z]),cameraBefore);
+ await page.screenshot({path:'test-results/clu-access-transition.png'});
+ await page.waitForFunction(()=>__tron.state.mode==='running');
+ assert(await page.locator('#autoplay-toggle').isVisible());
+ await page.keyboard.press('KeyV');
+ const zoomBefore=await page.evaluate(()=>__tron.state.aerialZoom);
+ await page.keyboard.down('KeyI');await page.waitForTimeout(350);await page.keyboard.up('KeyI');
+ assert(await page.evaluate(()=>__tron.state.aerialZoom)<zoomBefore);
+ await page.keyboard.down('KeyK');await page.waitForTimeout(700);await page.keyboard.up('KeyK');
+ assert(await page.evaluate(()=>__tron.state.aerialZoom)>zoomBefore);
+ assert.equal(await page.locator('#pitch-hint').textContent(),'I/K / ZOOM');
+ await page.keyboard.press('KeyV');
+ const zoomOff=await page.evaluate(()=>__tron.state.aerialZoom);
+ await page.keyboard.down('KeyI');await page.waitForTimeout(150);await page.keyboard.up('KeyI');
+ assert.equal(await page.evaluate(()=>__tron.state.aerialZoom),zoomOff);
+ for(const order of [['KeyJ','KeyL'],['KeyL','KeyJ']]){
+  await page.evaluate(()=>__tron.place({turretYaw:.5,aimPitch:.3,gunner:true,turretLocked:false,turretCentering:false,gunnerLeveling:false,recognizers:[],enemyTanks:[]}));
+  await page.keyboard.down(order[0]);await page.keyboard.down(order[1]);
+  await page.waitForFunction(()=>__tron.state.turretLocked&&Math.abs(__tron.state.turretYaw)<.01&&Math.abs(__tron.state.aimPitch)<.01,{},{timeout:10000});
+  await page.keyboard.up(order[0]);await page.keyboard.up(order[1]);
+ }
+ const musicAfter=await page.evaluate(()=>__tron.state.music);
+ if(musicAfter.src===musicBefore.src)assert(musicAfter.time>musicBefore.time+3);
+ await page.evaluate(()=>{const r=__tron.state;__tron.place({dataBeams:r.dataBeams.map(b=>({...b,collectedAt:r.time})),recognizers:[],enemyTanks:[]});});
+ await page.waitForFunction(()=>document.body.classList.contains('victory'));
+ assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
+ assert.deepEqual(errors,[]);console.log('Home menu: keyboard selection, Return, mouse, touch, normal Clu start, intact six-bike arena, restart, and keyboard/mouse/touch credits dismissal passed.');
+}finally{await browser.close();}

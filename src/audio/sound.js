@@ -1,3 +1,4 @@
+import { CycleVoices } from './cycle-voices.js';
 import { MusicDirector } from './music-director.js';
 import { RecognizerVoices } from './recognizer-voices.js';
 import { DEFAULT_WORLD, worldFor } from '../levels/scenario.js';
@@ -131,6 +132,7 @@ export class Sound {
       noiseBuffer: this.noiseBuffer,
       source: this.source.bind(this),
     });
+    this.cycleVoices = new CycleVoices(c, this.master, this.samples);
     this.loading = this.loadSamples();
   }
   async loadSamples() {
@@ -175,6 +177,17 @@ export class Sound {
     this.recognizerVoices.loadSamples();
   }
 
+  loadCycleSamples() {
+    if(!this.context)return Promise.resolve();
+    return this.cycleLoading ??= Promise.all(['materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down'].map(async name=>{
+      try {
+        const response=await fetch(import.meta.env.BASE_URL+'audio/cycle-'+name+'.wav'+(name==='drive-cabin'?'?v=4':['drive','turn','explosion'].includes(name)?'?v=2':''));
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        const bytes=await response.arrayBuffer();if(this.disposed)return;
+        const buffer=await this.context.decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;
+      }catch(e){if(!this.disposed)this.sampleErrors.push('cycle-'+name+': '+e.message);}
+    }));
+  }
   update(run, camera, playing) {
     const CARRIER = carrierFor(this.world);
     if (!this.context) return;
@@ -187,14 +200,16 @@ export class Sound {
       now,
       0.04,
     );
-    this.turretServo.update(run, playing);
+    const cycleMode=run.playerVehicle==='cycle';
+    if(run.cycleRace?.phase!=='idle')this.loadCycleSamples();
+    this.turretServo.update(run, playing&&!cycleMode);
     const speed = Math.abs(run.speed),
       turn = Math.min(1, Math.abs(run.steer || 0));
     if (this.engineSample)
       this.engineSample.playbackRate.setTargetAtTime(0.8 + speed * 0.018 + turn * 0.07, now, 0.15);
     else this.engine.frequency.setTargetAtTime(33 + speed * 2.8 + turn * 5, now, 0.08);
     this.engineGain.gain.setTargetAtTime(
-      run.crushed || run.teleport || run.transferActive
+      cycleMode || run.crushed || run.teleport || run.transferActive
         ? 0
         : ((this.engineSample ? 0.12 : 0.025) + speed * (this.engineSample ? 0.008 : 0.0015)) *
             0.7 *
@@ -233,7 +248,7 @@ export class Sound {
     );
     this.carrierEmitter.position(carrierX, CARRIER.altitude, -CARRIER.s, 0);
     this.carrierEmitter.gain.gain.setTargetAtTime(
-      0.65 * Math.max(0, 1 - carrierDistance / 14000),
+      cycleMode ? 0 : 0.65 * Math.max(0, 1 - carrierDistance / 14000),
       now,
       0.4,
     );
@@ -265,7 +280,8 @@ export class Sound {
       l.setPosition(ear.x, ear.y, -ear.s);
       l.setOrientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
     }
-    this.recognizerVoices.update(run, ear);
+    this.cycleVoices.update(run.cycleRace,playing,ear);
+    this.recognizerVoices.update(cycleMode ? {recognizers:run.recognizers.filter(e=>e.role==='arena-patrol')} : run, ear);
     if (run.impact > 0.2 && (!this.lastImpact || run.time - this.lastImpact > 0.25)) {
       this.effect('impact');
       this.lastImpact = run.time;
@@ -314,6 +330,7 @@ export class Sound {
     };
   }
   effect(type, event) {
+    if(type==='cycleArrival'||type==='cycleRetry'){this.musicDirector.stopGameplay();return;}
     if (!this.context) return;
     if (type === 'teleport') {
       // Clu hears one continuous transition at the new listener position; other
@@ -530,6 +547,7 @@ export class Sound {
       gain.disconnect();
     };
   }
+  prepareMusic(){this.musicDirector.prepareGameplay();}
   startMusic(...args) {
     this.musicDirector.startMusic(...args);
   }
@@ -541,6 +559,7 @@ export class Sound {
   }
   reset() {
     this.musicDirector.reset();
+    this.cycleVoices?.reset();
     this.turretServo?.reset();
     this.lastImpact = 0;
     this.lastEar = null;
@@ -549,6 +568,7 @@ export class Sound {
   }
   silence() {
     this.musicDirector.silence();
+    this.cycleVoices?.stopPlayback();
     if (this.context) this.master.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
   }
   dispose() {
@@ -556,6 +576,7 @@ export class Sound {
     this.disposed = true;
     this.turretServo?.dispose();
     this.recognizerVoices?.dispose();
+    this.cycleVoices?.dispose();
     this.musicDirector.dispose();
     this.context?.close();
     this.sources.clear();

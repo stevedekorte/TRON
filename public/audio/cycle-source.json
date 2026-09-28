@@ -1,0 +1,79 @@
+{
+  "source": "docs/references/videos/TRON light cycles.mp4",
+  "sha256": "e13f7561762ec87561e19ac9d7f73ad738e2b7e2a49bb1cf1d2d966e3371baff",
+  "attribution": "TRON (1982), Walt Disney Productions; supplied reference soundtrack.",
+  "useConstraints": "Film-derived mixed soundtrack; no redistribution license supplied.",
+  "note": "Picture-selected candidates, not isolated stems. Cabin pitch variation remains unresolved.",
+  "sampleRate": 44100,
+  "channels": 2,
+  "clips": [
+    {
+      "file": "cycle-materialize.wav",
+      "startSeconds": 26.7,
+      "endSeconds": 27.4,
+      "filters": "highpass=f=100,lowpass=f=8500",
+      "peakTarget": 0.7,
+      "loopCrossfadeSeconds": 0
+    },
+    {
+      "file": "cycle-startup.wav",
+      "startSeconds": 28.8,
+      "endSeconds": 29.8,
+      "filters": "highpass=f=100,lowpass=f=8500",
+      "peakTarget": 0.7,
+      "loopCrossfadeSeconds": 0
+    },
+    {
+      "file": "cycle-launch.wav",
+      "startSeconds": 30.0,
+      "endSeconds": 31.25,
+      "filters": "highpass=f=100,lowpass=f=8500",
+      "peakTarget": 0.7,
+      "loopCrossfadeSeconds": 0
+    },
+    {
+      "file": "cycle-drive.wav",
+      "startSeconds": 47.0,
+      "endSeconds": 48.0,
+      "filters": "highpass=f=100,lowpass=f=8500",
+      "peakTarget": 0.7,
+      "loopCrossfadeSeconds": 0.1
+    },
+    {
+      "file": "cycle-drive-cabin.wav",
+      "startSeconds": 96.7,
+      "endSeconds": 97.8,
+      "filters": "highpass=f=100,lowpass=f=8500",
+      "peakTarget": 0.7,
+      "loopCrossfadeSeconds": 0.2,
+      "rmsTarget": 0.118,
+      "loopCrossfadeCurve": "equal-power raised-cosine",
+      "leveling": "100 ms circular stereo-linked RMS",
+      "selection": "Film waveform restored after synthesized drone was rejected; pitch variation unresolved."
+    },
+    {
+      "file": "cycle-turn.wav",
+      "startSeconds": 51.0,
+      "endSeconds": 52.0,
+      "filters": "highpass=f=100,lowpass=f=8500",
+      "peakTarget": 0.7,
+      "loopCrossfadeSeconds": 0
+    },
+    {
+      "file": "cycle-explosion.wav",
+      "startSeconds": 75.85,
+      "endSeconds": 77.85,
+      "filters": "highpass=f=100,lowpass=f=8500",
+      "peakTarget": 0.7,
+      "loopCrossfadeSeconds": 0
+    },
+    {
+      "file": "cycle-wall-down.wav",
+      "startSeconds": 78.8,
+      "endSeconds": 79.5,
+      "filters": "highpass=f=100,lowpass=f=8500",
+      "peakTarget": 0.7,
+      "loopCrossfadeSeconds": 0
+    }
+  ]
+}

@@ -23,7 +23,7 @@ export function* searchGroundRoute(
 ) {
   const config = vehicleConfig;
   const clear = (a, b) =>
-    world.wallIntersection({ ...a, y: 2 }, { ...b, y: 2 }, config.tankRadius + 0.5) === null;
+    world.wallIntersection({ x:a.x,s:a.s,y:2 }, { x:b.x,s:b.s,y:2 }, config.tankRadius + 0.5, true) === null;
   // A sighting can be closer to a wall than our route margin. Approach a nearby
   // clear point rather than discarding the entire radio-directed route.
   if (!clear(goal, goal)) {
@@ -58,6 +58,7 @@ export function* searchGroundRoute(
   for (let iteration = 0; open.length && iteration < maxIterations; iteration++) {
     yield;
     const n = open.pop();
+    if(n.g > seen.get(n.key)) continue;
     if (Math.hypot(n.x - goal.x, n.s - goal.s) < Math.hypot(closest.x - goal.x, closest.s - goal.s))
       closest = n;
     if ((longRange || Math.hypot(n.x - goal.x, n.s - goal.s) < 24) && clear(n, goal))

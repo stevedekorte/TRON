@@ -1,8 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createRun,step} from '../src/simulation/run.js';
+import {createRun as createBaseRun,step} from '../src/simulation/run.js';
 import {TELEPORT_PADS,TELEPORTERS,fullyInsidePad,updateTeleporters,vehicleTeleportPad,TELEPORT_VEHICLE_BOUNDS} from '../src/simulation/teleporters.js';
 import {MAZE_INSTANCES,freePosition,WALL_HEIGHT} from '../src/levels/maze.js';
+const createRun=(seed)=>{const r=createBaseRun(seed);r.teleportPads=structuredClone(TELEPORT_PADS);return r;};
 const empty=()=>{const r=createRun(1982);r.recognizers=[];r.enemyTanks=[];r.dataBeams=[];return r;};
 const place=(e,p)=>Object.assign(e,{x:p.x,s:p.s,yaw:0,speed:0,turretYaw:0});
 test('four grid-aligned clear exterior pads per maze have finite four-wall-high volumes',()=>{
@@ -54,4 +55,16 @@ test('teleport audio events occur only for completed transfers, once per departu
  const r=empty(),p=r.teleportPads[0];place(r,p);r.s-=24;updateTeleporters(r);assert.equal(r.events.filter(e=>e.type==='teleport').length,0);
  place(r,p);updateTeleporters(r);const events=r.events.filter(e=>e.type==='teleport');assert.deepEqual(events.map(e=>e.phase),['departure','arrival']);assert.ok(events.every(e=>e.player));assert.equal(events[0].x,p.x);
  updateTeleporters(r);assert.equal(r.events.filter(e=>e.type==='teleport').length,2);
+});
+
+test('normal games contain no active teleporter pads',()=>{
+ const r=createBaseRun(1982);assert.deepEqual(r.teleportPads,[]);
+ place(r,TELEPORT_PADS[0]);updateTeleporters(r);assert.equal(r.teleportRevision,0);
+});
+
+test('disabled pads do not modify the floor shader',async()=>{
+ const {createTeleporters}=await import('../src/rendering/teleporters.js');
+ const material={onBeforeCompile:()=>{},customProgramCacheKey:()=> 'floor'};
+ const original={...material};const renderer=createTeleporters(material,[]);
+ renderer.update([],0);assert.deepEqual(material,original);
 });

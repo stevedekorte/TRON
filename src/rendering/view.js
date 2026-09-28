@@ -1,8 +1,8 @@
+import {interpolateCycleRace} from './cycle-poses.js';
 import {SurfaceImpacts} from './surface-impacts.js';
-import { createTeleportPads } from '../levels/teleporters.js';
+import { createActiveTeleportPads as createTeleportPads } from '../levels/teleporters.js';
 import { carrierFor } from '../game/carrier.js';
 import { CarrierMaterialization } from './carrier-materialization.js';
-import { SolarSailer } from './solar-sailer.js';
 import { occludeProjectedShadow } from './maze-light-visibility.js';
 import { disposeSceneResources } from './scene-resources.js';
 import { CameraRig } from './camera-rig.js';
@@ -41,6 +41,13 @@ const TURBO_GLOW = Object.freeze({ base: 1.8, pulse: 1.2, hz: 2, response: 10 })
 
 const AIRCRAFT_SHADOWS = Object.freeze({ maxCasters: 12 });
 export class View {
+  attachSolarSailer(model,SolarSailer){this.solarSailer=new SolarSailer(model,this.scene,this.map);}
+  attachArena(arena){
+    if(!arena)return;
+    this.arena=arena;this.arenaFloor=arena.getObjectByName('Procedural_arena_floor');
+    this.world.floor.userData.arenaFootprint.value.set(arena.position.x,arena.position.z,466);
+    this.scene.add(arena);
+  }
   constructor(
     canvas,
     tank,
@@ -49,7 +56,6 @@ export class View {
     cloud = null,
     map = DEFAULT_WORLD,
     physics = null,
-    solarSailer = null,
     arena = null,
   ) {
     this.map = map;
@@ -84,7 +90,7 @@ export class View {
     if (arena) this.scene.add(arena);
     this.dataBeams = new DataBeams(this.scene, map);
     this.teleportPads = createTeleporters(this.world.floor.material, createTeleportPads(map.MAZE_INSTANCES, map.WALL_HEIGHT));
-    this.solarSailer = solarSailer ? new SolarSailer(solarSailer, this.scene, map) : null;
+    this.solarSailer = null;
     this.carrier = carrier;
     if (carrier) {
       carrier.userData.rez = new CarrierMaterialization(carrier);
@@ -286,7 +292,9 @@ export class View {
   render(run, previous, alpha, dt, mode) {
     const { wallIntersection, lineOfSight } = this.map;
     this.elapsed += dt;
-    this.arena?.userData.cycleRace.update(run.cycleRace);
+    this.arena?.userData.breaches.update(run.cycleRace);
+    const cycleRace=interpolateCycleRace(run.cycleRace,alpha);
+    this.arena?.userData.cycleRace.update(cycleRace);
     if (this.teleportRevision !== run.teleportRevision) {
       this.cameraRig.freshCamera = true;
       this.cameraRig.gunnerTransition = null;
@@ -451,8 +459,9 @@ export class View {
       yaw,
       turretYaw: this.tank.turret.rotation.y,
       fragments,
+      cycleRace,
     });
-    this.tank.root.visible = cameraResult.tankVisible;
+    this.tank.root.visible = cameraResult.tankVisible && run.playerVehicle!=='cycle';
     if (gunner && this.cameraRig.mouseLook)
       this.mouseTarget = mouseTarget(run, this.cameraRig.mouseLook, this.camera, [
         this.world.slabs,
@@ -526,7 +535,7 @@ export class View {
     this.mazeShadows.update(this.renderer);
     this.recognizerShadows.update(this.renderer, this.breakups.bursts, this.camera.position);
     this.carrierShadows?.update(this.renderer);
-    this.arena?.userData.cycleRace.shadows.update(this.renderer);
+    if(run.cycleRace&&run.cycleRace.phase!=='idle')this.arena?.userData.cycleRace.shadows.update(this.renderer);
     this.composer.render(dt);
   }
 
@@ -592,6 +601,9 @@ export class View {
     this.surfaceImpacts.dispose();
     this.clouds?.dispose();
     this.arena?.userData.cycleRace.shadows.dispose();
+    this.arena?.userData.cycleRace.tireTraces.dispose();
+    this.arena?.userData.cycleRace.materializations.forEach(rez=>rez.dispose());
+    this.arena?.userData.breaches.dispose();
     this.arena?.userData.arenaStyle.dispose();
     disposeSceneResources(this.scene);
     for (const pass of this.composer.passes) pass.dispose?.();

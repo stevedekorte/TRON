@@ -2,7 +2,7 @@ import {GROUND_GRID_METERS} from './ground-grid.js';
 import {seededRandom} from '../game/random.js';
 
 // Maze-local coordinates become world x/s with a rigid planar transform.
-export function createMazeWorld(base,seed=1982,count=4,central=null){
+export function createMazeWorld(base,seed=1982,count=4,central=null,outerMazes=true){
  const random=seededRandom(seed),floorHalf=base.FLOOR_HALF||[base.HALF,base.HALF];
  const length=Math.max(2*floorHalf[0]*Math.hypot(base.BASIS.a,base.BASIS.c),2*floorHalf[1]*Math.hypot(base.BASIS.b,base.BASIS.d));
  const sites=[[0,0],[3.3,.7],[-2.8,2.2],[.5,4.1]].slice(0,count);
@@ -11,11 +11,12 @@ export function createMazeWorld(base,seed=1982,count=4,central=null){
  if(central){
   const center={id:instances.length,x:snap(instances.reduce((v,m)=>v+m.x,0)/instances.length),s:snap(instances.reduce((v,m)=>v+m.s,0)/instances.length),angle:0,kind:'labyrinth'};
   const gap=12*GROUND_GRID_METERS;
-  for(const m of instances){
+  for(const m of outerMazes?instances:[]){
    const hw=Math.abs(Math.cos(m.angle))*floorHalf[0]+Math.abs(Math.sin(m.angle))*floorHalf[1],hh=Math.abs(Math.sin(m.angle))*floorHalf[0]+Math.abs(Math.cos(m.angle))*floorHalf[1];
    const dx=m.x-center.x,ds=m.s-center.s,length=Math.hypot(dx,ds)||1;
    for(let n=0;n<1000&&Math.abs(m.x-center.x)<hw+central.FLOOR_HALF[0]+gap&&Math.abs(m.s-center.s)<hh+central.FLOOR_HALF[1]+gap;n++){m.x=snap(m.x+dx/length*GROUND_GRID_METERS*2);m.s=snap(m.s+ds/length*GROUND_GRID_METERS*2);}
   }
+  if(!outerMazes){instances.length=0;center.id=0;}
   instances.push(center);
  }
  const source=m=>m.kind==='labyrinth'?central:base;
@@ -39,14 +40,18 @@ export function createMazeWorld(base,seed=1982,count=4,central=null){
  const closestWallPoint=(w,x,s)=>source(instances[w.mazeId]).closestWallPoint(w,x,s);
  const wallAt=(x,s)=>nearbyWalls(x,s,0).some(w=>insideWall(w,x,s));
  const freePosition=(x,s,r=0)=>!nearbyWalls(x,s,r).some(w=>insideWall(w,x,s)||closestWallPoint(w,x,s).distance<r);
- function wallIntersection(a,b,padding=0){
+ function wallIntersection(a,b,padding=0,anyHit=false){
   let nearest=null;
+  const minX=Math.min(a.x,b.x)-padding,maxX=Math.max(a.x,b.x)+padding,minS=Math.min(a.s,b.s)-padding,maxS=Math.max(a.s,b.s)+padding;
   for(const m of instances){
-   if(!overlaps(m.bounds,Math.min(a.x,b.x)-padding,Math.max(a.x,b.x)+padding,Math.min(a.s,b.s)-padding,Math.max(a.s,b.s)+padding))continue;
-   const hit=source(m).wallIntersection({...a,...toLocal(a,m)},{...b,...toLocal(b,m)},padding);
-   if(hit!==null&&(nearest===null||hit<nearest))nearest=hit;
+   if(!overlaps(m.bounds,minX,maxX,minS,maxS))continue;
+   // Only coordinates belong in a geometry query. Copying complete units or
+   // A* nodes here used to duplicate their navigation state on every edge test.
+   const localA=toLocal(a,m),localB=toLocal(b,m);localA.y=a.y;localB.y=b.y;
+   const hit=source(m).wallIntersection(localA,localB,padding,anyHit);
+   if(hit!==null&&(nearest===null||hit<nearest)){nearest=hit;if(anyHit)return nearest;}
   }
   return nearest;
  }
- return {insideWall,closestWallPoint,instances,walls,openCells,toWorld,toLocal,nearbyWalls,wallAt,freePosition,wallIntersection,lineOfSight:(a,b)=>wallIntersection(a,b)===null};
+ return {insideWall,closestWallPoint,instances,walls,openCells,toWorld,toLocal,nearbyWalls,wallAt,freePosition,wallIntersection,lineOfSight:(a,b)=>wallIntersection(a,b,0,true)===null};
 }

@@ -2,6 +2,7 @@ import { carrierFor } from './carrier.js';
 
 export const SOLAR_SAILER_DEFAULTS = Object.freeze({
   enabled: true,
+  backgroundLoadSeconds: 30,
   scale: 2.5,
   altitudeMeters: 520,
   carrierOffsetMeters: 600,

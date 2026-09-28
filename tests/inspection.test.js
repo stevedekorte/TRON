@@ -20,3 +20,26 @@ test('inspection prevents stomps from destroying Clu; leaving restores stomps',(
  resolveCrush(r,e);assert(!r.crushed);assert(!r.events.some(e=>e.type==='destroyed'));
  r.inspection=false;e.attack.impact=true;resolveCrush(r,e);assert(r.crushed);
 });
+
+test('spectator J/L and I/K smoothly steer both camera axes',async()=>{
+ const {PerspectiveCamera}=await import('three');const {FreeCamera,SPECTATOR_CAMERA}=await import('../src/rendering/free-camera.js');
+ for(const [key,axis,sign] of [['KeyJ','y',1],['KeyL','y',-1],['KeyI','x',1],['KeyK','x',-1]]){
+  const c=new FreeCamera(new PerspectiveCamera());c.enter({spectator:true});
+  c.update(1/60,new Set([key]));const first=c.rotation[axis]*sign;
+  assert(first>0&&first<SPECTATOR_CAMERA.keyboardRadiansPerSecond/60);
+  for(let i=0;i<30;i++)c.update(1/60,new Set([key]));assert(c.rotation[axis]*sign>first*10);
+  const speed=c.lookVelocity.length();c.update(1/60,new Set());assert(c.lookVelocity.length()<speed);
+  c.exit();assert.equal(c.lookVelocity.length(),0);
+ }
+});
+test('post-death movement is slower and eases to a stop; inspection keeps its original speed',async()=>{
+ const {PerspectiveCamera}=await import('three');const {FreeCamera}=await import('../src/rendering/free-camera.js');
+ const spectator=new FreeCamera(new PerspectiveCamera()),inspection=new FreeCamera(new PerspectiveCamera());
+ spectator.enter({spectator:true});inspection.enter();
+ const keys=new Set(['KeyW']);for(let i=0;i<60;i++){spectator.update(1/60,keys);inspection.update(1/60,keys);}
+ assert(Math.abs(spectator.camera.position.z)>25&&Math.abs(spectator.camera.position.z)<36);
+ assert(Math.abs(inspection.camera.position.z+180)<1e-8);
+ const before=spectator.camera.position.z,speed=spectator.velocity.length();spectator.update(1/60,new Set());
+ assert(spectator.camera.position.z<before);assert(spectator.velocity.length()<speed);
+ spectator.exit();assert.equal(spectator.velocity.length(),0);
+});

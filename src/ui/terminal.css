@@ -1,11 +1,11 @@
 @font-face{font-family:FilmTerminal;src:url('/fonts/InterfaceRaster-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
-body.terminal{background:#020204;--terminal-top:27.5vh;--terminal-font-size:min(1.5vw,2.15vh)}
+body.terminal{background:#020204;--terminal-left:20.4vw;--terminal-top:27.5vh;--terminal-font-size:min(1.5vw,2.15vh)}
 body.terminal .masthead,body.terminal #footer,body.terminal #game{visibility:hidden}
 body.terminal .overlay{background:#020204;padding:0;display:block}
 body.terminal .grain{opacity:.035}
 .terminal .intro{position:absolute;inset:0;max-width:none;padding:0;overflow:hidden}
 .terminal-grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.terminal-content{position:absolute;z-index:1;top:var(--terminal-top);left:20.4%;width:75%;font-family:FilmTerminal,monospace;color:#159ddd;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566}
+.terminal-content{position:absolute;z-index:1;top:var(--terminal-top);left:var(--terminal-left);width:75%;font-family:FilmTerminal,monospace;color:#159ddd;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566}
 .terminal .terminal-copy{font:400 var(--terminal-font-size)/1.12 FilmTerminal,monospace;letter-spacing:.025em;margin:0;white-space:pre;min-height:2.08em;color:inherit;transform:none;transform-origin:0 0}
 .terminal-cursor{display:inline-block;width:.48em;height:.78em;margin-left:.05em;vertical-align:-.04em;background:currentColor;box-shadow:0 0 5px #0a91db}
 .complete .terminal-cursor{animation:terminal-blink .85s steps(1) infinite}
@@ -19,7 +19,7 @@ body.terminal .grain{opacity:.035}
 .terminal-notes:hover{color:#99d5f5}
 @keyframes terminal-blink{50%{opacity:0}}
 @keyframes terminal-reveal{from{opacity:0}to{opacity:1}}
-@media(max-width:700px){.terminal-content{left:7%;width:90%}body.terminal{--terminal-top:28vh}.terminal-controls,.terminal-objective{font-size:14px}.terminal-start{font-size:21px}}
+@media(max-width:700px){.terminal-content{width:90%}body.terminal{--terminal-left:7vw;--terminal-top:28vh}.terminal-controls,.terminal-objective{font-size:14px}.terminal-start{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.complete .terminal-cursor{animation:none}#terminal-actions{animation:none}}
 
 body.entering #game{visibility:visible}
@@ -27,8 +27,8 @@ body.entering .overlay{background:rgba(2,2,4,var(--opening-fade,1));pointer-even
 body.entering .terminal-content{opacity:var(--opening-fade,1)}
 body.entering #terminal-actions,body.entering .terminal-grid{visibility:hidden}
 
-/* The access terminal is intentionally text-only; Return enters the scene. */
-body.terminal #terminal-actions{display:none}
+/* Ending terminals keep the game menu hidden. */
+body.detached #terminal-actions,body.victory #terminal-actions,body.victory-credits #terminal-actions{display:none}
 
 body.entering .overlay *{pointer-events:none!important}
 
@@ -45,13 +45,13 @@ body.entering .overlay *{pointer-events:none!important}
 .terminal-copy{animation:terminal-reveal .5s ease-out both}
 @media(prefers-reduced-motion:reduce){.terminal-copy{animation:none}}
 
-.end-tribute{display:none;position:relative;width:93.333%;margin:2.08em 0 0;color:#159ddd;font:400 var(--terminal-font-size)/1.12 FilmTerminal,monospace;text-align:left;letter-spacing:.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9540;white-space:pre-wrap;}
+.end-tribute{display:none;position:relative;width:calc(100vw - var(--terminal-left) - var(--terminal-left));max-width:100%;margin:2.08em 0 0;color:#159ddd;font:400 var(--terminal-font-size)/1.12 FilmTerminal,monospace;text-align:left;letter-spacing:.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9540;white-space:pre-wrap;}
 body.detached:not(.entering) .end-tribute{display:grid;}
-.tribute-measure,.tribute-typed{grid-area:1/1;}
+.tribute-measure,.tribute-typed{grid-area:1/1;min-width:0;overflow-wrap:anywhere;}
 .tribute-measure{visibility:hidden;}
 body.detached .terminal-copy .terminal-cursor{display:none;}
 body.detached .terminal-copy{transform:none;}
-@media(max-width:700px){.end-tribute{width:95.555%;}}
+
 
 .terminal-signoff,.end-tribute.signing-off .terminal-cursor{color:#ff3025;text-shadow:0 0 3px #e92115,0 0 10px #a5121266;}
 .end-tribute.signing-off .terminal-cursor{box-shadow:0 0 5px #e92115;}
@@ -65,10 +65,10 @@ body.victory-credits .terminal-copy{display:none;}
 body.victory-credits .end-tribute{margin-top:0;}
 
 /* Cache completed printer lines independently instead of repainting the growing page. */
-body.victory .printer-line{display:inline-block;transform:translateZ(0);}
+body.victory .printer-line,.end-tribute .printer-line{display:inline-block;transform:translateZ(0);}
 
 /* Isolate glyph shaping; retain spaces without measuring font or DOM geometry. */
-body.victory .printer-character{display:inline-block;white-space:pre;contain:layout style;}
+body.victory .printer-character,.end-tribute .printer-character{display:inline-block;white-space:pre;contain:layout style;}
 
 /* Film-reference terminal signature; independent of the typed text layout. */
 .terminal-encom{display:none;position:fixed;right:4vw;bottom:15vh;width:clamp(85px,9.5vw,190px);height:auto;pointer-events:none;opacity:.8;filter:drop-shadow(0 0 2px #898fc9) drop-shadow(0 0 5px #626eb855);}
@@ -83,3 +83,35 @@ body.entering .terminal-encom{opacity:calc(.8 * var(--opening-fade,1));}
 @keyframes loading-dot-two{0%,100%{opacity:0}50%,99.99%{opacity:1}}
 @keyframes loading-dot-three{0%,100%{opacity:0}75%,99.99%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.loading-dots span{animation:none;opacity:1;will-change:auto}}
+
+#terminal-actions{margin-top:1.12em;font:400 var(--terminal-font-size)/1.12 FilmTerminal,monospace;letter-spacing:.025em;color:inherit;text-shadow:inherit}
+#game-menu{display:flex;flex-direction:column;align-items:flex-start;gap:0}
+.terminal .game-choice{display:flex;align-items:center;gap:1ch;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:none;font:inherit;letter-spacing:inherit;color:inherit;text-shadow:inherit;touch-action:manipulation;outline:none;box-shadow:none}
+.game-choice .menu-marker{width:1ch;visibility:hidden}
+.game-choice[aria-pressed="true"] .menu-marker{visibility:visible}
+.game-choice span+span{font-size:inherit;opacity:1}
+
+/* Apply consistently to home, loading, access, victory and credit terminals. */
+.terminal-content{text-transform:uppercase}
+
+/* The home terminal's cursor marks the selected program. */
+body.terminal:not(.entering):not(.detached):not(.victory):not(.victory-credits) #intro .terminal-copy>.terminal-cursor{display:none}
+.game-choice .menu-marker{display:inline-block;flex:none;width:.48em;height:.78em;margin:0;animation:terminal-blink .85s steps(1) infinite}
+@media(prefers-reduced-motion:reduce){.game-choice .menu-marker{animation:none}}
+
+/* Access text remains on the same opaque terminal until typing and hold finish. */
+body.entering #game,body.entering #hud{visibility:hidden}
+body.entering .overlay{background:#020204}
+body.entering .terminal-content{opacity:1}
+
+.terminal .game-choice{text-transform:uppercase}
+
+/* Explicit child visibility cannot expose a hidden menu during access typing. */
+body.entering #terminal-actions{display:none}
+
+/* After typing and hold, restore the original dissolve and tank-camera approach. */
+body.entering.access-transition #game{visibility:visible}
+body.entering.access-transition .overlay{background:rgba(2,2,4,var(--opening-fade,1))}
+body.entering.access-transition .terminal-content{opacity:var(--opening-fade,1)}
+
+.end-tribute .printer-line{max-width:100%;vertical-align:top}

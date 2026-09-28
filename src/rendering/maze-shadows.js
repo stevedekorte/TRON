@@ -22,6 +22,9 @@ export class MazeShadows extends RecognizerShadows{
    const root=new T.Group();root.position.set(m.x,WALL_HEIGHT/2,-m.s);
    return {root,casters:[caster],radius:MAZE_LENGTH*.85,distance:MAZE_LENGTH*2};
   });
+  // Floor shadow coverage is exact geometry. Do not cut moving floor shadows
+  // with the lower-resolution atlas: its stair steps disagree with this edge.
+  if(world.floor)world.floor.userData.exactMazeFloorShadow=true;
   const darkness=.4;
   const receivers=[];
   for(const root of vehicles)root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude)receivers.push(o);});

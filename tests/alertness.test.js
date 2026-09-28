@@ -6,7 +6,7 @@ import {perceive,updateRecognizers} from '../src/simulation/recognizers.js';
 import {retireTarget} from '../src/simulation/target-memory.js';
 import {config,TURBO} from '../src/game/config.js';
 test('spotlight requires high alert and loss of a fresh fix; decays without stale-report renewal',()=>{
- const e={state:'wander',canSee:false};assert.equal(searchlightStrength(e,0),0);raiseAlert(e,10);e.canSee=true;assert.equal(searchlightStrength(e,10),0);e.canSee=false;e.memory={seenAt:10};assert.equal(searchlightStrength(e,11),0);assert.equal(searchlightStrength(e,12),1);e.memory=null;assert.equal(searchlightStrength(e,175),.5);raiseAlert(e,10);assert.equal(e.alertUntil,190);assert.equal(searchlightStrength(e,191),0);raiseAlert(e,200);retireTarget(e);assert.equal(searchlightStrength(e,201),0);
+ const e={state:'search',canSee:false};assert.equal(searchlightStrength(e,0),0);raiseAlert(e,10);e.canSee=true;assert.equal(searchlightStrength(e,10),0);e.canSee=false;e.memory={seenAt:10};assert.equal(searchlightStrength(e,11),0);assert.equal(searchlightStrength(e,12),1);e.memory=null;assert.equal(searchlightStrength(e,175),.5);raiseAlert(e,10);assert.equal(e.alertUntil,190);assert.equal(searchlightStrength(e,191),0);raiseAlert(e,200);retireTarget(e);assert.equal(searchlightStrength(e,201),0);
 });
 test('real sighting and cross-unit radio activate alert using original observation time',()=>{
  const r=createRun();Object.assign(r,{x:-5000,s:-5000,yaw:0,speed:0,time:5});r.recognizers=r.recognizers.slice(0,1);r.enemyTanks=r.enemyTanks.slice(0,1);const e=r.recognizers[0],tank=r.enemyTanks[0];Object.assign(tank,{x:-5000,s:-5100,yaw:0,nextSense:0});Object.assign(e,{x:-5100,s:-5100,nextSense:Infinity});perceive(tank,r,5);assert.equal(tank.alertUntil,5+ALERT.duration);updateRecognizers(r,1/60);r.time=5.5;updateRecognizers(r,1/60);assert.equal(e.alertUntil,5+ALERT.duration);
@@ -23,7 +23,7 @@ function spotlightEncounter(){
  Object.assign(r.enemyTanks[0],{x:-5100,s:-5000,memory:null,nextSense:Infinity});
  return r;
 }
-test('searcher must illuminate Clu before pursuit and radio, then tracks and fades',()=>{
+test('searcher must illuminate Clu before pursuit and radio, then switches the visible beam off',()=>{
  const r=spotlightEncounter(),e=r.recognizers[0],receiver=r.enemyTanks[0];
  updateRecognizers(r,1/60);assert.equal(e.spotlight.phase,'acquire');assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.equal(r.radio.length,0);assert.equal(r.events.filter(e=>e.type==='recognized').length,0);
  const yaw=e.spotlight.yaw;r.time+=1/60;updateRecognizers(r,1/60);
@@ -32,7 +32,7 @@ test('searcher must illuminate Clu before pursuit and radio, then tracks and fad
   assert.equal(e.canSee,false);assert.equal(e.memory,null);assert.equal(receiver.memory,null);assert.equal(r.radio.length,0);assert.notEqual(e.state,'pursue');
   r.time+=1/60;updateRecognizers(r,1/60);
  }
- assert.equal(e.spotlight.phase,'track');assert.equal(e.canSee,true);assert.equal(e.state,'pursue');assert.ok(spotlightOnTarget(e,r));assert.ok(r.radio.length>0);assert.equal(searchlightStrength(e,r.time),1);
+ assert.equal(e.spotlight.phase,'track');assert.equal(e.canSee,true);assert.equal(e.state,'pursue');assert.ok(spotlightOnTarget(e,r));assert.ok(r.radio.length>0);assert.equal(searchlightStrength(e,r.time),0);
  assert.equal(r.events.filter(e=>e.type==='recognized').length,1);
  const confirmed=e.spotlight.confirmedAt;
  while(r.time<confirmed+1){r.time+=1/60;updateRecognizers(r,1/60);}
@@ -41,7 +41,7 @@ test('searcher must illuminate Clu before pursuit and radio, then tracks and fad
  updateSpotlight(e,r.time+10,1/60);assert.equal(e.spotlight.phase,'track');
  e.s=r.s-SEARCHLIGHT.closeRange+1;
  updateSpotlight(e,r.time,1/60);assert.equal(e.spotlight.phase,'fade');
- updateSpotlight(e,r.time+.4,.4);assert.ok(searchlightStrength(e,r.time+.4)>0&&searchlightStrength(e,r.time+.4)<1);
+ updateSpotlight(e,r.time+.4,.4);assert.equal(searchlightStrength(e,r.time+.4),0);
  updateSpotlight(e,r.time+1,1/60);assert.equal(e.spotlight,null);assert.equal(e.state,'pursue');
 
 });
@@ -50,7 +50,7 @@ test('out-of-range or lost spotlight target cannot be reported, and hidden motio
  for(let i=0;i<180;i++){r.time+=1/60;updateRecognizers(r,1/60);}
  assert.equal(e.memory,null);assert.equal(e.canSee,false);assert.equal(r.radio.length,0);
  // Place the new contact ahead of the aircraft after its moving patrol turn.
- r.x=e.x-Math.sin(e.yaw)*200;r.s=e.s+Math.cos(e.yaw)*200;r.time+=.21;updateRecognizers(r,1/60);assert.equal(e.spotlight.phase,'acquire');
+ e.state='search';r.x=e.x-Math.sin(e.yaw)*200;r.s=e.s+Math.cos(e.yaw)*200;r.time+=.21;updateRecognizers(r,1/60);assert.equal(e.spotlight.phase,'acquire');
  r.x=-9000;r.time+=.21;updateRecognizers(r,1/60);
  assert.equal(e.spotlight?.target??null,null);
  const a=structuredClone(e),b=structuredClone(e);updateSpotlight(a,r.time+.1,.1);updateSpotlight(b,r.time+.1,.1);assert.deepEqual(a.spotlight,b.spotlight);
@@ -72,6 +72,8 @@ test('spotlight raises above its scan pitch and reaches Clu beyond the old 260 m
  for(let i=0;i<300&&!e.canSee;i++){r.time+=1/60;updateRecognizers(r,1/60);}
  assert.equal(e.canSee,true);assert.equal(e.spotlight.phase,'track');
  assert.ok(e.spotlight.pitch>-.18,'aim rises above the scanning pitch limit');
+ assert.equal(beamPose(e,r.time),null);
+ e.canSee=false;e.state='search';
  const pose=beamPose(e,r.time),distance=Math.hypot(r.x-pose.origin.x,r.s+pose.origin.z,2.8-pose.origin.y);
  assert.ok(pose.range>distance);assert.ok(spotlightOnTarget(e,r));
 });
@@ -120,6 +122,22 @@ test('high-altitude search ribbons reach ground and stop at raised surfaces',asy
    assert.ok(Math.abs(positions.getY(i)-surfaceY)<1e-4);
    assert.equal(geometry.attributes.surfaceHit.getX(i),1);
   }
+  enemy.canSee=true;lights.update([enemy],1,camera,1/60,true);
+  assert.equal(lights.beams[0].mesh.visible,false);
+  enemy.canSee=false;lights.update([enemy],1,camera,1,true);
+  assert.equal(lights.beams[0].mesh.visible,true);
+  enemy.state='wander';lights.update([enemy],1,camera,1/60,true);
+  assert.equal(lights.beams[0].mesh.visible,false);
   geometry.dispose();lights.beams[0].mesh.material.dispose();
+ }
+});
+
+test('searchlight stays off during patrol or visible contact, including active projector phases',()=>{
+ for(const phase of ['acquire','track','fade']){
+  const e={state:'wander',canSee:false,alertUntil:180,spotlight:{phase,fadeAt:10}};
+  assert.equal(searchlightStrength(e,10),0);
+  e.state='search';assert.equal(searchlightStrength(e,10),1);
+  e.canSee=true;assert.equal(searchlightStrength(e,10),0);
+  e.canSee=false;e.state='investigate';assert.equal(searchlightStrength(e,10),1);
  }
 });
