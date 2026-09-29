@@ -73,6 +73,8 @@ body.playing-cycle.cycle-road #clu-health{display:block}
 
 /* Share the terminal typeface throughout the game HUD and its controls. */
 body.playing *,body.paused *,#hud *,#tuning *,#cycle-tuning *{font-family:FilmTerminal,monospace!important;text-transform:uppercase!important}
+/* The gunner label keeps its original monospace glyphs and sight-green fill. */
+#gunner-zoom{font-family:monospace!important;text-transform:none!important}
 
 /* Keep the tank scene covered until the cycle arena and its camera are ready. */
 body.cycle-loading #game{visibility:hidden}

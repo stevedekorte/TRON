@@ -19,6 +19,7 @@ export function createDevelopmentTools({
         ...session.snapshot(),
         autoplay: {
           enabled: autoplay.enabled,
+          manualFire: autoplay.manualFire,
           source: autoplay.tactical?.source,
           plan: autoplay.tactical?.plan,
         },

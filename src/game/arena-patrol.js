@@ -8,6 +8,7 @@ export const ARENA_PATROL = Object.freeze({
   speedMultiplier: 0.57,
   memorySeconds: 38,
   entryXOffsetMeters: -442,entryCrossingZOffsetMeters: 320,entryCrossingSeconds:3,
+  entryTrailMeters:24,
 });
 export function arenaPatrolRoute(world) {
   const site = arenaSite(world);
@@ -19,7 +20,7 @@ export function arenaPatrolStart(world) {
   const route = arenaPatrolRoute(world);
   const site=arenaSite(world);
   const speed=config.enemySpeed*ARENA_PATROL.speedMultiplier;
-  return route.length ? { x:site.x+ARENA_PATROL.entryXOffsetMeters,s:site.s-ARENA_PATROL.entryCrossingZOffsetMeters+speed*ARENA_PATROL.entryCrossingSeconds,
+  return route.length ? { x:site.x+ARENA_PATROL.entryXOffsetMeters,s:site.s-ARENA_PATROL.entryCrossingZOffsetMeters+speed*ARENA_PATROL.entryCrossingSeconds+ARENA_PATROL.entryTrailMeters,
     role: 'arena-patrol', patrolWaypoint: 0, arenaPatrolling:true,
     y: ARENA_PATROL.wallHeightMeters + 22 * RECOGNIZER_SCALE + ARENA_PATROL.soleClearanceMeters,
     yaw: Math.PI,vs:-speed } : null;

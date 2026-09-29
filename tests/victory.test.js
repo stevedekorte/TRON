@@ -68,5 +68,7 @@ test('display credits keep a brief Cloudflare mention and no entry exceeds eight
  assert.equal(pages.find(p=>p.startsWith('CLOUDFLARE')).split('\n').length,2);
  assert(!/wrangler|NPM DEPENDENCY INVENTORY|https?:\/\//i.test(display));
  assert(pages.every(p=>p.split('\n').length<=8&&p.split('\n').every(line=>line.length<=60)));
- assert(pages.length<30);
+ assert(pages.some(p=>p.startsWith('WENDY CARLOS\n')&&p.includes("WE'VE GOT COMPANY")&&p.includes('TOWER MUSIC')));
+ assert(pages.some(p=>p.startsWith('JOURNEY\n')&&p.includes('ONLY SOLUTIONS')));
+ assert(pages.length<32);
 });

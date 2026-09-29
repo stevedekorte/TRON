@@ -73,7 +73,8 @@ test('cycle turbo accepts partial charge, boosts only player and eases on releas
  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';b.turboCharge=.2;
  const start=b.z,other=race.cycles[0].z;
  s.advance({cycleTurbo:true},.25);
- assert(start-b.z>2&&start-b.z<5);assert.equal(other-race.cycles[0].z,2);
+ assert(b.speedMultiplier>1.5&&b.speedMultiplier<1.7,'turbo is still building speed after a quarter second');
+ assert(start-b.z+b.progress>2&&start-b.z+b.progress<3);assert.equal(other-race.cycles[0].z,2);
  assert(Math.abs(b.turboCharge-.15)<1e-8);assert.equal(b.boosting,true);
  const before=b.speedMultiplier;s.advance({},.25);assert(b.speedMultiplier>1&&b.speedMultiplier<before);assert.equal(b.boosting,false);assert(b.turboCharge>.15);
 });
@@ -137,10 +138,12 @@ test('slow pedal eases to half speed, overrides turbo, and eases back to cruise'
  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';b.turboCharge=.5;
  s.advance({cycleSlow:true,cycleTurbo:true},1/120);
  assert(b.speedMultiplier<1&&b.speedMultiplier>.5);assert.equal(b.boosting,false);assert(b.turboCharge>.5);
- s.advance({cycleSlow:true},.5);assert(b.speedMultiplier>.5&&b.speedMultiplier<.51);
+ s.advance({cycleSlow:true},.5);assert(b.speedMultiplier>.65&&b.speedMultiplier<.75,'S decelerates over time instead of immediately reaching half speed');
+ s.advance({cycleSlow:true},1);assert(b.speedMultiplier>.5&&b.speedMultiplier<.53);
  assert.equal(race.cycles[0].speedMultiplier,1);
  const slow=b.speedMultiplier;s.advance({},1/120);assert(b.speedMultiplier>slow&&b.speedMultiplier<1);
- s.advance({},.5);assert(b.speedMultiplier>.99&&b.speedMultiplier<1);
+ s.advance({},.5);assert(b.speedMultiplier>.8&&b.speedMultiplier<.9);
+ s.advance({},1);assert(b.speedMultiplier>.97&&b.speedMultiplier<1);
 });
 
 test('default cycle testing has unlimited Return restarts and no terminal endings',()=>{

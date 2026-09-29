@@ -1,7 +1,14 @@
 import {VectorKeyframeTrack, NumberKeyframeTrack, InterpolateSmooth, Vector3, MathUtils} from 'three';
+import {LIGHT_CYCLES} from '../game/light-cycles.js';
+import {ARENA_WALL} from '../game/arena-breaches.js';
 // Preserve the supplied clip's 00:00–00:16 move, then hold its endpoint
 // for the gold team's materialization before cutting to the player camera.
-export const CYCLE_OPENING=Object.freeze({durationSeconds:16,travelSeconds:16,formationSeconds:2.75,raceReleaseFraction:1,lookDistanceMeters:100,minimumHeightMeters:4});
+export const CYCLE_OPENING=Object.freeze({durationSeconds:16,travelSeconds:16,formationSeconds:2.75/1.5,raceReleaseFraction:1,lookDistanceMeters:100,minimumHeightMeters:4});
+// Relative phase timing, scaled to the formation's overall duration.
+export const CYCLE_FORMATION_MATERIALIZATION=Object.freeze({openSeconds:.6,passSeconds:1.4,fadeSeconds:.75});
+export const CYCLE_FORMATION_CAMERA=Object.freeze({blendStartSeconds:14,rightMeters:8,forwardMeters:5,heightMeters:1.6,lookRightMeters:1.5,lookHeightMeters:.65,fovDegrees:38});
+const formationZ=-Math.floor((ARENA_WALL.innerMeters-LIGHT_CYCLES.lengthMeters/2-LIGHT_CYCLES.startWallClearanceMeters)/LIGHT_CYCLES.cellMeters)*LIGHT_CYCLES.cellMeters;
+export function cycleFormationBlend(progress){return MathUtils.smootherstep(progress*CYCLE_OPENING.durationSeconds,CYCLE_FORMATION_CAMERA.blendStartSeconds,CYCLE_OPENING.durationSeconds);}
 // Film opening: carrier broadside beyond the maze, to the camera's right.
 // The shallow heading exposes the open bow on the right, as in the film still.
 export const CYCLE_OPENING_CARRIER=Object.freeze({xOffsetMeters:-3000,sOffsetMeters:1550,altitudeMeters:360,yawRadians:.15,speedMetersPerSecond:18});
@@ -35,6 +42,9 @@ export function applyCycleOpening(progress,site,position,look){
  direction.set(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
  position.set(point.x+site.x,point.y,point.z-site.s);
  look.copy(direction).multiplyScalar(CYCLE_OPENING.lookDistanceMeters).add(position);
+ const blend=cycleFormationBlend(progress),c=CYCLE_FORMATION_CAMERA;
+ position.lerp(new Vector3(site.x+c.rightMeters,c.heightMeters,formationZ-site.s+c.forwardMeters),blend);
+ look.lerp(new Vector3(site.x+c.lookRightMeters,c.lookHeightMeters,formationZ-site.s),blend);
  // The diagonal grid comes from the pan and pitch, not an aircraft roll.
  return 0;
 }

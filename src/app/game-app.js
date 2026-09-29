@@ -357,7 +357,7 @@ export function createGameApp() {
       ['running', 'entering', 'paused'].includes(mode)
     ) {
       event.preventDefault();
-      setAutoplay(!autoplay.enabled);
+      setAutoplay(event.shiftKey ? !(autoplay.enabled && autoplay.manualFire) : !autoplay.enabled, event.shiftKey);
       return;
     }
     if (
@@ -549,9 +549,9 @@ export function createGameApp() {
     if(import.meta.env.DEV)$('enemy-ai').value=config.aiMode;
     try{localStorage.setItem('tron-enemy-ai',JSON.stringify({version:AI_PREFERENCE_VERSION,mode:config.aiMode,small:config.aiSmallEncounter}));}catch{}
   }
-  function setAutoplay(enabled) {
+  function setAutoplay(enabled, manualFire = false) {
     if(enabled&&config.aiMode!=='jev')setJevEnabled(true);
-    autoplay.setEnabled(enabled);
+    autoplay.setEnabled(enabled, {manualFire});
     jev.resetScheduling();
     inputController.startingThrottle = false;
     run.cruiseThrottle = false;

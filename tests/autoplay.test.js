@@ -8,8 +8,24 @@ import {JevClient} from '../src/ai/jev-client.js';
 import {jevQuestion} from '../shared/jev-protocol.js';
 import {WALLS,lineOfSight,OPEN_CELLS,freePosition} from '../src/levels/maze.js';
 import {chooseManeuver} from '../src/simulation/tactical.js';
+import {mergeAutoplayInput} from '../src/simulation/autoplay-input.js';
 const scenario=()=>{const r=createRun(1982);Object.assign(r,{x:-5000,s:-5000,yaw:0,speed:0,recognizers:[],enemyTanks:[],dataBeams:[]});return r;};
 const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
+test('manual-fire autoplay retains driving and aiming but leaves both firing channels to the player',()=>{
+ const r=scenario();r.enemyTanks=[{id:100,kind:'ground',health:3,state:'patrol',x:r.x,s:r.s+30,yaw:0,vx:0,vs:0,vy:0}];
+ const full=new Autoplay(),manual=new Autoplay();full.setEnabled(true);manual.setEnabled(true,{manualFire:true});
+ const automatic=full.input(r),assisted=manual.input(r);
+ assert.equal(automatic.fire,true);assert.equal(automatic.firePressed,true);
+ assert.deepEqual(assisted,{...automatic,fire:false,firePressed:false});
+ for(const firing of [{fire:true,firePressed:false},{fire:false,firePressed:true}]){
+  const merged=mergeAutoplayInput(assisted,{...firing,aimPitch:0},new Set(),r);
+  assert.equal(merged.fire,firing.fire);assert.equal(merged.firePressed,firing.firePressed);
+  assert.equal(merged.steer,assisted.steer);assert.equal(merged.turret,assisted.turret);
+ }
+ manual.reset();assert.equal(manual.input(r).fire,false);
+ manual.setEnabled(false);assert.equal(manual.manualFire,false);
+ manual.setEnabled(true);assert.equal(manual.input(r).fire,true);
+});
 test('autoplay starts off and drives with real inputs without enemies or provider',()=>{
  const a=new Autoplay(),r=scenario();assert.equal(a.enabled,false);assert.deepEqual(a.input(r),{});
  a.setEnabled(true);for(let i=0;i<600;i++)step(r,a.input(r),1/60);

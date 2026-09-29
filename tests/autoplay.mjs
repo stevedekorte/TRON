@@ -17,8 +17,22 @@ try{
  await page.keyboard.press('u');
  await page.evaluate(()=>__tron.place({x:-5000,s:-5000,yaw:0,turretYaw:Math.PI/2,speed:0,recognizers:[],enemyTanks:[],dataBeams:[]}));
  assert.equal(await page.locator('#autoplay-toggle').getAttribute('aria-pressed'),'false');
+ await page.keyboard.press('Shift+KeyU');
+ await page.waitForFunction(()=>__tron.state.autoplay.enabled&&__tron.state.autoplay.manualFire);
+ await page.waitForFunction(()=>document.querySelector('#autoplay-toggle').textContent.includes('MANUAL FIRE'));
+ assert.match(await page.locator('#autoplay-toggle').innerText(),/MANUAL FIRE/);
+ const assistedStart=await page.evaluate(()=>({s:__tron.state.s,shots:__tron.state.shots}));
+ await page.waitForFunction(s=>__tron.state.s>s+5,assistedStart.s);
+ assert.equal(await page.evaluate(()=>__tron.state.shots),assistedStart.shots);
+ await page.keyboard.press('Space');
+ await page.waitForFunction(shots=>__tron.state.shots>shots,assistedStart.shots);
+ assert.equal(await page.evaluate(()=>__tron.state.autoplay.manualFire),true);
+ await page.keyboard.press('Shift+KeyU');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),false);
+ await page.keyboard.press('KeyU');assert.equal(await page.evaluate(()=>__tron.state.autoplay.manualFire),false);
+ await page.keyboard.press('Shift+KeyU');assert.equal(await page.evaluate(()=>__tron.state.autoplay.manualFire),true);
+ await page.keyboard.press('Shift+KeyU');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),false);
  await page.keyboard.press('u');await page.waitForFunction(()=>__tron.state.autoplay.source==='jev');
- const before=await page.evaluate(()=>__tron.state.s);await page.waitForFunction(s=>__tron.state.s>s+12,before);assert(calls>0);assert.equal(await page.evaluate(()=>__tron.state.jevStats.requests),calls);assert.match(await page.locator('#jev-stats').innerText(),/REQUESTS.*\/s/);assert.match(await page.locator('#jev-stats').innerText(),/USD/);
+ const before=await page.evaluate(()=>__tron.state.s);await page.waitForFunction(s=>__tron.state.s>s+12,before);assert(calls>0);assert.equal(await page.evaluate(()=>__tron.state.jevStats.requests),calls);assert.match(await page.locator('#jev-stats').innerText(),/REQUESTS.*\/s/i);assert.match(await page.locator('#jev-stats').innerText(),/USD/);
  await page.waitForFunction(()=>__tron.state.time>8&&Math.abs(__tron.state.turretYaw)<.03);
  const samples=[];for(let i=0;i<12;i++){samples.push(await page.evaluate(()=>__tron.state.speed));await page.waitForTimeout(250);}
  assert(Math.min(...samples)>19,`Cruise speed dropped: ${samples}`);

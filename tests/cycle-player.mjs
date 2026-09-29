@@ -15,6 +15,9 @@ try{
  assert(modelRequests.length>=3);
  assert.equal(await page.evaluate(()=>__tron.state.won),false);
  await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing');
+ // Clear the adjacent teammate's lane for the controls check. The close
+ // formation otherwise puts its live trail directly across this first turn.
+ await page.evaluate(()=>{const race=__tron.state.cycleRace;race.cycles[0].alive=false;for(let i=0;i<race.occupied.length;i++)if(race.occupied[i]===1)race.occupied[i]=0;__tron.place({cycleRace:race});});
  await page.keyboard.press('KeyD');await page.waitForFunction(()=>__tron.state.cycleRace.cycles[1].dir===3);
  await page.waitForTimeout(180);assert.equal(await page.evaluate(()=>__tron.state.cycleRace.cycles[1].dir),3);
  await page.keyboard.press('KeyA');await page.waitForFunction(()=>__tron.state.cycleRace.cycles[1].dir===2);
@@ -22,9 +25,15 @@ try{
  const chargeBefore=await page.evaluate(()=>__tron.state.cycleRace.cycles[1].turboCharge);
  await page.keyboard.down('KeyW');await page.waitForTimeout(180);
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.cycles[1].boosting),true);
+ const accelerating=await page.evaluate(()=>__tron.state.cycleRace.cycles[1].speedMultiplier);
+ assert(accelerating>1&&accelerating<1.8,'turbo builds speed over time');
  assert(await page.evaluate(()=>__tron.state.cycleRace.cycles[1].turboCharge)<chargeBefore);
  await page.keyboard.up('KeyW');await page.waitForTimeout(80);
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.cycles[1].boosting),false);
+ await page.keyboard.down('KeyS');await page.waitForTimeout(180);
+ const decelerating=await page.evaluate(()=>__tron.state.cycleRace.cycles[1].speedMultiplier);
+ assert(decelerating>.6&&decelerating<accelerating,'S reduces speed gradually');
+ await page.keyboard.up('KeyS');
  assert.equal(await page.locator('#turbo span').textContent(),'W/T / TURBO');assert(await page.locator('#turbo').isVisible());
  const music=await page.evaluate(()=>__tron.state.music);assert.equal(music.paused,true);assert.equal(music.transition,null);
  await page.keyboard.press('Escape');const time=await page.evaluate(()=>__tron.state.cycleRace.time);await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>__tron.state.cycleRace.time),time);

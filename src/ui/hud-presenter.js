@@ -111,7 +111,7 @@ export class HudPresenter {
     $('zoom-hint').hidden = !(view.cameraRig.aerial || (GUNNER.mouseEnabled && run.gunner));
     $('survey').hidden = !showSurvey;
     $('autoplay-toggle').textContent = autoplay.enabled
-      ? `U / AUTOPLAY · ${jev.warning ? 'LOCAL FALLBACK' : autoplay.tactical?.source === 'jev' ? 'JEV' : 'LOCAL'}`
+      ? `${autoplay.manualFire ? 'SHIFT-U' : 'U'} / AUTOPLAY · ${jev.warning ? 'LOCAL FALLBACK' : autoplay.tactical?.source === 'jev' ? 'JEV' : 'LOCAL'}${autoplay.manualFire ? ' · MANUAL FIRE' : ''}`
       : 'U / AUTOPLAY OFF';
     $('autoplay-toggle').setAttribute('aria-pressed', String(autoplay.enabled));
     const jevStats = jev.stats.value,

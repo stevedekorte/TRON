@@ -129,9 +129,11 @@ export function updateWeapons(run,input,dt) {
       // Independent per-shot randomness preserves seeded encounters. Spread never
       // points below the horizon; an unassisted level shot stays exactly level.
       const random=seededRandom((run.seed^Math.imul(run.shots+1,2654435761))>>>0);
-      const shotYaw=-Math.atan2(dx,ds)+(random()*2-1)*CLU_WEAPON.yawSpread;
+      const yawSpread=target.lock?CLU_WEAPON.assistYawSpread:CLU_WEAPON.yawSpread;
+      const pitchSpread=target.lock?CLU_WEAPON.assistPitchSpread:CLU_WEAPON.pitchSpread;
+      const shotYaw=-Math.atan2(dx,ds)+(random()*2-1)*yawSpread;
       const pitch=Math.atan2(dy,Math.hypot(dx,ds));
-      const shotPitch=clamp(pitch+(Math.abs(pitch)>1e-8?(random()*2-1)*CLU_WEAPON.pitchSpread:0),GUNNER.minPitch,GUNNER.maxPitch);
+      const shotPitch=clamp(pitch+(Math.abs(pitch)>1e-8?(random()*2-1)*pitchSpread:0),GUNNER.minPitch,GUNNER.maxPitch);
       dx=-Math.sin(shotYaw)*Math.cos(shotPitch);ds=Math.cos(shotYaw)*Math.cos(shotPitch);dy=Math.sin(shotPitch);
     }
     const length=Math.hypot(dx,ds,dy);
