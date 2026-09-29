@@ -862,7 +862,12 @@ export function createGameApp() {
             if(event.type==='cycleArrival'||event.type==='cycleRetry'){
               setAutoplay(false);inputController.clear();releaseMouse();clearMouseAim();view.cameraRig.reset();view.cameraRig.aerial=false;
               document.body.classList.remove('cycle-loading');
-              if(event.type==='cycleArrival'&&document.body.classList.contains('cycle-intro')&&!view.cameraRig.reducedMotion)view.cameraRig.cycleOpening=0;
+              if(event.type==='cycleArrival'&&document.body.classList.contains('cycle-intro')&&!view.cameraRig.reducedMotion){
+                view.cameraRig.cycleOpening=CYCLE_OPENING.startSeconds/CYCLE_OPENING.durationSeconds;
+                // Advance the patrol through the skipped opening with bounded steps.
+                for(let remaining=CYCLE_OPENING.startSeconds;remaining>0;remaining-=fixedStep)
+                  session.advance({},Math.min(fixedStep,remaining),{holdCycleRace:true});
+              }
               else document.body.classList.remove('cycle-intro');
             }
             view.event(event);

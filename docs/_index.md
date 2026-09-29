@@ -1078,3 +1078,13 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 ## Consolidated validation — September 28
 
 - All 379 `npm test` checks pass before committing the camera, driving, targeting, manual-fire autoplay, credits and presentation changes. Updated the credits page-count bound for the two requested soundtrack pages and explicitly assert both music credits. Prior targeted Chrome checks and production build results are recorded above.
+
+## Trim the first second of cycle entry — September 28
+
+- [x] Begin the authored cycle entrance at 00:01, leaving 15 seconds of camera travel before formation. Keep camera, carrier and audio on the same authored clock; advance the arena patrol through the skipped second using bounded simulation steps. Preserve formation timing and reduced-motion entry.
+- Validation: 14 cycle-camera tests, Chrome `tests/cycle-opening.mjs` (including the 1-second starting offset, patrol, audio, pause and handoff), production build and whitespace checks pass. Chrome headless on macOS; existing build chunk-size advisory remains.
+
+## Shared BIT JEV relay configuration — September 29
+
+- [x] Confirm BIT uses the same /api/jev/decision relay, upstream JEV endpoint, model configuration and budget as Clu. Fix development config so BIT receives VITE_JEV_API_BASE just like the main client; production already embeds that shared setting. The config response contains only the public base URL. Light-cycle race opponents currently use their local planner.
+- Validation: 17 local/public relay tests pass, including BIT upstream/response compatibility, custom-base configuration and credential isolation. Chrome `tests/bit.mjs` passes replies, menu/exit and microphone-permission paths with mocked API responses; no paid requests. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS.

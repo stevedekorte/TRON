@@ -37,6 +37,15 @@ export function createJevMiddleware({apiKey='',model='jev-latest',fetchImpl=fetc
   finally{clearTimeout(timeout);res.off('close',abort);busy=false;}
  };
 }
+// Bit's classic-script page must receive the same public relay base as Vite clients.
+export function bitApiConfigMiddleware(env){
+ const script=`window.BIT_API_BASE = ${JSON.stringify(env.VITE_JEV_API_BASE || '')};\n`;
+ return (req,res,next)=>{
+  if(req.url?.split('?')[0]!=='/bit/config.js')return next();
+  res.writeHead(200,{'Content-Type':'application/javascript','Cache-Control':'no-store'});
+  res.end(script);
+ };
+}
 export function jevPlugin(env){
  let apiKey=env.TYPESAFE_API_KEY||'';
  if(!apiKey){try{apiKey=readFileSync(new URL('../credentials/Typesafe.txt',import.meta.url),'utf8').trim();}catch{}}
@@ -44,5 +53,5 @@ export function jevPlugin(env){
  const hourlyUsd=Number.isFinite(configuredUsd)&&configuredUsd>0?configuredUsd:JEV_LIMITS.hourlyUsd;
  const spend=new JevSpend({limitUsd:hourlyUsd,path:new URL('../.local/jev-spend.json',import.meta.url).pathname});
  const middleware=createJevMiddleware({apiKey,model:env.TYPESAFE_MODEL||'jev-latest',spend});
- return {name:'local-jev',configureServer(server){server.middlewares.use(middleware);},configurePreviewServer(server){server.middlewares.use(middleware);}};
+ return {name:'local-jev',configureServer(server){server.middlewares.use(bitApiConfigMiddleware(env));server.middlewares.use(middleware);},configurePreviewServer(server){server.middlewares.use(middleware);}};
 }

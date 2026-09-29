@@ -2,12 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Readable} from 'node:stream';
 import {EventEmitter} from 'node:events';
-import {createJevMiddleware,jevQuestion} from '../server/jev.js';
+import {createJevMiddleware,jevQuestion,bitApiConfigMiddleware} from '../server/jev.js';
 import {JevClient} from '../src/ai/jev-client.js';
 import {config} from '../src/game/config.js';
 import {createRun} from '../src/simulation/run.js';
 import {chooseManeuver} from '../src/simulation/tactical.js';
 const state={self:{id:1},target:null,options:[{id:'m0',kind:'hold',goal:{x:0,s:0,y:80,yaw:0},route:[],localScore:1}]};
+test('Bit development config shares the public JEV base without exposing credentials',()=>{
+ for(const base of ['', 'https://relay.example.test']){
+  const middleware=bitApiConfigMiddleware({VITE_JEV_API_BASE:base,TYPESAFE_API_KEY:'private-test'});
+  let script,headers,next=false;
+  middleware({url:'/bit/config.js?v=1'},{writeHead(status,h){assert.equal(status,200);headers=h;},end(body){script=body;}},()=>assert.fail('config skipped'));
+  const window={};Function('window',script)(window);
+  assert.equal(window.BIT_API_BASE,base);assert(!script.includes('private-test'));assert.equal(headers['Cache-Control'],'no-store');
+  middleware({url:'/other.js'},{},()=>{next=true;});assert(next);
+ }
+});
+test('Bit questions use the same local JEV upstream and response contract',async()=>{
+ let request;
+ const m=createJevMiddleware({apiKey:'private-test',fetchImpl:async(url,options)=>{request={url,...options};return {ok:true,json:async()=>({answers:{maneuver:{choice:'m0',confidence:1}}})};}});
+ const result=await invoke(m,{body:{controller:'bit',question:'Are you Bit?'}});
+ assert.equal(result.status,200);assert.equal(result.body.id,'m0');
+ assert.equal(request.url,'https://api.typesafe.ai/v1/systemone');
+ assert.equal(JSON.parse(request.body).model,'jev-latest');
+ assert.equal(request.headers.Authorization,'Bearer private-test');
+});
 async function invoke(middleware,{method='POST',url='/api/jev/decision',origin='http://localhost:5173',body=state}={}){
  const req=Readable.from([Buffer.from(JSON.stringify(body))]);req.method=method;req.url=url;req.headers={host:'localhost:5173',origin};
  const res=new EventEmitter();res.writeHead=status=>res.status=status;res.end=data=>{res.body=JSON.parse(data);res.writableEnded=true;};
