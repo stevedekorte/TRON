@@ -10,6 +10,21 @@ Created by Steve Dekorte in collaboration with OpenAI Codex.
 Project source repository (TRON Git submodule):
 https://github.com/stevedekorte/TRON
 
+MUSIC
+-----
+
+Wendy Carlos
+  Composer of the TRON (1982) score.
+  "We've Got Company" and "Tower Music - Let Us Pray"
+  Gameplay uses locally edited excerpts from these soundtrack tracks.
+  https://www.wendycarlos.com/+tron.html
+
+Journey
+  "Only Solutions" — performed by Journey.
+  From the TRON (1982) original motion picture soundtrack.
+  Used for the ending and credits.
+  https://music.apple.com/us/album/tron-original-motion-picture-soundtrack/1443890451
+
 3D MODEL ARTISTS
 ---------------
 

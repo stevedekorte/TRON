@@ -12,10 +12,10 @@ try{
  const flash=await page.locator('#assist-marker').evaluate(el=>{
    const a=el.getAnimations()[0];if(!a)throw Error('Missing acquisition flash');a.pause();
    const timing=a.effect.getTiming(),opacity=[];
-   for(let n=0;n<3;n++)for(const phase of [.25,.75]){a.currentTime=(n+phase)*timing.duration;opacity.push(Number(getComputedStyle(el).opacity));}
+   for(let n=0;n<2;n++)for(const phase of [.25,.75]){a.currentTime=(n+phase)*timing.duration;opacity.push(Number(getComputedStyle(el).opacity));}
    a.finish();return {duration:timing.duration,iterations:timing.iterations,opacity,width:getComputedStyle(el).width,height:getComputedStyle(el).height};
  });
- assert.equal(flash.duration,200);assert.equal(flash.iterations,3);assert.deepEqual(flash.opacity,[.5,0,.5,0,.5,0]);
+ assert.equal(flash.duration,200);assert.equal(flash.iterations,2);assert.deepEqual(flash.opacity,[.5,0,.5,0]);
  assert.equal(flash.width,'15px');assert.equal(flash.height,'6px');
  await page.waitForTimeout(250);
  assert.equal(await page.locator('#assist-marker').evaluate(el=>getComputedStyle(el).opacity),'0.5');

@@ -1001,3 +1001,80 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - Validation: 33 camera/player simulation checks pass. Chrome entrance checks pass the stationary three-cycle formation, paused race, immediate handoff and I/K zoom. Further browser and build results follow.
 - Final validation: all 365 `npm test` checks pass. Chrome `tests/home-menu.mjs` verifies maximum-speed cruise, steering, turret movement and firing during Clu's approach; `tests/cycle-player.mjs` verifies the north-side start, turning, turbo and restart. Target marker and entrance browser checks pass. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS; rendered carrier-angle, entrance and formation captures inspected. Human driving/sound and exact film fidelity still require review.
 - Commit review: newly staged imported Bit sources/assets retain upstream whitespace, which `git diff --cached --check` flags. The earlier whitespace check covered tracked edits; these vendor-format warnings do not affect the passing build/browser checks.
+
+## Close angled cycle formation — September 28
+
+- [x] Ease the final two seconds of the arena approach into a low, close view from the formation's right: 8 m right, 5 m forward, 1.6 m high, with a 38-degree vertical field of view. Hold that framing during materialization, then retain the immediate player-camera cut.
+- [x] Tighten the actual gold starting row to 4.8 m spacing so all three cycles compose a close group. Accelerate materialization by 50% (1.5× playback rate), reducing its duration from 2.75 to 1.833 seconds.
+- Validation: 34 camera/player tests pass; Chrome entrance check passes swept wall clearance, stationary three-cycle formation, paused race, camera handoff and zoom controls. Inspected the angled formation capture. Production build and whitespace checks pass; the existing chunk-size advisory remains. Chrome headless on macOS.
+
+## Progressive arena speed changes — September 28
+
+- [x] Slow the arena's speed response from 8/s to 2/s: turbo acceleration, S/X deceleration, and return to cruise now complete 95% of the requested speed change in about 1.5 seconds. Preserve top speeds, half-speed slowing, boost charge timings, and bounded collision substeps. Road riding already uses acceleration/braking limits.
+- Update movement checks to measure fractional cell progress during the gentler acceleration, and verify that both turbo and S remain partway through their speed changes after short key holds. Correct the road tuning help to show T for turbo.
+- Validation: 43 player, arena-race and road-dynamics tests pass. Chrome `tests/cycle-player.mjs` confirms gradual turbo/S response with real key events, plus charge, release, pause and restart. Its turning fixture clears the neighboring teammate's trail to isolate controls from the tighter formation's collision. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS; final driving feel remains for hands-on review.
+
+## Clu camera clearance and continuous zoom return — September 28
+
+- [x] Apply camera collision constraints after approach/zoom/gunner positioning, including transitions that previously overwrote or bypassed the follow-camera wall check. Sweep between rendered positions against padded wall prisms, including roofs; slide along a safe axis when a direct move crosses a wall. Keep aerial ascent possible over intervening walls.
+- [x] Replace minimum-fraction camera clipping with a 5 cm contact margin and 1.2 m follow-camera clearance (20 cm in gunner mode). A long camera boom must not force the camera beyond a nearby wall. Free/reference cameras remain explicit inspection views.
+- [x] Keep encounter pitch tracking active throughout I/K zoom and blend overhead Recognizer framing continuously near the follow-camera end. Reaching minimum zoom no longer restores stale follow pitch or abruptly enables encounter framing.
+- Added deterministic wall-corner, roof, approach, aerial, gunner and minimum-zoom regression tests. Chrome home-menu checks pass active Clu entry and zoom controls; final wall/browser validation follows.
+
+## Two target flashes and less precise auto aim — September 28
+
+- [x] Flash the target V twice at the existing 200 ms period, then hold at 0.5 opacity until lock is lost.
+- [x] Increase locked auto-aim shot scatter to ±2.4 degrees horizontally and ±1.2 degrees vertically around the predicted intercept. Preserve seeded shot variation, existing lead/acquisition, level-shot behavior and exact manual gunner aim. Tests check the wider bounds and reproducibility.
+- Final validation: all 372 `npm test` checks pass. The long-range firing test now requires both hits and misses across deterministic assisted shots instead of assuming one shot always hits. Chrome `tests/assist-marker.mjs` verifies two flashes; `tests/camera-walls.mjs` records 389 clear rendered frames through actual maze-wall zoom/turn/gunner transitions. Production build and whitespace checks pass, with the existing chunk-size advisory. Chrome headless on macOS; final camera and shot feel still require human review.
+
+## Recover camera following after wall contact — September 28
+
+- [x] Fix the wall-avoidance dead end: axis-only moves toward the desired camera could leave it pinned while Clu kept driving. Detect stalled progress and enter a swept recovery path above the wall, then track the moving tank and return to normal follow as soon as the tank is visible. Recovery moves at a bounded 100 m/s and resets with the camera.
+- Add a moving-tank regression: start the camera stranded across a wall, drive Clu continuously at 22 m/s, and require clear camera sweeps, bounded separation and return to normal follow height. Extend the real-maze Chrome check to drive while zooming back in and verify the camera keeps up.
+- Validation: 40 camera/gunner tests pass, including recovery while Clu keeps driving. Chrome real-maze check passes 483 rendered frames of clear sweeps, driving during zoom return, bounded camera/tank separation and gunner transitions; inspected its final follow-view capture. The browser fixture now requires a clear 90 m driving lane so a tank-wall collision cannot invalidate the follow check. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS; driving feel remains for user review.
+
+## Arena cycle camera clearance and front-facing patrol pass — September 28
+
+- [x] Apply final camera constraints and frame-to-frame sweeps to cycle follow, side glances, aerial zoom and arena entrance views. Include the arena's four 60 m wall prisms as well as maze walls, with independent collision geometry and the existing recovery path if blocked.
+- [x] Keep breach passages usable by subtracting openings derived from the authored breach profile. Test intact walls, roofs, breach passage, all four starting-wall sides, moving side glances and return from zoom.
+- [x] Start the arena patrol 24 m farther back along its existing route. Preserve its forward motion and green tint; the entrance camera now passes in front of the Recognizer instead of directly over its center, exposing its front.
+- Validation: 44 arena/cycle/camera/player tests pass, including padded wall clearance, roof crossing rejection, breach passage and front-facing patrol visibility. Chrome `tests/cycle-opening.mjs` passes entrance, patrol motion, formation, pause, handoff and zoom checks; inspected the rim flyby capture. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS; final game feel remains for hands-on review.
+
+## Keep the wall-constrained camera out of the cycle — September 28
+
+- [x] Raise the cycle camera's collision anchor from bike-body height to 7 m, while retaining the normal unobstructed 4 m follow height. When the bike fits closer to the arena wall than the camera's padded volume, inset the anchor onto the arena side. Wall correction can shorten the horizontal boom without pulling the camera down into the cycle.
+- [x] As the boom shortens, blend the look point from forward driving focus toward the cycle itself, producing an overhead view with the bike still visible. Preserve the authored formation shot.
+- Regression tests park the cycle against all four walls and a corner, checking camera height, wall clearance and on-screen bike position through side glances. Browser reproduction uses the actual gold model at the closest legal wall placement.
+- Validation: 24 arena/cycle/camera tests pass. Chrome `tests/arena-camera.mjs` verifies clearance above the actual gold model during normal follow and both side glances; inspected the close-wall capture showing the complete cycle from above. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS; final driving feel remains for hands-on review.
+
+## Formation materialization pacing — September 28
+
+- [x] Shorten the gold formation's wireframe sweep from 1.2 to 0.933 seconds and lengthen its solid fade from 0.233 to 0.5 seconds. Retain the initial 0.4-second opening and total 1.833-second hold before the player-camera cut. Give formation timing its own configuration while retaining other materialization defaults.
+- Validation: 13 cycle-camera tests and Chrome `tests/cycle-opening.mjs` pass, including the formation hold and race handoff. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS; pacing remains for user review.
+
+## Restore gunner sight typography — September 28
+
+- [x] Restore the original monospace zoom label and sight-green color by exempting it from the global terminal color-font override. Keep its original 30 px SVG font size.
+- Validation: Chrome headless on macOS reports monospace, 30 px, and matching green text/fill (RGB 86, 214, 51) while playing.
+
+## JEV driving with player-controlled firing — September 28
+
+- [x] Shift-U toggles Clu autoplay with automatic firing disabled. JEV retains driving and turret aiming; Space and mouse firing remain player-owned. Shift-U switches full autoplay into manual-fire mode or turns manual-fire mode off. U retains its existing autoplay toggle.
+- [x] Show MANUAL FIRE in the autoplay HUD and describe Shift-U in its tooltip. Keep the firing restriction through pilot replanning and reset; disabling/re-enabling ordinary autoplay restores automatic firing.
+- Validation: 26 autoplay/input tests pass, including an aligned enemy that full autoplay fires at while manual-fire autoplay preserves movement/aiming but emits neither firing channel. Production build and whitespace checks pass (existing chunk-size advisory).
+- Chrome `tests/autoplay.mjs` passes Shift-U activation, full-to-manual mode switching, manual Space firing while driving, and disabling, plus existing autoplay lifecycle checks. Provider responses were mocked; no paid requests. Updated an existing text assertion to accept the uppercase HUD and waited for its render before checking the mode label. Chrome headless on macOS.
+
+## Soundtrack credits — September 28
+
+- [x] Add on-screen and archival music credits for Wendy Carlos (composer; gameplay excerpts from We've Got Company and Tower Music - Let Us Pray) and Journey (Only Solutions, ending/credits). Record artist/album source links in the archival credits.
+- Validation: Chrome headless on macOS `tests/extended-credits.mjs` passes the complete tribute-to-signoff sequence and eight-line page layout checks. Whitespace checks pass.
+
+## Cycle glance horizon at every zoom — September 28
+
+- [x] Keep the J/L orbit angle when blending into the I/K elevated view. During a glance, ease downward pitch to at most one quarter of the vertical field of view, leaving the horizon within frame. Release returns to the chosen zoom framing. Apply the look adjustment after collision correction without moving the camera through walls or into the cycle.
+- Validation: 25 camera tests pass across arena/road, both glance directions and zoom scales 1–128, including release recovery and tight-wall clearance. A deliberate glance now prioritizes the horizon over keeping the bike centered; ordinary close-wall follow retains its overhead bike framing. Production build passes (existing chunk-size advisory).
+- Chrome headless on macOS `tests/arena-camera.mjs` passes model clearance and real K/J zoomed-horizon checks; inspected the rendered horizon capture. The preview server stopped during the first capture attempt and was restarted before the successful run. Whitespace checks pass.
+
+## Consolidated validation — September 28
+
+- All 379 `npm test` checks pass before committing the camera, driving, targeting, manual-fire autoplay, credits and presentation changes. Updated the credits page-count bound for the two requested soundtrack pages and explicitly assert both music credits. Prior targeted Chrome checks and production build results are recorded above.

@@ -12,7 +12,19 @@ test('gunner aim accelerates, coasts to rest, and can reverse without snapping',
 
 test('leveling returns elevation to the ground plane without changing azimuth; manual elevation cancels',()=>{const r=fixture();r.aimPitch=.6;r.turretYaw=.8;r.gunnerLeveling=true;step(r,{},1/60);assert.ok(r.aimPitch>0&&r.aimPitch<.6);for(let i=0;i<100;i++)step(r,{},1/60);assert.equal(r.aimPitch,0);assert.equal(r.gunnerLeveling,false);assert.ok(Math.abs(r.turretYaw-.8)<1e-8);r.aimPitch=.4;r.gunnerLeveling=true;step(r,{aimPitch:1},1/60);assert.equal(r.gunnerLeveling,false);assert.ok(r.aimPitch>.4);});
 
-test('Clu rounds travel 825 meters and assisted fire reaches beyond the old range',()=>{const r=fixture();r.seed=42;r.gunner=false;updateWeapons(r,{fire:true},0);assert.equal(r.projectiles[0].life,5);assert.ok(Math.abs(Math.hypot(r.projectiles[0].vx,r.projectiles[0].vs,r.projectiles[0].vy)-165)<1e-10);const e={...createRun().recognizers[0],x:-5000,s:-4400,y:77,yaw:0,vx:0,vs:0,vy:0};r.recognizers=[e];r.projectiles=[];r.cooldown=0;assert.ok(cannonTarget(r).lock);for(let i=0;i<270;i++)updateWeapons(r,{fire:i===0},1/60);assert.ok(r.events.some(event=>event.hitPart));});
+test('Clu rounds travel 825 meters and assisted fire can hit at long range without guaranteed accuracy',()=>{
+ const r=fixture();r.seed=42;r.gunner=false;updateWeapons(r,{fire:true},0);
+ assert.equal(r.projectiles[0].life,5);assert.ok(Math.abs(Math.hypot(r.projectiles[0].vx,r.projectiles[0].vs,r.projectiles[0].vy)-165)<1e-10);
+ let hits=0;
+ for(let shot=0;shot<24;shot++){
+  const trial=fixture();Object.assign(trial,{seed:42,shots:shot,gunner:false});
+  trial.recognizers=[{...createRun(1982).recognizers[0],x:-5000,s:-4400,y:77,yaw:0,vx:0,vs:0,vy:0}];
+  assert.ok(cannonTarget(trial).lock);
+  for(let i=0;i<270;i++)updateWeapons(trial,{fire:i===0},1/60);
+  if(trial.events.some(event=>event.hitPart))hits++;
+ }
+ assert(hits>0&&hits<24,'long-range assisted fire should include hits and misses');
+});
 
 test('forward-and-level return uses manual rates and acceleration at every zoom',()=>{
  for(const gunner of [false,true])for(const gunnerZoom of [0,1,2,3]){

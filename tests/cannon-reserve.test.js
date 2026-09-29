@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createRun,updateWeapons} from '../src/simulation/run.js';
+import {createRun,updateWeapons,cannonTarget,cannonPose} from '../src/simulation/run.js';
 import {CLU_WEAPON} from '../src/game/config.js';
 const dt=1/60;
 function fixture(){const r=createRun();Object.assign(r,{x:-5000,s:-5000});r.recognizers=[];r.enemyTanks=[];return r;}
@@ -75,4 +75,20 @@ test('assisted spread is reproducible and cannot send rounds into the floor',()=
   const p=shot(seed,y);assert.ok(p.vy>=0);
   assert.ok(p.y+p.vy*CLU_WEAPON.lifetime>0);
  }
+});
+test('locked auto aim scatters shots beyond the old cone while retaining bounded lead',()=>{
+ const r=fixture();Object.assign(r,{seed:42,yaw:0});
+ r.recognizers=[{id:0,x:r.x,s:r.s+500,y:70,vx:0,vs:0,vy:0,state:'patrol',hit:0}];
+ const target=cannonTarget(r),pose=cannonPose(r);assert(target.lock);
+ const yaw=-Math.atan2(target.x-pose.x,target.s-pose.s),pitch=Math.atan2(target.y-pose.y,Math.hypot(target.x-pose.x,target.s-pose.s));
+ const errors=[];
+ for(let i=0;i<64;i++){
+  r.cooldown=0;r.projectiles=[];updateWeapons(r,{fire:true},0);
+  const p=r.projectiles[0],dyaw=-Math.atan2(p.vx,p.vs)-yaw,dpitch=Math.atan2(p.vy,Math.hypot(p.vx,p.vs))-pitch;
+  assert(Math.abs(dyaw)<=CLU_WEAPON.assistYawSpread);assert(Math.abs(dpitch)<=CLU_WEAPON.assistPitchSpread);
+  errors.push({yaw:dyaw,pitch:dpitch});
+ }
+ assert(errors.some(e=>Math.abs(e.yaw)>CLU_WEAPON.yawSpread));
+ assert(errors.some(e=>Math.abs(e.pitch)>CLU_WEAPON.pitchSpread*3));
+ assert(errors.some(e=>e.yaw<0)&&errors.some(e=>e.yaw>0));
 });

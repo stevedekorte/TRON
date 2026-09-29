@@ -13,7 +13,7 @@ export class CycleTuning {
    const section=document.createElement('details');section.open=group==='Speed and pedals';
    const heading=document.createElement('summary');heading.textContent=group;section.append(heading);
    if(group==='Speed and pedals'){
-    const note=document.createElement('p');note.textContent='W/S adjusts held speed; X brakes; I uses turbo. Speed hold compensates drag; drag changes are most noticeable under turbo.';section.append(note);
+    const note=document.createElement('p');note.textContent='W/S adjusts held speed; X brakes; T uses turbo. Speed hold compensates drag; drag changes are most noticeable under turbo.';section.append(note);
    }
    for(const [key,title,unit,min,max,step] of rows){
     const label=document.createElement('label');label.className='cycle-tuning-row';

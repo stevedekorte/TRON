@@ -11,6 +11,7 @@ export { visibleAutoplayEnemies, autoplayThreats } from './autoplay-perception.j
 export class Autoplay {
   constructor() {
     this.enabled = false;
+    this.manualFire = false;
     this.mission = new AutoplayMission();
     this.follower = new RouteFollower();
     this.reset();
@@ -22,8 +23,9 @@ export class Autoplay {
     this.mission.reset();
     this.follower.reset();
   }
-  setEnabled(value) {
+  setEnabled(value, {manualFire = false} = {}) {
     this.enabled = value;
+    this.manualFire = value && manualFire;
     this.reset();
   }
   plan(run) {
@@ -97,7 +99,7 @@ export class Autoplay {
         ? motion.heading
         : run.yaw;
     const aim = angleDelta(run.yaw + run.turretYaw, lookHeading);
-    const fire = !!target && cannonTarget(run).id === target.id && run.cooldown <= 0;
+    const fire = !this.manualFire && !!target && cannonTarget(run).id === target.id && run.cooldown <= 0;
     const safety = avoidDebris(run, motion.command);
     this.debrisAvoidance = safety.active;
     return {

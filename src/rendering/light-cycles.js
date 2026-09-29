@@ -1,5 +1,5 @@
 import {CarrierMaterialization} from './carrier-materialization.js';
-import {CYCLE_OPENING} from './cycle-opening.js';
+import {CYCLE_OPENING,CYCLE_FORMATION_MATERIALIZATION} from './cycle-opening.js';
 import {CycleTireTraces} from './cycle-tire-traces.js';
 import {materializationDuration,materializationPhase} from '../game/materialization.js';
 import { CycleExplosions } from './cycle-explosions.js';
@@ -73,7 +73,8 @@ export class LightCycleRaceView {
       mesh.visible=b.alive&&(age===null||age>0)&&(openingFormationAge===null||b.team===0);
       if(age===null)rez.update(null);
       else {
-        const phase=materializationPhase(age/(openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds)*materializationDuration());
+        const timing=openingFormationAge===null?undefined:CYCLE_FORMATION_MATERIALIZATION;
+        const phase=materializationPhase(age/(openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds)*materializationDuration(timing),timing);
         rez.update(age,null,{phase,cut:THREE.MathUtils.lerp(rez.bounds.min.z,rez.bounds.max.z,phase.wire)});
 
       }

@@ -34,7 +34,7 @@ test('cycle turns ease the orbit; reset removes the previous match anchor',()=>{
  for(let i=0;i<180;i++)frame(rig,run,1/60);
  assert(Math.abs(rig.camera.position.x-(pose.x-10))<1e-8);
  rig.reset();assert.equal(rig.cycleAnchor,null);
- bike.x=100;bike.previousX=99;frame(rig,run,1/60);
+ bike.x=110;bike.previousX=109;frame(rig,run,1/60);
  assert(Math.abs(rig.camera.position.x-(cyclePlayerPose(run.cycleRace).x-10))<1e-9);
 });
 test('held J/L glance smoothly toward the rear quarter and release returns forward',()=>{
@@ -55,6 +55,22 @@ test('side glances keep the horizon level',()=>{
   frame(rig,run,1/120);
   const right=new Vector3(1,0,0).applyQuaternion(rig.camera.quaternion);
   assert(Math.abs(right.y)<1e-9);
+ }
+});
+test('cycle glances retain side orbit and a visible horizon throughout I/K zoom',()=>{
+ for(const escaped of [false,true])for(const zoom of [1,2,8,32,128])for(const side of [-1,1]){
+  const {bike,run,rig}=setup();bike.escaped=escaped;rig.followZoom=zoom;
+  for(let i=0;i<180;i++)frame(rig,run,1/60);
+  const original=rig.camera.quaternion.clone();
+  rig.cycleGlanceInput=side;
+  for(let i=0;i<240;i++)frame(rig,run,1/60);
+  const direction=rig.camera.getWorldDirection(new Vector3());
+  const horizon=direction.clone().setY(0).normalize().multiplyScalar(10000).add(rig.camera.position).project(rig.camera);
+  assert(Math.abs(horizon.y)<.8,`horizon clipped at zoom ${zoom}, escaped ${escaped}`);
+  assert(Math.abs(direction.x)>.2,'zoom must retain sideways glance');
+  rig.cycleGlanceInput=0;
+  for(let i=0;i<300;i++)frame(rig,run,1/60);
+  assert(rig.camera.quaternion.angleTo(original)<.001,'release restores the zoomed follow view');
  }
 });
 test('cycle render interpolation shares movement with trails without cutting corners',async()=>{
@@ -109,7 +125,7 @@ test('16-second film entrance descends, pans right and down, then accelerates ac
  for(let i=0;i<=1000;i++){
   const {p,roll}=sample(i*16/1000);
   if(p.x-site.x<=-409&&p.x-site.x>=-466)assert(p.y>65,'clear the actual 60 m wall crest with margin');
-  assert(p.y>=4);assert.equal(roll,0);
+  assert(p.y>=1.6-1e-6);assert.equal(roll,0);
  }
  const before=sample(5),down=sample(10.5),arrival=sample(16);
  assert(before.d.x<-.9,'initially face the maze');
@@ -117,8 +133,9 @@ test('16-second film entrance descends, pans right and down, then accelerates ac
  assert(down.d.z<0&&Math.abs(down.d.x)<.1,'pan right toward the far end');
  assert(sample(12).p.distanceTo(sample(14).p)>sample(7).p.distanceTo(sample(9).p)*2,'rapid floor traverse follows slow descent');
  for(let t=7;t<12;t+=.05)assert(sample(t+.05).p.distanceTo(sample(t).p)/.05>35,'keep moving through the downward turn');
- assert.deepEqual(arrival.p.toArray(),[1400,4,-2970]);
- assert(Math.abs(arrival.d.y)<1e-6);
+ assert(arrival.p.distanceTo(new Vector3(1408,1.6,-2998.2))<1e-6);
+ assert(arrival.d.x<-.7&&arrival.d.z<-.5,'frame the cycles from the right at an angle');
+ assert.equal(CYCLE_OPENING.formationSeconds,2.75/1.5);
  assert.equal(CYCLE_OPENING.durationSeconds,16);assert.equal(CYCLE_OPENING.raceReleaseFraction,1);
 });
 
@@ -138,7 +155,7 @@ test('entrance audio pauses and resumes inside a cue without duplicate voices',a
 });
 
 
-test('entry path passes safely above the moving arena patrol',async()=>{
+test('entry path passes safely in front of the moving arena patrol',async()=>{
  const {applyCycleOpening}=await import('../src/rendering/cycle-opening.js');
  const {createRecognizers}=await import('../src/simulation/recognizers.js');
  const {flyArenaPatrol}=await import('../src/simulation/arena-patrol.js');
@@ -146,14 +163,16 @@ test('entry path passes safely above the moving arena patrol',async()=>{
  const {createScenario}=await import('../src/levels/scenario.js');
  const {world}=createScenario({layout:'blueprint',centralLabyrinth:true});
  const {RECOGNIZER_SCALE}=await import('../src/game/config.js');
- const guard=createRecognizers(()=>.5,world).find(e=>e.role==='arena-patrol'),site=arenaSite(world);let closest=Infinity;
+ const guard=createRecognizers(()=>.5,world).find(e=>e.role==='arena-patrol'),site=arenaSite(world);let closest=Infinity,frontView=false;
  for(let i=0;i<=960;i++){
    if(i)flyArenaPatrol(guard,i/60,1/60);
    const p=new Vector3(),look=new Vector3();applyCycleOpening(i/960,site,p,look);
    const distance=Math.hypot(p.x-guard.x,p.z+guard.s);closest=Math.min(closest,distance);
+   const towardCamera=new Vector3(p.x-guard.x,0,p.z+guard.s),forward=new Vector3(-Math.sin(guard.yaw),0,-Math.cos(guard.yaw));
+   if(distance<35&&towardCamera.clone().normalize().dot(forward)>.3&&look.clone().sub(p).dot(towardCamera.clone().negate())>0)frontView=true;
    if(distance<12)assert(p.y>guard.y+8*RECOGNIZER_SCALE+8,'clear the crown while flying overhead');
  }
- assert(closest<4,'cross directly over the moving patrol');
+ assert(closest<30,'retain a close flyby');assert(frontView,'see the front of the patrol during the pass');
 });
 
 test('Clu exterior zoom starts at the normal camera and reaches the aerial range continuously',async()=>{
