@@ -32,6 +32,7 @@ try{
  await page.waitForFunction(()=>document.body.classList.contains('cycle-loading')||__tron.state.playerVehicle==='cycle');
  assert(await page.evaluate(()=>__tron.state.playerVehicle==='cycle'||getComputedStyle(document.querySelector('#game')).visibility==='hidden'));
  await page.waitForFunction(()=>__tron.state.cycleOpening!==null,null,{timeout:60000});
+ assert(await page.evaluate(()=>__tron.state.cycleOpening>=1/16&&__tron.state.cycleOpening<2/16),'entrance starts one second into the authored move');
  assert(!(await page.evaluate(()=>getComputedStyle(document.body,'::after').content)).includes('LOADING'));
  assert.equal(await page.locator('#cycle-controls').evaluate(el=>getComputedStyle(el).visibility),'hidden');
  const start=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace,guard:__tron.state.recognizers.find(e=>e.role==='arena-patrol')}));
