@@ -2,8 +2,20 @@ import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
- const page=await browser.newPage();await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
- await page.keyboard.press('Shift+KeyW');assert.ok(await page.evaluate(()=>__tron.state.cruiseThrottle));await page.waitForTimeout(500);assert.ok(await page.evaluate(()=>__tron.state.speed)>=22);
- await page.keyboard.press('KeyW');assert.equal(await page.evaluate(()=>__tron.state.cruiseThrottle),false);const speed=await page.evaluate(()=>__tron.state.speed);await page.waitForTimeout(350);assert.ok(await page.evaluate(()=>__tron.state.speed)<speed);
- await page.keyboard.press('Escape');await page.evaluate(()=>__tron.place({speed:-5}));await page.keyboard.press('KeyS');await page.keyboard.down('KeyS');await page.keyboard.press('KeyT');await page.waitForTimeout(100);const state=await page.evaluate(()=>__tron.state);assert.ok(state.speed< -40&&state.speed>=-41.25);await page.keyboard.up('KeyS');console.log('Shift-W latches, W releases, and T boosts backward with the reverse cap.');
+ const page=await browser.newPage({reducedMotion:'reduce'});
+ await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
+ await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
+ assert.equal(await page.evaluate(()=>__tron.state.cruiseThrottle),true);
+ await page.evaluate(()=>__tron.place({x:-5000,s:-5000,yaw:0,recognizers:[],enemyTanks:[],dataBeams:[]}));
+ for(const brake of ['KeyS','ArrowDown']){
+  await page.keyboard.down(brake);await page.waitForTimeout(200);await page.keyboard.up(brake);
+  assert.equal(await page.evaluate(()=>__tron.state.cruiseThrottle),false);
+  const speed=await page.evaluate(()=>__tron.state.speed);await page.waitForTimeout(300);
+  assert((await page.evaluate(()=>__tron.state.speed))<speed,'releasing brake must not resume forward acceleration');
+  await page.keyboard.press('Shift+KeyW');assert.equal(await page.evaluate(()=>__tron.state.cruiseThrottle),true);
+  await page.waitForTimeout(500);
+ }
+ await page.keyboard.press('KeyW');assert.equal(await page.evaluate(()=>__tron.state.cruiseThrottle),false);
+ const speed=await page.evaluate(()=>__tron.state.speed);await page.waitForTimeout(300);assert((await page.evaluate(()=>__tron.state.speed))<speed);
+ console.log('Startup uses cruise; S/Down cancel it without reacceleration; Shift-W restores cruise and W releases it.');
 }finally{await browser.close();}

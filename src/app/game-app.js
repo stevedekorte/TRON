@@ -51,14 +51,14 @@ export function createGameApp() {
   const autoplay = new Autoplay({available:CLU_AUTOPLAY_ENABLED});
   const systemWarnings = new SystemWarnings($('system-warnings'));
   // Browser defaults supersede the earlier experimental preference once.
-  const AI_PREFERENCE_VERSION = 3;
+  const AI_PREFERENCE_VERSION = 4;
   config.aiMode = 'jev';
   config.aiSmallEncounter = false;
   try {
     const saved = JSON.parse(localStorage.getItem('tron-enemy-ai') || 'null');
     if (
       saved &&
-      [2, AI_PREFERENCE_VERSION].includes(saved.version) &&
+      saved.version === AI_PREFERENCE_VERSION &&
       AI_MODES.includes(saved.mode)
     ) {
       config.aiMode = saved.mode;
@@ -155,7 +155,6 @@ export function createGameApp() {
   function setMode(next) {
     if (!['loading', 'ready', 'entering', 'running', 'paused', 'error'].includes(next))
       throw new Error(`Unknown application mode: ${next}`);
-    if (next === 'paused' || next === 'error') inputController.startingThrottle = false;
     mode = next;
     if(['ready','error'].includes(next))document.body.classList.remove('cycle-intro','cycle-loading');
     if (next !== 'running') {
@@ -186,6 +185,10 @@ export function createGameApp() {
   }
 
   async function start() {
+    if(mode==='ready'&&selectedGame==='credits'){
+      void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
+      outroFade=0;startVictoryCredits();return;
+    }
     if(mode==='ready'&&selectedGame==='bit'){
       window.location.assign(new URL('./bit/index.html',document.baseURI).href);
       return;
@@ -221,7 +224,7 @@ export function createGameApp() {
     if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({entranceFormation:!testCycleStart,startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
     else startPursuit(run);
     loadArenaInBackground();
-    inputController.startingThrottle = true;
+    run.cruiseThrottle = true;
     session.previous = { ...run };
     view.reset();
     sound.reset();
@@ -270,7 +273,7 @@ export function createGameApp() {
     onConfirm:()=>{setAutoplay(false);returnToProgramSelection();},
     onCancel:()=>{void resume();},
   });
-  const gameChoices=[$('start'),$('start-cycles'),$('start-bit')];
+  const gameChoices=[$('start'),$('start-cycles'),$('start-bit'),$('start-credits')];
   function selectGame(game,{focus=false}={}){
     selectedGame=game;
     for(const button of gameChoices){
@@ -437,7 +440,6 @@ export function createGameApp() {
       clearMouseAim();
     if (key === 'KeyW' && !event.repeat && ['running', 'entering'].includes(mode)) {
       run.cruiseThrottle = event.shiftKey ? true : false;
-      if (!event.shiftKey) inputController.startingThrottle = false;
     }
     if (!event.repeat && ['running', 'entering'].includes(mode) && key === 'KeyP') {
       view.cameraRig.beamCamera.cancel();
@@ -514,7 +516,7 @@ export function createGameApp() {
     }
     if (['running', 'entering'].includes(mode)) {
       if (key === 'Space') inputController.fireQueued = true;
-      if (['KeyS', 'ArrowDown'].includes(key)) inputController.startingThrottle = false;
+      if (['KeyS', 'ArrowDown'].includes(key)) run.cruiseThrottle = false;
       keys.add(key);
     }
   });
@@ -576,7 +578,6 @@ export function createGameApp() {
     if(enabled&&config.aiMode!=='jev')setJevEnabled(true);
     autoplay.setEnabled(enabled, {manualFire});
     jev.resetScheduling();
-    inputController.startingThrottle = false;
     run.cruiseThrottle = false;
     inputController.clearKeys();
     inputController.mouseFire = false;
@@ -593,7 +594,6 @@ export function createGameApp() {
   listen(window, 'keyup', (e) => {
     idleTime = 0;
     inputController.release(e.code);
-    if (e.code === 'KeyW') inputController.startingThrottle = false;
   });
   listen($('game'), 'pointerdown', (e) => {
     idleTime = 0;
@@ -815,7 +815,7 @@ export function createGameApp() {
   function beginCluGame(){
     if(mode!=='entering'||accessPrinter.active||openingTransition||accessHoldTime<accessHoldSeconds)return;
     inputController.clear();
-    run.speed=config.maxSpeed;run.cruiseThrottle=true;inputController.startingThrottle=false;
+    run.speed=config.maxSpeed;run.cruiseThrottle=true;
     sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
     sound.startMusic();
     document.body.classList.remove('access-ready');
@@ -971,6 +971,7 @@ export function createGameApp() {
       $('start').disabled = false;
       $('start-cycles').disabled = false;
       $('start-bit').disabled = false;
+      $('start-credits').disabled = false;
       terminal.finish();
       setMode('ready');
       loadingTimings.checkpoint('Opening terminal ready');

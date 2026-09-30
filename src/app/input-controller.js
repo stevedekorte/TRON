@@ -38,7 +38,7 @@ export class InputController {
       cycleSlow:run.playerVehicle==='cycle'&&held('KeyS','KeyX'),
       throttle: held('KeyS', 'ArrowDown')
         ? -1
-        : Number(this.startingThrottle || run.cruiseThrottle || held('KeyW', 'ArrowUp')),
+        : Number(run.cruiseThrottle || held('KeyW', 'ArrowUp')),
       steer: Number(held('KeyD', 'ArrowRight')) - Number(held('KeyA', 'ArrowLeft')),
       mouseTarget: mouseLook ? mouseTarget : this.mouseTarget,
       firePressed: this.fireQueued,

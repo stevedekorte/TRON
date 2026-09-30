@@ -97,3 +97,13 @@ body.cycle-loading::after{content:'';position:fixed;inset:0;z-index:20;backgroun
 #cycle-brake[hidden],body.entering #cycle-brake{display:none}
 
 #autoplay-toggle[hidden],#jev-stats[hidden]{display:none}
+
+/* Meter rows grow with terminal typography and wrapped labels. */
+#vehicle-meters{position:fixed;top:24px;left:24px;width:12em;max-width:calc(100vw - 48px);display:grid;gap:.85em;pointer-events:none}
+#vehicle-meters .turbo-indicator{position:static;width:100%;gap:.35em;letter-spacing:.025em}
+#vehicle-meters .turbo-meter,#vehicle-meters #shots-meter{height:.18em;min-height:3px}
+.sim-hint,#cycle-controls{left:calc(12 * var(--terminal-font-size) + 48px);right:24px}
+.system-notice.transient{animation:jev-notice-fade 4s linear forwards}
+.system-notice.transient span{display:none}
+@keyframes jev-notice-fade{0%,70%{opacity:1}100%{opacity:0}}
+@media(max-width:800px){.sim-hint,#cycle-controls{top:calc(24px + 11 * var(--terminal-font-size));left:24px;right:24px}}

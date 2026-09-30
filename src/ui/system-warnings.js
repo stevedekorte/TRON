@@ -8,7 +8,8 @@ export class SystemWarnings{
   this.element.hidden=!issues.length;
   this.element.replaceChildren(...issues.map(issue=>{
    const row=document.createElement('div');row.className='system-notice';row.dataset.level=issue.level;
-   const label=document.createElement('strong');label.textContent='⚠ '+issue.label;
+   if(issue.transient)row.classList.add('transient');
+   const label=document.createElement('strong');label.textContent=(issue.transient?'':'⚠ ')+issue.label;
    const detail=document.createElement('span');detail.textContent=issue.detail;
    row.append(label,detail);return row;
   }));

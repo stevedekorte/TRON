@@ -230,6 +230,7 @@ export function step(run,input,dt) {
   const boosting=run.turboRemaining>0,previousSpeed=run.speed;
   const speedLimit=config.maxSpeed*(boosting?TURBO.speedMultiplier:1);
   const throttle=input.throttle||0;
+  if(throttle<0)run.cruiseThrottle=false;
   const acceleration=config.acceleration*(boosting?TURBO.accelerationMultiplier:1);
   run.turboRemaining=run.turboRemaining<=dt+1e-8?0:run.turboRemaining-dt;
   if(throttle>0)run.speed+=(run.speed<0?config.braking:acceleration)*dt;

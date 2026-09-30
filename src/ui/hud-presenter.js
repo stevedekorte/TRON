@@ -124,19 +124,19 @@ export class HudPresenter {
     statsNode.children[0].textContent = `N / JEV ${config.aiMode==='jev'?'ON':'OFF'} · ${jevStats.requests} REQUESTS · ${jevStats.requestsPerSecond.toFixed(1)}/s`;
     statsNode.children[1].textContent = `${jevStats.estimatedRequests ? '~' : ''}$${jevStats.costUsd.toFixed(5)} USD`;
 
-    this.warnings.set(
-      'jev',
-        (config.aiMode === 'jev' || autoplay.enabled
-          ? jev.warning
-          : {
-              level: 'warning',
-              label: 'JEV OFF',
-              detail:
-                config.aiMode === 'classic'
-                  ? 'Classic enemy AI selected.'
-                  : 'Local tactical AI selected.',
-            }),
-    );
+    if(this.loggedAiMode!==config.aiMode){
+      this.loggedAiMode=config.aiMode;
+      console.info(config.aiMode==='jev'?'JEV AI selected.':config.aiMode==='classic'?'Classic enemy AI selected.':'Local tactical AI selected.');
+    }
+    const unavailable=config.aiMode==='jev'&&!!jev.warning;
+    const now=performance.now();
+    if(unavailable&&!this.jevWasUnavailable){
+      this.jevNoticeUntil=now+4000;
+      console.warn('JEV unavailable:',jev.warning.detail);
+    }
+    this.jevWasUnavailable=unavailable;
+    this.warnings.set('jev',unavailable&&now<this.jevNoticeUntil
+      ?{level:'warning',label:'JEV unavailable',detail:'',transient:true}:null);
     const watchedCycleId=run.cycleSpectating?(run.cycleFollowId??view.cameraRig.cycleOverview?.trackedId??race?.playerId):race?.playerId;
     const cycleBike=cycleMode?(race.cycles.find(b=>b.id===watchedCycleId)??race.cycles[race.playerId]):null;
     const roadHealthBike=cycleBike?.escaped?cycleBike:null;
