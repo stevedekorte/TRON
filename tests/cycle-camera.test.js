@@ -57,6 +57,26 @@ test('side glances keep the horizon level',()=>{
   assert(Math.abs(right.y)<1e-9);
  }
 });
+test('materialization handoff eases position, orientation and field of view without a cut',()=>{
+ const {bike,run,rig}=setup();bike.z=bike.previousZ=-84;bike.dir=2;
+ rig.cycleOpening=1.1;frame(rig,run,1/60);
+ const position=rig.camera.position.clone(),rotation=rig.camera.quaternion.clone(),fov=rig.camera.fov;
+ rig.finishCycleOpening();frame(rig,run,1/60);
+ assert(rig.camera.position.distanceTo(position)<.1);
+ assert(rig.camera.quaternion.angleTo(rotation)<.01);
+ assert(Math.abs(rig.camera.fov-fov)<.01);
+ const elapsed=rig.cycleFollowTransition.elapsed;
+ rig.update(run,run,0,.5,'paused',{});
+ assert.equal(rig.cycleFollowTransition.elapsed,elapsed,'pause holds the transition');
+ let previous=rig.camera.position.clone();
+ for(let i=0;i<100;i++){
+  frame(rig,run,1/60);
+  assert(rig.camera.position.distanceTo(previous)<1,'handoff position remains continuous');
+  previous.copy(rig.camera.position);
+ }
+ assert.equal(rig.cycleFollowTransition,null);
+ rig.reset();assert.equal(rig.cycleFollowTransition,null);
+});
 test('cycle glances retain side orbit and a visible horizon throughout I/K zoom',()=>{
  for(const escaped of [false,true])for(const zoom of [1,2,8,32,128])for(const side of [-1,1]){
   const {bike,run,rig}=setup();bike.escaped=escaped;rig.followZoom=zoom;

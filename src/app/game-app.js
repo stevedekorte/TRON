@@ -835,7 +835,7 @@ export function createGameApp() {
     if(mode==='running'&&view.cameraRig.cycleOpening!==null&&(!sound.context||sound.cycleSamplesReady)){
       view.cameraRig.cycleOpening+=dt/CYCLE_OPENING.durationSeconds;
       if(view.cameraRig.cycleOpening>=1+CYCLE_OPENING.formationSeconds/CYCLE_OPENING.durationSeconds){
-        view.cameraRig.cycleOpening=null;view.cameraRig.freshCamera=true;
+        view.cameraRig.finishCycleOpening();
         run.cycleRace.remaining=0;inputController.clear();
         document.body.classList.remove('cycle-intro');
       }
