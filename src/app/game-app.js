@@ -294,8 +294,46 @@ export function createGameApp() {
   },true);
   listen($('pause'), 'click', pause);
   listen($('sound'), 'click', mute);
+  let controlsHelpOpen=false,suppressHelpClickUntil=0;
+  const dismissedHelpKeys=new Set();
+  function showControlsHelp(){
+    const cycle=run.playerVehicle==='cycle',road=cycle&&run.cycleRace.cycles[run.cycleRace.playerId].escaped;
+    const groups=cycle?[
+      ['DRIVING',...(road?['W/S / SPEED','A/D OR ARROWS / STEER','X / BRAKE / REVERSE','T / TURBO']:['A/D OR LEFT/RIGHT / TURN','W/T / TURBO','S/X / BRAKE'])],
+      ['CAMERA','J/L / GLANCE','I/K / ZOOM','V / AERIAL'],
+      ['AFTER DEATH','LEFT/RIGHT / FOLLOW CYCLES','ENTER / RESTART'],
+    ]:[
+      ['DRIVING','WASD OR ARROWS / DRIVE','SHIFT-W / CRUISE','W OR S / CANCEL CRUISE','T / TURBO'],
+      ['WEAPONS','J/L / TURRET','F OR J+L / CENTER + LEVEL','SPACE / FIRE','I/K / GUNNER AIM'],
+      ['CAMERA','P / GUNNER VIEW','O / GUNNER ZOOM','V / AERIAL','I/K / AERIAL ZOOM'],
+    ];
+    groups.push(['GAME','ESC / HOME']);
+    $('controls-help-text').textContent=groups.map(group=>group.join('\n')).join('\n\n');
+    pause();inputController.clear();releaseMouse();
+    controlsHelpOpen=true;$('paused').hidden=true;$('controls-help').hidden=false;
+  }
+  function dismissControlsHelp(){
+    controlsHelpOpen=false;$('controls-help').hidden=true;inputController.clear();void resume();
+  }
+  for(const type of ['pointerdown','click'])listen(window,type,event=>{
+    if(type==='click'&&performance.now()<suppressHelpClickUntil){event.preventDefault();event.stopImmediatePropagation();return;}
+    if(!controlsHelpOpen)return;
+    event.preventDefault();event.stopImmediatePropagation();
+    if(type==='pointerdown')suppressHelpClickUntil=performance.now()+500;
+    dismissControlsHelp();
+  },true);
+  listen(window,'keyup',event=>dismissedHelpKeys.delete(event.code));
   listen(window, 'keydown', (event) => {
     idleTime = 0;
+    if(dismissedHelpKeys.has(event.code)){event.preventDefault();return;}
+    if(controlsHelpOpen){
+      event.preventDefault();event.stopImmediatePropagation();
+      if(!event.repeat){dismissedHelpKeys.add(event.code);dismissControlsHelp();}
+      return;
+    }
+    if(event.code==='KeyC'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!exitConfirm.open&&!cycleTuning?.open&&(mode==='running'||mode==='entering'&&openingTransition)){
+      event.preventDefault();if(!event.repeat)showControlsHelp();return;
+    }
     if(exitConfirm.open)return;
     if(event.code==='Escape'&&['running','entering','paused'].includes(mode)){
       event.preventDefault();
@@ -324,12 +362,6 @@ export function createGameApp() {
     if(cycleTuning?.open)return;
     if(event.code==='Tab'&&cycleTuning&&run.playerVehicle==='cycle'&&['running','paused'].includes(mode)){
       event.preventDefault();if(!event.repeat)cycleTuning.show();return;
-    }
-    if (event.code === 'KeyC' && !event.ctrlKey && !event.metaKey && !event.altKey && ['running', 'entering', 'paused'].includes(mode)) {
-      event.preventDefault();
-      if(mode==='entering')finishOpening();
-      if (!event.repeat) toggleInspection();
-      return;
     }
     if(event.code==='Enter'&&!event.repeat&&run.playerVehicle==='cycle'&&session.restartCycleMatch()){
       event.preventDefault();inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;
@@ -477,12 +509,14 @@ export function createGameApp() {
       return;
     }
     if (key === 'KeyV' && ['running','entering'].includes(mode)) {
+      if(event.repeat)return;
       if(mode==='entering')finishOpening();
       view.cameraRig.beamCamera.cancel();
       run.gunner = false;
       clearMouseAim();
       releaseMouse();
       view.cameraRig.aerial = !view.cameraRig.aerial;
+      if(view.cameraRig.aerial&&view.cameraRig.aerialZoom<=AERIAL_ZOOM.minScale+1e-6)view.cameraRig.aerialZoom=1;
       view.cameraRig.freshCamera = view.cameraRig.reducedMotion;
       return;
     }
@@ -500,10 +534,6 @@ export function createGameApp() {
     }
     if (key === 'Escape') {
       ['running', 'entering'].includes(mode) ? pause() : resume();
-      return;
-    }
-    if (key === 'KeyM') {
-      mute();
       return;
     }
     if (key === 'KeyT') {
@@ -917,6 +947,7 @@ export function createGameApp() {
       sound.cycleOpeningAudio?.update(sound.cycleOpeningSeconds,mode==='running');
       sound.update(run, view.camera, mode === 'running'||mode==='entering'&&openingTransition);
       hud.update({
+        dt,
         run,
         view,
         mode,

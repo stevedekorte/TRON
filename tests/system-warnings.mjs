@@ -20,7 +20,7 @@ try{
   const boxes=await page.locator('#vehicle-meters .turbo-indicator:visible').evaluateAll(nodes=>nodes.map(n=>{const b=n.getBoundingClientRect();return {x:b.x,y:b.y,bottom:b.bottom,width:b.width};}));
   assert.equal(boxes.length,3);
   for(let i=1;i<boxes.length;i++)assert(boxes[i].y>boxes[i-1].bottom);
-  assert(boxes.every(b=>b.x===24&&b.width>200));
+  assert(boxes.every(b=>Math.abs(b.x+b.width-1416)<1&&b.width>size*9));
  }
  await page.screenshot({path:'test-results/clu-large-meters.png'});
  await page.keyboard.press('Escape');await page.getByRole('button',{name:/^RETURN HOME$/i}).click();

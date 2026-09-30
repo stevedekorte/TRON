@@ -81,9 +81,11 @@ body.cycle-loading #game{visibility:hidden}
 body.cycle-intro #hud,body.cycle-intro #hint,body.cycle-intro #cycle-controls{visibility:hidden}
 body.cycle-loading::after{content:'';position:fixed;inset:0;z-index:20;background:#000;pointer-events:none}
 
-/* One responsive text scale across the terminal and both game HUDs. */
-#hud,#hud *,#tuning,#tuning *,#cycle-tuning,#cycle-tuning *,.standby{
- font-size:var(--terminal-font-size)!important;
+/* Game text uses the smaller meter scale; terminal pages keep their own size. */
+:root{--game-font-size:calc(var(--terminal-font-size) * .8)}
+#hud,#hud *,#tuning,#tuning *,#cycle-tuning,#cycle-tuning *,.standby,
+#free-camera-help,#mouse-hint,#gunner-zoom,#exit-confirm,#exit-confirm *{
+ font-size:var(--game-font-size)!important;
  line-height:1.3;
 }
 .turbo-indicator{width:max(112px,9em)}
@@ -99,11 +101,20 @@ body.cycle-loading::after{content:'';position:fixed;inset:0;z-index:20;backgroun
 #autoplay-toggle[hidden],#jev-stats[hidden]{display:none}
 
 /* Meter rows grow with terminal typography and wrapped labels. */
-#vehicle-meters{position:fixed;top:24px;left:24px;width:12em;max-width:calc(100vw - 48px);display:grid;gap:.85em;pointer-events:none}
+#vehicle-meters{position:fixed;top:24px;right:24px;width:12em;max-width:calc(100vw - 48px);display:grid;gap:.85em;pointer-events:none}
 #vehicle-meters .turbo-indicator{position:static;width:100%;gap:.35em;letter-spacing:.025em}
 #vehicle-meters .turbo-meter,#vehicle-meters #shots-meter{height:.18em;min-height:3px}
-.sim-hint,#cycle-controls{left:calc(12 * var(--terminal-font-size) + 48px);right:24px}
+.sim-hint,#cycle-controls{left:24px;right:calc(12 * var(--game-font-size) + 48px)}
 .system-notice.transient{animation:jev-notice-fade 4s linear forwards}
 .system-notice.transient span{display:none}
 @keyframes jev-notice-fade{0%,70%{opacity:1}100%{opacity:0}}
-@media(max-width:800px){.sim-hint,#cycle-controls{top:calc(24px + 11 * var(--terminal-font-size));left:24px;right:24px}}
+@media(max-width:800px){.sim-hint,#cycle-controls{top:calc(24px + 11 * var(--game-font-size));left:24px;right:24px}}
+
+#controls-help{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#020710df;color:#159ddd;padding:24px;overflow:auto}
+#controls-help[hidden]{display:none}
+#controls-help>div{max-width:100%;font:var(--game-font-size)/1.65 FilmTerminal,monospace;text-align:center}
+#controls-help h2,#controls-help p{font:inherit;margin:0 0 1em}
+#controls-help-text{white-space:pre-wrap}
+
+#hint[hidden]{display:none}
+#controls-prompt{position:fixed;top:24px;left:0;right:0;text-align:center;color:#91bcd0;pointer-events:none}

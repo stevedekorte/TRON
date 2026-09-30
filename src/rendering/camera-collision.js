@@ -21,6 +21,9 @@ export function constrainCamera(world,anchor,position,previous,radius=CAMERA_CLE
  if(previous&&world.wallIntersection(point(previous),point(previous),radius)===null){
   if(recovery?.active&&world.wallIntersection(point(previous),point(anchor),radius)===null)recovery.active=false;
   const destination=position.clone();
+  // A manual aerial move no longer needs the follow-camera escape waypoint
+  // once its requested path is clear, even if the tank is behind a wall.
+  if(recovery?.active&&!keepSight&&world.wallIntersection(point(previous),point(destination),radius)===null)recovery.active=false;
   if(clipCameraSegment(world,previous,position,radius)){
    // Slide along a roof/face instead of cutting across it. Height first lets
    // a rising zoom clear the roof before it moves out over the maze.

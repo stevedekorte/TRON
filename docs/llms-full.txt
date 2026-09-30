@@ -1207,6 +1207,33 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - Validation: Chrome headless tests/system-warnings.mjs passes default migration, simulated outage/fade, console-only local selection and non-overlapping meters in Clu and light cycles at enlarged font sizes. Inspected rendered captures. The crossing-target shooting regression now uses a fixed seed and asserts damage, since authored spread does not guarantee a lethal hit location.
 - Final verification: all 391 npm tests and production build pass; existing bundle-size advisory only.
 
+## Smaller vehicle meter labels — September 30
+
+- [x] Reduce Clu and light-cycle meter-label text to 80% of the terminal font size. Retain the existing meter widths, spacing and other HUD text sizes.
+
+## Restore meter position — September 30
+
+- [x] Return both games' vehicle meters to the top right, preserving the stacked spacing and 20% smaller labels. Reserve space for them on the right of the control hints.
+
+## Consistent smaller game text — September 30
+
+- [x] Use the meter-label size (80% of terminal text) for Clu and light-cycle HUDs, controls, notices, pause/exit prompts, camera help and tuning panels. Keep terminal/home/credits text at its existing size. Preserve the gunner typeface and colors. Meter and hint spacing share the game text scale.
+
+## C controls pause — September 30
+
+- [x] Replace C's free-camera shortcut with a controls panel that pauses Clu or light cycles. Show controls appropriate to Clu, arena cycles or outside-arena driving. Any fresh keypress, tap or click dismisses the panel and resumes; consume that event so it cannot fire, steer or open the exit panel. Update the in-game control hints.
+- Validation: Chrome headless tests/controls-help.mjs passes frozen simulation and resume via Space, Escape, C, mouse and touch in both games, with no leaked firing or exit prompt. Inspected the controls panel capture; whitespace checks pass.
+
+## Brief controls hint and reliable V transitions — September 30
+
+- [x] Replace automatic full control lists with a centered C / CONTROLS prompt for the first five seconds of active play. Keep loading/death/result messages and the C pause panel. Count from gameplay after the cycle introduction and exclude paused time.
+- [x] Release a stale follow-camera wall-recovery path when an aerial movement has a clear swept path. Ignore repeated V keydown events, and restore aerial scale when enabling V after zooming down to the follow-view limit.
+- Validation: all 29 camera checks pass, including a regression with an occluded tank, stale recovery and clear aerial movement. Browser controls coverage includes the timed hint and V key repeat behavior.
+
+## Grouped controls panels — September 30
+
+- [x] Remove the M mute shortcut and its control hint. Group Clu controls into Driving, Weapons, Camera and Game, and cycle controls into Driving, Camera, After Death and Game. Remove the final any-key/tap/click instruction while retaining that dismissal behavior.
+
 
 ---
 
