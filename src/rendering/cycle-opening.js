@@ -3,9 +3,10 @@ import {LIGHT_CYCLES} from '../game/light-cycles.js';
 import {ARENA_WALL} from '../game/arena-breaches.js';
 // Preserve the supplied clip's 00:00–00:16 move, then hold its endpoint
 // for the gold team's materialization before cutting to the player camera.
-export const CYCLE_OPENING=Object.freeze({startSeconds:1,durationSeconds:16,travelSeconds:16,formationSeconds:2.75/1.5,raceReleaseFraction:1,lookDistanceMeters:100,minimumHeightMeters:4});
+export const CYCLE_OPENING=Object.freeze({startSeconds:1,durationSeconds:16,travelSeconds:16,formationSeconds:2.75/1.5,followTransitionSeconds:1.2,raceReleaseFraction:1,lookDistanceMeters:100,minimumHeightMeters:4});
 // Relative phase timing, scaled to the formation's overall duration.
 export const CYCLE_FORMATION_MATERIALIZATION=Object.freeze({openSeconds:.6,passSeconds:1.4,fadeSeconds:.75});
+export const CYCLE_FOLLOW_TRANSITION=Object.freeze({liftMeters:5});
 export const CYCLE_FORMATION_CAMERA=Object.freeze({blendStartSeconds:14,rightMeters:8,forwardMeters:5,heightMeters:1.6,lookRightMeters:1.5,lookHeightMeters:.65,fovDegrees:38});
 const formationZ=-Math.floor((ARENA_WALL.innerMeters-LIGHT_CYCLES.lengthMeters/2-LIGHT_CYCLES.startWallClearanceMeters)/LIGHT_CYCLES.cellMeters)*LIGHT_CYCLES.cellMeters;
 export function cycleFormationBlend(progress){return MathUtils.smootherstep(progress*CYCLE_OPENING.durationSeconds,CYCLE_FORMATION_CAMERA.blendStartSeconds,CYCLE_OPENING.durationSeconds);}

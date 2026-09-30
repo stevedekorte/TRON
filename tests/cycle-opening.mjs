@@ -73,6 +73,8 @@ try{
  assert.deepEqual(await page.evaluate(()=>__tron.state.audioSampleErrors),[]);
  for(const name of ['prepare-transport','have-transport','transport','entry-startup'])assert((await page.evaluate(()=>__tron.state.audioSamples)).includes('cycle-'+name));
  await page.waitForFunction(()=>__tron.state.cycleOpening===null&&!document.body.classList.contains('cycle-intro'));
+ await page.waitForTimeout(600);
+ await page.screenshot({path:'test-results/cycle-opening-handoff.png'});
  assert.deepEqual(await page.evaluate(()=>__tron.state.cycleOpeningAudio),[]);
  assert.equal(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
  assert((await page.evaluate(()=>__tron.state.camera.y))<20);

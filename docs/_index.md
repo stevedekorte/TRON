@@ -1088,3 +1088,15 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Confirm BIT uses the same /api/jev/decision relay, upstream JEV endpoint, model configuration and budget as Clu. Fix development config so BIT receives VITE_JEV_API_BASE just like the main client; production already embeds that shared setting. The config response contains only the public base URL. Light-cycle race opponents currently use their local planner.
 - Validation: 17 local/public relay tests pass, including BIT upstream/response compatibility, custom-base configuration and credential isolation. Chrome `tests/bit.mjs` passes replies, menu/exit and microphone-permission paths with mocked API responses; no paid requests. Production build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS.
+
+## Live BIT relay and character context — September 29
+
+- [x] Deploy the Worker separately from the website: the stale live protocol rejected BIT questions with HTTP 400. After deployment the same request returned HTTP 200.
+- [x] Supply explicit BIT identity facts and interpret second-person questions as addressed to the TRON character. Reserve UNSURE for unknown or non-binary questions instead of uncertainty about roleplay identity.
+- Validation: 17 relay tests and Worker dry run pass. Deployed Worker version 0fa10ec9-be17-4d31-8e14-30ac45073287; live Are you a bit? returned m0 (YES), confidence 1. This was a real provider request.
+
+## Smooth cycle formation handoff — September 29
+
+- [x] Replace the post-materialization camera cut with a 1.2-second eased move into player follow. Track the launching cycle, blend orientation and field of view, and lift the path over the bikes while retaining final wall constraints. Pause holds transition time; reset clears it.
+- Validation: 19 cycle/arena camera tests pass, including first-frame position/orientation/FOV continuity, bounded motion, pause and completion. Production build and whitespace checks pass (existing chunk-size advisory).
+- Chrome `tests/cycle-opening.mjs` passes the entrance, held formation, handoff and zoom controls. Inspected the midpoint capture after changing the aim blend to follow a moving look point with world-up orientation. Chrome headless on macOS; final motion feel remains for user review.
