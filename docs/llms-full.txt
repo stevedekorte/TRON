@@ -1186,6 +1186,27 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] I/K no longer changes Clu's normal following-camera distance. Only V aerial mode accepts keyboard zoom for Clu; hide the zoom hint outside that mode. Gunner aiming and light-cycle keyboard zoom retain their existing controls.
 - Validation: extend the Chrome autoplay-disabled check to exercise I and K in normal view, zoom out/in in V mode, and verify zoom remains unchanged after returning to normal view.
 
+## Home-screen credits — September 30
+
+- [x] Add CREDITS after BIT in the program menu, with the same keyboard selection and click behavior. Reuse the existing standard and extended credit sequence with terminal music, omitting the detached-from-Clu header. Any key or click returns to program selection.
+- Validation: Chrome headless on macOS, tests/home-credits.mjs passes keyboard and mouse entry, absence of the header, progression from standard to extended credits, and return/reentry. Inspected home-menu and credits captures; whitespace checks pass.
+
+## Clu menu naming — September 30
+
+- [x] Rename the home menu's SPACE PARANOIDS option to CLU. Replace the old masthead branding and home-link accessible name with ENCOM TERMINAL; the browser title and PWA names already use ENCOM TERMINAL.
+
+## Clu startup cruise cancellation — September 30
+
+- [x] Remove the separate startup-throttle override and use the same cruise latch as Shift-W. S/Down cancels cruise instead of temporarily overriding it, so releasing the brake does not resume forward acceleration. Plain W releases cruise; Shift-W enables it again.
+- Validation: 48 simulation/input checks pass. Chrome headless tests/cruise.mjs passes startup cruise, both brake keys, no forward reacceleration after release, Shift-W reenable and plain-W cancellation. Whitespace checks pass.
+
+## Quiet JEV fallback and scalable meters — September 30
+
+- [x] Restore JEV as the browser default, superseding older stored AI-mode preferences once (preference version 4). Keep manual Clu autoplay disabled. Log local/classic AI selection to the console instead of showing a persistent HUD warning. On JEV failure, show JEV unavailable for four seconds with a fading final portion; retain local fallback and suppress repeat notices during a continuous outage.
+- [x] Stack vehicle meters at the top left in a shared grid with font-relative widths, bar heights and row gaps. Wrapped labels grow their rows; position controls beside the stack on desktop and below on narrow screens.
+- Validation: Chrome headless tests/system-warnings.mjs passes default migration, simulated outage/fade, console-only local selection and non-overlapping meters in Clu and light cycles at enlarged font sizes. Inspected rendered captures. The crossing-target shooting regression now uses a fixed seed and asserts damage, since authored spread does not guarantee a lethal hit location.
+- Final verification: all 391 npm tests and production build pass; existing bundle-size advisory only.
+
 
 ---
 

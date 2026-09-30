@@ -5,7 +5,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:'reduce'}),errors=[];let calls=0,unavailable=false;
  page.setDefaultTimeout(90000);page.on('pageerror',e=>errors.push(e.message));
- await page.addInitScript(()=>localStorage.setItem('tron-enemy-ai',JSON.stringify({version:3,mode:'classic',small:false})));
+ await page.addInitScript(()=>localStorage.setItem('tron-enemy-ai',JSON.stringify({version:4,mode:'classic',small:false})));
  await page.route('**/api/jev/decision',r=>{calls++;if(unavailable)return r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Test service outage'})});const q=r.request().postDataJSON();assert.equal(q.controller,'clu');return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:q.options[0].id,confidence:1})});});
  await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
