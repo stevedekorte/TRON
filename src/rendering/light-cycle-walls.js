@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { LIGHT_CYCLES as C, cycleTrailState } from '../game/light-cycles.js';
+import {cycleTrailHeadTrim} from '../game/cycle-trails.js';
 export const CYCLE_WALL_STYLE=Object.freeze({
   colors:[0xde8308,0x167dd8], thicknessMeters:.18,
   flareLengthMeters:10, flareColor:0xfff6dc,
@@ -73,9 +74,8 @@ export class LightCycleWalls {
       const crash=r.crashes?.find(c=>c.id===bike.id);
       const life=cycleTrailState(bike.alive||!crash?-1:r.time-crash.time);
       if(life.height<=0)continue;
-      const offsets=[];let totalPath=0;for(const t of segments){offsets.push(totalPath);totalPath+=Math.hypot(t.x2-t.x1,t.z2-t.z1)*C.cellMeters;}
-      const active=r.trails[bike.segment],span=active?.joining?Math.hypot(active.x2-active.x1,active.z2-active.z1)*C.cellMeters:C.cellMeters;
-      let trim=bike.alive&&!bike.escaped?(1-(r.phase==='racing'?(bike.progress??fraction):fraction))*span+CYCLE_WALL_STYLE.rearAxleBehindMeters:0;
+      const offsets=[];let totalPath=bike.expiredTrailMeters??0;for(const t of segments){offsets.push(totalPath);totalPath+=Math.hypot(t.x2-t.x1,t.z2-t.z1)*C.cellMeters;}
+      let trim=cycleTrailHeadTrim(r,bike,r.phase==='racing'?(bike.progress??fraction):fraction);
       let behind=bike.alive&&!bike.escaped?0:1e6;
       for(let i=segments.length-1;i>=0;i--){
         const t=segments[i],dx=(t.x2-t.x1)*C.cellMeters,dz=(t.z2-t.z1)*C.cellMeters,total=Math.hypot(dx,dz);

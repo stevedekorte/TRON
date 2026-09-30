@@ -1,3 +1,5 @@
+// Temporarily disable player automation while retaining its implementation.
+export const CLU_AUTOPLAY_ENABLED=false;
 export const AUTOPLAY = Object.freeze({
   replanSeconds: 3,
   visionMeters: 350,

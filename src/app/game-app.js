@@ -1,3 +1,4 @@
+import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
 import {CYCLE_OPENING} from '../rendering/camera-rig.js';
 import { LoadingTimings } from './loading-timings.js';
@@ -47,7 +48,7 @@ export function createGameApp() {
   const loop = new GameLoop({ frame, backgroundAllowed: () => autoplay.enabled });
   const sound = new Sound(map);
   const jev = new JevClient();
-  const autoplay = new Autoplay();
+  const autoplay = new Autoplay({available:CLU_AUTOPLAY_ENABLED});
   const systemWarnings = new SystemWarnings($('system-warnings'));
   // Browser defaults supersede the earlier experimental preference once.
   const AI_PREFERENCE_VERSION = 3;
@@ -248,7 +249,7 @@ export function createGameApp() {
     }
   }
   async function resume() {
-    if (mode !== 'paused') return;
+    if (mode !== 'paused' || exitConfirm.open) return;
     setMode(pausedFrom);
     const audioReady = sound.unlock().catch(() => {});
     sound.resumeMusic();
@@ -265,6 +266,10 @@ export function createGameApp() {
     setMode('error');
   }
 
+  const exitConfirm=window.createExitConfirm({
+    onConfirm:()=>{setAutoplay(false);returnToProgramSelection();},
+    onCancel:()=>{void resume();},
+  });
   const gameChoices=[$('start'),$('start-cycles'),$('start-bit')];
   function selectGame(game,{focus=false}={}){
     selectedGame=game;
@@ -288,6 +293,12 @@ export function createGameApp() {
   listen($('sound'), 'click', mute);
   listen(window, 'keydown', (event) => {
     idleTime = 0;
+    if(exitConfirm.open)return;
+    if(event.code==='Escape'&&['running','entering','paused'].includes(mode)){
+      event.preventDefault();
+      if(!event.repeat){pause();if(cycleTuning?.open)cycleTuning.dialog.close();$('paused').hidden=true;exitConfirm.show();}
+      return;
+    }
     if (mode === 'loading') return;
     if(mode==='entering'&&!openingTransition){event.preventDefault();if(!event.repeat)beginCluGame();return;}
     if(creditsVisible()){event.preventDefault();if(!event.repeat)returnToProgramSelection();return;}
@@ -304,6 +315,9 @@ export function createGameApp() {
       return;
     }
     if(mode==='running'&&(run.arenaWaiting||view.cameraRig.cycleOpening!==null)&&event.code!=='Escape'){event.preventDefault();return;}
+    if(run.cycleSpectating&&['ArrowLeft','ArrowRight'].includes(event.code)){
+      event.preventDefault();if(!event.repeat)followCycle(event.code==='ArrowLeft'?-1:1);return;
+    }
     if(cycleTuning?.open)return;
     if(event.code==='Tab'&&cycleTuning&&run.playerVehicle==='cycle'&&['running','paused'].includes(mode)){
       event.preventDefault();if(!event.repeat)cycleTuning.show();return;
@@ -352,7 +366,7 @@ export function createGameApp() {
       return;
     }
     if (
-      event.code === 'KeyU' && run.playerVehicle!=='cycle' &&
+      CLU_AUTOPLAY_ENABLED && event.code === 'KeyU' && run.playerVehicle!=='cycle' &&
       !event.repeat &&
       ['running', 'entering', 'paused'].includes(mode)
     ) {
@@ -504,21 +518,29 @@ export function createGameApp() {
       keys.add(key);
     }
   });
+  function followCycle(direction=1) {
+    const survivors=run.cycleRace.cycles.filter(b=>b.alive);
+    const index=survivors.findIndex(b=>b.id===run.cycleFollowId);
+    run.cycleFollowId=survivors.length?survivors[(index<0?(direction<0?survivors.length-1:0):(index+direction+survivors.length)%survivors.length)].id:null;
+    if(view.cameraRig.freeCamera.active)view.cameraRig.freeCamera.exit();
+    view.cameraRig.freshCamera=true;
+    inputController.clear();
+  }
   function syncCycleSpectator() {
     if(run.playerVehicle!=='cycle')return;
     const dead=!run.cycleRace.cycles[run.cycleRace.playerId].alive;
-    const camera=view.cameraRig.freeCamera;
     if(run.cycleSpectating&&(!dead||run.won||run.crushed)){
-      if(camera.active)camera.exit();
-      run.cycleSpectating=false;run.inspection=false;inputController.clear();
-      $('free-camera-help').hidden=true;
+      if(view.cameraRig.freeCamera.active)view.cameraRig.freeCamera.exit();
+      run.cycleSpectating=false;run.cycleFollowId=null;run.inspection=false;inputController.clear();
     }else if(dead&&!run.won&&!run.crushed&&!run.cycleSpectating){
       run.cycleSpectating=true;run.inspection=false;inspectWasPaused=false;
-      inputController.clear();releaseMouse();clearMouseAim();
-      if(!camera.active)camera.enter({spectator:true});
-      $('free-camera-help').hidden=false;
+      inputController.clear();releaseMouse();clearMouseAim();run.cycleFollowId=null;
+      if(view.cameraRig.freeCamera.active)view.cameraRig.freeCamera.exit();
     }
-    if(run.cycleSpectating)$('free-camera-help').textContent='SPECTATING · WASD move · Q/E down/up · J/L turn · I/K look up/down · drag / arrows look · Shift fast · Home arena · Space pause · Return new match';
+    if(run.cycleSpectating){
+      if(run.cycleFollowId!=null&&!run.cycleRace.cycles.some(b=>b.alive&&b.id===run.cycleFollowId))followCycle();
+      $('free-camera-help').hidden=true;
+    }
   }
   function toggleInspection() {
     const camera = view.cameraRig.freeCamera;
@@ -550,6 +572,7 @@ export function createGameApp() {
     try{localStorage.setItem('tron-enemy-ai',JSON.stringify({version:AI_PREFERENCE_VERSION,mode:config.aiMode,small:config.aiSmallEncounter}));}catch{}
   }
   function setAutoplay(enabled, manualFire = false) {
+    enabled=enabled&&CLU_AUTOPLAY_ENABLED;
     if(enabled&&config.aiMode!=='jev')setJevEnabled(true);
     autoplay.setEnabled(enabled, {manualFire});
     jev.resetScheduling();
@@ -586,6 +609,9 @@ export function createGameApp() {
     }
   });
   listen(document, 'mousemove', (event) => {
+    if(run.cycleSpectating&&['ArrowLeft','ArrowRight'].includes(event.code)){
+      event.preventDefault();if(!event.repeat)followCycle(event.code==='ArrowLeft'?-1:1);return;
+    }
     if(cycleTuning?.open)return;
     if (view?.cameraRig.freeCamera.active) {
       if (event.buttons === 1) view.cameraRig.freeCamera.look(event.movementX, event.movementY);
@@ -825,7 +851,7 @@ export function createGameApp() {
       else {accessHoldTime+=dt;beginCluGame();}
     }
 
-    if((mode==='running'||mode==='entering'&&openingTransition)&&!run.gunner&&view.cameraRig.cycleOpening===null&&!view.cameraRig.freeCamera.active){
+    if((mode==='running'||mode==='entering'&&openingTransition)&&!run.gunner&&view.cameraRig.cycleOpening===null&&!view.cameraRig.freeCamera.active&&(run.playerVehicle==='cycle'||view.cameraRig.aerial)){
       const direction=Number(keys.has('KeyK'))-Number(keys.has('KeyI'));
       const rig=view.cameraRig,field=rig.aerial?'aerialZoom':'followZoom',limits=rig.aerial?AERIAL_ZOOM:FOLLOW_ZOOM;
       rig[field]=Math.max(limits.minScale,Math.min(limits.maxScale,rig[field]*Math.exp(direction*dt*limits.keyboardExponentPerSecond)));
@@ -835,8 +861,11 @@ export function createGameApp() {
     if(mode==='running'&&view.cameraRig.cycleOpening!==null&&(!sound.context||sound.cycleSamplesReady)){
       view.cameraRig.cycleOpening+=dt/CYCLE_OPENING.durationSeconds;
       if(view.cameraRig.cycleOpening>=1+CYCLE_OPENING.formationSeconds/CYCLE_OPENING.durationSeconds){
+        run.cycleRace.remaining=0;
+      }
+      if(view.cameraRig.cycleOpening>=1+(CYCLE_OPENING.formationSeconds+CYCLE_OPENING.launchHoldSeconds)/CYCLE_OPENING.durationSeconds){
         view.cameraRig.finishCycleOpening();
-        run.cycleRace.remaining=0;inputController.clear();
+        inputController.clear();
         document.body.classList.remove('cycle-intro');
       }
     }
@@ -855,7 +884,7 @@ export function createGameApp() {
           if (view.cameraRig.freeCamera.active) command = { ...command, cycleTurbo: false, cycleSlow: false, cycleRoad: {}, throttle: 0, steer: 0, fire: false, firePressed: false, mouseTarget: null, turret: 0, aimPitch: 0 };
           if (autoplay.enabled)
             command = mergeAutoplayInput(autoplay.input(run), command, view.cameraRig.freeCamera.active ? new Set() : keys, run);
-          const events = session.advance(command, fixedStep, {holdCycleRace:view.cameraRig.cycleOpening!==null});
+          const events = session.advance(command, fixedStep, {holdCycleRace:view.cameraRig.cycleOpening!==null&&view.cameraRig.cycleOpening<1+CYCLE_OPENING.formationSeconds/CYCLE_OPENING.durationSeconds});
           inputController.consume();
           for (const event of events) {
             if(event.type==='cycleArrival'){loadingTimings.checkpoint('Player entered cycle arena');loadingTimings.print();}
@@ -1098,6 +1127,7 @@ export function createGameApp() {
     if (disposed) return;
     disposed = true;
     cycleTuning?.dispose();
+    exitConfirm.dispose();
     jev.dispose();
     loop.dispose();
     inputController.dispose();

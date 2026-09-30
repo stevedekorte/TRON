@@ -1,4 +1,5 @@
 import {cycleWallContact} from './cycle-wall-contact.js';
+import {trimCycleTrails} from './cycle-trails.js';
 import {enterRoadMode,advanceRoadCycle,setRoadSpeedControl} from './cycle-road.js';
 import {ARENA_WALL,arenaWallBlocked,wallImpact} from '../game/arena-breaches.js';
 import { LIGHT_CYCLES as C, CYCLE_TESTING, CYCLE_DIRECTIONS as DIR, cycleTrailState, cycleFraction } from '../game/light-cycles.js';
@@ -33,7 +34,7 @@ export function resetCycleRound(r){
     const x=(id%3-1)*(r.entranceFormation&&team===0?C.entranceFormationSpacingCells:12),z=north?-startRow:startRow,dir=north?2:0;
     const active=!((r.hideMiddleOpponent??CYCLE_TESTING.hideMiddleOpponent)&&r.playerId!==undefined&&id===4);
     if(active)r.occupied[cell(x,z)]=id+1;
-    return {id,team,x,z,previousX:x,previousZ:z,dir,alive:active,turns:0,straight:0,progress:0,speedMultiplier:1,turboCharge:1,boosting:false};
+    return {id,team,x,z,previousX:x,previousZ:z,dir,alive:active,turns:0,straight:0,progress:0,speedMultiplier:1,turboCharge:1,boosting:false,brakeCharge:1,braking:false};
   });
   if(r.startOutside&&r.playerId!==undefined){
     const b=r.cycles[r.playerId];
@@ -51,6 +52,18 @@ function room(r,x,z){
     for(const [dx,dz] of DIR){const nx=px+dx,nz=pz+dz,k=`${nx},${nz}`;if(free(r,nx,nz)&&!seen.has(k)){seen.add(k);queue.push([nx,nz]);}}
   }
   return queue.length;
+}
+function startCycleTrails(r){
+ for(const b of r.cycles){
+  if(!b.alive||b.escaped)continue;
+  const sign=Math.sign(b.z),wallZ=sign*ARENA_WALL.innerMeters/C.cellMeters;
+  if(!sign)continue;
+  b.segment=r.trails.length;
+  r.trails.push({bikeId:b.id,team:b.team,dir:b.dir,x1:b.x,z1:wallZ,x2:b.x,z2:b.z,initial:true});
+  for(let z=b.z+sign;Math.abs(z)<=Math.floor(Math.abs(wallZ));z+=sign){
+   if(inside(b.x,z))r.occupied[cell(b.x,z)]=b.id+1;
+  }
+ }
 }
 export function chooseCycleDirection(r,bike){
   let best=bike.dir,bestScore=-Infinity;
@@ -108,11 +121,12 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
     }
     if(p.dir!==b.dir){b.turns++;b.straight=0;}else b.straight++;
     const last=r.trails[b.segment];
-    if(last&&!last.joining&&last.dir===p.dir){last.x2=p.x;last.z2=p.z;}
+    if(last&&!last.joining&&last.dir===p.dir){last.x2=p.x;last.z2=p.z;last.initial=false;}
     else{b.segment=r.trails.length;r.trails.push({bikeId:b.id,team:b.team,dir:p.dir,x1:b.x,z1:b.z,x2:p.x,z2:p.z});}
     b.x=p.x;b.z=p.z;b.dir=p.dir;if(inside(b.x,b.z))r.occupied[cell(b.x,b.z)]=b.id+1;else r.outerOccupied[`${b.x},${b.z}`]=b.id+1;
 
   }
+  trimCycleTrails(r);
   const teams=[0,1].filter(team=>r.cycles.some(b=>b.alive&&b.team===team));
   if(teams.length<2){r.phase='result';r.remaining=C.restartSeconds;r.winner=teams[0]??null;if(r.winner!==null)r.scores[r.winner]++;}
 }
@@ -137,7 +151,7 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
   if(r.phase!=='racing'){
     updateEscapedCycles(r,dt,roadInput);
     r.remaining-=dt;
-    if(r.remaining<=0){if(r.phase==='result'){if(r.playerId===undefined)resetCycleRound(r);}else r.phase='racing';}
+    if(r.remaining<=0){if(r.phase==='result'){if(r.playerId===undefined)resetCycleRound(r);}else {r.phase='racing';startCycleTrails(r);}}
     return;
   }
   r.elapsed+=dt;r.accumulator+=dt;
@@ -150,17 +164,30 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
     const alive=r.cycles.filter(b=>b.alive&&!b.escaped);
     let slice=Math.min(remaining,C.speedStepSeconds);
     for(const b of alive){
-      b.boosting=b.id===r.playerId&&turbo&&!slow&&b.turboCharge>1e-9;
-      b.targetSpeedMultiplier=b.id===r.playerId&&slow?C.slowSpeedMultiplier:b.boosting?C.turboSpeedMultiplier:1;
+      let wantsTurbo=turbo,wantsBrake=slow;
+      if(b.id!==r.playerId){
+        const [dx,dz]=DIR[b.dir];let clear=0;
+        while(clear<C.aiTurboClearCells&&free(r,b.x+dx*(clear+1),b.z+dz*(clear+1)))clear++;
+        wantsBrake=clear<C.aiBrakeClearCells&&(b.braking||b.brakeCharge>=C.aiReserveStartCharge);
+        wantsTurbo=clear>=C.aiTurboClearCells&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge);
+      }
+      b.brakeCharge??=1;
+      b.braking=wantsBrake&&b.brakeCharge>1e-9;
+      b.boosting=wantsTurbo&&!wantsBrake&&b.turboCharge>1e-9;
+      b.reserveTurboRequested=wantsTurbo;b.reserveBrakeRequested=wantsBrake;
+      b.targetSpeedMultiplier=b.braking?C.slowSpeedMultiplier:b.boosting?C.turboSpeedMultiplier:1;
       b.travelRate=(b.speedMultiplier??1)/interval;
       slice=Math.min(slice,(1-b.progress)/b.travelRate);
+      if(b.braking)slice=Math.min(slice,b.brakeCharge*C.brakeDurationSeconds);
       if(b.boosting)slice=Math.min(slice,b.turboCharge*C.turboDurationSeconds);
     }
     for(const b of alive){
       b.progress+=slice*b.travelRate;b.renderTravel+=slice*b.travelRate;
+      if(b.braking){b.brakeCharge=Math.max(0,b.brakeCharge-slice/C.brakeDurationSeconds);if(b.brakeCharge<1e-9)b.brakeCharge=0;}
+      else if(!b.reserveBrakeRequested)b.brakeCharge=Math.min(1,b.brakeCharge+slice/C.brakeRechargeSeconds);
       b.speedMultiplier=(b.speedMultiplier??1)+(b.targetSpeedMultiplier-(b.speedMultiplier??1))*(1-Math.exp(-C.speedResponsePerSecond*slice));
       if(b.boosting){b.turboCharge=Math.max(0,b.turboCharge-slice/C.turboDurationSeconds);if(b.turboCharge<1e-9)b.turboCharge=0;}
-      else if(!turbo||slow||b.id!==r.playerId)b.turboCharge=Math.min(1,b.turboCharge+slice/C.turboRechargeSeconds);
+      else if(!b.reserveTurboRequested||b.reserveBrakeRequested)b.turboCharge=Math.min(1,b.turboCharge+slice/C.turboRechargeSeconds);
     }
     updateEscapedCycles(r,slice,roadInput);
     remaining-=slice;
@@ -168,6 +195,8 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
     for(const b of moving)b.progress=Math.max(0,b.progress-1);
     if(moving.length)tickCycleRace(r,(race,bike)=>bike.id===race.playerId?(bike.dir+(race.pendingTurns.shift()||0)+4)%4:chooseCycleDirection(race,bike),moving);
   }
+  trimCycleTrails(r);
+  for(const b of r.cycles)if(!b.alive||r.phase!=='racing'||b.brakeCharge<=1e-9)b.braking=false;
   for(const b of r.cycles)if(!b.alive||r.phase!=='racing'||b.turboCharge<=1e-9)b.boosting=false;
   if(r.elapsed>=C.roundSeconds&&r.phase==='racing'){
     const counts=[0,1].map(t=>r.cycles.filter(b=>b.alive&&b.team===t).length);
@@ -244,7 +273,7 @@ function updateEscapedCycles(r,dt,input,playerOnly=false){
    let control=input;
    if(b.id!==r.playerId){
     const probe={x:b.x-Math.sin(b.yaw)*Math.max(20,b.roadSpeed)/C.cellMeters,z:b.z-Math.cos(b.yaw)*Math.max(20,b.roadSpeed)/C.cellMeters};
-    const safe=clear(b,probe)===true;control={throttle:safe&&b.roadSpeed<C.speedMetersPerSecond,brake:!safe,steer:safe?0:1};
+    const safe=clear(b,probe)===true;control={throttle:safe&&b.roadSpeed<C.speedMetersPerSecond,brake:!safe,turbo:safe&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge),steer:safe?0:1};
    }
    if(!advanceRoadCycle(b,step,control,clear,r.roadConfig))r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:r.time});
    if(`${Math.round(b.x)},${Math.round(b.z)}`!==b.roadEntryCell)b.roadEntryCell=null;

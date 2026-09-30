@@ -195,3 +195,10 @@ test('timeouts retry twice, recover, count attempts, and eventually disengage',a
   client.update(scenario(),false,a);assert.equal(client.stats.value.requests,0);
  }finally{config.aiMode=before;client.dispose();}
 });
+
+test('unavailable player autoplay cannot enable either full or manual-fire assistance',()=>{
+ const a=new Autoplay({available:false});
+ for(const manualFire of [false,true]){
+  a.setEnabled(true,{manualFire});assert.equal(a.enabled,false);assert.equal(a.manualFire,false);
+ }
+});

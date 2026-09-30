@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#080c16">
   <meta name="description" content="A tank. A canyon. Something enormous overhead. An open-ended maze simulation inspired by TRON, 1982.">
   <title>ENCOM TERMINAL</title>
+  <script src="./bit/exit-confirm.js"></script>
   <style>html,body{margin:0;background:#000;color:#9eb6ce}body{visibility:hidden}</style>
   <link rel="stylesheet" href="/src/ui/style.css">
   <link rel="icon" type="image/svg+xml" href="./icons/encom-e-727c3ea9d1f1.svg">
@@ -64,15 +65,16 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
     <span id="aim-dot" hidden></span><span id="mouse-hint"></span>
   </div>
   <div id="hud" hidden>
-    <button id="autoplay-toggle" type="button" aria-pressed="false" title="U toggles Jev control of Clu. Shift-U toggles Jev driving and aiming with manual firing. Space or click to shoot. N toggles Jev for all units.">U / AUTOPLAY OFF</button>
+    <button id="autoplay-toggle" hidden disabled type="button" aria-pressed="false" title="U toggles Jev control of Clu. Shift-U toggles Jev driving and aiming with manual firing. Space or click to shoot. N toggles Jev for all units.">U / AUTOPLAY OFF</button>
     <div id="jev-stats" title="This round; requests/sec over the last 10 seconds. Cost in USD; ~ includes estimated usage."><span>JEV / 0 REQUESTS · 0.0/s</span><span>$0.00000 USD</span></div>
     <div id="system-warnings" role="status" aria-live="polite" aria-atomic="true" hidden></div>
     <div id="clu-health" class="turbo-indicator health-indicator"><span>HEALTH</span><div id="health-meter" class="turbo-meter" role="meter" aria-label="CLU health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="health-fill"></i></div></div>
     <div id="cycle-controls" hidden></div>
     <div id="assist-marker" hidden role="img" aria-label="Recognizer targeted"><svg viewBox="0 0 30 18" preserveAspectRatio="none" aria-hidden="true"><path d="M3 3L15 15L27 3"/></svg></div>
     <div id="clu-shots" class="turbo-indicator shots-indicator"><span>STORED SHOTS</span><div id="shots-meter" role="meter" aria-label="CLU stored shots" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i></i><i></i><i></i></div></div>
+    <div id="cycle-brake" class="turbo-indicator" hidden><span>S/X / BRAKE</span><div class="turbo-meter"><i id="cycle-brake-fill"></i></div></div>
     <div id="turbo" class="turbo-indicator"><span>T / TURBO</span><div class="turbo-meter"><i id="turbo-fill"></i></div></div>
-    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F OR J+L / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>C / FREE CAMERA</span><span>P / GUNNER</span><span>O / ZOOM</span><span id="pitch-hint">IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>M / SOUND</span><span>B / SCREENSHOT</span><span>ESC / PAUSE</span></div>
+    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F OR J+L / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>C / FREE CAMERA</span><span>P / GUNNER</span><span>O / ZOOM</span><span id="pitch-hint">IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>M / SOUND</span><span>B / SCREENSHOT</span><span>ESC / HOME</span></div>
     <div id="survey" class="sim-survey" hidden><span>MAZE SURVEY / CLU POSITION</span><canvas id="map" width="500" height="500" aria-label="Maze layout and Clu position"></canvas><small>TAB TO CLOSE</small></div>
   </div>
 

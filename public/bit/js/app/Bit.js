@@ -24,7 +24,7 @@ window.Bit = Obj3d.clone().newSlots({
     },
 
     searchRequest: async function(question) {
-        if (this._request) return;
+        if (this._request || window.bitPaused) return;
         const controller = new AbortController();
         this._request = controller;
         const output = document.getElementById('answer');
@@ -45,7 +45,7 @@ window.Bit = Obj3d.clone().newSlots({
             else if (result.id === 'm1') {this.showResponse('NO'); this.doBitNo();}
             else {this.showResponse('???'); this.jumpAround();}
         } catch (error) {
-            if (!window.bitLeaving) this.showResponse(navigator.onLine ? 'BIT IS UNAVAILABLE. TRY AGAIN.' : 'BIT NEEDS A CONNECTION TO ANSWER.');
+            if (!window.bitLeaving && !window.bitPaused) this.showResponse(navigator.onLine ? 'BIT IS UNAVAILABLE. TRY AGAIN.' : 'BIT NEEDS A CONNECTION TO ANSWER.');
         } finally {clearTimeout(timer); this._request = null;}
     },
 
@@ -177,6 +177,7 @@ window.Bit = Obj3d.clone().newSlots({
     },
 
     resumeListening: function() {
+        if (window.bitPaused || window.bitLeaving) return;
         const recognition = this._recognition
         if (!recognition || !this._listeningPaused) {
             return
@@ -651,5 +652,3 @@ window.BitIdleGroup2 = Obj3dThing.clone().newSlots({
 	    object.rotation.x = Math.PI/2
     },    
 })
-
-        

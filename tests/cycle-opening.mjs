@@ -2,7 +2,7 @@ import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
- const page=await browser.newPage(),errors=[];
+ const page=await browser.newPage({viewport:{width:1250,height:1000}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:5173/');
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
@@ -37,6 +37,7 @@ try{
  assert.equal(await page.locator('#cycle-controls').evaluate(el=>getComputedStyle(el).visibility),'hidden');
  const start=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace,guard:__tron.state.recognizers.find(e=>e.role==='arena-patrol')}));
  assert(start.camera.y>100&&start.camera.y<=111);
+ await page.screenshot({path:'test-results/cycle-opening-first-frame.png'});
  assert.equal(await page.evaluate(()=>__tron.state.tankVisible),false);
  assert.deepEqual(await page.evaluate(()=>__tron.state.carrierMaterialization),{opacity:1,panel:false});
  assert.equal(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
@@ -72,6 +73,11 @@ try{
  for(const axis of ['x','y','z'])assert.equal(heldCamera[axis],formation.camera[axis],'formation camera stays at the approach endpoint');
  assert.deepEqual(await page.evaluate(()=>__tron.state.audioSampleErrors),[]);
  for(const name of ['prepare-transport','have-transport','transport','entry-startup'])assert((await page.evaluate(()=>__tron.state.audioSamples)).includes('cycle-'+name));
+ await page.waitForFunction(()=>__tron.state.cycleOpening>(16+2.75/1.5+.35)/16);
+ const launched=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace}));
+ assert(launched.race.time>formation.race.time,'cycles launch before the cut');
+ for(const axis of ['x','y','z'])assert.equal(launched.camera[axis],formation.camera[axis],'launch shot stays fixed');
+ await page.screenshot({path:'test-results/cycle-launch-trails.png'});
  await page.waitForFunction(()=>__tron.state.cycleOpening===null&&!document.body.classList.contains('cycle-intro'));
  await page.waitForTimeout(600);
  await page.screenshot({path:'test-results/cycle-opening-handoff.png'});
@@ -98,11 +104,11 @@ try{
  assert.equal(await page.evaluate(()=>__tron.state.tankVisible),false);
  await page.locator('select[aria-label="Default tint preset"]').selectOption('red',{force:true});
  await page.waitForFunction(()=>__tron.state.recognizers.filter(e=>e.role!=='arena-patrol').every(e=>e.faceTintColor===0x482626));
- assert.equal(await page.evaluate(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor),0x354525);
+ assert.equal(await page.evaluate(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor),0x1c3825);
  await page.locator('select[aria-label="Arena patrol tint preset"]').selectOption('blue',{force:true});
  await page.waitForFunction(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor===0x20334c);
  await page.locator('#reset-tuning').dispatchEvent('click');
- await page.waitForFunction(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor===0x354525);
+ await page.waitForFunction(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor===0x1c3825);
  assert.deepEqual(errors,[]);
  console.log('Cycle opening: tank covered, backward maze-facing descent, held countdown, descending camera, pause/resume, and race handoff passed.');
 }finally{await browser.close();}

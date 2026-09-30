@@ -373,6 +373,7 @@ VizApp = {
 
 	render: function() 
 	{
+        if (window.bitPaused) return;
         var time = new Date().getTime()/1000
         
 		for(var i = 0; i < this._objects.length; i++) {

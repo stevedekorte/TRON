@@ -198,6 +198,8 @@ These are request/byte caps, not a guaranteed dollar cap. Limits are intentional
 
 ### Clu autoplay and spatial teleporters
 
+Clu autoplay is temporarily disabled (`CLU_AUTOPLAY_ENABLED=false`). U, Shift-U, the autoplay button and Clu JEV statistics are unavailable. The descriptions below document the retained implementation for future reactivation. Clu I/K camera zoom now works only in V aerial mode.
+
 Press **U** or click the top-left autoplay button to let Jev choose Clu's maneuvers. Autoplay stays enabled until U or the button is toggled again. Held driving/turret inputs temporarily override those channels; manual firing leaves automatic driving active. Camera/aerial controls remain available for watching. The button shows Jev versus local control; service failures disengage autoplay until explicitly re-enabled. Player and enemy decisions share the same request limits. Public deployment of this feature requires both the updated Worker protocol and website client.
 
 Teleport pads now act as invisible boxes four maze-wall heights tall: parts inside become wireframe, full entry transfers immediately with momentum/heading/relative offset intact, and parts regain solidity as they exit the destination. Full exit rearms the destination pad. Reinforcements keep their original materialization sweep.
@@ -228,3 +230,5 @@ On the first online visit, the worker downloads approximately 49 MiB of local ga
 Select **BIT** from the terminal to open the integrated program in `public/bit`. Bit requests microphone access automatically on entry; grant the browser permission prompt to begin. Escape returns to program selection. The copy preserves the original MIT license and assets while removing the standalone server, stored-key dialog, obsolete code variants and separate PWA. The original sibling project is left intact.
 
 Bit uses the same private, budgeted Jev relay as the game. Both local and Worker protocols accept `{controller: "bit", question: "..."}` with a 1,000-character limit and fixed yes/no/unsure choices. Deploy the updated Worker alongside the client to enable public answers. Browser speech recognition and AI answers need network access; static Bit assets are available offline. `node tests/bit.mjs` tests entry, mocked speech/answers, repeat entry and Escape without live AI charges.
+
+New film-reference videos under `docs/references/videos` use Git LFS. Run `git lfs install` and `git lfs pull` after cloning to download those references; they are not required to run the game.

@@ -57,25 +57,25 @@ test('side glances keep the horizon level',()=>{
   assert(Math.abs(right.y)<1e-9);
  }
 });
-test('materialization handoff eases position, orientation and field of view without a cut',()=>{
+test('spectator camera follows the selected survivor without changing the player identity',()=>{
+ const {run,rig,bike}=setup();bike.alive=false;
+ const survivor={...bike,id:2,alive:true,x:20,previousX:20,z:0,previousZ:0};
+ run.cycleRace.cycles.push(survivor);run.cycleSpectating=true;run.cycleFollowId=2;
+ frame(rig,run,1/60);
+ const pose=cyclePlayerPose({...run.cycleRace,playerId:2});
+ assert(Math.hypot(rig.camera.position.x-pose.x,rig.camera.position.z+pose.s)<11);
+ assert.equal(run.cycleRace.playerId,0);
+ const before=rig.camera.position.clone();survivor.x++;survivor.previousX++;
+ frame(rig,run,1/60);assert(Math.abs(rig.camera.position.x-before.x-4.8)<1e-9);
+});
+test('materialization holds its shot then cuts immediately to follow',()=>{
  const {bike,run,rig}=setup();bike.z=bike.previousZ=-84;bike.dir=2;
- rig.cycleOpening=1.1;frame(rig,run,1/60);
- const position=rig.camera.position.clone(),rotation=rig.camera.quaternion.clone(),fov=rig.camera.fov;
- rig.finishCycleOpening();frame(rig,run,1/60);
- assert(rig.camera.position.distanceTo(position)<.1);
- assert(rig.camera.quaternion.angleTo(rotation)<.01);
- assert(Math.abs(rig.camera.fov-fov)<.01);
- const elapsed=rig.cycleFollowTransition.elapsed;
- rig.update(run,run,0,.5,'paused',{});
- assert.equal(rig.cycleFollowTransition.elapsed,elapsed,'pause holds the transition');
- let previous=rig.camera.position.clone();
- for(let i=0;i<100;i++){
-  frame(rig,run,1/60);
-  assert(rig.camera.position.distanceTo(previous)<1,'handoff position remains continuous');
-  previous.copy(rig.camera.position);
- }
- assert.equal(rig.cycleFollowTransition,null);
- rig.reset();assert.equal(rig.cycleFollowTransition,null);
+ rig.cycleOpening=1.05;frame(rig,run,1/60);const held=rig.camera.position.clone();
+ rig.cycleOpening=1.1;frame(rig,run,1/60);assert(rig.camera.position.equals(held));
+ rig.finishCycleOpening();assert(rig.freshCamera);frame(rig,run,1/60);
+ assert(rig.camera.position.distanceTo(held)>2);
+ const cut=rig.camera.position.clone();frame(rig,run,1/60);
+ assert(rig.camera.position.distanceTo(cut)<1e-6,'no post-cut transition');
 });
 test('cycle glances retain side orbit and a visible horizon throughout I/K zoom',()=>{
  for(const escaped of [false,true])for(const zoom of [1,2,8,32,128])for(const side of [-1,1]){
@@ -222,4 +222,36 @@ test('cycle follow zoom has matching arena and road framing and returns to norma
   assert(rig.camera.position.distanceTo(normal)<1e-8);
  }
  assert(positions[0].distanceTo(positions[1])<1e-8);
+});
+
+test('death camera stays at wall height and tracks survivors from a fixed perch',async()=>{
+ const {ARENA_WALL}=await import('../src/game/arena-breaches.js');
+ const {bike,run,rig}=setup();
+ bike.x=84;bike.previousX=84;frame(rig,run,1/60);
+ const start=rig.camera.position.clone();bike.alive=false;run.cycleSpectating=true;run.cycleFollowId=null;
+ const survivor={...bike,id:1,alive:true,x:20,previousX:20,z:0,previousZ:0};
+ run.cycleRace.cycles.push(survivor);
+ frame(rig,run,1/60);assert(rig.camera.position.distanceTo(start)<1);
+ for(let i=0;i<240;i++){
+  frame(rig,run,1/60);
+  assert(rig.camera.position.y<=66);
+  if(rig.camera.position.y<65)assert(Math.abs(rig.camera.position.x-start.x)<1e-8);
+ }
+ const center=new Vector3(run.cycleRace.site.x,0,-run.cycleRace.site.s);
+ assert.equal(rig.camera.position.y,66);
+ assert(Math.abs(rig.camera.position.x-center.x-(ARENA_WALL.innerMeters+1))<1e-8);
+ const perch=rig.camera.position.clone();
+ survivor.x=-20;survivor.previousX=-20;
+ for(let i=0;i<180;i++)frame(rig,run,1/60);
+ assert(rig.camera.position.distanceTo(perch)<1e-8);
+ const pose=cyclePlayerPose({...run.cycleRace,playerId:1});
+ const aim=new Vector3(pose.x,1,-pose.s);
+ assert(rig.camera.getWorldDirection(new Vector3()).dot(aim.sub(perch).normalize())>.99999);
+ survivor.alive=false;run.cycleRace.cycles.push({...survivor,id:2,alive:true});frame(rig,run,1/60);
+ assert.equal(rig.cycleOverview.trackedId,2);
+ run.cycleRace.cycles[2].alive=false;
+ for(let i=0;i<180;i++)frame(rig,run,1/60);
+ assert.equal(rig.cycleOverview.trackedId,null);
+ assert(Number.isFinite(rig.camera.quaternion.w));
+ rig.reset();assert.equal(rig.cycleOverview,null);
 });

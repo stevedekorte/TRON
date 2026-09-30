@@ -316,7 +316,7 @@ test('turbo lasts ten simulated seconds, cannot stack, permits braking and clear
  tick(r,{throttle:1},5);assert.equal(boostTank(r),false);assert.ok(Math.abs(r.turboRemaining-5)<1e-7);
  tick(r,{throttle:1},5);assert.equal(r.turboRemaining,0);assert.equal(r.speed,config.maxSpeed*2.5);
  tick(r,{throttle:1},2);assert.equal(r.speed,config.maxSpeed);
- assert.equal(boostTank(r),false);tick(r,{},48);assert.equal(r.turboCooldown,0);assert.equal(boostTank(r),true);tick(r,{throttle:-1},.5);assert.ok(r.speed<config.maxSpeed*2.5-8);
+ tick(r,{},48);assert.equal(r.turboCooldown,0);assert.equal(boostTank(r),true);tick(r,{throttle:-1},.5);assert.ok(r.speed<config.maxSpeed*2.5-8);
  r.crushed=true;step(r,{},1/60);assert.equal(r.turboRemaining,0);assert.equal(boostTank(r),false);
  assert.equal(createRun().turboRemaining,0);
 });
@@ -493,4 +493,17 @@ test('secondhand sightings recruit no further neighbors beyond the original obse
  // A recipient's own later sighting may recruit its local neighbors.
  b.memory={...b.memory,seenAt:r.time,source:b.id};updateRecognizers(r,0);
  assert(r.radio.some(m=>m.to===c.id));
+});
+
+
+test('Clu can spend a partially recharged turbo reserve without refilling or stacking it',()=>{
+ const r=createRun();Object.assign(r,{x:-5000,s:-5000,recognizers:[],turboCooldown:60});
+ assert.equal(boostTank(r),false);
+ tick(r,{},15);assert(Math.abs(r.turboCooldown-45)<1e-7);
+ assert.equal(boostTank(r),true);assert(Math.abs(r.turboRemaining-2.5)<1e-7);
+ assert.equal(r.turboCooldown,60);assert.equal(boostTank(r),false);
+ tick(r,{throttle:1},2.5);assert.equal(r.turboRemaining,0);
+ assert.equal(boostTank(r),true);assert(Math.abs(r.turboRemaining-2.5/6)<1e-7);
+ const partial=createRun();partial.turboCooldown=59.94;
+ assert.equal(boostTank(partial),true);assert(Math.abs(partial.turboRemaining-.01)<1e-7);
 });

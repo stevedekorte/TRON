@@ -1,3 +1,4 @@
+import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {Vector3} from 'three';
 import {assistedRecognizerTarget,ASSIST_MARKER} from '../rendering/assist-target.js';
 import { config, CLU_HEALTH, CLU_WEAPON, TURBO, GUNNER } from '../game/config.js';
@@ -83,10 +84,10 @@ export class HudPresenter {
     else if(cycleMode){
       const status=race.phase==='countdown'?'LIGHT CYCLES · MATERIALIZING'
         :race.cycles[race.playerId].alive&&race.cycles[race.playerId].escaped?'FREE RIDE · HOLD W/S / SPEED · X / BRAKE / REVERSE · T / TURBO · A/D / STEER · J/L / GLANCE · I/K / ZOOM'
-        :!race.cycles[race.playerId].alive?'CYCLE DESTROYED · SPECTATE · RETURN / NEW MATCH'
+        :!race.cycles[race.playerId].alive?'CYCLE DETROYED - ARROW KEYS TO FOLLOW - ENTER TO RESTART'
         :race.phase==='result'?'MATCH COMPLETE · RETURN / NEW MATCH'
-        :'LIGHT CYCLES · A/D OR ←/→ TURN · HOLD W/T / TURBO · S/X / SLOW · J/L / GLANCE · I/K / ZOOM · V / AERIAL · ESC / PAUSE';
-      cycleControls.textContent=status+(import.meta.env.DEV?' · TAB / DYNAMICS':'');
+        :'LIGHT CYCLES · A/D OR ←/→ TURN · HOLD W/T / TURBO · S/X / SLOW · J/L / GLANCE · I/K / ZOOM · V / AERIAL · ESC / HOME';
+      cycleControls.textContent=status+(import.meta.env.DEV&&race.cycles[race.playerId].alive?' · TAB / DYNAMICS':'');
     }
     $('gunner-sight').hidden =
       !(view.cameraRig.gunnerOpacity > 0) || run.crushed || !['running', 'paused'].includes(mode);
@@ -107,15 +108,19 @@ export class HudPresenter {
     $('gunner-sight').classList.toggle('on-target', !!view.gunnerHit);
     $('gunner-sight').classList.toggle('critical-target', !!view.gunnerHit?.critical);
     $('gunner-zoom').textContent = ['1×', '2×', '4×', '8×'][run.gunnerZoom];
+    $('pitch-hint').hidden=!run.gunner&&!view.cameraRig.aerial&&!cycleMode;
     $('pitch-hint').textContent=!run.gunner&&!cycleMode?'I/K / ZOOM':'IK / AIM';
     $('zoom-hint').hidden = !(view.cameraRig.aerial || (GUNNER.mouseEnabled && run.gunner));
     $('survey').hidden = !showSurvey;
+    $('autoplay-toggle').hidden=!CLU_AUTOPLAY_ENABLED;
+    $('autoplay-toggle').disabled=!CLU_AUTOPLAY_ENABLED;
     $('autoplay-toggle').textContent = autoplay.enabled
       ? `${autoplay.manualFire ? 'SHIFT-U' : 'U'} / AUTOPLAY · ${jev.warning ? 'LOCAL FALLBACK' : autoplay.tactical?.source === 'jev' ? 'JEV' : 'LOCAL'}${autoplay.manualFire ? ' · MANUAL FIRE' : ''}`
       : 'U / AUTOPLAY OFF';
     $('autoplay-toggle').setAttribute('aria-pressed', String(autoplay.enabled));
     const jevStats = jev.stats.value,
       statsNode = $('jev-stats');
+    statsNode.hidden=!CLU_AUTOPLAY_ENABLED&&!cycleMode;
     statsNode.children[0].textContent = `N / JEV ${config.aiMode==='jev'?'ON':'OFF'} · ${jevStats.requests} REQUESTS · ${jevStats.requestsPerSecond.toFixed(1)}/s`;
     statsNode.children[1].textContent = `${jevStats.estimatedRequests ? '~' : ''}$${jevStats.costUsd.toFixed(5)} USD`;
 
@@ -132,7 +137,9 @@ export class HudPresenter {
                   : 'Local tactical AI selected.',
             }),
     );
-    const roadHealthBike=cycleMode&&race.cycles[race.playerId].escaped?race.cycles[race.playerId]:null;
+    const watchedCycleId=run.cycleSpectating?(run.cycleFollowId??view.cameraRig.cycleOverview?.trackedId??race?.playerId):race?.playerId;
+    const cycleBike=cycleMode?(race.cycles.find(b=>b.id===watchedCycleId)??race.cycles[race.playerId]):null;
+    const roadHealthBike=cycleBike?.escaped?cycleBike:null;
     document.body.classList.toggle('cycle-road',!!roadHealthBike);
     const healthFraction = roadHealthBike ? (roadHealthBike.roadHealth??1) : run.crushed ? 0 : Math.max(0, Math.min(1, run.health / CLU_HEALTH.max)),
       healthPercent = Math.ceil(healthFraction * 100);
@@ -154,10 +161,16 @@ export class HudPresenter {
       shotsMeter.children[i].style.setProperty('--charge', String(charge));
       shotsMeter.children[i].classList.toggle('ready', i < storedShots);
     }
-    const roadBike=cycleMode&&race.cycles[race.playerId].escaped?race.cycles[race.playerId]:null;
+    const roadBike=roadHealthBike;
+    const brake=$('cycle-brake');
+    brake.hidden=!cycleMode||!!roadBike;
+    brake.classList.toggle('boosting',!!cycleBike?.braking);
+    brake.classList.toggle('charging',(cycleBike?.brakeCharge??1)<1);
+    brake.setAttribute('aria-label',`Brake reserve ${Math.round((cycleBike?.brakeCharge??1)*100)} percent`);
+    $('cycle-brake-fill').style.transform=`scaleX(${cycleBike?.brakeCharge??1})`;
     const turbo = $('turbo'),
-      boosting = cycleMode ? race.cycles[race.playerId].boosting : run.turboRemaining > 0,
-      charging = cycleMode ? race.cycles[race.playerId].turboCharge < 1 : run.turboCooldown > 0;
+      boosting = cycleMode ? cycleBike.boosting : run.turboRemaining > 0,
+      charging = cycleMode ? cycleBike.turboCharge < 1 : run.turboCooldown > 0;
     turbo.querySelector('span').textContent = roadBike ? `T / TURBO · ${roadBike.reverseGear?'R':Math.round(roadBike.targetRoadSpeed*3.6)+' SET'} · ${Math.round(Math.abs(roadBike.roadSpeed)*3.6)} KM/H` : cycleMode ? 'W/T / TURBO' : 'T / TURBO';
     turbo.setAttribute(
       'aria-label',
@@ -166,7 +179,7 @@ export class HudPresenter {
     turbo.classList.toggle('boosting', boosting);
     turbo.classList.toggle('charging', charging);
     $('turbo-fill').style.transform =
-      `scaleX(${cycleMode ? race.cycles[race.playerId].turboCharge : boosting ? run.turboRemaining / TURBO.duration : 1 - run.turboCooldown / TURBO.rechargeSeconds})`;
+      `scaleX(${cycleMode ? cycleBike.turboCharge : boosting ? run.turboRemaining / TURBO.duration : 1 - run.turboCooldown / TURBO.rechargeSeconds})`;
     const openingControls = controlsFirstKey === null || run.time - controlsFirstKey < 10;
     $('hint').classList.toggle(
       'faded',
