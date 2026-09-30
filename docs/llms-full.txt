@@ -1234,6 +1234,13 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Remove the M mute shortcut and its control hint. Group Clu controls into Driving, Weapons, Camera and Game, and cycle controls into Driving, Camera, After Death and Game. Remove the final any-key/tap/click instruction while retaining that dismissal behavior.
 
+## Recover stale offline installations — September 30
+
+- [x] Add an uncached update.html entry that checks for a new worker, explicitly activates the downloaded update and returns to the game. This works even when an older worker serves cached entry HTML and its old registration code.
+- [x] Future clients activate waiting updates from terminal/home screens and reload after controller replacement. Preserve running games and credits until they return home; keep ordinary offline caching.
+- Validation: Chrome tests/pwa-update.mjs reproduces old cache-first HTML and a worker without update messaging, then verifies migration through update.html into the current playable game. Production build and whitespace checks pass.
+- PWA lifecycle verification also passes: offline Clu/cycles/BIT, audio ranges, installability, waiting during play, and applying the waiting update after returning home.
+
 
 ---
 

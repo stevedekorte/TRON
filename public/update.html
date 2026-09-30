@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Update ENCOM Terminal</title>
+<style>body{background:#020204;color:#159ddd;font:18px/1.5 monospace;padding:12vh 10vw}a{color:inherit}</style></head>
+<body><p id="status" role="status">UPDATING ENCOM TERMINAL…</p><a href="./">RETURN TO ENCOM TERMINAL</a>
+<script type="module">
+const status=document.querySelector('#status');
+try{
+ if(!('serviceWorker' in navigator)){location.replace('./');}
+ else{
+  let activating=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(activating)location.replace('./');});
+  const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
+  const apply=()=>{if(registration.waiting){activating=true;registration.waiting.postMessage({type:'ACTIVATE_UPDATE'});return true;}return false;};
+  registration.addEventListener('updatefound',()=>registration.installing?.addEventListener('statechange',()=>{
+   if(!apply()&&registration.installing?.state==='redundant')status.textContent='UPDATE COULD NOT FINISH. RELOAD TO RETRY.';
+  }));
+  await registration.update();
+  if(!apply()&&!registration.installing){status.textContent='ENCOM TERMINAL IS UP TO DATE.';location.replace('./');}
+ }
+}catch(error){status.textContent='UPDATE COULD NOT FINISH. CHECK YOUR CONNECTION AND RELOAD.';console.error(error);}
+</script></body></html>

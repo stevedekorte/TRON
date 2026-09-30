@@ -4,7 +4,7 @@ const CACHE = PREFIX + '__REVISION__';
 const URLS = __PRECACHE__.map(path => new URL(path, self.registration.scope).href);
 const ASSETS = new Set(URLS);
 self.addEventListener('install', event => {
-  // Do not skipWaiting: a running game retains its matching code and assets.
+  // Wait until the home screen or explicit update page requests activation.
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     try {
@@ -18,6 +18,9 @@ self.addEventListener('install', event => {
       throw error;
     }
   })());
+});
+self.addEventListener('message',event=>{
+  if(event.data?.type==='ACTIVATE_UPDATE')event.waitUntil(self.skipWaiting());
 });
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {

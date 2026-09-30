@@ -52,12 +52,12 @@ try{
  });
  assert.equal(range.status,206);assert.equal(range.length,32);assert.match(range.range,/^bytes 0-31\//);
  await page.goto(url+'?pwa-test=1');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
- await page.keyboard.press('ArrowUp');await page.keyboard.press('Enter');
+ await page.locator('#start-bit').click();
  await page.waitForURL('**/bit/index.html');
  assert.match(await page.locator('#instructions').textContent(),/REQUESTING MICROPHONE ACCESS|ALLOW MICROPHONE ACCESS|Ask a yes or no question/);
- await page.keyboard.press('Escape');await page.waitForURL(url);
+ await page.keyboard.press('Escape');await page.locator('#exit-confirm [data-confirm]').click();await page.waitForURL(url);
  await page.waitForFunction(()=>!document.querySelector('#start-bit').disabled);
- await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ await page.locator('#start-cycles').click();
  await page.waitForFunction(()=>document.body.classList.contains('playing'));
  assert.deepEqual(errors,[]);
  // A downloaded update must wait rather than replace a running game.
@@ -65,5 +65,8 @@ try{
  await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
  await page.waitForFunction(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting);
  assert(await page.evaluate(()=>document.body.classList.contains('playing')));
+ await page.keyboard.press('Escape');await page.locator('#exit-confirm [data-confirm]').click();
+ await page.waitForFunction(async()=>!(await navigator.serviceWorker.getRegistration()).waiting);
+ await page.waitForFunction(()=>!!document.querySelector('#start-credits')&&!document.querySelector('#start-credits').disabled);
  console.log('PWA: valid installability, scoped manifest/icons, offline tank and cycle starts, ranged audio, and non-interrupting updates passed.');
 }finally{await context.close();await new Promise(r=>server.close(r));await rm(profile,{recursive:true,force:true});}
