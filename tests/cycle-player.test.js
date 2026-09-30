@@ -1,3 +1,4 @@
+import {LIGHT_CYCLES as C} from '../src/game/light-cycles.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {browserScenario} from '../src/game/browser-scenario.js';
@@ -69,7 +70,7 @@ test('explicit cycle entry waits safely for deferred arena assets',()=>{
  s.arenaReady=true;s.advance({},1/60);assert.equal(s.run.playerVehicle,'cycle');assert.equal(s.run.cycleRace.phase,'countdown');
 });
 
-test('cycle turbo accepts partial charge, boosts only player and eases on release',()=>{
+test('cycle turbo accepts partial charge, boosts the player and autonomous cycles and eases on release',()=>{
  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';b.turboCharge=.2;
  const start=b.z,other=race.cycles[0].z;
  s.advance({cycleTurbo:true},.25);
@@ -140,7 +141,7 @@ test('slow pedal eases to half speed, overrides turbo, and eases back to cruise'
  assert(b.speedMultiplier<1&&b.speedMultiplier>.5);assert.equal(b.boosting,false);assert(b.turboCharge>.5);
  s.advance({cycleSlow:true},.5);assert(b.speedMultiplier>.65&&b.speedMultiplier<.75,'S decelerates over time instead of immediately reaching half speed');
  s.advance({cycleSlow:true},1);assert(b.speedMultiplier>.5&&b.speedMultiplier<.53);
- assert.equal(race.cycles[0].speedMultiplier,1);
+ assert(race.cycles[0].speedMultiplier>1);
  const slow=b.speedMultiplier;s.advance({},1/120);assert(b.speedMultiplier>slow&&b.speedMultiplier<1);
  s.advance({},.5);assert(b.speedMultiplier>.8&&b.speedMultiplier<.9);
  s.advance({},1);assert(b.speedMultiplier>.97&&b.speedMultiplier<1);
@@ -215,4 +216,25 @@ test('entrance hold advances the leftward arena patrol while keeping racers and 
  assert(guard.s<initialS-50,'southbound along the west ledge, screen-left in the entrance view');
  assert.equal(JSON.stringify(r.cycleRace),race);
  assert.equal(JSON.stringify(r.recognizers.filter(e=>e!==guard)),others);
+});
+
+test('arena brake reserve exhausts, requires release to recharge, and supports partial reuse',()=>{
+ const s=session();enter(s);const r=s.run.cycleRace,b=r.cycles[r.playerId];r.phase='racing';b.brakeCharge=.01;
+ s.advance({cycleSlow:true},.1);
+ assert.equal(b.brakeCharge,0);assert.equal(b.braking,false);assert(b.speedMultiplier<1);
+ s.advance({cycleSlow:true},.1);assert.equal(b.brakeCharge,0);
+ s.advance({},.3);assert(b.brakeCharge>0&&b.brakeCharge<.01);
+ const charge=b.brakeCharge;s.advance({cycleSlow:true},1/120);assert(b.brakeCharge<charge);assert(b.braking);
+ b.alive=false;s.restartCycleMatch();assert.equal(s.run.cycleRace.cycles[s.run.cycleRace.playerId].brakeCharge,1);
+});
+
+test('autonomous cycles spend their own turbo on clear lanes and brake near blocked lanes',()=>{
+ const s=session();enter(s);const r=s.run.cycleRace;r.phase='racing';
+ s.advance({},.1);
+ for(const b of r.cycles.filter(b=>b.alive&&b.id!==r.playerId)){
+  assert(b.boosting);assert(b.turboCharge<1);assert(b.speedMultiplier>1);
+ }
+ const b=r.cycles[0],dz=b.dir===0?-1:1;
+ r.occupied[(b.z+dz*3+C.halfCells)*(C.halfCells*2+1)+b.x+C.halfCells]=6;
+ s.advance({},1/120);assert(b.braking);assert(!b.boosting);assert(b.brakeCharge<1);
 });

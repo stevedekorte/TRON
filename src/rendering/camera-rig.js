@@ -1,3 +1,4 @@
+import {updateCycleOverview} from './cycle-overview.js';
 import {cyclePlayerPose} from '../simulation/light-cycles.js';
 import { FreeCamera } from './free-camera.js';
 import * as THREE from 'three';
@@ -5,9 +6,9 @@ import { BeamCamera } from './beam-camera.js';
 import { config, GUNNER, gunnerAimScale, FOLLOW_ZOOM, AERIAL_ZOOM } from '../game/config.js';
 import { TANK } from '../game/tank.js';
 import {CAMERA_CLEARANCE,clipCameraSegment,constrainCamera} from './camera-collision.js';
-import {cycleCameraWorld,cycleCameraAnchor} from './arena-camera-collision.js';
+import {cycleCameraWorld,cycleCameraAnchor,cycleWallFollowPosition} from './arena-camera-collision.js';
 const CYCLE_CAMERA=Object.freeze({distanceMeters:10,heightMeters:4,wallAnchorHeightMeters:7,lookAheadMeters:8,lookHeightMeters:1,closeLookNearMeters:2.5,closeLookFarMeters:7,responsePerSecond:8,glanceRadians:Math.PI*2/3,glanceResponsePerSecond:28,roadGlanceResponsePerSecond:4,turnLookRadians:Math.PI/5,turnLookResponsePerSecond:4,turnLookFullSpeedMetersPerSecond:5});
-import {applyCycleOpening,cycleFormationBlend,CYCLE_FORMATION_CAMERA,CYCLE_OPENING,CYCLE_FOLLOW_TRANSITION} from './cycle-opening.js';
+import {applyCycleOpening,cycleFormationBlend,CYCLE_FORMATION_CAMERA} from './cycle-opening.js';
 export {CYCLE_OPENING} from './cycle-opening.js';
 const WORLD_UP = new THREE.Vector3(0,1,0);
 const CYCLE_GLANCE=Object.freeze({horizonPitchFovFraction:.25});
@@ -54,19 +55,15 @@ export class CameraRig {
     this.freshCamera = true;
     this.collisionRecovery={active:false};
     this.cycleOpening = null;
-    this.cycleFollowTransition = null;
+    this.cycleOverview = null;
     this.cycleAnchor = null;
     this.cycleGlanceInput = 0;
     this.cycleGlance = 0;
     this.cycleTurnLook = 0;
   }
   finishCycleOpening() {
-    const pose=this.cycleAnchor;
-    this.cycleFollowTransition=pose?{
-      elapsed:0,offset:this.camera.position.clone().sub(new THREE.Vector3(pose.x,0,-pose.s)),
-      lookOffset:this.look.clone().sub(new THREE.Vector3(pose.x,0,-pose.s)),fov:this.camera.fov,
-    }:null;
     this.cycleOpening=null;
+    this.freshCamera=true;
   }
   moveMouseAim(dx, dy, run) {
     if (!this.mouseLook) this.mouseLook = { yaw: run.yaw + run.turretYaw, pitch: run.aimPitch };
@@ -135,8 +132,11 @@ export class CameraRig {
   update(run, previous, alpha, dt, mode, { x, s, yaw, turretYaw, fragments = [], cycleRace = run.cycleRace }) {
     if (this.freeCamera.active) return { tankVisible: run.playerVehicle!=='cycle' };
     if(run.playerVehicle==='cycle'){
+      if(run.cycleSpectating&&run.cycleFollowId==null)return updateCycleOverview(this,cycleRace,dt);
+      this.cycleOverview=null;
       const previousCamera=this.freshCamera?null:this.camera.position.clone();
-      const pose=cyclePlayerPose(cycleRace);
+      const followedId=run.cycleSpectating&&run.cycleFollowId!=null?run.cycleFollowId:cycleRace.playerId;
+      const pose=cyclePlayerPose({...cycleRace,playerId:followedId});
       // Track translation with the same pose used by the cycle mesh. Smoothing
       // absolute positions makes fixed simulation steps bob against the camera,
       // especially at turbo speed. Only ease the orbit/height relative to it.
@@ -146,7 +146,7 @@ export class CameraRig {
         this.look.x+=moveX;this.look.z+=moveZ;
       }
       this.cycleAnchor=pose;
-      const bike=cycleRace.cycles.find(b=>b.id===cycleRace.playerId),escaped=bike?.escaped;
+      const bike=cycleRace.cycles.find(b=>b.id===followedId),escaped=bike?.escaped;
       const glanceTarget=-(this.cycleGlanceInput||0)*CYCLE_CAMERA.glanceRadians;
       const glanceResponse=escaped?CYCLE_CAMERA.roadGlanceResponsePerSecond:CYCLE_CAMERA.glanceResponsePerSecond;
       this.cycleGlance+=(glanceTarget-this.cycleGlance)*(1-Math.exp(-dt*glanceResponse));
@@ -164,21 +164,15 @@ export class CameraRig {
       this.desired.lerp(new THREE.Vector3(pose.x+Math.sin(orbitYaw)*aerialDistance,AERIAL_CAMERA.height*aerialScale,-pose.s+Math.cos(orbitYaw)*aerialDistance),aerialMix);
       this.lookDesired.lerp(new THREE.Vector3(pose.x,0,-pose.s),aerialMix);
       const openingRoll=this.cycleOpening===null?0:applyCycleOpening(this.cycleOpening,cycleRace.site,this.desired,this.lookDesired);
-      const transition=this.cycleFollowTransition;
-      let transitionMix=1;
-      if(transition){
-        if(mode==='running')transition.elapsed+=dt;
-        transitionMix=THREE.MathUtils.smootherstep(transition.elapsed/CYCLE_OPENING.followTransitionSeconds,0,1);
-        this.desired.lerpVectors(transition.offset.clone().add(new THREE.Vector3(pose.x,0,-pose.s)),this.desired,transitionMix);
-        this.desired.y+=CYCLE_FOLLOW_TRANSITION.liftMeters*Math.sin(Math.PI*transitionMix)**2;
-        this.lookDesired.lerpVectors(transition.lookOffset.clone().add(new THREE.Vector3(pose.x,0,-pose.s)),this.lookDesired,transitionMix);
-      }
-      const blend=transition||this.cycleOpening!==null||this.freshCamera?1:1-Math.exp(-dt*CYCLE_CAMERA.responsePerSecond);
-      this.camera.position.lerp(this.desired,blend);this.look.lerp(this.lookDesired,blend);
       const cycleAnchor=cycleCameraAnchor(pose,cycleRace,CYCLE_CAMERA.wallAnchorHeightMeters,CAMERA_CLEARANCE.radiusMeters);
-      constrainCamera(cycleCameraWorld(this.world,cycleRace),cycleAnchor,this.camera.position,previousCamera,CAMERA_CLEARANCE.radiusMeters,this.cycleOpening===null&&aerialMix===0,this.collisionRecovery,dt);
+      const cycleWorld=cycleCameraWorld(this.world,cycleRace);
+      if(this.cycleOpening===null&&aerialMix===0&&cycleWallFollowPosition(cycleWorld,pose,cycleRace,this.desired,cycleAnchor,CAMERA_CLEARANCE.radiusMeters,previousCamera))
+        this.lookDesired.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),.5);
+      const blend=this.cycleOpening!==null||this.freshCamera?1:1-Math.exp(-dt*CYCLE_CAMERA.responsePerSecond);
+      this.camera.position.lerp(this.desired,blend);this.look.lerp(this.lookDesired,blend);
+      constrainCamera(cycleWorld,cycleAnchor,this.camera.position,previousCamera,CAMERA_CLEARANCE.radiusMeters,this.cycleOpening===null&&aerialMix===0,this.collisionRecovery,dt);
       const cameraLook=this.look.clone();
-      if(this.cycleOpening===null&&!transition){
+      if(this.cycleOpening===null){
         // When a wall shortens the boom, look down toward the bike instead of
         // keeping an eight-meter forward target that loses it below frame.
         const distance=Math.hypot(this.camera.position.x-pose.x,this.camera.position.z+pose.s);
@@ -201,10 +195,6 @@ export class CameraRig {
       this.camera.rotateZ(openingRoll);
       this.camera.far=12000;
       this.camera.fov=this.cycleOpening===null?config.fov:THREE.MathUtils.lerp(config.fov,CYCLE_FORMATION_CAMERA.fovDegrees,cycleFormationBlend(this.cycleOpening));
-      if(transition){
-        this.camera.fov=THREE.MathUtils.lerp(transition.fov,this.camera.fov,transitionMix);
-        if(transitionMix===1)this.cycleFollowTransition=null;
-      }
       this.camera.updateProjectionMatrix();this.freshCamera=false;
       return {tankVisible:false};
     }

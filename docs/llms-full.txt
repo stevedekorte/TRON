@@ -1114,6 +1114,78 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - Validation: 19 cycle/arena camera tests pass, including first-frame position/orientation/FOV continuity, bounded motion, pause and completion. Production build and whitespace checks pass (existing chunk-size advisory).
 - Chrome `tests/cycle-opening.mjs` passes the entrance, held formation, handoff and zoom controls. Inspected the midpoint capture after changing the aim blend to follow a moving look point with world-up orientation. Chrome headless on macOS; final motion feel remains for user review.
 
+## Confirm Escape before returning home — September 29
+
+- [x] Escape pauses Clu, Light Cycles and BIT and opens a shared modal with Continue Playing and Return Home. Continue receives initial focus; Escape cancels. Block gameplay keys behind the modal, preserve pause during tuning close, and reset game state on confirmed return. BIT suspends audio, listening, requests and rendering while the panel is open. Include the shared script in the offline cache through the existing BIT asset inventory.
+- Validation: Chrome tests/exit-confirm.mjs passes all three games, frozen simulation, input blocking, microphone pause, cancellation/resume and home navigation. tests/bit.mjs passes reply and microphone lifecycle checks with confirmed exit. Mocked provider requests; Chrome headless on macOS.
+
+## Keep the cycle forward view near walls — September 29
+
+- [x] When wall clipping would shorten the follow boom below 7 m, choose a clear 10 m lateral offset along the wall. Prefer the side nearest the previous camera, retain wall sweeps, and reduce look-ahead during this side view to keep the bike visible. Apply the same destination during the materialization handoff.
+- Validation: all 382 npm test checks pass. Tight-wall tests now require viewing distance and shallow downward pitch on all four sides and a corner. Chrome tests/arena-camera.mjs passes and its inspected capture shows the complete cycle with the forward arena visible. Production build passes (existing chunk-size advisory); final driving feel remains for user review.
+
+## Wall-connected starting trails and direct launch cut — September 29
+
+- [x] Seed each active arena cycle trail from the nearest inner arena wall at launch. Fill the intervening grid collision cells and preserve the wall endpoint as the first segment grows. Initial render trimming attaches the trail to the rear axle without losing the wall connection.
+- [x] Restore the fixed formation shot through materialization and direct cut to player follow at launch; remove the 1.2-second transition and its lift/field-of-view blend. Preserve the newer near-wall side view.
+- Validation: 382 full-suite checks passed, followed by 24 focused tests including the new starting-trail regression and direct-cut camera check. Production build and whitespace checks pass (existing chunk-size advisory).
+- Chrome tests/cycle-opening.mjs passes the held formation, launch handoff, audio and zoom checks; inspected its post-launch follow capture. Chrome headless on macOS.
+
+## Arena palette, carrier framing and launch hold — September 29
+
+- [x] Darken the green Recognizer face preset to #1c3825 (used by the arena patrol). Brighten arena purple symbols to #61249b with #9c6bbe outlines.
+- [x] Set the entrance carrier 800 m back along its heading while retaining its altitude, orientation and forward speed. Inspect its first frame at 1250×1000 to ensure the entire vessel fits.
+- [x] Hold the fixed formation shot for one second after materialization as the cycles launch. Release race simulation while retaining the shot, then cut directly to follow. The inspected late-hold capture shows gold trails with the bikes out of view.
+- Validation: all 383 npm test checks and production build pass (existing chunk-size advisory). Chrome entrance checks cover fixed camera during launch, moving race, patrol tint, pause, audio and handoff. Whitespace checks pass.
+
+## Follow surviving cycles after death — September 29
+
+- [x] Show the requested top-of-screen death message: CYCLE DETROYED - ARROW KEYS TO FOLLOW - ENTER TO RESTART. Replace automatic free-flight spectator entry with a surviving-cycle follow camera. Left/Right wrap through live cycles, skip destroyed cycles, and leave player identity unchanged. Select another survivor if the followed cycle dies; Enter retains match restart.
+- [x] Latest launch-hold tuning is 0.6 seconds, shortened in two requested 0.2-second steps.
+- Validation: 383 full-suite checks pass, followed by 16 camera tests including selected-survivor tracking. Chrome tests/cycle-follow-spectator.mjs passes message, both arrow directions, wraparound, target death and restart; inspected the rendered message. Build and whitespace checks pass (existing chunk-size advisory). Chrome headless on macOS.
+
+## Finite light-cycle trails — September 29
+
+- [x] Cap each cycle's trail at the arena's inner perimeter: 8 × 409.06 m = 3272.48 m. Advance the oldest endpoint as new wall appears, discard exhausted segments, preserve active-segment references, and release expired collision cells. Retain stripe placement as the tail recedes. Account for rear-wheel attachment, fractional movement and discontinuous arena reentry.
+- Validation: all 386 npm tests pass on the final run. The first full run had a crossing-Recognizer shooting failure; that test passed in the 69-test focused rerun and final full run. Production build passes with the existing chunk-size advisory. Chrome headless on macOS: tests/cycle-trail-limit.mjs verifies rendered length against the cap, reports no page errors, and produces an inspected aerial capture. Unit checks cover corner trimming, reclaimed cells, other cycles' ownership, active-segment remapping, fractional advance, death and reentry.
+
+## Cycle death overview — September 29
+
+- [x] After player-cycle death, smoothly pull up over three seconds to a fixed view above the nearest arena wall, aimed at the center. Rise clear of the wall before translating outward. Fit the full arena with an inset margin based on window aspect ratio. Left/Right still select surviving cycles to follow; Enter restarts.
+- Validation: 21 cycle/arena camera tests pass, including smooth initial motion, vertical wall clearance, full-arena framing at three aspect ratios, center aim and reset. Chrome headless on macOS: cycle-follow-spectator.mjs passes overview entry, survivor selection, wraparound, target death and restart; inspected cycle-death-overview.png. Production build passes with the existing chunk-size advisory.
+
+## Lower cycle death perch — September 29
+
+- [x] Replace the high, whole-arena overview with a fixed perch 6 m above the 60 m arena wall, at its inner edge. Retain the three-second pullback, completing the vertical rise before moving across the wall. Smoothly point at a surviving cycle and select another if it dies; use the arena center when none remain. Arrow keys still enter normal survivor-follow views.
+- Validation: 21 camera checks pass for bounded height, clearance during ascent, a fixed perch while tracking a moving survivor, replacement targets and reset. Chrome spectator lifecycle checks pass; inspected the lower perch capture. The original whole-arena framing requirement is superseded by this lower tracking view.
+
+## Shared cycle turbo and rechargeable arena brakes — September 29
+
+- [x] Give autonomous cycles use of their own turbo reserves: boost on clear arena straights, and brake when the lane ahead closes. Road agents can also use their existing turbo on clear routes. All arena cycles share the same gradual speed response and resource rules.
+- [x] Add a per-cycle arena brake reserve: five seconds of braking, sixty seconds to recharge fully when released, partial-charge reuse, and no repeated pulses when holding an empty brake. Brake requests take priority over turbo. Reset restores both reserves. Show S/X brake charge beneath the turbo meter using the terminal text scale. Road speed-hold controls retain their existing braking behavior.
+- Validation: all 389 npm tests pass, including autonomous turbo/brake use, empty-brake hold, release/recharge, partial reuse and reset. Chrome headless spectator lifecycle checks pass; inspected the additional brake HUD in the rendered capture.
+
+## Spectator resource meters — September 29
+
+- [x] Bind cycle HUD meters to the watched cycle: selected survivor in follow mode, or the survivor tracked from the wall perch. Turbo/brake fills and active states, road health and speed now use that same bike; ordinary play still uses the player bike.
+- Validation: Chrome headless on macOS, cycle-follow-spectator.mjs passes with distinct turbo/brake reserves per bike. Checks cover wall-perch meters, both arrow directions, wraparound, active-state changes, automatic replacement after target death and restart. Whitespace checks pass.
+
+## Partial-charge Clu turbo — September 29
+
+- [x] Allow Clu to trigger turbo whenever some reserve is available. Convert the recharged fraction into boost duration (25% gives 2.5 seconds), spend that available reserve and restart its recharge timer. Prevent stacking during an active boost; retain the existing ten-second full boost, sixty-second recharge timing, teleport/transfer restrictions and destruction reset.
+- Validation: 89 simulation, autoplay and ground-tank checks pass. Added coverage for empty charge, partial recharge, proportional duration, immediate reuse of newly available charge and tiny partial reserves. Existing full-duration, braking and destruction checks also pass.
+
+## Clu autoplay temporarily disabled — September 29
+
+- [x] Disable player autoplay through the application feature flag and an unavailable Autoplay instance. U, Shift-U and button activation cannot enable driving, aiming or firing assistance. Hide the autoplay button and Clu JEV statistics; retain the implementation for later reactivation. Enemy AI and the other programs retain their existing behavior.
+- [x] Track the three newly supplied film-reference clips with Git LFS, including the 194 MiB clip that exceeds normal GitHub file limits.
+- Validation: all 391 npm tests pass. Chrome headless on macOS: tests/autoplay.mjs verifies hidden/disabled UI, U and Shift-U, synthetic button activation, no player API requests and no page errors.
+
+## Clu keyboard zoom restricted to aerial mode — September 29
+
+- [x] I/K no longer changes Clu's normal following-camera distance. Only V aerial mode accepts keyboard zoom for Clu; hide the zoom hint outside that mode. Gunner aiming and light-cycle keyboard zoom retain their existing controls.
+- Validation: extend the Chrome autoplay-disabled check to exercise I and K in normal view, zoom out/in in V mode, and verify zoom remains unchanged after returning to normal view.
+
 
 ---
 

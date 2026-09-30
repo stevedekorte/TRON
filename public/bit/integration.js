@@ -12,15 +12,29 @@ function stopBit() {
   }
   window.BitSound?.context?.close().catch(() => {});
 }
+const exitConfirm=window.createExitConfirm({
+  onConfirm:()=>{stopBit();window.location.replace(new URL('../',window.location.href).href);},
+  onCancel:()=>{
+    window.bitPaused=false;
+    window.BitSound?.context?.resume().catch(()=>{});
+    for(const bit of window.VizApp?._objects||[])bit.resumeListening?.();
+  },
+});
 window.addEventListener('keydown', event => {
+  if(exitConfirm.open)return;
   if (['Enter','Space'].includes(event.code) && !window.VizApp?._didBegin) {
     event.preventDefault();if(!event.repeat)window.VizApp?.activate();return;
   }
   if (event.code !== 'Escape') return;
   event.preventDefault();event.stopImmediatePropagation();
   if (event.repeat) return;
-  stopBit();
-  window.location.replace(new URL('../', window.location.href).href);
+  window.bitPaused=true;
+  for(const bit of window.VizApp?._objects||[]){
+    bit._request?.abort();
+    bit.pauseListening?.(()=>{});
+  }
+  window.BitSound?.context?.suspend().catch(()=>{});
+  exitConfirm.show();
 }, true);
 window.addEventListener('pagehide', stopBit, {once:true});
 

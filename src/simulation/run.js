@@ -31,8 +31,10 @@ export function createRun(seed=randomSeed(),world=DEFAULT_WORLD,settings=null) {
 }
 
 export function boostTank(run){
-  if(run.crushed||run.teleport||run.transferActive||run.turboCooldown>0)return false;
-  run.turboRemaining=TURBO.duration;run.turboCooldown=TURBO.rechargeSeconds;
+  if(run.crushed||run.teleport||run.transferActive||run.turboRemaining>0)return false;
+  const available=TURBO.duration*clamp(1-run.turboCooldown/TURBO.rechargeSeconds,0,1);
+  if(available<=1e-8)return false;
+  run.turboRemaining=available;run.turboCooldown=TURBO.rechargeSeconds;
   return true;
 }
 

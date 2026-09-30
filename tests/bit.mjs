@@ -43,12 +43,12 @@ try{
   bit._recognition.onresult({results:[[{transcript:'Are you Bit'}]]});
  });
  await page.waitForFunction(()=>getComputedStyle(document.querySelector('#instructions')).opacity==='0'&&getComputedStyle(document.querySelector('.exit-hint')).opacity==='0');
- await page.keyboard.press('Escape');await page.waitForURL('http://127.0.0.1:5173/');
+ await page.keyboard.press('Escape');await page.locator('#exit-confirm [data-confirm]').click();await page.waitForURL('http://127.0.0.1:5173/');
  await page.waitForFunction(()=>!document.querySelector('#start-bit').disabled);
  assert.equal(await page.evaluate(()=>typeof window.VizApp),'undefined');
  for(const method of ['click','tap']){
   await page.locator('#start-bit')[method]();await page.waitForURL('**/bit/index.html');
-  await page.keyboard.press('Escape');await page.waitForURL('http://127.0.0.1:5173/');
+  await page.keyboard.press('Escape');await page.locator('#exit-confirm [data-confirm]').click();await page.waitForURL('http://127.0.0.1:5173/');
   await page.waitForFunction(()=>!document.querySelector('#start-bit').disabled);
  }
  assert.deepEqual(errors,[]);

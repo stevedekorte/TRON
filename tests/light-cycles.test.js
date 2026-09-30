@@ -7,8 +7,22 @@ import {LIGHT_CYCLES as C,cycleTrailState} from '../src/game/light-cycles.js';
 import {createRecognizers,updateRecognizers} from '../src/simulation/recognizers.js';
 import {flyArenaPatrol,returningToArena} from '../src/simulation/arena-patrol.js';
 import {createRun} from '../src/simulation/run.js';
+import {ARENA_WALL} from '../src/game/arena-breaches.js';
 const {world}=createScenario({layout:'blueprint',centralLabyrinth:true});
 const race=()=>createCycleRace(world,1982);
+test('launch trails meet the nearest arena wall and remain connected as bikes advance',()=>{
+ const r=race();r.remaining=0;updateCycleRace(r,1/60);
+ assert.equal(r.phase,'racing');
+ for(const b of r.cycles.filter(b=>b.alive)){
+  const t=r.trails[b.segment];
+  assert.equal(t.x1,b.x);assert.equal(t.x2,b.x);assert.equal(t.z2,b.z);
+  assert(Math.abs(Math.abs(t.z1*C.cellMeters)-ARENA_WALL.innerMeters)<1e-9);
+ }
+ const starts=r.trails.map(t=>t.z1);tickCycleRace(r,(_r,b)=>b.dir);
+ for(const b of r.cycles.filter(b=>b.alive)){
+  const t=r.trails[b.segment];assert.equal(t.z1,starts[b.id]);assert.equal(t.initial,false);
+ }
+});
 test('six bikes, two equal teams, deterministic rounds with bounded trails',()=>{
  const a=race(),b=race();assert.equal(a.cycles.length,6);assert.equal(a.cycles.filter(c=>c.team===0).length,3);
  let completed=0;const expectedScores=[0,0];
@@ -91,4 +105,37 @@ test('cycle explosions follow film cadence and reset without allocating new effe
  r.time=1;bursts.update(r);assert(!effect.group.visible);
  r.time=0;r.crashes=[];bursts.update(r);assert(bursts.effects.every(e=>!e.group.visible));assert.equal(root.children.length,count);
  disposeSceneResources(root);
+});
+
+test('trail length is the inner perimeter; oldest walls and collision cells expire together',async()=>{
+ const {trimCycleTrails}=await import('../src/simulation/cycle-trails.js');
+ const {CYCLE_TRAIL_LIMIT,cycleTrailLength,cycleTrailHeadTrim}=await import('../src/game/cycle-trails.js');
+ const r=race();r.phase='racing';r.occupied.fill(0);
+ const b=r.cycles[0];Object.assign(b,{progress:.5,x:70,z:70,segment:5});
+ const points=[[-80,-80],[80,-80],[80,80],[-80,80],[-80,-70],[70,-70],[70,70]];
+ r.trails=points.slice(1).map((p,i)=>({bikeId:0,team:0,x1:points[i][0],z1:points[i][1],x2:p[0],z2:p[1]}));
+ const active=r.trails[b.segment],other={bikeId:1,team:0,x1:0,z1:0,x2:1,z2:0};
+ r.trails.splice(1,0,other);b.segment++;r.cycles[1].segment=1;
+ const cell=(x,z)=>(z+C.halfCells)*(C.halfCells*2+1)+x+C.halfCells;
+ r.occupied[cell(-80,-80)]=1;r.occupied[cell(0,0)]=2;
+ trimCycleTrails(r);
+ const length=()=>r.trails.filter(t=>t.bikeId===0).reduce((n,t)=>n+cycleTrailLength(t),0)-cycleTrailHeadTrim(r,b);
+ assert.equal(CYCLE_TRAIL_LIMIT.lengthMeters,8*ARENA_WALL.innerMeters);
+ assert(Math.abs(length()-CYCLE_TRAIL_LIMIT.lengthMeters)<1e-8);
+ assert.equal(r.occupied[cell(-80,-80)],0);assert.equal(r.occupied[cell(70,0)],1);
+ assert.equal(r.occupied[cell(0,0)],2);
+ assert.equal(r.trails[b.segment],active);assert.equal(r.trails[r.cycles[1].segment],other);
+ const tail=r.trails.find(t=>t.bikeId===0),oldZ=tail.z1;
+ b.progress=.75;trimCycleTrails(r);
+ assert(Math.abs(length()-CYCLE_TRAIL_LIMIT.lengthMeters)<1e-8);
+ assert(Math.abs(tail.z1-oldZ-.25)<1e-8);
+ b.alive=false;trimCycleTrails(r);
+ assert(Math.abs(length()-CYCLE_TRAIL_LIMIT.lengthMeters)<1e-8);
+});
+
+test('head trimming stops at the most recent arena reentry',async()=>{
+ const {cycleTrailHeadTrim}=await import('../src/game/cycle-trails.js');
+ const r=race(),b=r.cycles[0];b.segment=1;b.progress=0;r.phase='racing';
+ r.trails=[{bikeId:0,x1:0,z1:0,x2:50,z2:0},{bikeId:0,x1:0,z1:0,x2:.1,z2:0,joining:true,startsRun:true}];
+ assert.equal(cycleTrailHeadTrim(r,b),.1*C.cellMeters);
 });

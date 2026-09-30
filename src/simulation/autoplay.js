@@ -9,7 +9,8 @@ export { AUTOPLAY } from '../game/autoplay.js';
 export { visibleAutoplayEnemies, autoplayThreats } from './autoplay-perception.js';
 
 export class Autoplay {
-  constructor() {
+  constructor({available=true}={}) {
+    this.available=available;
     this.enabled = false;
     this.manualFire = false;
     this.mission = new AutoplayMission();
@@ -24,6 +25,7 @@ export class Autoplay {
     this.follower.reset();
   }
   setEnabled(value, {manualFire = false} = {}) {
+    value=!!value&&this.available;
     this.enabled = value;
     this.manualFire = value && manualFire;
     this.reset();

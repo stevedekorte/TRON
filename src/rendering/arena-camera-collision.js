@@ -1,9 +1,23 @@
 import {Vector3} from 'three';
 import {ARENA_WALL} from '../game/arena-breaches.js';
 import {breachVolumes} from './arena-breaches.js';
-import {CAMERA_CLEARANCE} from './camera-collision.js';
+import {CAMERA_CLEARANCE,clipCameraSegment} from './camera-collision.js';
 
 export const ARENA_CAMERA_WALL_HEIGHT=60;
+const WALL_FOLLOW=Object.freeze({minimumBoomMeters:7,sideBoomMeters:10});
+export function cycleWallFollowPosition(world,pose,race,desired,anchor,radius,previous){
+ const clipped=desired.clone();clipCameraSegment(world,anchor,clipped,radius);
+ if(Math.hypot(clipped.x-pose.x,clipped.z+pose.s)>=WALL_FOLLOW.minimumBoomMeters)return;
+ let best=null,score=Infinity;
+ for(const side of [-1,1]){
+  const candidate=cycleCameraAnchor({...pose,x:pose.x+Math.cos(pose.yaw)*WALL_FOLLOW.sideBoomMeters*side,s:pose.s+Math.sin(pose.yaw)*WALL_FOLLOW.sideBoomMeters*side},race,desired.y,radius);
+  clipCameraSegment(world,anchor,candidate,radius);
+  if(Math.hypot(candidate.x-pose.x,candidate.z+pose.s)<WALL_FOLLOW.minimumBoomMeters)continue;
+  const distance=candidate.distanceToSquared(previous??desired);
+  if(distance<score){best=candidate;score=distance;}
+ }
+ if(best){desired.copy(best);return true;}
+}
 export function cycleCameraAnchor(pose,race,height,radius){
  const anchor=new Vector3(pose.x,height,-pose.s),site=race.site;
  const x=anchor.x-site.x,z=anchor.z+site.s;

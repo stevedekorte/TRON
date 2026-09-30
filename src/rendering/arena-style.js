@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import {arenaEdges} from './arena-edges.js';
 
 export const ARENA_STYLE=Object.freeze({
- wallColor:0x02070c,symbolColor:0x290649,
+ wallColor:0x02070c,symbolColor:0x61249b,
  wallTopColor:0x343548,wallTopMinHeightMeters:49,
- wallEdgeColor:0x29434c,symbolEdgeColor:0x634179,
+ wallEdgeColor:0x29434c,symbolEdgeColor:0x9c6bbe,
  edgeThresholdDegrees:20,wallEdgeOpacity:.8,symbolEdgeOpacity:.9,
 });
 // Presentation adapter: keep authored geometry and the source GLB unchanged.

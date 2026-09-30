@@ -1,3 +1,4 @@
+import {CLU_AUTOPLAY_ENABLED} from '../src/game/autoplay.js';
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:'chrome',headless:true});
@@ -8,6 +9,30 @@ try{
  await page.route('**/api/jev/decision',r=>{calls++;if(unavailable)return r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Test service outage'})});const q=r.request().postDataJSON();assert.equal(q.controller,'clu');return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:q.options[0].id,confidence:1})});});
  await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
+ if(!CLU_AUTOPLAY_ENABLED){
+  assert.equal(await page.locator('#autoplay-toggle').isVisible(),false);
+  assert.equal(await page.locator('#autoplay-toggle').isEnabled(),false);
+  assert.equal(await page.locator('#jev-stats').isVisible(),false);
+  for(const key of ['KeyU','Shift+KeyU']){
+   await page.keyboard.press(key);
+   assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),false);
+   assert.equal(await page.evaluate(()=>__tron.state.autoplay.manualFire),false);
+  }
+  await page.evaluate(()=>document.querySelector('#autoplay-toggle').dispatchEvent(new MouseEvent('click')));
+  assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),false);
+  await page.waitForTimeout(500);assert.equal(calls,0);
+  const zoom=()=>page.evaluate(()=>({follow:__tron.state.followZoom,aerial:__tron.state.aerialZoom}));
+  const initialZoom=await zoom();
+  for(const key of ['KeyK','KeyI']){await page.keyboard.down(key);await page.waitForTimeout(200);await page.keyboard.up(key);assert.deepEqual(await zoom(),initialZoom);}
+  await page.keyboard.press('KeyV');
+  await page.keyboard.down('KeyK');await page.waitForTimeout(250);await page.keyboard.up('KeyK');
+  const farther=await zoom();assert(farther.aerial>initialZoom.aerial);assert.equal(farther.follow,initialZoom.follow);
+  await page.keyboard.down('KeyI');await page.waitForTimeout(150);await page.keyboard.up('KeyI');assert((await zoom()).aerial<farther.aerial);
+  await page.keyboard.press('KeyV');const returned=await zoom();
+  await page.keyboard.down('KeyK');await page.waitForTimeout(200);await page.keyboard.up('KeyK');assert.deepEqual(await zoom(),returned);
+  await page.screenshot({path:'test-results/clu-autoplay-disabled.png'});
+  assert.deepEqual(errors,[]);console.log('Clu autoplay unavailable through keys and button; autoplay and statistics UI hidden; no player API calls.');
+ }else{
  // Real browser-default blueprint opening, after the pursuers are gone.
  await page.evaluate(()=>__tron.place({recognizers:[],enemyTanks:[]}));
  const opening=await page.evaluate(()=>({x:__tron.state.x,s:__tron.state.s}));
@@ -38,7 +63,7 @@ try{
  assert(Math.min(...samples)>19,`Cruise speed dropped: ${samples}`);
  await page.screenshot({path:'test-results/autoplay-jev.png'});
  await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.time),count=calls;await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.time),paused);assert.equal(calls,count);
- await page.keyboard.press('w');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
+ await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
  const position=await page.evaluate(()=>__tron.state.s);
  await page.keyboard.down('Space');await page.waitForTimeout(300);await page.keyboard.up('Space');
  assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
@@ -65,4 +90,5 @@ try{
  await page.waitForFunction(()=>document.body.textContent.includes('Autoplay disengaged'));
  await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),false);
  assert.deepEqual(errors,[]);console.log('Autoplay: U/button, accepted player decision, driving, pause, temporary manual override and U disable, background simulation, manual/pause behavior, service outage disengagement and visible warning, no JavaScript errors or paid requests.');
+ }
 }finally{await browser.close();}

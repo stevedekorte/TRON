@@ -27,6 +27,10 @@ test('wall correction keeps the camera above the bike and the bike in frame at t
    assert.equal(arenaCameraIntersection(race,point(rig.camera.position),point(rig.camera.position),1.2),null);
    rig.camera.updateMatrixWorld();const bike=new Vector3(x,1,z).project(rig.camera);
    if(i<60)assert(Math.abs(bike.x)<1&&Math.abs(bike.y)<1&&bike.z<1,'tight follow keeps the bike visible');
+   if(i===59){
+    assert(Math.hypot(rig.camera.position.x-x,rig.camera.position.z-z)>=7,'wall follow keeps viewing distance');
+    assert(rig.camera.getWorldDirection(new Vector3()).y>-.5,'wall follow keeps a forward view instead of pointing down');
+   }
    if(i>100){
     const horizon=rig.camera.getWorldDirection(new Vector3()).setY(0).normalize().multiplyScalar(10000).add(rig.camera.position).project(rig.camera);
     assert(Math.abs(horizon.y)<.8,'deliberate wall-side glance shows the horizon');
