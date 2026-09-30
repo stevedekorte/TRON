@@ -51,6 +51,7 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
     <section id="error" class="result" hidden><div class="eyebrow">CONNECTION FAILED</div><h2>UNABLE TO ENTER.</h2><p id="error-message"></p><button class="primary" onclick="location.reload()">RELOAD</button></section>
   </main>
 
+    <section id="controls-help" role="dialog" aria-modal="true" aria-labelledby="controls-help-title" hidden><div><h2 id="controls-help-title">CONTROLS</h2><p id="controls-help-text"></p></div></section>
     <div id="free-camera-help" hidden style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;color:#aac8df;background:#030912dd;padding:12px;font:12px monospace;white-space:nowrap">FREE CAMERA · WASD move · Q/E down/up · drag / arrows look · Shift fast · Home arena · Space run/pause · C / Esc return</div>
   <div id="death-fade" hidden aria-hidden="true"></div>
   <div id="gunner-sight" hidden aria-hidden="true">
@@ -76,8 +77,9 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
       <div id="clu-shots" class="turbo-indicator shots-indicator"><span>STORED SHOTS</span><div id="shots-meter" role="meter" aria-label="CLU stored shots" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i></i><i></i><i></i></div></div>
     </div>
     <div id="cycle-controls" hidden></div>
+    <div id="controls-prompt" hidden>C / CONTROLS</div>
     <div id="assist-marker" hidden role="img" aria-label="Recognizer targeted"><svg viewBox="0 0 30 18" preserveAspectRatio="none" aria-hidden="true"><path d="M3 3L15 15L27 3"/></svg></div>
-    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F OR J+L / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>C / FREE CAMERA</span><span>P / GUNNER</span><span>O / ZOOM</span><span id="pitch-hint">IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>M / SOUND</span><span>B / SCREENSHOT</span><span>ESC / HOME</span></div>
+    <div id="hint" class="sim-hint faded"><span>WASD / DRIVE · ⇧W / CRUISE</span><span>JL / TURRET</span><span>F OR J+L / CENTER + LEVEL</span><span>T / TURBO</span><span>SPACE / FIRE</span><span>V / AERIAL</span><span>C / CONTROLS</span><span>P / GUNNER</span><span>O / ZOOM</span><span id="pitch-hint">IK / AIM</span><span id="zoom-hint" hidden>WHEEL / ZOOM</span><span>B / SCREENSHOT</span><span>ESC / HOME</span></div>
     <div id="survey" class="sim-survey" hidden><span>MAZE SURVEY / CLU POSITION</span><canvas id="map" width="500" height="500" aria-label="Maze layout and Clu position"></canvas><small>TAB TO CLOSE</small></div>
   </div>
 

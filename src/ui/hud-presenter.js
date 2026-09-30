@@ -46,6 +46,7 @@ export class HudPresenter {
     ctx.restore();
   }
   update({
+    dt=0,
     run,
     view,
     mode,
@@ -79,16 +80,15 @@ export class HudPresenter {
       }
     }
     document.body.classList.toggle('playing-cycle',cycleMode);
-    const cycleControls=$('cycle-controls');cycleControls.hidden=!cycleMode&&!run.arenaWaiting;
-    if(run.arenaWaiting)cycleControls.textContent='LOADING CYCLE ARENA...';
-    else if(cycleMode){
-      const status=race.phase==='countdown'?'LIGHT CYCLES · MATERIALIZING'
-        :race.cycles[race.playerId].alive&&race.cycles[race.playerId].escaped?'FREE RIDE · HOLD W/S / SPEED · X / BRAKE / REVERSE · T / TURBO · A/D / STEER · J/L / GLANCE · I/K / ZOOM'
-        :!race.cycles[race.playerId].alive?'CYCLE DETROYED - ARROW KEYS TO FOLLOW - ENTER TO RESTART'
-        :race.phase==='result'?'MATCH COMPLETE · RETURN / NEW MATCH'
-        :'LIGHT CYCLES · A/D OR ←/→ TURN · HOLD W/T / TURBO · S/X / SLOW · J/L / GLANCE · I/K / ZOOM · V / AERIAL · ESC / HOME';
-      cycleControls.textContent=status+(import.meta.env.DEV&&race.cycles[race.playerId].alive?' · TAB / DYNAMICS':'');
-    }
+    const cycleControls=$('cycle-controls');
+    const dead=cycleMode&&!race.cycles[race.playerId].alive;
+    cycleControls.hidden=!run.arenaWaiting&&!dead&&!(cycleMode&&race.phase==='result');
+    cycleControls.textContent=run.arenaWaiting?'LOADING CYCLE ARENA...':dead?'CYCLE DETROYED - ARROW KEYS TO FOLLOW - ENTER TO RESTART':'MATCH COMPLETE · RETURN / NEW MATCH';
+    const promptKey=cycleMode?`cycle:${race.round}`:'clu';
+    if(this.promptRun!==run||this.promptKey!==promptKey){this.promptRun=run;this.promptKey=promptKey;this.promptSeconds=0;}
+    const playing=mode==='running'&&!run.arenaWaiting&&!dead&&!run.crushed&&rig.cycleOpening===null;
+    if(playing)this.promptSeconds+=dt;
+    $('controls-prompt').hidden=!playing||this.promptSeconds>=5;
     $('gunner-sight').hidden =
       !(view.cameraRig.gunnerOpacity > 0) || run.crushed || !['running', 'paused'].includes(mode);
     $('gunner-sight').style.opacity = String(
@@ -180,12 +180,7 @@ export class HudPresenter {
     turbo.classList.toggle('charging', charging);
     $('turbo-fill').style.transform =
       `scaleX(${cycleMode ? cycleBike.turboCharge : boosting ? run.turboRemaining / TURBO.duration : 1 - run.turboCooldown / TURBO.rechargeSeconds})`;
-    const openingControls = controlsFirstKey === null || run.time - controlsFirstKey < 10;
-    $('hint').classList.toggle(
-      'faded',
-      mode !== 'running' ||
-        !(openingControls || (idleReminderArmed && idleTime >= 3)),
-    );
+    $('hint').hidden=true;
     document.body.classList.toggle('impact', run.impact > 0.6 && !view.cameraRig.reducedMotion);
     if (showSurvey) this.drawMap(run);
     if (import.meta.env.DEV && !$('tuning').hidden) {

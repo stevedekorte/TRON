@@ -90,3 +90,11 @@ test('blocked camera recovers over a wall and catches a tank that keeps driving'
  assert(maxSeparation<40,'tank must not drive away from a camera pinned to the wall');
  assert(!rig.collisionRecovery.active);assert(Math.abs(rig.camera.position.y-8)<.1);
 });
+
+test('clear aerial movement releases stale follow recovery even when the tank is occluded',()=>{
+ const anchor=new Vector3(0,3.5,0),previous=new Vector3(15,18,0),wanted=new Vector3(200,600,0),next=wanted.clone();
+ const recovery={active:true,height:13.25};
+ assert.notEqual(world.wallIntersection(p(previous),p(anchor),1.2),null);
+ constrainCamera(world,anchor,next,previous,1.2,false,recovery,1/60);
+ assert.equal(recovery.active,false);assert(next.distanceTo(wanted)<1e-8);clear(previous,next);
+});
