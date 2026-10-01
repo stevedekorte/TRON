@@ -2,7 +2,7 @@ import {cycleWallContact} from './cycle-wall-contact.js';
 import {trimCycleTrails} from './cycle-trails.js';
 import {enterRoadMode,advanceRoadCycle,setRoadSpeedControl} from './cycle-road.js';
 import {ARENA_WALL,arenaWallBlocked,wallImpact} from '../game/arena-breaches.js';
-import { LIGHT_CYCLES as C, CYCLE_TESTING, CYCLE_DIRECTIONS as DIR, cycleTrailState, cycleFraction } from '../game/light-cycles.js';
+import { LIGHT_CYCLES as C, CYCLE_JEV, CYCLE_TESTING, CYCLE_DIRECTIONS as DIR, cycleTrailState, cycleFraction } from '../game/light-cycles.js';
 import { arenaSite } from '../levels/arena.js';
 const raceWorlds=new WeakMap();
 export const attachCycleWorld=(race,world)=>raceWorlds.set(race,world);
@@ -16,7 +16,8 @@ const outsideClear=(r,x,z)=>{
  const p={x:r.site.x+x*C.cellMeters,s:r.site.s-z*C.cellMeters,y:1};
  return world.wallIntersection(p,p,ARENA_WALL.cycleRadiusMeters)===null;
 };
-const free=(r,x,z)=>!arenaWallBlocked(r,x,z)&&occupant(r,x,z)===0&&outsideClear(r,x,z);
+export const cycleCellFree=(r,x,z)=>!arenaWallBlocked(r,x,z)&&occupant(r,x,z)===0&&outsideClear(r,x,z);
+const free=cycleCellFree;
 // Teammates conserve boost until racing a nearby opponent in the same direction.
 function hasTurboReason(r,b){
  const player=r.cycles.find(c=>c.id===r.playerId);
@@ -89,6 +90,11 @@ export function chooseCycleDirection(r,bike){
     const space=room(r,x,z);
     let score=Math.min(space,90)*.9+Math.min(clear,16)*.6+(d===bike.dir?5:0)+random(r)*3;
     if(space<25)score-=200;
+    const goal=bike.jevGoal;
+    if(goal&&r.time<goal.expiresAt&&space>=25){
+      const gx=goal.x-bike.x,gz=goal.z-bike.z,distance=Math.hypot(gx,gz);
+      if(distance>CYCLE_JEV.minGoalCells)score+=CYCLE_JEV.directionWeight*(dx*gx+dz*gz)/distance;
+    }
     for(const other of r.cycles){
       if(!other.alive||other===bike)continue;
       const [ox,oz]=DIR[other.dir],distance=Math.hypot(other.x-x,other.z-z);

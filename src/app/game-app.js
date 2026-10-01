@@ -943,7 +943,7 @@ export function createGameApp() {
         simulationStepSeconds(run),
       );
     }
-    jev.update(run, !run.arenaWaiting && (run.playerVehicle!=='cycle'||run.cycleRace?.arenaPaused) && !run.won && mode === 'running', autoplay);
+    jev.update(run, !run.arenaWaiting && !run.won && mode === 'running', autoplay);
     if (!autoplay.enabled && (document.hidden || !windowFocused)) pause();
     if (view && mode !== 'error') {syncCycleSpectator();updateDeathTerminal(dt);}
     if (view && mode !== 'error') {

@@ -64,6 +64,7 @@ export class JevClient {
   update(run, playing, autoplay = null) {
     const config = configFor(run);
     if (this.disposed) return;
+    if(config.aiMode!=='jev')for(const bike of run.cycleRace?.cycles||[])delete bike.jevGoal;
     if (this.run !== run) this.beginRound(run);
     if ((config.aiMode !== 'jev' && !autoplay?.enabled) || !playing || run.crushed) {
       if (this.pending) this.cancelPending();
