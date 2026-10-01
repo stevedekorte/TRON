@@ -1,3 +1,6 @@
 docs/references/videos/cycle[[:space:]]escape.m4v filter=lfs diff=lfs merge=lfs -text
 docs/references/videos/green[[:space:]]gold[[:space:]]2[[:space:]]and[[:space:]]1.m4v filter=lfs diff=lfs merge=lfs -text
 docs/references/videos/illegal[[:space:]]exit.m4v filter=lfs diff=lfs merge=lfs -text
+
+# Server credentials: encrypted in Git, transparent after git-crypt unlock.
+credentials/** filter=git-crypt diff=git-crypt -text

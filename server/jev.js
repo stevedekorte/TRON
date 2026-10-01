@@ -48,7 +48,7 @@ export function bitApiConfigMiddleware(env){
 }
 export function jevPlugin(env){
  let apiKey=env.TYPESAFE_API_KEY||'';
- if(!apiKey){try{apiKey=readFileSync(new URL('../credentials/Typesafe.txt',import.meta.url),'utf8').trim();}catch{}}
+ if(!apiKey){try{const stored=readFileSync(new URL('../credentials/Typesafe.txt',import.meta.url));if(!stored.subarray(0,10).equals(Buffer.from('\0GITCRYPT\0')))apiKey=stored.toString('utf8').trim();}catch{}}
  const configuredUsd=Number(env.JEV_HOURLY_BUDGET_USD);
  const hourlyUsd=Number.isFinite(configuredUsd)&&configuredUsd>0?configuredUsd:JEV_LIMITS.hourlyUsd;
  const spend=new JevSpend({limitUsd:hourlyUsd,path:new URL('../.local/jev-spend.json',import.meta.url).pathname});
