@@ -1242,3 +1242,14 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Use stacked, borderless choices in all three games' Escape confirmation panels, matching the home menu's blinking block cursor. Default to Continue Playing on every opening. Arrow keys, Tab and pointer focus move the selection; Enter/Space or click activates it, and Escape resumes. Respect reduced-motion preferences. Remove the panel fill and border so only the text and cursor appear over the dimmed game.
 - Validation: Chrome headless on macOS, `node tests/exit-confirm.mjs` passes Clu, cycles and BIT pause/resume, cursor selection and blink timing, keyboard navigation/confirmation and click return home. Inspected the Clu panel capture; syntax and whitespace checks pass.
+
+## JEV light-cycle maneuver selection — September 30
+
+- [x] Include autonomous arena cycles from both teams in the existing shared JEV scheduler and transport, excluding the human-controlled cycle. Rotate requests among eligible bikes with a four-second per-bike replan interval and existing global quotas, cancellation and fallback.
+- [x] Supply bounded, unobstructed cycle observations and clear corridor destinations in arena-local meters. A cycle-specific shared relay prompt selects a strategic destination; local steering rechecks cells and available space each crossing. Goals expire after six seconds; reject late, uncertain, dead/escaped or previous-round replies. Keep local turbo/brake rules, including teammate conservation. Outside-arena road driving retains its local controller.
+- Validation: all 398 `npm test` checks pass. Chrome headless on macOS, `node tests/cycle-jev.mjs` verifies mocked API requests, accepted arena decisions, human exclusion and paused scheduling. Unit checks cover round changes, visibility, stale replies, local fallback and blocked-cell overrides. Live-provider tactical quality remains unverified. Public deployment must include the updated Worker prompt alongside the client.
+
+## Social sharing preview — October 1
+
+- [x] Add static Open Graph and large-image Twitter Card metadata for the public TRON URL, with ENCOM TERMINAL title, game description and image alternative text. Use the user-supplied arena screenshot, converted without cropping to a 1080×720 JPEG for sharing compatibility (`public/images/encom-social-preview.jpg`). Source: user attachment `encom-terminal-v0-uxv6f49c6ssh1.png.webp`; supplied for this site's preview, no broader license asserted.
+- Validation: production build passes; built HTML contains both sharing-image tags and the large-image card type, and the built JPEG matches the source asset with verified 1080×720 dimensions. Platform-specific preview rendering remains controlled by each social service.

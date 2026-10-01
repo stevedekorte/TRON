@@ -31,3 +31,5 @@ export function cycleTrailState(age) {
 
 export const cycleFraction = (race, bike) => bike.escaped ? 1 : race.phase === "racing" && bike.alive
   ? (bike.progress ?? race.accumulator / (LIGHT_CYCLES.cellMeters / LIGHT_CYCLES.speedMetersPerSecond)) : 1;
+
+export const CYCLE_JEV = Object.freeze({replanSeconds:4, goalSeconds:6, responseMaxAgeSeconds:2.5, rangeMeters:240, goalCells:40, minGoalCells:8, directionWeight:24});

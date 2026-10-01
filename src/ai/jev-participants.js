@@ -1,3 +1,4 @@
+import { selectCycleParticipant } from './jev-cycles.js';
 import { worldFor } from '../levels/scenario.js';
 import { hearingTarget } from '../simulation/hearing.js';
 import { TACTICAL } from '../game/tactical.js';
@@ -22,6 +23,8 @@ function withinJevRange(e, now) {
 
 export function selectParticipant(run, autoplay, lastOwner) {
   const config = configFor(run);
+  if(run.playerVehicle==='cycle'&&run.cycleRace&&!run.cycleRace.arenaPaused)
+    return config.aiMode==='jev'?selectCycleParticipant(run):null;
   const e =
     config.aiMode === 'jev' &&
     [...run.recognizers, ...run.enemyTanks].find(

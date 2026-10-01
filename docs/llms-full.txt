@@ -1256,6 +1256,17 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Use stacked, borderless choices in all three games' Escape confirmation panels, matching the home menu's blinking block cursor. Default to Continue Playing on every opening. Arrow keys, Tab and pointer focus move the selection; Enter/Space or click activates it, and Escape resumes. Respect reduced-motion preferences. Remove the panel fill and border so only the text and cursor appear over the dimmed game.
 - Validation: Chrome headless on macOS, `node tests/exit-confirm.mjs` passes Clu, cycles and BIT pause/resume, cursor selection and blink timing, keyboard navigation/confirmation and click return home. Inspected the Clu panel capture; syntax and whitespace checks pass.
 
+## JEV light-cycle maneuver selection — September 30
+
+- [x] Include autonomous arena cycles from both teams in the existing shared JEV scheduler and transport, excluding the human-controlled cycle. Rotate requests among eligible bikes with a four-second per-bike replan interval and existing global quotas, cancellation and fallback.
+- [x] Supply bounded, unobstructed cycle observations and clear corridor destinations in arena-local meters. A cycle-specific shared relay prompt selects a strategic destination; local steering rechecks cells and available space each crossing. Goals expire after six seconds; reject late, uncertain, dead/escaped or previous-round replies. Keep local turbo/brake rules, including teammate conservation. Outside-arena road driving retains its local controller.
+- Validation: all 398 `npm test` checks pass. Chrome headless on macOS, `node tests/cycle-jev.mjs` verifies mocked API requests, accepted arena decisions, human exclusion and paused scheduling. Unit checks cover round changes, visibility, stale replies, local fallback and blocked-cell overrides. Live-provider tactical quality remains unverified. Public deployment must include the updated Worker prompt alongside the client.
+
+## Social sharing preview — October 1
+
+- [x] Add static Open Graph and large-image Twitter Card metadata for the public TRON URL, with ENCOM TERMINAL title, game description and image alternative text. Use the user-supplied arena screenshot, converted without cropping to a 1080×720 JPEG for sharing compatibility (`public/images/encom-social-preview.jpg`). Source: user attachment `encom-terminal-v0-uxv6f49c6ssh1.png.webp`; supplied for this site's preview, no broader license asserted.
+- Validation: production build passes; built HTML contains both sharing-image tags and the large-image card type, and the built JPEG matches the source asset with verified 1080×720 dimensions. Platform-specific preview rendering remains controlled by each social service.
+
 
 ---
 
@@ -2547,6 +2558,14 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Keep the lead's attack plan when only supporting positions change. Supporting units still refresh their own routes.
 - [x] Preserve a useful wall-aligned facing during overhead translation. Start folding while Clu approaches; commitment still requires fresh personal sight and a physically clear descent, and a committed drop cannot track an evasive maneuver.
 - All existing speeds, accelerations, fold/drop timing and health rules remain unchanged.
+
+## Light-cycle arena participants — September 30
+
+Autonomous cycles on both teams now share the JEV client while the player is in the arena. The human cycle is excluded. Each eligible bike can request a corridor destination every four seconds, with fair oldest-request-first scheduling under the existing global rate limits. `controller: "cycle"` selects the light-cycle prompt in the shared local/public relay protocol.
+
+Snapshots contain arena-local meter coordinates, self pose and reserves, nearby unobstructed cycle observations and up to three currently clear corridor destinations. Responses bias local direction scoring for up to six seconds. Blocked cells and cramped-space avoidance remain local; this is strategic guidance rather than frame-by-frame remote steering. Stale replies (over 2.5 simulation seconds), low confidence, death, escape and reset invalidate choices. Pause cancels requests; switching to local clears goals. Network failure leaves local driving active. Teammate turbo conservation and human controls are unchanged. Road-mode cycles still use local driving.
+
+The updated Worker must be deployed with the client to enable the cycle-specific production prompt. Automated tests use mocked decisions; live JEV driving quality is not yet validated.
 
 
 ---
