@@ -40,6 +40,13 @@ export class TerminalTribute {
  }
  reset(){this.elapsed=0;this.nextCharacter=3;this.count=0;this.index=0;this.active=false;this.phase='body';this.line=null;this.output.textContent='';this.typed.style.opacity='1';this.element.classList.remove('complete','signing-off');}
  start(reducedMotion=false){this.reset();this.active=true;this.reducedMotion=reducedMotion;}
+ next(){
+  if(this.index>=this.sentences.length-1)return;
+  this.index++;this.count=0;this.active=true;this.phase='body';this.nextCharacter=this.elapsed;
+  this.output.textContent='';this.line=null;this.typed.style.opacity='1';
+  this.element.classList.remove('complete','signing-off');
+  this.update(0);
+ }
  update(dt,signOffReady=false){
   if(!this.active)return false;
   this.elapsed+=dt;

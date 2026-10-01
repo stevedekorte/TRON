@@ -1241,6 +1241,21 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - Validation: Chrome tests/pwa-update.mjs reproduces old cache-first HTML and a worker without update messaging, then verifies migration through update.html into the current playable game. Production build and whitespace checks pass.
 - PWA lifecycle verification also passes: offline Clu/cycles/BIT, audio ranges, installability, waiting during play, and applying the waiting update after returning home.
 
+## Credits navigation — September 30
+
+- [x] Space skips directly to the next credit page, including extended credits, resetting the current typing/fade state. Only Escape, Return/Enter, click or tap returns to the home screen; other keys are ignored. Ignore repeated keydown events.
+- Validation: Chrome tests/home-credits.mjs passes Space progression into extended credits, ignored unrelated keys, Escape/Return/numpad Enter exits and click/tap exits. Whitespace checks pass.
+
+## Teammate turbo discipline — September 30
+
+- [x] Teammates conserve turbo at launch and on uncontested straights. Use it with a clear lane when a live opposing cycle is nearby, in a neighboring lane and traveling in the same direction; release after establishing a lead. Use separate engage/release lead thresholds to avoid rapid toggling. Apply the same policy to teammate road driving; preserve player controls and opponent behavior.
+- Validation: all 49 cycle/player/road tests pass, including launch conservation, enemy use, a nearby rival, release after pulling ahead, and no boost for oncoming or destroyed rivals. Whitespace checks pass.
+
+## Terminal-style exit choices — September 30
+
+- [x] Use stacked, borderless choices in all three games' Escape confirmation panels, matching the home menu's blinking block cursor. Default to Continue Playing on every opening. Arrow keys, Tab and pointer focus move the selection; Enter/Space or click activates it, and Escape resumes. Respect reduced-motion preferences. Remove the panel fill and border so only the text and cursor appear over the dimmed game.
+- Validation: Chrome headless on macOS, `node tests/exit-confirm.mjs` passes Clu, cycles and BIT pause/resume, cursor selection and blink timing, keyboard navigation/confirmation and click return home. Inspected the Clu panel capture; syntax and whitespace checks pass.
+
 
 ---
 

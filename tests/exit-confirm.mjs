@@ -27,13 +27,25 @@ try{
    assert.equal(await page.evaluate(()=>__tron.state.time),time);
    assert.equal(await page.evaluate(()=>__tron.state.mode),'paused');
   }
+  await page.keyboard.press('ArrowDown');
+  assert.equal(await page.locator('#exit-confirm [data-confirm]').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.locator('#exit-confirm [data-cancel] .menu-marker').evaluate(e=>getComputedStyle(e).visibility),'hidden');
+  assert.equal(await page.locator('#exit-confirm [data-confirm] .menu-marker').evaluate(e=>getComputedStyle(e).visibility),'visible');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  assert.equal(await page.locator('#exit-confirm [data-confirm] .menu-marker').evaluate(e=>getComputedStyle(e).animationDuration),'0.85s');
+  await page.keyboard.press('ArrowUp');
+  await page.emulateMedia({reducedMotion:'reduce'});
   await page.screenshot({path:`test-results/exit-confirm-${game}.png`});
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#exit-confirm').evaluate(e=>e.open),false);
   if(bit)assert(await page.evaluate(()=>!bitPaused&&!VizApp._objects[0]._listeningPaused));
   else await page.waitForFunction(()=>__tron.state.mode==='running');
   await page.keyboard.press('Escape');
-  await page.locator('#exit-confirm [data-confirm]').click();
+  assert.equal(await page.locator('#exit-confirm [data-cancel]').getAttribute('aria-pressed'),'true');
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#exit-confirm [data-confirm]').getAttribute('aria-pressed'),'true');
+  if(bit)await page.locator('#exit-confirm [data-confirm]').click();
+  else await page.keyboard.press('Enter');
   await page.waitForFunction(()=>document.querySelector('#start')&&!document.querySelector('#start').disabled&&window.__tron?.state.mode==='ready');
  }
  assert.deepEqual(errors,[]);

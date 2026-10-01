@@ -17,6 +17,20 @@ const outsideClear=(r,x,z)=>{
  return world.wallIntersection(p,p,ARENA_WALL.cycleRadiusMeters)===null;
 };
 const free=(r,x,z)=>!arenaWallBlocked(r,x,z)&&occupant(r,x,z)===0&&outsideClear(r,x,z);
+// Teammates conserve boost until racing a nearby opponent in the same direction.
+function hasTurboReason(r,b){
+ const player=r.cycles.find(c=>c.id===r.playerId);
+ if(!player||b.team!==player.team)return true;
+ const [fx,fz]=b.escaped?[-Math.sin(b.yaw),-Math.cos(b.yaw)]:DIR[b.dir];
+ const lead=b.boosting?C.teammateTurboReleaseLeadMeters:C.teammateTurboLeadMeters;
+ return r.cycles.some(other=>{
+  if(!other.alive||other.team===b.team||!!other.escaped!==!!b.escaped)return false;
+  const [ox,oz]=other.escaped?[-Math.sin(other.yaw),-Math.cos(other.yaw)]:DIR[other.dir];
+  if(fx*ox+fz*oz<C.teammateRaceHeadingDot)return false;
+  const dx=(other.x-b.x)*C.cellMeters,dz=(other.z-b.z)*C.cellMeters;
+  return Math.hypot(dx,dz)<=C.teammateRaceRangeMeters&&Math.abs(dx*fz-dz*fx)<=C.teammateRaceLaneMeters&&dx*fx+dz*fz>=-lead;
+ });
+}
 function random(r){r.seed=(Math.imul(r.seed,1664525)+1013904223)>>>0;return r.seed/4294967296;}
 export function createCycleRace(world,seed=1982){
   const site=arenaSite(world);
@@ -169,7 +183,7 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
         const [dx,dz]=DIR[b.dir];let clear=0;
         while(clear<C.aiTurboClearCells&&free(r,b.x+dx*(clear+1),b.z+dz*(clear+1)))clear++;
         wantsBrake=clear<C.aiBrakeClearCells&&(b.braking||b.brakeCharge>=C.aiReserveStartCharge);
-        wantsTurbo=clear>=C.aiTurboClearCells&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge);
+        wantsTurbo=hasTurboReason(r,b)&&clear>=C.aiTurboClearCells&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge);
       }
       b.brakeCharge??=1;
       b.braking=wantsBrake&&b.brakeCharge>1e-9;
@@ -273,7 +287,7 @@ function updateEscapedCycles(r,dt,input,playerOnly=false){
    let control=input;
    if(b.id!==r.playerId){
     const probe={x:b.x-Math.sin(b.yaw)*Math.max(20,b.roadSpeed)/C.cellMeters,z:b.z-Math.cos(b.yaw)*Math.max(20,b.roadSpeed)/C.cellMeters};
-    const safe=clear(b,probe)===true;control={throttle:safe&&b.roadSpeed<C.speedMetersPerSecond,brake:!safe,turbo:safe&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge),steer:safe?0:1};
+    const safe=clear(b,probe)===true;control={throttle:safe&&b.roadSpeed<C.speedMetersPerSecond,brake:!safe,turbo:safe&&hasTurboReason(r,b)&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge),steer:safe?0:1};
    }
    if(!advanceRoadCycle(b,step,control,clear,r.roadConfig))r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:r.time});
    if(`${Math.round(b.x)},${Math.round(b.z)}`!==b.roadEntryCell)b.roadEntryCell=null;

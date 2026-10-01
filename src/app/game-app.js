@@ -342,7 +342,14 @@ export function createGameApp() {
     }
     if (mode === 'loading') return;
     if(mode==='entering'&&!openingTransition){event.preventDefault();if(!event.repeat)beginCluGame();return;}
-    if(creditsVisible()){event.preventDefault();if(!event.repeat)returnToProgramSelection();return;}
+    if(creditsVisible()){
+      event.preventDefault();
+      if(!event.repeat){
+        if(event.code==='Space')tribute.next();
+        else if(['Escape','Enter','NumpadEnter'].includes(event.code))returnToProgramSelection();
+      }
+      return;
+    }
     if(mode==='ready'&&!endingStage&&!document.body.classList.contains('detached')&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter'].includes(event.code)){
       event.preventDefault();
       if(!event.repeat){
