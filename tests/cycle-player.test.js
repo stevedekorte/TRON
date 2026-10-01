@@ -141,7 +141,7 @@ test('slow pedal eases to half speed, overrides turbo, and eases back to cruise'
  assert(b.speedMultiplier<1&&b.speedMultiplier>.5);assert.equal(b.boosting,false);assert(b.turboCharge>.5);
  s.advance({cycleSlow:true},.5);assert(b.speedMultiplier>.65&&b.speedMultiplier<.75,'S decelerates over time instead of immediately reaching half speed');
  s.advance({cycleSlow:true},1);assert(b.speedMultiplier>.5&&b.speedMultiplier<.53);
- assert(race.cycles[0].speedMultiplier>1);
+ assert.equal(race.cycles[0].speedMultiplier,1);
  const slow=b.speedMultiplier;s.advance({},1/120);assert(b.speedMultiplier>slow&&b.speedMultiplier<1);
  s.advance({},.5);assert(b.speedMultiplier>.8&&b.speedMultiplier<.9);
  s.advance({},1);assert(b.speedMultiplier>.97&&b.speedMultiplier<1);
@@ -228,13 +228,28 @@ test('arena brake reserve exhausts, requires release to recharge, and supports p
  b.alive=false;s.restartCycleMatch();assert.equal(s.run.cycleRace.cycles[s.run.cycleRace.playerId].brakeCharge,1);
 });
 
-test('autonomous cycles spend their own turbo on clear lanes and brake near blocked lanes',()=>{
+test('teammates conserve launch turbo while enemies boost; all brake near blocked lanes',()=>{
  const s=session();enter(s);const r=s.run.cycleRace;r.phase='racing';
  s.advance({},.1);
  for(const b of r.cycles.filter(b=>b.alive&&b.id!==r.playerId)){
-  assert(b.boosting);assert(b.turboCharge<1);assert(b.speedMultiplier>1);
+  if(b.team===r.cycles[r.playerId].team){assert(!b.boosting);assert.equal(b.turboCharge,1);assert.equal(b.speedMultiplier,1);}
+  else {assert(b.boosting);assert(b.turboCharge<1);assert(b.speedMultiplier>1);}
  }
  const b=r.cycles[0],dz=b.dir===0?-1:1;
  r.occupied[(b.z+dz*3+C.halfCells)*(C.halfCells*2+1)+b.x+C.halfCells]=6;
  s.advance({},1/120);assert(b.braking);assert(!b.boosting);assert(b.brakeCharge<1);
+});
+
+
+test('teammates boost to outpace a nearby opponent and conserve charge after pulling ahead',()=>{
+ const s=session();enter(s);const r=s.run.cycleRace;r.phase='racing';r.occupied.fill(0);
+ const b=r.cycles[0],enemy=r.cycles[3];
+ Object.assign(b,{x:0,previousX:0,z:0,previousZ:0,dir:0});
+ Object.assign(enemy,{x:3,previousX:3,z:-6,previousZ:-6,dir:0});
+ s.advance({},1/120);assert(b.boosting);assert(b.turboCharge<1);
+ Object.assign(enemy,{z:12,previousZ:12});
+ const charge=b.turboCharge;s.advance({},1/120);assert(!b.boosting);assert(b.turboCharge>charge);
+ Object.assign(enemy,{z:-6,previousZ:-6,dir:2});
+ s.advance({},1/120);assert(!b.boosting,'do not boost into an oncoming opponent');
+ enemy.dir=0;enemy.alive=false;s.advance({},1/120);assert(!b.boosting);
 });
