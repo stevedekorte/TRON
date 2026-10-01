@@ -173,7 +173,7 @@ The game now starts in **Tactical + Jev** with the full enemy population (small 
 
 The **Small tactical encounter** checkbox starts two Recognizers and one ground tank. Tactical modes disable repeating pursuit reinforcements regardless of roster size. Applying a mode starts a fresh run; the choice persists in local browser settings. Tactical restarts use simulation seed 1982; maze placement remains the layout established for that page session. The expanded **Latest AI decision** panel shows the observation snapshot, route choice, probabilities, acceptance and wall-clock latency. `aiConfidence` is adjustable in tuning (default 0.25); detailed movement constants are in `src/game/tactical.js`.
 
-The local Vite server reads the key from `TYPESAFE_API_KEY` (including `.env.local`) or, if absent, the single raw key in `credentials/Typesafe.txt`. Restart Vite after changing credentials. Both locations are ignored by Git and denied by the development file server. Never put the key in a `VITE_` variable. `.env.example` documents the optional model setting. The existing credential file has been connected; no key needs to be pasted into the game.
+The local Vite server reads the key from `TYPESAFE_API_KEY` (including `.env.local`) or, if absent, the single raw key in `credentials/Typesafe.txt`. Restart Vite after changing credentials. The environment file is ignored by Git; `credentials/Typesafe.txt` is tracked with git-crypt encryption. Both locations are denied by the development file server. Locked checkouts ignore the encrypted credential and use local AI fallback unless a server environment key is provided. Never put the key in a `VITE_` variable. `.env.example` documents the optional model setting. The existing credential file has been connected; no key needs to be pasted into the game.
 
 Only units whose fresh sighting/radio memory or unknown sound estimate is within one maze length request Jev decisions. Distant or unaware units use local tactics. Enemies hear nearby engines and more distant cannon fire, impacts and explosions; walls muffle sounds and reports carry uncertain bearing/range estimates. Hearing permits investigation, not a confirmed target fix. Range controls are in Shift+T.
 
@@ -232,3 +232,17 @@ Select **BIT** from the terminal to open the integrated program in `public/bit`.
 Bit uses the same private, budgeted Jev relay as the game. Both local and Worker protocols accept `{controller: "bit", question: "..."}` with a 1,000-character limit and fixed yes/no/unsure choices. Deploy the updated Worker alongside the client to enable public answers. Browser speech recognition and AI answers need network access; static Bit assets are available offline. `node tests/bit.mjs` tests entry, mocked speech/answers, repeat entry and Escape without live AI charges.
 
 New film-reference videos under `docs/references/videos` use Git LFS. Run `git lfs install` and `git lfs pull` after cloning to download those references; they are not required to run the game.
+
+
+### Encrypted JEV credential
+
+`credentials/Typesafe.txt` is encrypted in Git using [git-crypt](https://github.com/AGWA/git-crypt). Install git-crypt before editing this file. On an authorized clone, run:
+
+```sh
+git-crypt unlock /secure/path/TRON.key
+git-crypt status -e
+```
+
+The recovery key for the original workstation is stored outside the repository at `~/.config/git-crypt/TRON.key` (owner-only permissions). Back it up in a password manager or another secure location; never commit or publish it. Unlocking leaves the working copy readable locally, while Git stores ciphertext. Filenames remain public. Public clones and static builds do not need the recovery key; production JEV continues using the Cloudflare Worker secret.
+
+Encryption rules must be present before staging credentials. Only `Typesafe.txt` is allowed through the credentials ignore rule; other local credentials remain ignored. Do not place credentials in `public/`, client code or `VITE_` variables. git-crypt does not remove secrets from older commits; this credential was not found in the checked prior history.

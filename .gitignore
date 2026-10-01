@@ -8,7 +8,10 @@ test-results/
 .env.local
 .env.*.local
 
-credentials/
+credentials/*
+!credentials/Typesafe.txt
+*.git-crypt-key
+TRON.key
 
 .wrangler/
 .dev.vars

@@ -1253,3 +1253,9 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Add static Open Graph and large-image Twitter Card metadata for the public TRON URL, with ENCOM TERMINAL title, game description and image alternative text. Use the user-supplied arena screenshot, converted without cropping to a 1080×720 JPEG for sharing compatibility (`public/images/encom-social-preview.jpg`). Source: user attachment `encom-terminal-v0-uxv6f49c6ssh1.png.webp`; supplied for this site's preview, no broader license asserted.
 - Validation: production build passes; built HTML contains both sharing-image tags and the large-image card type, and the built JPEG matches the source asset with verified 1080×720 dimensions. Platform-specific preview rendering remains controlled by each social service.
+
+## Encrypted repository credential — October 1
+
+- [x] Initialize git-crypt and encrypt `credentials/**` before adding the JEV key. Allow only `credentials/Typesafe.txt` through Git's ignore rules. Export an owner-readable recovery key outside the repository; document unlocking and secure backup. Keep Cloudflare production secrets independent.
+- [x] Ignore git-crypt ciphertext when loading a locked development checkout, retaining local fallback rather than sending encrypted bytes as an API credential. Preserve development-server file denial.
+- Validation: staged credential has the git-crypt header and contains no plaintext key; a separate temporary repository successfully unlocks the staged blob with the exported key. A locked server fixture reports JEV unconfigured. All 11 JEV tests and the production build pass. Prior history scan found no copy of this JEV key.
