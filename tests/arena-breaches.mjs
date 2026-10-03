@@ -19,10 +19,12 @@ try{
   const after=ray(0),adjacent=ray(16),ms=performance.now()-start;
   const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(1200,800);document.body.append(renderer.domElement);
   const camera=new T.PerspectiveCamera(55,1.5,.1,2000);camera.position.set(-20,26,340);camera.lookAt(0,25,416);renderer.render(scene,camera);
-  window.restore=()=>{arena.userData.breaches.update({round:2,breaches:[]});scene.updateMatrixWorld(true);return ray(0);};
+  window.nextMatch=()=>{arena.userData.breaches.update({round:2,breaches:[{axis:'z',sign:1,along:0}]});scene.updateMatrixWorld(true);return ray(0);};
+  window.restore=()=>{arena.userData.breaches.update({round:3,breaches:[]});scene.updateMatrixWorld(true);return ray(0);};
   return {before,after,adjacent,ms};
  });
  assert(result.before>0);assert.equal(result.after,0);assert(result.adjacent>0);
  await page.screenshot({path:'test-results/arena-breach.png'});
+ assert.equal(await page.evaluate(()=>nextMatch()),0);
  assert(await page.evaluate(()=>restore())>0);assert.deepEqual(errors,[]);console.log(result);
 }finally{await browser.close();}

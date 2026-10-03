@@ -301,7 +301,7 @@ export function createGameApp() {
   function showControlsHelp(){
     const cycle=run.playerVehicle==='cycle',road=cycle&&run.cycleRace.cycles[run.cycleRace.playerId].escaped;
     const groups=cycle?[
-      ['DRIVING',...(road?['W/S / SPEED','A/D OR ARROWS / STEER','X / BRAKE / REVERSE','T / TURBO']:['A/D OR LEFT/RIGHT / TURN','W/T / TURBO','S/X / BRAKE'])],
+      ['DRIVING',...(road?['W/S / SPEED','A/D OR ARROWS / STEER','X / BRAKE / REVERSE','T/SPACE / TURBO']:['A/D OR LEFT/RIGHT / TURN','W/T/SPACE / TURBO','S/X / BRAKE'])],
       ['CAMERA','J/L / GLANCE','I/K / ZOOM','V / AERIAL'],
       ['AFTER DEATH','LEFT/RIGHT / FOLLOW CYCLES','ENTER / RESTART'],
     ]:[
@@ -461,7 +461,7 @@ export function createGameApp() {
     if (event.target instanceof HTMLInputElement) return;
     const key = event.code;
     if(run.playerVehicle==='cycle'&&!view.cameraRig.freeCamera.active&&['running','entering'].includes(mode)){
-      if(['KeyW','KeyS','KeyX','KeyT'].includes(key)){
+      if(['KeyW','KeyS','KeyX','KeyT','Space'].includes(key)){
         event.preventDefault();keys.add(key);
         if(!event.repeat){
           if(key==='KeyX'&&run.cycleRace.cycles[run.cycleRace.playerId].escaped)inputController.cycleReverseQueued=Math.abs(run.cycleRace.cycles[run.cycleRace.playerId].roadSpeed)<.01;
@@ -471,7 +471,7 @@ export function createGameApp() {
       if(['KeyA','ArrowLeft','KeyD','ArrowRight'].includes(key)){
         event.preventDefault();keys.add(key);if(!event.repeat)inputController.cycleTurnQueued=['KeyA','ArrowLeft'].includes(key)?-1:1;return;
       }
-      if(['KeyP','KeyF','KeyO','KeyT','Space'].includes(key)){event.preventDefault();return;}
+      if(['KeyP','KeyF','KeyO'].includes(key)){event.preventDefault();return;}
     }
     if (
       !event.repeat &&

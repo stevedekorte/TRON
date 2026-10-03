@@ -44,16 +44,16 @@ test('firing restarts only the next-shot timer; paused or destroyed tanks do not
  assert.equal(r.extraShots,2);assert.equal(r.shots,shots);
 });
 
-test('outside gunner, level shots vary horizontally but never vertically and keep full speed',()=>{
+test('unassisted level shots keep exact heading and full speed',()=>{
  const r=fixture();r.seed=42;const directions=[];
  for(let i=0;i<40;i++){
   r.cooldown=0;r.projectiles=[];updateWeapons(r,{fire:true},0);
   const p=r.projectiles[0];directions.push(p.vx);
   assert.equal(p.vy,0);
   assert.ok(Math.abs(Math.hypot(p.vx,p.vs,p.vy)-CLU_WEAPON.speed)<1e-10);
-  assert.ok(Math.abs(-Math.atan2(p.vx,p.vs)-r.yaw)<=CLU_WEAPON.yawSpread+1e-10);
+  assert.ok(Math.abs(-Math.atan2(p.vx,p.vs)-r.yaw)<1e-10);
  }
- assert.ok(new Set(directions).size>30);
+ assert.equal(new Set(directions).size,1);
 });
 test('gunner fire remains exact and does not use spread',()=>{
  const r=fixture();r.gunner=true;r.aimPitch=.2;
@@ -76,7 +76,7 @@ test('assisted spread is reproducible and cannot send rounds into the floor',()=
   assert.ok(p.y+p.vy*CLU_WEAPON.lifetime>0);
  }
 });
-test('locked auto aim scatters shots beyond the old cone while retaining bounded lead',()=>{
+test('locked auto aim scatters shots across its configured cone while retaining bounded lead',()=>{
  const r=fixture();Object.assign(r,{seed:42,yaw:0});
  r.recognizers=[{id:0,x:r.x,s:r.s+500,y:70,vx:0,vs:0,vy:0,state:'patrol',hit:0}];
  const target=cannonTarget(r),pose=cannonPose(r);assert(target.lock);
@@ -88,7 +88,7 @@ test('locked auto aim scatters shots beyond the old cone while retaining bounded
   assert(Math.abs(dyaw)<=CLU_WEAPON.assistYawSpread);assert(Math.abs(dpitch)<=CLU_WEAPON.assistPitchSpread);
   errors.push({yaw:dyaw,pitch:dpitch});
  }
- assert(errors.some(e=>Math.abs(e.yaw)>CLU_WEAPON.yawSpread));
- assert(errors.some(e=>Math.abs(e.pitch)>CLU_WEAPON.pitchSpread*3));
+ assert(errors.some(e=>Math.abs(e.yaw)>CLU_WEAPON.assistYawSpread*.5));
+ assert(errors.some(e=>Math.abs(e.pitch)>CLU_WEAPON.assistPitchSpread*.75));
  assert(errors.some(e=>e.yaw<0)&&errors.some(e=>e.yaw>0));
 });

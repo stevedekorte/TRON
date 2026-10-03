@@ -41,8 +41,8 @@ export function createCycleRace(world,seed=1982){
 }
 export function resetCycleRound(r){
   r.arenaPaused=false;r.attemptResolved=false;r.pendingTurns=[];r.round++;r.phase='countdown';r.remaining=C.countdownSeconds;r.elapsed=0;r.accumulator=0;r.winner=null;
-  r.occupied=new Uint8Array(side*side);r.outerOccupied={};r.breaches=[];r.trails=[];r.crashes=[];
-  if((r.startWithBreach??CYCLE_TESTING.startWithBreach)&&r.playerId!==undefined)r.breaches.push({axis:'z',sign:-1,along:0,id:0,time:r.time});
+  r.occupied=new Uint8Array(side*side);r.outerOccupied={};r.breaches??=[];r.trails=[];r.crashes=[];
+  if((r.startWithBreach??CYCLE_TESTING.startWithBreach)&&r.playerId!==undefined&&!r.breaches.some(b=>b.axis==='z'&&b.sign===-1&&b.along===0))r.breaches.push({axis:'z',sign:-1,along:0,id:r.breaches.length,time:r.time});
   const startRow=Math.floor((ARENA_WALL.innerMeters-C.lengthMeters/2-C.startWallClearanceMeters)/C.cellMeters);
   r.cycles=Array.from({length:6},(_,id)=>{
     const team=id<3?0:1,north=r.entranceFormation?team===0:team===1;

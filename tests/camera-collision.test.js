@@ -115,3 +115,11 @@ test('CLU recovery may rise when no bounded horizontal route exists',()=>{
  assert(recovery.active);assert.equal(recovery.waypoints,null);assert(position.y>previous.y);
  assert.equal(barrier.wallIntersection(p(previous),p(position),1.2),null);
 });
+
+test('CLU opening zoom moves during the terminal fade instead of holding its first 15 percent',()=>{
+ const rig=new CameraRig({wallIntersection:()=>null,lineOfSight:()=>true}),run=createRun();
+ Object.assign(run,{recognizers:[],enemyTanks:[],impact:0});
+ rig.opening=0;rig.begin(run,1/60,'entering');rig.update(run,run,1,1/60,'entering',run);const initial=rig.camera.position.y;
+ rig.opening=.05;rig.begin(run,1/60,'entering');rig.update(run,run,1,1/60,'entering',run);
+ assert(rig.camera.position.y<initial-1,'zoom must already descend early in the fade');
+});

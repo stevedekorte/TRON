@@ -274,7 +274,7 @@ export class CameraRig {
       clipCameraSegment(this.world,new THREE.Vector3(x,CAMERA_CLEARANCE.anchorHeightMeters,-s),this.camera.position);
     }
     if (this.opening != null) {
-      const t = THREE.MathUtils.smoothstep(this.opening, 0.15, 1);
+      const t = THREE.MathUtils.smoothstep(this.opening, 0, 1);
       const height = Math.exp(
         THREE.MathUtils.lerp(Math.log(320), Math.log(config.cameraHeight), t),
       );

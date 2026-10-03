@@ -77,7 +77,7 @@ test('turret rotates independently and acquired shots lead while unassisted shot
   assert.equal(cannonTarget(r).lock,true);step(r,{fire:true},1/60);
   assert.ok(r.projectiles[0].vx>0);assert.ok(r.projectiles[0].vy>0);
   r.turretYaw=.6;r.turretHeading=null;r.cooldown=0;r.projectiles=[];step(r,{fire:true},1/60);
-  assert.equal(r.projectiles[0].vy,0);assert.ok(Math.abs(Math.atan2(-r.projectiles[0].vx,r.projectiles[0].vs)-.6)<=CLU_WEAPON.yawSpread+1e-9);
+  assert.equal(r.projectiles[0].vy,0);assert.ok(Math.abs(Math.atan2(-r.projectiles[0].vx,r.projectiles[0].vs)-.6)<1e-9);
 });
 
 test('walls block auto aim and a protruding muzzle cannot shoot through a wall',()=>{
