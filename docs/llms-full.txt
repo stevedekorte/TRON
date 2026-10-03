@@ -1335,6 +1335,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - Bullet spread now applies only to acquired auto-aim targets. Unassisted exterior shots and manual gunner/mouse aim stay precise. Removed unused unassisted spread settings; assisted spread values are unchanged.
 - Validation: 22 gunner/mouse-raycast tests passed, including exact unassisted headings over multiple shot seeds and retained assisted-shot variation.
 
+## BIT startup audio cache — October 2
+
+- Preload and decode both YES/NO recordings as BIT initializes, including while microphone permission is pending. Start listening only after startup loading settles; successful first replies use the same AudioBuffers as later replies. Removed redundant HTMLAudioElement loads and clear pending load entries so failed downloads can retry. Bluetooth microphone/output handoff timing is preserved.
+- Chrome `node tests/bit-audio-cache.mjs` held both cold sample requests, verified BIT did not begin listening early, then checked first and repeated playback started synchronously from the decoded cache without any further fetches. Each WAV was requested once.
+
 
 ---
 

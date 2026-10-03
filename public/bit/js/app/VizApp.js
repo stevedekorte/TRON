@@ -9,6 +9,15 @@ BitSound = {
     context: null,
     buffers: {},
     pending: {},
+    answerPaths: ["resources/entities/Bit/sounds/yes.wav", "resources/entities/Bit/sounds/no.wav"],
+
+    preload: function(paths = this.answerPaths) {
+        const Context = window.AudioContext || window.webkitAudioContext
+        if (!Context) return Promise.resolve([])
+        if (!this.context) this.context = new Context()
+        // Decoding needs no playback gesture; do this while permission is pending.
+        return Promise.allSettled(paths.map(path => this.load(path)))
+    },
 
     unlock: function(paths) {
         const Context = window.AudioContext || window.webkitAudioContext
@@ -24,7 +33,7 @@ BitSound = {
                 resumed.catch(() => {})
             }
         }
-        paths.forEach((path) => this.load(path))
+        return this.preload(paths)
     },
 
     load: function(path) {
@@ -43,7 +52,7 @@ BitSound = {
         }).then((bytes) => context.decodeAudioData(bytes)).then((buffer) => {
             this.buffers[path] = buffer
             return buffer
-        })
+        }).finally(() => { delete this.pending[path] })
         return this.pending[path]
     },
 
@@ -79,7 +88,7 @@ BitSound = {
         source.connect(this.context.destination)
         source.start(0)
         return new Promise((resolve) => {
-            source.onended = () => resolve()
+            source.onended = () => { source.disconnect(); resolve() }
         })
     },
 
@@ -145,10 +154,7 @@ VizApp = {
     },
 
     unlockAnswerSounds: function() {
-        BitSound.unlock([
-            "resources/entities/Bit/sounds/yes.wav",
-            "resources/entities/Bit/sounds/no.wav"
-        ])
+        return BitSound.unlock(BitSound.answerPaths)
     },
 
     beginIfNeeded: function () {
@@ -158,7 +164,7 @@ VizApp = {
         }
         this._didBegin = true
         document.body.classList.add("bit-started")
-        this.unlockAnswerSounds()
+        const soundsReady = this.unlockAnswerSounds()
 
         this.initCamera()
         this.initScene()
@@ -173,20 +179,22 @@ VizApp = {
         this._container.appendChild(this._renderer.domElement);
         window.addEventListener('resize', function() { VizApp.onWindowResize() }, false );
 
-        setTimeout(() => {
+        document.getElementById("instructions").textContent = "STARTING BIT PROGRAM"
+        Promise.all([soundsReady, new Promise(resolve => setTimeout(resolve, 1000))]).then(() => {
+            if (window.bitLeaving) return
             var bit = Bit.clone()
             this.addObj3d(bit)
 
             this.animate();
-        }, 1000)
-
-        const instructionsElement = document.getElementById("instructions")
-        instructionsElement.innerHTML = "Ask a yes or no question"
-        instructionsElement.style.color = ""
+            const instructionsElement = document.getElementById("instructions")
+            instructionsElement.innerHTML = "Ask a yes or no question"
+            instructionsElement.style.color = ""
+        })
     },
     
 	init: function()  {
         this._objects = []
+        this._answerSoundsReady = BitSound.preload()
         
         document.addEventListener('touchstart', function(e) {
             //console.log("touchstart2")

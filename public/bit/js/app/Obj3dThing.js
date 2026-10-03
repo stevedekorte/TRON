@@ -24,8 +24,8 @@ window.Obj3dThing = Obj3d.clone().newSlots({
     },
     
     loadAudio: function() {
-        this.setAudio(SharedResources.shared().audioForPath(this.audioPath()))
-        //this.setAudio(new Audio(this.audioPath()))
+        // Share the decoded startup cache; do not create a second media loader.
+        BitSound.load(this.audioPath()).catch(error => console.warn("Bit sound preload failed:", error.message))
         return this
     },
     
