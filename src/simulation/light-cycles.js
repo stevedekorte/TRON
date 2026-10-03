@@ -1,8 +1,8 @@
 import {damageCycleTrail,expireDamagedTrails} from './cycle-trail-damage.js';
 import {cycleWallContact} from './cycle-wall-contact.js';
-import {trimCycleTrails} from './cycle-trails.js';
+import {trimCycleTrails,rebuildTrailOccupancy} from './cycle-trails.js';
 import {enterRoadMode,advanceRoadCycle,setRoadSpeedControl} from './cycle-road.js';
-import {ARENA_WALL,arenaWallBlocked,wallImpact} from '../game/arena-breaches.js';
+import {ARENA_WALL,arenaWallBlocked,wallImpact,breachContains} from '../game/arena-breaches.js';
 import { LIGHT_CYCLES as C, CYCLE_JEV, CYCLE_TESTING, CYCLE_DIRECTIONS as DIR, cycleTrailState, cycleFraction } from '../game/light-cycles.js';
 import { arenaSite } from '../levels/arena.js';
 const raceWorlds=new WeakMap();
@@ -136,6 +136,7 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
       b.alive=false;r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:p.dir,time:r.time});continue;}
     if(Math.max(Math.abs(b.x),Math.abs(b.z))*C.cellMeters>ARENA_WALL.outerMeters+ARENA_WALL.cycleRadiusMeters){
       enterRoadMode(b);
+      if(b.trailStopped)rebuildTrailOccupancy(r,[b]);
       const tail=r.trails[b.segment];
       if(tail){
         const trim=Math.min(C.lengthMeters/2/C.cellMeters,Math.hypot(tail.x2-tail.x1,tail.z2-tail.z1));
@@ -144,10 +145,29 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
       if(b.id===r.playerId)r.pendingTurns=[];
       continue;
     }
+    const mouth=wallImpact(p.x*C.cellMeters,p.z*C.cellMeters);
+    if(!b.trailStopped&&Math.max(Math.abs(p.x),Math.abs(p.z))>Math.max(Math.abs(b.x),Math.abs(b.z))
+      &&Math.max(Math.abs(p.x),Math.abs(p.z))*C.cellMeters+C.lengthMeters/2>=ARENA_WALL.innerMeters
+      &&r.breaches.some(gap=>gap.axis===mouth.axis&&gap.sign===mouth.sign&&breachContains(gap,mouth.along))){
+      // The open inner face ends the emitter, not the far side of the thick wall.
+      const tail=r.trails[b.segment];
+      if(tail){
+        const length=Math.hypot(tail.x2-tail.x1,tail.z2-tail.z1),trim=Math.min(length,C.lengthMeters*.347/C.cellMeters);
+        if(length>0){tail.x2-=(tail.x2-tail.x1)*trim/length;tail.z2-=(tail.z2-tail.z1)*trim/length;}
+      }
+      for(const t of r.trails)if(t.bikeId===b.id)t.dyingAt=Math.min(t.dyingAt??Infinity,r.time);
+      b.trailStopped=true;b.segment=-1;rebuildTrailOccupancy(r,[b]);
+    }
+    if(b.trailStopped){
+      if(inside(b.x,b.z)){if(r.occupied[cell(b.x,b.z)]===b.id+1)r.occupied[cell(b.x,b.z)]=0;}
+      else if(r.outerOccupied[`${b.x},${b.z}`]===b.id+1)delete r.outerOccupied[`${b.x},${b.z}`];
+    }
     if(p.dir!==b.dir){b.turns++;b.straight=0;}else b.straight++;
+    if(!b.trailStopped){
     const last=r.trails[b.segment];
     if(last&&!last.joining&&last.dir===p.dir){last.x2=p.x;last.z2=p.z;last.initial=false;}
     else{b.segment=r.trails.length;r.trails.push({bikeId:b.id,team:b.team,dir:p.dir,x1:b.x,z1:b.z,x2:p.x,z2:p.z});}
+    }
     b.x=p.x;b.z=p.z;b.dir=p.dir;if(inside(b.x,b.z))r.occupied[cell(b.x,b.z)]=b.id+1;else r.outerOccupied[`${b.x},${b.z}`]=b.id+1;
 
   }
@@ -247,7 +267,7 @@ function reenterArena(r,b,clear){
  const dir=((Math.round(-heading/(Math.PI/2))%4)+4)%4,[dx,dz]=DIR[dir];
  const start={x:b.x,z:b.z},next={x:Math.round(b.x)+dx,z:Math.round(b.z)+dz};
  const blocked=clear(b,next)!==true;
- b.escaped=false;b.dir=dir;delete b.yaw;
+ b.escaped=false;b.trailStopped=false;b.dir=dir;delete b.yaw;
  b.lean=0;b.cornerLean=0;b.steering=0;b.reverseGear=false;b.roadSpeed=0;b.targetRoadSpeed=0;
  b.speedMultiplier=1;b.boosting=false;b.roadEntryCell=null;b.segment=undefined;
  if(b.id===r.playerId){
