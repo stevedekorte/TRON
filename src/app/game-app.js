@@ -1,3 +1,4 @@
+import {CreditModelPreview} from '../ui/credit-model-preview.js';
 import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
 import {CYCLE_OPENING} from '../rendering/camera-rig.js';
@@ -13,7 +14,7 @@ import { GameLoop, simulationStepSeconds } from './game-loop.js';
 import { InputController } from './input-controller.js';
 import { GameSession } from '../simulation/game-session.js';
 import { DebrisPhysics } from '../simulation/debris-physics.js';
-import { browserScenario } from '../game/browser-scenario.js';
+import { browserScenario, browserRunSeed } from '../game/browser-scenario.js';
 import { HEARING, HEARING_DEFAULTS } from '../game/hearing.js';
 import { mergeAutoplayInput } from '../simulation/autoplay-input.js';
 import { Autoplay } from '../simulation/autoplay.js';
@@ -69,6 +70,7 @@ export function createGameApp() {
   const session = loadingTimings.sync('Initial simulation / enemy placement',()=>new GameSession({ world: map }));
   const terminal = new Terminal($('terminal-text'), $('terminal-actions'));
   const tribute = new TerminalTribute($('end-tribute'), creditsText, extendedCreditsText);
+  tribute.preview=new CreditModelPreview();
   const victoryPrinter=new TerminalPrinter($('terminal-text'),victoryText);
   let endingStage=null;
   let view,
@@ -219,7 +221,7 @@ export function createGameApp() {
     jev.resetScheduling();
     autoplay.reset();
     loadingTimings.checkpoint('Start requested');
-    run = loadingTimings.sync('New game simulation reset',()=>session.reset());
+    run = loadingTimings.sync('New game simulation reset',()=>session.reset(selectedGame==='space'?browserRunSeed(location):undefined));
     run.speed = config.maxSpeed;
     if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({entranceFormation:!testCycleStart,startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
     else startPursuit(run);
@@ -803,6 +805,7 @@ export function createGameApp() {
           (Number.isFinite(music?.duration) && music.currentTime >= music.duration - 5) ||
           !!sound.musicDirector.musicError);
       if (tribute.update(dt, signOffReady)) sound.endOfLine();
+      tribute.preview.update(tribute,dt);
       if (!tribute.active && tribute.phase === 'signoff') {
         outroFade += dt;
         fade.hidden = false;
@@ -1165,6 +1168,7 @@ export function createGameApp() {
   function dispose() {
     if (disposed) return;
     disposed = true;
+    tribute.preview.dispose();
     cycleTuning?.dispose();
     exitConfirm.dispose();
     jev.dispose();

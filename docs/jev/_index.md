@@ -465,3 +465,7 @@ Autonomous cycles on both teams now share the JEV client while the player is in 
 Snapshots contain arena-local meter coordinates, self pose and reserves, nearby unobstructed cycle observations and up to three currently clear corridor destinations. Responses bias local direction scoring for up to six seconds. Blocked cells and cramped-space avoidance remain local; this is strategic guidance rather than frame-by-frame remote steering. Stale replies (over 2.5 simulation seconds), low confidence, death, escape and reset invalidate choices. Pause cancels requests; switching to local clears goals. Network failure leaves local driving active. Teammate turbo conservation and human controls are unchanged. Road-mode cycles still use local driving.
 
 The updated Worker must be deployed with the client to enable the cycle-specific production prompt. Automated tests use mocked decisions; live JEV driving quality is not yet validated.
+
+## Public usage cap removal — October 2
+
+The user requested that TypeSafe balance control total public usage. `wrangler.jsonc` now sets `DAILY_REQUESTS`, `DAILY_INPUT_BYTES`, `IP_DAILY_REQUESTS` and `IP_MINUTE_REQUESTS` to `unlimited`. This supersedes the prior daily quotas. The relay retains only per-request size/timeout rules and short-term overlap/pacing controls. Local development's hourly dollar cap is separate and unchanged. A browser that received a previous daily-cap cooldown should reload to clear that in-memory cooldown after deployment.

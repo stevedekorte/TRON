@@ -1259,3 +1259,48 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Initialize git-crypt and encrypt `credentials/**` before adding the JEV key. Allow only `credentials/Typesafe.txt` through Git's ignore rules. Export an owner-readable recovery key outside the repository; document unlocking and secure backup. Keep Cloudflare production secrets independent.
 - [x] Ignore git-crypt ciphertext when loading a locked development checkout, retaining local fallback rather than sending encrypted bytes as an API credential. Preserve development-server file denial.
 - Validation: staged credential has the git-crypt header and contains no plaintext key; a separate temporary repository successfully unlocks the staged blob with the exported key. A locked server fixture reports JEV unconfigured. All 11 JEV tests and the production build pass. Prior history scan found no copy of this JEV key.
+
+
+## Meshy shuttle reconstruction trials — October 2
+
+- [x] Add a server-side Meshy generation/download script using ignored local credentials, persistent task IDs, reference hashes and explicit submissions. Download GLBs and previews locally; preserve the original and remeshed outputs for comparison.
+- [x] Try original four-view film input (carrier contamination), focused two-view input (incorrect closed shell), and tight detachment-only input (fragmented geometry). Three completed jobs used 105 credits total. Keep the existing default shuttle unchanged; comparison links are available in the model studio.
+- [ ] Produce a reference-faithful replacement shuttle. None of these Meshy outputs meets the supplied film references. Further generation needs clearer, isolated views or a different reconstruction approach.
+- Validation: macOS Chrome headless loads and exports the four-view and detachment-only models, including the original detachment mesh; six rendered angles captured and the reference-angle capture inspected for the detachment failure. Credentials remain ignored; no signed URLs or keys recorded in task manifests.
+
+
+## Shuttle smoothing and symmetry — October 2
+
+- [x] Use the two-view Meshy shuttle's user-accepted silhouette for cleanup. Smooth welded geometry, planarize broad panels, and mirror one quadrant across width and height. Use a neutral surface material to remove baked texture noise. Make this the default standalone shuttle preview and export a separate GLB, retaining raw trials.
+- Validation: Chrome on macOS captures six views and checks exact X/Y mirror correspondence for every mesh vertex plus GLB export. No extra Meshy credits used; small inferred surface details remain provisional.
+
+
+## Shuttle hard-surface correction — October 2
+
+- [x] Replace the rejected smoothing pass with explicit flat orthogonal panels. Quarter-circle front corners are the only curved or non-right-angle regions. Preserve width/height symmetry and straight detail strips; restore a clean green inset. Use this as the default studio model, preserving earlier comparisons.
+- Validation: geometry invariant test passes for X/Y world-space mirror correspondence and no angled faces outside front corners. Chrome renders six views and exports the 1,532-triangle GLB. Visual proportions still require user review.
+
+
+## Preserve shuttle structural details — October 2
+
+- [x] Supersede the oversimplified planar reconstruction with the detailed two-view Meshy source. Disable global smoothing and retain its material maps, ribs and recess geometry. Restrict planarization to tightly grouped near-axis-aligned surfaces and keep X/Y symmetry. Export a separate detailed GLB and make it the studio default.
+- Validation: Chrome six-view captures, symmetry checks and GLB export pass (38,008 triangles). Reference/top views inspected. Exact hard-surface reconstruction remains unresolved; do not claim the simplified panel model satisfies the reference.
+
+## Provider-balance-controlled public JEV usage — October 2
+
+- [x] At the user's request, set the public relay's shared daily request/input quotas and per-IP daily/minute quotas to explicit `unlimited`. Preserve request size validation, timeout, short pacing and concurrent-request controls; no cumulative site usage cap remains. Existing usage counters do not block requests under the new configuration. TypeSafe account balance and provider limits govern total usage.
+- Validation: all seven Worker tests pass, including requests succeeding with counters far above the former caps. Invalid settings still fail; explicitly configured numeric limits retain their semantics.
+
+## CLU variation, sound, shadows and victory cadence — October 2
+
+- Normal CLU starts now choose a fresh run seed so maze patrol tank/Recognizer placements vary. Opening pursuit Recognizers and carrier escorts retain their formation; explicit `runSeed` and reference runs remain repeatable.
+- Bullet surface-hit tones now use HRTF positioning at the impact point, with inverse distance attenuation (18 m reference distance). Mono source tones become directional stereo at the listener.
+- Maze shadows on vehicles use a 2048-pixel tile and four-tap bilinear depth-comparison filtering instead of unfiltered 1024-pixel tiles. Exact floor/wall shadow geometry is unchanged; atlas memory increases fourfold.
+- Victory typing retains the extended-credit 18 ms character interval, allowing 250 ms of catch-up so low frame rates no longer throttle it to two characters per frame. Human access typing retains its single-character limit. Text source: `docs/victory.txt`.
+- Validation: `npm test` passed 402 tests, including seeded patrol placement/formation preservation and victory cadence at 5–30 fps. Desktop Chrome: `node tests/surface-audio.mjs` verified left/right channel energy and distance attenuation; `node tests/tank-wall-shadows.mjs` produced inspected before/after tank captures without shader errors; `node tests/wall-shadow-edges.mjs` retained zero incorrect pixels in the exact wall fixture. Audible balance and the precise screenshot location still need user play review.
+
+## Extended-credit model previews and horizontal camera recovery — October 2
+
+- Extended model credits now show a locally rendered tank, Recognizer, carrier, Solar Sailer, grid cloud, light cycle, or authored shuttle beside the text. The transparent preview requires at least 260 pixels of free width and 220 pixels of height; narrow windows keep text only. Model fade-in begins with printing, and fade-out follows the credit's opacity. Space, return-home, resize and reset dispose obsolete model resources; the preview shares the existing frame loop and respects reduced motion.
+- CLU's normal follow camera now tries a swept horizontal detour around wall corners before rising. A bounded local path search covers 64 meters in each horizontal direction, with a 512-node budget; if it finds no route it retains the roof escape. Manual aerial, gunner and cycle cameras keep their existing behavior. Camera orientation continues tracking CLU throughout recovery.
+- Desktop Chrome: `node tests/credit-models.mjs` passed seven model loads, fade synchronization, narrow-window hiding, reset during loading, disposal, and actual home-menu credit navigation. Inspected model and in-game captures in `test-results/credit-model-*.png`. `node tests/camera-walls.mjs` passed 483 rendered frames without wall crossings. `node --test tests/camera-collision.test.js` passed 10 tests including constant-height two-corner recovery, following a moving tank, and upward fallback with no bounded horizontal route. Victory printer tests also passed.

@@ -77,3 +77,16 @@ test('public Bit questions share the existing budget and response contract',asyn
  await Promise.all(f.pending);
  assert.equal((await f.invoke({body:{controller:'bit',question:'Can you speak?'}})).status,429);
 });
+
+
+test('explicit unlimited quotas allow use after previous shared and player caps are exhausted',()=>{
+ const env={DAILY_REQUESTS:'unlimited',DAILY_INPUT_BYTES:'unlimited',IP_DAILY_REQUESTS:'unlimited',IP_MINUTE_REQUESTS:'unlimited'};
+ const ctx={storage:storage()},budget=new JevBudget(ctx,env),now=100000;
+ const day=Math.floor(now/86400000),minute=Math.floor(now/60000);
+ ctx.storage.sql.exec('INSERT INTO days VALUES(?,?,?)',day,1000000,1000000000);
+ ctx.storage.sql.exec('INSERT INTO clients VALUES(?,?,?,?,?,?)',day,'a',1000000,minute,100000,0);
+ for(const name of ['dailyRequests','dailyInputBytes','ipDailyRequests','ipMinuteRequests'])assert.equal(budget.limits[name],Infinity);
+ const result=budget.reserve('a',60000,now);assert.equal(result.ok,true);
+ assert.equal(budget.reserve('a',1,now+1).ok,false); // Overlapping requests still wait.
+ assert.throws(()=>limitsFor({DAILY_REQUESTS:'Infinity'}));
+});

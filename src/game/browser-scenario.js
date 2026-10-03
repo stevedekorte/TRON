@@ -17,3 +17,11 @@ export function browserScenario(location, random = Math.random) {
     centralLabyrinth: !reference&&layout==='blueprint',
   });
 }
+
+// New CLU games vary patrol starts; explicit seeds keep reference runs reproducible.
+export function browserRunSeed(location,random=Math.random){
+ const explicit=new URLSearchParams(location.search).get('runSeed');
+ if(explicit!==null)return Number(explicit)>>>0;
+ if(location.pathname.endsWith('/reference.html'))return 1982;
+ return Math.floor(random()*4294967296)>>>0;
+}

@@ -72,3 +72,11 @@ test('display credits keep a brief Cloudflare mention and no entry exceeds eight
  assert(pages.some(p=>p.startsWith('JOURNEY\n')&&p.includes('ONLY SOLUTIONS')));
  assert(pages.length<32);
 });
+
+test('victory typing keeps extended-credit cadence at low frame rates',()=>{
+ for(const fps of [5,10,15,30]){
+  const output=printerOutput();let now=0;const printer=new TerminalPrinter(output,'A'.repeat(500),{clock:()=>now});printer.start();
+  for(let frame=1;frame<=fps*4;frame++){now=frame*1000/fps;printer.update();}
+  assert.ok(Math.abs(output.textContent.length-4*VICTORY_PRINT.charactersPerSecond)<=1,`cadence at ${fps} fps`);
+ }
+});

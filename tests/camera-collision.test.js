@@ -74,7 +74,7 @@ test('I/K returns continuously to the follow camera, including overhead Recogniz
  }
 });
 
-test('blocked camera recovers over a wall and catches a tank that keeps driving',()=>{
+test('blocked camera detours horizontally and catches a tank that keeps driving',()=>{
  const rig=new CameraRig(world),run=createRun();
  Object.assign(run,{x:15,s:0,yaw:-Math.PI/2,turretYaw:0,recognizers:[],enemyTanks:[],impact:0});
  rig.freshCamera=false;rig.camera.position.set(3.75,8,0);rig.followPosition.copy(rig.camera.position);rig.look.set(15,3.5,0);
@@ -82,7 +82,7 @@ test('blocked camera recovers over a wall and catches a tank that keeps driving'
  for(let i=0;i<360;i++){
   run.x=15+i/60*22;run.time=i/60;
   rig.begin(run,1/60,'running');rig.update(run,run,1,1/60,'running',run);
-  clear(previous,rig.camera.position);previous=rig.camera.position.clone();
+  clear(previous,rig.camera.position);assert(rig.camera.position.y<=8.1,'do not rise above follow height around the corner');previous=rig.camera.position.clone();
   recovered||=rig.collisionRecovery.active;
   maxSeparation=Math.max(maxSeparation,Math.hypot(previous.x-run.x,previous.z+run.s));
  }
@@ -97,4 +97,21 @@ test('clear aerial movement releases stale follow recovery even when the tank is
  assert.notEqual(world.wallIntersection(p(previous),p(anchor),1.2),null);
  constrainCamera(world,anchor,next,previous,1.2,false,recovery,1/60);
  assert.equal(recovery.active,false);assert(next.distanceTo(wanted)<1e-8);clear(previous,next);
+});
+
+test('CLU recovery keeps its height throughout a swept two-corner detour',()=>{
+ const anchor=new Vector3(18,3.5,0),wanted=new Vector3(16,8,0),recovery={active:false};let previous=new Vector3(3.75,8,0);
+ let detoured=false;
+ for(let i=0;i<120;i++){
+  const next=wanted.clone();constrainCamera(world,anchor,next,previous,1.2,true,recovery,1/60,true);
+  clear(previous,next);assert.equal(next.y,8);detoured||=Math.abs(next.z)>21;previous=next;
+ }
+ assert(detoured);assert(previous.distanceTo(wanted)<.01);
+});
+test('CLU recovery may rise when no bounded horizontal route exists',()=>{
+ const barrier={WALL_HEIGHT:12,wallIntersection:(a,b,padding)=>world.wallIntersection({...a,s:a.s*.001},{...b,s:b.s*.001},padding)};
+ const anchor=new Vector3(18,3.5,0),position=new Vector3(16,8,0),previous=new Vector3(3.75,8,0),recovery={active:false};
+ constrainCamera(barrier,anchor,position,previous,1.2,true,recovery,1/60,true);
+ assert(recovery.active);assert.equal(recovery.waypoints,null);assert(position.y>previous.y);
+ assert.equal(barrier.wallIntersection(p(previous),p(position),1.2),null);
 });
