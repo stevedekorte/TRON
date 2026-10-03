@@ -1340,6 +1340,12 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - Preload and decode both YES/NO recordings as BIT initializes, including while microphone permission is pending. Start listening only after startup loading settles; successful first replies use the same AudioBuffers as later replies. Removed redundant HTMLAudioElement loads and clear pending load entries so failed downloads can retry. Bluetooth microphone/output handoff timing is preserved.
 - Chrome `node tests/bit-audio-cache.mjs` held both cold sample requests, verified BIT did not begin listening early, then checked first and repeated playback started synchronously from the decoded cache without any further fetches. Each WAV was requested once.
 
+## Destructible light-cycle trails — October 2
+
+- Hitting another cycle's arena trail immediately removes 1.6 m of wall to either side along its path. The older portion gets an independent normal hold/flash/lower lifetime; the newer portion remains attached to its living owner. Gaps span turns, repeated impacts retain existing death deadlines, and erased segments release their occupied cells without erasing the newer wall or reconnecting it across a gap.
+- Per-segment destruction drives both rendering and collision expiry. Surviving cycle segment references remain valid after splitting/removal.
+- Validation: `npm test` passed 410 tests. `node tests/cycle-trail-damage.mjs` rendered initial gap, half-lowered older section and surviving newer wall without browser/shader errors; inspected the half-lowered capture. Regression covers impact through the simultaneous crossing path, gap dimensions, old/new collision lifetimes, corner cuts and repeated hits.
+
 
 ---
 

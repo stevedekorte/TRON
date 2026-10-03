@@ -24,6 +24,10 @@ export function trimCycleTrails(r){
  const active=r.cycles.map(b=>r.trails[b.segment]);
  r.trails=r.trails.filter(t=>!removed.has(t));
  r.cycles.forEach((b,i)=>{b.segment=r.trails.indexOf(active[i]);});
+ rebuildTrailOccupancy(r,changed);
+}
+
+export function rebuildTrailOccupancy(r,changed){
  const side=C.halfCells*2+1;
  const mark=(x,z,id)=>{
   x=Math.round(x);z=Math.round(z);
@@ -45,7 +49,9 @@ export function trimCycleTrails(r){
    // Integer grid cells represent the axis-aligned arena barriers. Sampling
    // also covers the short diagonal joining segment after road reentry.
    const steps=Math.max(1,Math.ceil(Math.hypot(t.x2-t.x1,t.z2-t.z1)*2));
-   for(let i=0;i<=steps;i++)mark(t.x1+(t.x2-t.x1)*i/steps,t.z1+(t.z2-t.z1)*i/steps,id);
+   if(Math.abs(t.z2-t.z1)<1e-8){for(let x=Math.ceil(Math.min(t.x1,t.x2)-1e-8);x<=Math.floor(Math.max(t.x1,t.x2)+1e-8);x++)mark(x,t.z1,id);}
+   else if(Math.abs(t.x2-t.x1)<1e-8){for(let z=Math.ceil(Math.min(t.z1,t.z2)-1e-8);z<=Math.floor(Math.max(t.z1,t.z2)+1e-8);z++)mark(t.x1,z,id);}
+   else for(let i=0;i<=steps;i++)mark(t.x1+(t.x2-t.x1)*i/steps,t.z1+(t.z2-t.z1)*i/steps,id);
   }
   if(b.alive&&!b.escaped)mark(b.x,b.z,id);
  }
