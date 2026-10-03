@@ -28,7 +28,7 @@ export class MazeShadows extends RecognizerShadows{
   const darkness=.4;
   const receivers=[];
   for(const root of vehicles)root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude)receivers.push(o);});
-  super(casters,receivers,0,{size:1024,prefix:'mazeShadow',darkness,excludeSelf:true});
+  super(casters,receivers,0,{size:2048,prefix:'mazeShadow',darkness,excludeSelf:true,filterEdges:true});
   this.casterGeometry=casterGeometry;if(casterGeometry)caster.material.dispose();
   // Project exact slab geometry onto the floor and multiply its existing color.
   // Stencil bit 0 makes the operation a union: overlapping triangles/slabs

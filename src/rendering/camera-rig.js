@@ -421,7 +421,7 @@ export class CameraRig {
     }
     if(!preview&&!this.referenceCamera){
       const radius=gunner?CAMERA_CLEARANCE.gunnerRadiusMeters:CAMERA_CLEARANCE.radiusMeters;
-      const corrected=constrainCamera(this.world,new THREE.Vector3(x,CAMERA_CLEARANCE.anchorHeightMeters,-s),this.camera.position,previousCamera,radius,aerialMix===0&&this.opening===null,this.collisionRecovery,dt);
+      const corrected=constrainCamera(this.world,new THREE.Vector3(x,CAMERA_CLEARANCE.anchorHeightMeters,-s),this.camera.position,previousCamera,radius,aerialMix===0&&this.opening===null,this.collisionRecovery,dt,!gunner&&aerialMix===0&&this.opening==null);
       if(corrected&&!gunner&&!this.gunnerTransition)this.camera.lookAt(this.look);
       if(!gunner&&!this.gunnerTransition)this.followPosition.copy(this.camera.position);
     }

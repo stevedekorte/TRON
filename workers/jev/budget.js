@@ -3,6 +3,7 @@ export const PUBLIC_LIMITS=Object.freeze({bodyBytes:32768,upstreamBytes:65536,ti
 export function limitsFor(env){
  const limits={...PUBLIC_LIMITS};
  for(const [name,key] of [['DAILY_REQUESTS','dailyRequests'],['DAILY_INPUT_BYTES','dailyInputBytes'],['IP_DAILY_REQUESTS','ipDailyRequests'],['IP_MINUTE_REQUESTS','ipMinuteRequests']]){
+  if(env[name]==='unlimited'){limits[key]=Infinity;continue;}
   if(env[name]!==undefined){const value=Number(env[name]);if(!Number.isSafeInteger(value)||value<0)throw new Error('Invalid quota configuration');limits[key]=value;}
  }
  return limits;

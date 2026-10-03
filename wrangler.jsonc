@@ -8,10 +8,10 @@
     "ALLOWED_ORIGINS": "https://dekorte.com,https://www.dekorte.com",
     "TYPESAFE_MODEL": "jev-latest",
     "JEV_ENABLED": "true",
-    "DAILY_REQUESTS": "1000",
-    "DAILY_INPUT_BYTES": "16000000",
-    "IP_DAILY_REQUESTS": "300",
-    "IP_MINUTE_REQUESTS": "60"
+    "DAILY_REQUESTS": "unlimited",
+    "DAILY_INPUT_BYTES": "unlimited",
+    "IP_DAILY_REQUESTS": "unlimited",
+    "IP_MINUTE_REQUESTS": "unlimited"
   },
   "durable_objects": {
     "bindings": [{"name": "JEV_BUDGET", "class_name": "JevBudget"}]

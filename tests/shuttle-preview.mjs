@@ -5,7 +5,7 @@ const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.goto('http://127.0.0.1:5174/shuttle.html');await page.waitForFunction(()=>window.shuttleReady);
+ await page.goto('http://127.0.0.1:5174/shuttle.html?model=authored');await page.waitForFunction(()=>window.shuttleReady);
  for(const view of ['reference','detach','side','top','rear','under']){await page.evaluate(v=>shuttle.setView(v),view);await page.waitForTimeout(300);await page.screenshot({path:`test-results/shuttle-${view}.png`});}
  const result=await page.evaluate(async()=>{
   const bytes=new Uint8Array(await shuttle.exportModel());let s='';for(const b of bytes)s+=String.fromCharCode(b);return {base64:btoa(s),triangles:shuttle.triangles};

@@ -1,3 +1,4 @@
+const SURFACE_HIT_SOUND=Object.freeze({referenceDistanceMeters:18,maximumDistanceMeters:12000,rolloff:1.2});
 import {CycleOpeningAudio, CYCLE_ENTRY_CUES} from './cycle-opening.js';
 import { CycleVoices } from './cycle-voices.js';
 import { MusicDirector } from './music-director.js';
@@ -505,7 +506,20 @@ export class Sound {
       }
       return;
     }
-    gain.connect(this.master);
+    // Surface strikes are point sounds, positioned at the actual bullet impact.
+    let impactPanner;
+    if(type==='hit'&&event?.subject==='surface'){
+      impactPanner=c.createPanner();
+      impactPanner.panningModel='HRTF';
+      impactPanner.distanceModel='inverse';
+      impactPanner.refDistance=SURFACE_HIT_SOUND.referenceDistanceMeters;
+      impactPanner.maxDistance=SURFACE_HIT_SOUND.maximumDistanceMeters;
+      impactPanner.rolloffFactor=SURFACE_HIT_SOUND.rolloff;
+      impactPanner.positionX.value=event.x;
+      impactPanner.positionY.value=event.y??0;
+      impactPanner.positionZ.value=-event.s;
+      gain.connect(impactPanner);impactPanner.connect(this.master);
+    }else gain.connect(this.master);
     if (type === 'shot' && this.samples.cannon) {
       gain.gain.value = 0.65;
       const s = this.source(this.samples.cannon, gain);
@@ -547,6 +561,7 @@ export class Sound {
     o.onended = () => {
       o.disconnect();
       gain.disconnect();
+      impactPanner?.disconnect();
     };
   }
   prepareMusic(){this.musicDirector.prepareGameplay();}

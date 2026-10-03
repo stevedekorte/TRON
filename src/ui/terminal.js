@@ -38,7 +38,7 @@ export class TerminalTribute {
   element.querySelector('.tribute-measure').textContent=this.sentences.reduce((a,b)=>a.split('\n').length>b.split('\n').length?a:b,'')+'\nEND OF LINE';
   this.element.setAttribute('aria-label',this.sentences.join('\n\n')+'\nEND OF LINE');this.reset();
  }
- reset(){this.elapsed=0;this.nextCharacter=3;this.count=0;this.index=0;this.active=false;this.phase='body';this.line=null;this.output.textContent='';this.typed.style.opacity='1';this.element.classList.remove('complete','signing-off');}
+ reset(){this.preview?.reset();this.elapsed=0;this.nextCharacter=3;this.count=0;this.index=0;this.active=false;this.phase='body';this.line=null;this.output.textContent='';this.typed.style.opacity='1';this.element.classList.remove('complete','signing-off');}
  start(reducedMotion=false){this.reset();this.active=true;this.reducedMotion=reducedMotion;}
  next(){
   if(this.index>=this.sentences.length-1)return;
@@ -96,7 +96,7 @@ export class TerminalTribute {
 }
 
 // Constant character cadence, including punctuation and line breaks.
-export const VICTORY_PRINT=Object.freeze({charactersPerSecond:1/EXTENDED_CREDIT_PRINT.secondsPerCharacter,maxCatchUpSeconds:1/30});
+export const VICTORY_PRINT=Object.freeze({charactersPerSecond:1/EXTENDED_CREDIT_PRINT.secondsPerCharacter,maxCatchUpSeconds:.25});
 export class TerminalPrinter {
  constructor(output,message,{clock=()=>performance.now()}={}){
   this.output=output;this.message=message.replace(/\r\n?/g,'\n').trimEnd();this.clock=clock;this.reset();
@@ -108,7 +108,7 @@ export class TerminalPrinter {
   // Match extended-credit typing speed and bound catch-up after stalls.
   const now=this.clock(),interval=1000/VICTORY_PRINT.charactersPerSecond;
   if(now<this.nextCharacterAt)return;
-  const due=Math.min(Math.ceil(VICTORY_PRINT.charactersPerSecond*VICTORY_PRINT.maxCatchUpSeconds),1+Math.floor((now-this.nextCharacterAt)/interval));
+  const due=Math.min(this.maxCharactersPerUpdate??Math.ceil(VICTORY_PRINT.charactersPerSecond*VICTORY_PRINT.maxCatchUpSeconds),1+Math.floor((now-this.nextCharacterAt)/interval));
   const count=Math.min(this.message.length,this.count+due);
   this.nextCharacterAt=Math.max(this.nextCharacterAt+due*interval,now);
   if(count<=this.count)return;
@@ -120,7 +120,7 @@ export class TerminalPrinter {
 
 // One glyph per frame, with uneven keystrokes and a longer carriage return.
 export class HumanTerminalPrinter extends TerminalPrinter {
- constructor(output,message,{random=Math.random,...options}={}){super(output,message,options);this.random=random;}
+ constructor(output,message,{random=Math.random,...options}={}){super(output,message,options);this.random=random;this.maxCharactersPerUpdate=1;}
  delay(character=''){return (45+this.random()*100+(character==='\n'?350:character===' '?45:0))/2;}
  start(){super.start();this.nextCharacterAt=this.clock()+this.delay();}
  update(){
