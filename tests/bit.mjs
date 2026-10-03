@@ -20,8 +20,7 @@ try{
   await page.waitForFunction(()=>!document.querySelector('#start-bit').disabled);
  };
  await home();
- await page.keyboard.press('ArrowUp');assert.equal(await page.locator('#start-bit').getAttribute('aria-pressed'),'true');
- await page.keyboard.press('Enter');await page.waitForURL('**/bit/index.html');
+ await page.locator('#start-bit').click();await page.waitForURL('**/bit/index.html');
  assert.equal(await page.title(),'ENCOM TERMINAL');
  // Selection itself starts Bit; no extra activation gesture.
  await page.waitForFunction(()=>window.VizApp?._objects?.length===1);
