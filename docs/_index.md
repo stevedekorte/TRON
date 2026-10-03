@@ -1332,3 +1332,9 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - Hitting another cycle's arena trail immediately removes 1.6 m of wall to either side along its path. The older portion gets an independent normal hold/flash/lower lifetime; the newer portion remains attached to its living owner. Gaps span turns, repeated impacts retain existing death deadlines, and erased segments release their occupied cells without erasing the newer wall or reconnecting it across a gap.
 - Per-segment destruction drives both rendering and collision expiry. Surviving cycle segment references remain valid after splitting/removal.
 - Validation: `npm test` passed 410 tests. `node tests/cycle-trail-damage.mjs` rendered initial gap, half-lowered older section and surviving newer wall without browser/shader errors; inspected the half-lowered capture. Regression covers impact through the simultaneous crossing path, gap dimensions, old/new collision lifetimes, corner cuts and repeated hits.
+
+## Trail retirement at the arena crack entrance — October 3
+
+- A cycle moving outward into an open crack stops emitting at the inner entrance, rather than waiting to reach the far side of the wall. Its existing trail starts the standard hold/flash/lower lifecycle without killing the cycle. Travel through the wall no longer leaves extra trail or occupied trail cells. Reentry enables a fresh trail.
+- Validation: 47 arena-breach, cycle-road, cycle-player and trail-damage tests passed, including an entrance test that keeps the rider alive, confirms no added trail through the wall, and verifies delayed normal expiry.
+- Browser `node tests/cycle-reentry.mjs` reached its braking check but failed its existing near-instant deceleration expectation (`speedMultiplier < .51`); the full browser scenario is not recorded as passing. The targeted simulation lifecycle checks above passed.

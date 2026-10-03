@@ -54,3 +54,16 @@ test('arena damage survives session resets but a new app session starts intact',
  const fresh=new GameSession({world});assert.deepEqual(fresh.run.cycleRace.breaches,[]);assert(arenaWallBlocked(fresh.run.cycleRace,90,0));
  session.dispose();fresh.dispose();
 });
+
+test('entering an open crack stops emission at its inner face and retires the trail without killing the cycle',async()=>{
+ const {expireDamagedTrails}=await import('../src/simulation/cycle-trail-damage.js');
+ const r=race(),b=r.cycles[0];r.time=10;r.breaches=[{axis:'x',sign:1,along:0}];r.occupied.fill(0);
+ Object.assign(b,{x:84,z:0,previousX:83,previousZ:0,dir:1,segment:0});
+ r.trails=[{bikeId:0,team:0,dir:1,x1:70,z1:0,x2:84,z2:0}];
+ tickCycleRace(r,()=>1,[b]);assert(b.alive);assert(b.trailStopped);assert(!b.escaped);assert.equal(r.trails[0].dyingAt,10);
+ const wall=structuredClone(r.trails);
+ for(let i=0;i<8;i++)tickCycleRace(r,()=>1,[b]);
+ assert(b.alive);assert.deepEqual(r.trails,wall);assert(!b.escaped,'emitter stops well before road-mode handoff');
+ r.time=13.5;expireDamagedTrails(r);assert.equal(r.trails.length,1);
+ r.time=14;expireDamagedTrails(r);assert.equal(r.trails.length,0);assert(b.alive);
+});
