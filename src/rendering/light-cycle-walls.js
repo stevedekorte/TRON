@@ -5,7 +5,7 @@ export const CYCLE_WALL_STYLE=Object.freeze({
   colors:[0xde8308,0x167dd8], thicknessMeters:.18,
   flareLengthMeters:10, flareColor:0xfff6dc,
   stripeSpacingMeters:12, stripeHalfWidthMeters:.035, edgeWidthMeters:.025,
-  connectionLengthMeters:1.2, connectionHeightSegments:48,
+  connectionLengthMeters:1.2, connectionCurveSegments:16, connectionHeightSegments:48,
   rearAxleBehindMeters:C.lengthMeters*.347, wheelCenterHeightMeters:.642,
   wheelRadiusMeters:.565, wheelClearanceMeters:.025, floorHeightMeters:.021,
 });
@@ -35,7 +35,10 @@ export class LightCycleWalls {
             // The bottom stays on the floor. Only the leading boundary retreats
             // around the rear tire; it never collapses toward the axle.
             float connection=1.-smoothstep(0.,connectionLength,distanceBehind);
-            float top=mix(trailHeight,wheelCenter+wheelRadius+wheelClearance,connection);
+            // Quarter-ellipse: meet the tire low, then flatten into the wall top.
+            float curve=clamp(distanceBehind/connectionLength,0.,1.);
+            float rounded=sqrt(max(0.,1.-(1.-curve)*(1.-curve)));
+            float top=mix(wheelCenter+wheelRadius+wheelClearance,trailHeight,rounded);
             float y=wallHeight*top;
             float dy=y-wheelCenter;
             float cutout=sqrt(max(0.,wheelRadius*wheelRadius-dy*dy))+wheelClearance;
@@ -83,7 +86,9 @@ export class LightCycleWalls {
         const length=total-trim;trim=0;
         const ux=dx/total,uz=dz/total;
         const taperPart=Math.min(length,Math.max(0,CYCLE_WALL_STYLE.connectionLengthMeters-behind));
-        const pieces=taperPart>0?[taperPart]:[];
+        // Only subdivide the short connection; long trail sheets stay inexpensive.
+        const curveSegments=Math.max(1,Math.ceil(taperPart/CYCLE_WALL_STYLE.connectionLengthMeters*CYCLE_WALL_STYLE.connectionCurveSegments));
+        const pieces=taperPart>0?Array(curveSegments).fill(taperPart/curveSegments):[];
         if(length>taperPart)pieces.push(length-taperPart);
         let used=0;
         for(const piece of pieces){

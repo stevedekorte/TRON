@@ -207,3 +207,12 @@ test('assisted Recognizer marker follows only an acquired upward, visible target
  e.state='destroyed';assert.equal(assistedRecognizerTarget(r),null);e.state='wander';
  attachWorld(r,{...DEFAULT_WORLD,lineOfSight:()=>false});assert.equal(assistedRecognizerTarget(r),null);
 });
+
+test('unassisted exterior shots follow the barrel exactly for every shot',()=>{
+ for(const yaw of [0,.4,-1.2])for(let shots=0;shots<12;shots++){
+  const r=fixture();Object.assign(r,{gunner:false,yaw,shots});const pose=cannonPose(r);
+  assert.equal(cannonTarget(r).lock,false);updateWeapons(r,{fire:true},0);
+  const shot=r.projectiles[0],heading=-Math.atan2(shot.vx,shot.vs);
+  assert(Math.abs(angleDelta(heading,pose.yaw))<1e-10);assert.equal(shot.vy,0);
+ }
+});

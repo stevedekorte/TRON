@@ -1318,6 +1318,23 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - CLU's normal follow camera now tries a swept horizontal detour around wall corners before rising. A bounded local path search covers 64 meters in each horizontal direction, with a 512-node budget; if it finds no route it retains the roof escape. Manual aerial, gunner and cycle cameras keep their existing behavior. Camera orientation continues tracking CLU throughout recovery.
 - Desktop Chrome: `node tests/credit-models.mjs` passed seven model loads, fade synchronization, narrow-window hiding, reset during loading, disposal, and actual home-menu credit navigation. Inspected model and in-game captures in `test-results/credit-model-*.png`. `node tests/camera-walls.mjs` passed 483 rendered frames without wall crossings. `node --test tests/camera-collision.test.js` passed 10 tests including constant-height two-corner recovery, following a moving tank, and upward fallback with no bounded horizontal route. Victory printer tests also passed.
 
+## Light-cycle wall connection — October 2
+
+- Rounded the upper edge of the 1.2 m bike-to-wall connection into a quarter-ellipse, dropping toward the rear tire as in the user's CycleWallCurve reference. Sixteen short sections resolve the curve; the tire cutout, floor contact, and long wall sheets remain intact.
+- Space is an additional cycle turbo key in arena and road modes; control help and meter labels include it. Braking still overrides turbo.
+- Validation: 15 light-cycle/tuning tests passed. Chrome `node tests/cycle-wall-curve.mjs` rendered the 16-section connection without shader errors; inspected `test-results/cycle-wall-curve.png`. The older `tests/light-cycles.mjs` timed out in its obsolete C/Home/Space entry sequence before reaching its rendering fixture; its match check was not claimed as passed.
+
+## Session-persistent arena damage and overlapping CLU opening — October 2
+
+- Arena breaches survive cycle-round retries and full game/home resets in the same GameSession. A new app session (page reload) starts with intact walls. Both visible fracture geometry and collision openings retain the damage; debug starting breaches are deduplicated.
+- Removed the opening camera's first-15-percent hold. Its zoom now begins with the terminal dissolve while preserving the one-second post-typing hold and 5.5-second approach.
+- Validation: arena/session regression covers repeated resets, collision passage and a fresh session. Chrome `node tests/arena-breaches.mjs` confirmed the mesh opening remains on the next round, adjacent wall geometry remains solid, and an explicitly fresh empty arena restores the wall. Camera regression verifies descent in the first 5% of the opening. Updated the former Space-no-turbo assertion for the newly requested Space binding.
+
+## CLU shot accuracy — October 2
+
+- Bullet spread now applies only to acquired auto-aim targets. Unassisted exterior shots and manual gunner/mouse aim stay precise. Removed unused unassisted spread settings; assisted spread values are unchanged.
+- Validation: 22 gunner/mouse-raycast tests passed, including exact unassisted headings over multiple shot seeds and retained assisted-shot variation.
+
 
 ---
 

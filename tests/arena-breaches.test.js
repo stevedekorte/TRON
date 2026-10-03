@@ -13,7 +13,7 @@ test('wall crash opens a persistent gap; following cycle passes through and surv
  for(let i=0;i<16;i++)tickCycleRace(r,()=>1,[follower]);
  assert(follower.alive);assert(follower.escaped);assert.equal(follower.x,98);
  assert(arenaWallBlocked(r,90,5));assert(!arenaWallBlocked(r,90,0));
- resetCycleRound(r);assert.equal(r.breaches.length,0);assert(arenaWallBlocked(r,90,0));
+ resetCycleRound(r);assert.equal(r.breaches.length,1);assert(!arenaWallBlocked(r,90,0));
 });
 test('cut mesh admits a ray through the opening but retains adjacent wall geometry',()=>{
  const geometry=new T.PlaneGeometry(100,60);geometry.translate(0,30,411);
@@ -39,4 +39,18 @@ test('arena outlines discard coplanar T-junction seams but preserve corners',asy
  const box=new T.BoxGeometry(2,2,2),corners=arenaEdges(box,20);
  assert.equal(corners.attributes.position.count,24);
  for(const geometry of [g,edges,box,corners])geometry.dispose();
+});
+
+test('arena damage survives session resets but a new app session starts intact',async()=>{
+ const {GameSession}=await import('../src/simulation/game-session.js');
+ const {browserScenario}=await import('../src/game/browser-scenario.js');
+ const {world}=browserScenario({pathname:'/',search:'?layoutSeed=1982'});
+ const session=new GameSession({world});
+ const breach={axis:'x',sign:1,along:0,id:0,time:2};session.run.cycleRace.breaches.push(breach);
+ for(let i=0;i<3;i++){
+  session.reset();assert.deepEqual(session.run.cycleRace.breaches,[breach]);
+  resetCycleRound(session.run.cycleRace);assert(!arenaWallBlocked(session.run.cycleRace,90,0));
+ }
+ const fresh=new GameSession({world});assert.deepEqual(fresh.run.cycleRace.breaches,[]);assert(arenaWallBlocked(fresh.run.cycleRace,90,0));
+ session.dispose();fresh.dispose();
 });

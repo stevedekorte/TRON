@@ -91,9 +91,10 @@ test('boosted cycle cannot jump through an occupied trail cell',()=>{
  const startZ=b.z,width=173;race.occupied[(b.z-2+86)*width+b.x+86]=4;
  s.advance({cycleTurbo:true},.25);assert.equal(b.alive,false);assert.equal(b.z,startZ-1);assert.equal(race.crashes.filter(c=>c.id===1).length,1);
 });
-test('W/T control cycle turbo, S takes priority, and I/K do not affect speed',async()=>{
+test('W/T/Space control cycle turbo, S takes priority, and I/K do not affect speed',async()=>{
  const {InputController}=await import('../src/app/input-controller.js');const input=new InputController();
- for(const key of ['KeyI','KeyK','Space']){input.clear();input.keys.add(key);assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,false);}
+ for(const key of ['KeyI','KeyK']){input.clear();input.keys.add(key);assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,false);}
+ input.clear();input.keys.add('Space');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);input.release('Space');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);
  input.clear();input.keys.add('KeyT');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);
  input.keys.add('KeyS');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,true);
  input.clear();input.keys.add('KeyW');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);
