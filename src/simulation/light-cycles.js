@@ -1,3 +1,4 @@
+import {damageCycleTrail,expireDamagedTrails} from './cycle-trail-damage.js';
 import {cycleWallContact} from './cycle-wall-contact.js';
 import {trimCycleTrails} from './cycle-trails.js';
 import {enterRoadMode,advanceRoadCycle,setRoadSpeedControl} from './cycle-road.js';
@@ -110,9 +111,13 @@ export function chooseCycleDirection(r,bike){
 /** Simultaneous grid crossing prevents update-order advantages and tunneling. */
 export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
   const proposals=moving.filter(b=>b.alive&&!b.escaped).map(b=>{const dir=decide(r,b),[dx,dz]=DIR[dir];return {b,dir,x:b.x+dx,z:b.z+dz};});
-  const crashes=new Set();
+  const crashes=new Set(),trailHits=[];
   for(const p of proposals){
-    if(!free(r,p.x,p.z))crashes.add(p.b.id);
+    if(!free(r,p.x,p.z)){
+      crashes.add(p.b.id);
+      const owner=occupant(r,p.x,p.z)-1;
+      if(owner>=0&&owner!==p.b.id)trailHits.push({owner,x:p.x,z:p.z});
+    }
     const world=raceWorlds.get(r);
     if(world&&Math.max(Math.abs(p.x),Math.abs(p.z))*C.cellMeters>ARENA_WALL.outerMeters){
       const from={x:r.site.x+p.b.x*C.cellMeters,s:r.site.s-p.b.z*C.cellMeters,y:1};
@@ -146,6 +151,7 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
     b.x=p.x;b.z=p.z;b.dir=p.dir;if(inside(b.x,b.z))r.occupied[cell(b.x,b.z)]=b.id+1;else r.outerOccupied[`${b.x},${b.z}`]=b.id+1;
 
   }
+  for(const hit of trailHits)damageCycleTrail(r,hit.owner,hit.x,hit.z);
   trimCycleTrails(r);
   const teams=[0,1].filter(team=>r.cycles.some(b=>b.alive&&b.team===team));
   if(teams.length<2){r.phase='result';r.remaining=C.restartSeconds;r.winner=teams[0]??null;if(r.winner!==null)r.scores[r.winner]++;}
@@ -160,6 +166,7 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
   }
   if(turn&&r.playerId!==undefined&&!r.cycles[r.playerId].escaped&&r.phase!=='result'&&r.pendingTurns.length<2)r.pendingTurns.push(Math.sign(turn));
   r.time+=dt;
+  expireDamagedTrails(r);
   if(r.playerId!==undefined&&r.cycles[r.playerId].escaped)r.arenaPaused=true;
   for(const crash of r.crashes){
     if(crash.trailCleared||cycleTrailState(r.time-crash.time).height>0)continue;
@@ -274,7 +281,7 @@ function updateEscapedCycles(r,dt,input,playerOnly=false){
    }
    if(occupied&&!(occupied===b.id+1&&key===b.roadEntryCell)){
     const cx=Math.round(x),cz=Math.round(z),dx=b.x-cx,dz=b.z-cz;
-    return {normal:Math.abs(dx)>Math.abs(dz)?{x:1,z:0}:{x:0,z:1}};
+    return {normal:Math.abs(dx)>Math.abs(dz)?{x:1,z:0}:{x:0,z:1},trailHit:occupied!==b.id+1?{owner:occupied-1,x:cx,z:cz}:null};
    }
   }
   // Sweep against live cycle bodies as well as walls and stored trails.
@@ -295,7 +302,10 @@ function updateEscapedCycles(r,dt,input,playerOnly=false){
     const probe={x:b.x-Math.sin(b.yaw)*Math.max(20,b.roadSpeed)/C.cellMeters,z:b.z-Math.cos(b.yaw)*Math.max(20,b.roadSpeed)/C.cellMeters};
     const safe=clear(b,probe)===true;control={throttle:safe&&b.roadSpeed<C.speedMetersPerSecond,brake:!safe,turbo:safe&&hasTurboReason(r,b)&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge),steer:safe?0:1};
    }
-   if(!advanceRoadCycle(b,step,control,clear,r.roadConfig))r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:r.time});
+   let trailHit=null;
+   const actualClear=(bike,to)=>{const contact=clear(bike,to);trailHit=contact?.trailHit??null;return contact;};
+   if(!advanceRoadCycle(b,step,control,actualClear,r.roadConfig))r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:r.time});
+   if(trailHit)damageCycleTrail(r,trailHit.owner,trailHit.x,trailHit.z);
    if(`${Math.round(b.x)},${Math.round(b.z)}`!==b.roadEntryCell)b.roadEntryCell=null;
    if(b.alive)reenterArena(r,b,clear);
   }

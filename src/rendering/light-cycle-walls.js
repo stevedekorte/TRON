@@ -75,13 +75,17 @@ export class LightCycleWalls {
     for(const bike of r.cycles){
       const segments=byBike[bike.id];
       const crash=r.crashes?.find(c=>c.id===bike.id);
-      const life=cycleTrailState(bike.alive||!crash?-1:r.time-crash.time);
-      if(life.height<=0)continue;
+      const bikeLife=cycleTrailState(bike.alive||!crash?-1:r.time-crash.time);
+      if(bikeLife.height<=0)continue;
       const offsets=[];let totalPath=bike.expiredTrailMeters??0;for(const t of segments){offsets.push(totalPath);totalPath+=Math.hypot(t.x2-t.x1,t.z2-t.z1)*C.cellMeters;}
       let trim=cycleTrailHeadTrim(r,bike,r.phase==='racing'?(bike.progress??fraction):fraction);
       let behind=bike.alive&&!bike.escaped?0:1e6;
       for(let i=segments.length-1;i>=0;i--){
-        const t=segments[i],dx=(t.x2-t.x1)*C.cellMeters,dz=(t.z2-t.z1)*C.cellMeters,total=Math.hypot(dx,dz);
+        const t=segments[i];
+        const life=t.dyingAt===undefined?bikeLife:cycleTrailState(r.time-Math.min(t.dyingAt,crash?.time??Infinity));
+        if(life.height<=0)continue;
+        if(t.dyingAt!==undefined)behind=1e6;
+        const dx=(t.x2-t.x1)*C.cellMeters,dz=(t.z2-t.z1)*C.cellMeters,total=Math.hypot(dx,dz);
         if(trim>=total){trim-=total;if(t.startsRun){trim=0;behind=1e6;}continue;}
         const length=total-trim;trim=0;
         const ux=dx/total,uz=dz/total;
