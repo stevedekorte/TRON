@@ -1,3 +1,5 @@
+import {createCreditBit} from '../rendering/credit-bit.js';
+import {createCreditMaze} from '../rendering/credit-maze.js';
 import {createBossTank} from '../rendering/boss-tank.js';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -6,6 +8,8 @@ import {disposeSceneResources} from '../rendering/scene-resources.js';
 
 const PREVIEW={gapPixels:40,minWidthPixels:260,maxWidthPixels:460,heightPixels:320,fadeSeconds:.8};
 const models=[
+ ['CONTROLLINGTRANSMISSION','bit',null],
+ ['LOCAL MAZE AND LEVEL WORK','maze',null],
  ['ARABINOWITZ','tank',null],
  ['SPRINGSOCIETY','boss',null],
  ['SHRIKER1','recognizer',new URL('../../docs/models/tron_1982_recognizer.glb',import.meta.url).href],
@@ -13,7 +17,7 @@ const models=[
  ['3D MODEL: TRON SUNSHIP','sailer',new URL('../../docs/models/tron_1982_solar_sailer.glb',import.meta.url).href],
  ['JVOUILLON','cloud',new URL('../../docs/models/cloud.glb',import.meta.url).href],
  ['DANIEL PRETI','cycle',new URL('../../docs/models/preti_light_cycle_blue.glb',import.meta.url).href],
- ['LOCAL 3D MODEL AND LEVEL WORK','shuttle',new URL('../../docs/models/carrier-shuttle/carrier-escape-shuttle.glb',import.meta.url).href],
+ ['LOCAL 3D MODEL WORK','shuttle',new URL('../../docs/models/carrier-shuttle/carrier-escape-shuttle.glb',import.meta.url).href],
 ];
 export function creditModel(message){return models.find(([label])=>message.includes(label));}
 
@@ -37,7 +41,7 @@ export class CreditModelPreview{
  }
  async load(entry,generation){
   try{
-   const root=entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
+   const root=entry[1]==='bit'?await createCreditBit():entry[1]==='maze'?createCreditMaze():entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
    if(generation!==this.generation){disposeSceneResources(root);return;}
    root.traverse(o=>{if((o.userData.breakupExclude&&!o.userData.bossTrim)||o.name==='muzzle-flash')o.visible=false;});
    // A wrapper preserves the asset's internal transforms and original proportions.
@@ -60,7 +64,7 @@ export class CreditModelPreview{
   this.element.style.opacity=String(opacity);
   if(!this.model)return;
   this.model.rotation.y=-.45; // Stable three-quarter inspection view, without distracting motion.
-  this.camera.aspect=width/height;this.camera.position.set(2,1.35,3.2).multiplyScalar(1/Math.min(1,this.camera.aspect));this.camera.lookAt(0,0,0);this.camera.updateProjectionMatrix();
+  this.camera.aspect=width/height;this.camera.position.set(2,this.key==='maze'?3.6:1.35,3.2).multiplyScalar(1/Math.min(1,this.camera.aspect));this.camera.lookAt(0,0,0);this.camera.updateProjectionMatrix();
   if(this.width!==width||this.height!==height){this.renderer.setSize(width,height);this.width=width;this.height=height;}
   this.renderer.render(this.scene,this.camera);
  }

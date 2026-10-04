@@ -1376,6 +1376,19 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Courtyard follow-up: 14 boss/spawn/blueprint tests passed, including two distinct starts, 20 seconds of active court patrols, and movement confinement. Updated browser roster check for two bosses.
 
 
+## Separate shuttle and maze credits — October 4
+
+- [x] Split local shuttle modeling and maze/level work into separate extended-credit pages, preserving the note that blueprint artists are unidentified.
+- [x] Show a live, disposable 3D miniature of the central labyrinth beside the maze credit, built from the actual wall outlines and triangles. Use an elevated view to reveal the courtyard and corridors; preserve the existing synchronized fades, narrow-window hiding and resource cleanup. The shuttle retains its own model preview.
+- [x] Visually inspected the Chrome maze credit capture. All nine isolated browser preview/fade/lifecycle checks passed; the later home-screen credit navigation check timed out waiting for the tank page (`tests/credit-models.mjs:36`). Production build passed.
+
+
+## BIT credit preview — October 4
+
+- [x] Add the original neutral BIT OBJ beside ControllingTransmission's credit, with its lavender flat-shaded appearance, using the existing live preview and synchronized fade. Reuse the locally supplied MIT-licensed model; no new asset or attribution source.
+- [x] Chrome `node tests/credit-models.mjs --previews-only` passed all ten model previews, synchronized fades, narrow-screen hiding, pending-load cancellation and disposal. Inspected the BIT screenshot. This isolated run excludes the previously recorded full-game credit-navigation timeout.
+
+
 ---
 
 <!-- Page: assets -->
