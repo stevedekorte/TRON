@@ -1,3 +1,4 @@
+import {createBossTank} from './boss-tank.js';
 import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
 import * as THREE from 'three';
 import {tagRecognizerBlocks} from './recognizer-blocks.js';
@@ -175,7 +176,7 @@ export function createRecognizer(template, {tintColor=RECOGNIZER_TINTS.black}={}
 
 // Release a completed sibling load if the other file fails.
 export async function loadVehicles() {
-  const results=await Promise.allSettled([createTank(),loadRecognizer()]);
+  const results=await Promise.allSettled([createTank(),loadRecognizer(),createBossTank()]);
   const failure=results.find(r=>r.status==='rejected');
   if(failure) {
     for(const result of results) if(result.status==='fulfilled') {

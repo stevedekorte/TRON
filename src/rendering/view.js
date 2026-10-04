@@ -20,7 +20,7 @@ import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { gunnerSolution } from '../simulation/gunner-solution.js';
 import { recognizerStarts } from '../game/recognizer-roster.js';
 import { mouseTarget } from './mouse-target.js';
-import { groundTankCount } from '../simulation/ground-tanks.js';
+import { groundTankCount, bossTankIndices } from '../simulation/ground-tanks.js';
 import { Searchlights } from './searchlights.js';
 import { updateCarrier } from './carrier.js';
 import { applyCycleOpeningCarrier, CYCLE_OPENING } from './cycle-opening.js';
@@ -58,6 +58,7 @@ export class View {
     map = DEFAULT_WORLD,
     physics = null,
     arena = null,
+    boss = null,
   ) {
     this.map = map;
     const RECOGNIZER_STARTS = recognizerStarts(map),
@@ -103,8 +104,9 @@ export class View {
     this.scene.add(this.tank.root);
     this.muzzleFlash = createMuzzleFlash();
     this.scene.add(this.muzzleFlash);
-    this.enemyTanks = Array.from({ length: GROUND_TANK_COUNT }, () => {
-      const craft = cloneEnemyTank(tank);
+    if(boss){boss.root.visible=false;this.scene.add(boss.root);}
+    this.enemyTanks = Array.from({ length: GROUND_TANK_COUNT }, (_,index) => {
+      const craft = cloneEnemyTank(bossTankIndices(map).includes(index)&&boss?boss:tank);
       this.scene.add(craft.root);
       return craft;
     });

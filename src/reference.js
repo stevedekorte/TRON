@@ -65,8 +65,8 @@ const shots = {
 };
 let view, run, active;
 async function init() {
-  const [tank, recognizer] = await loadVehicles();
-  view = new View(document.querySelector('canvas'), tank, recognizer, null, null, world);
+  const [tank, recognizer, boss] = await loadVehicles();
+  view = new View(document.querySelector('canvas'), tank, recognizer, null, null, world, null, null, boss);
   run = createRun(undefined, world);
   run.recognizers.forEach((e) => (e.state = 'destroyed'));
   run.time = 0;

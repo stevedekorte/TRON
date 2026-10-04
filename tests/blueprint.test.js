@@ -60,11 +60,11 @@ test('fifth maze fits between four grid-aligned outer sites and participates in 
    assert.ok(a.maxX+200<b.minX||b.maxX+200<a.minX||a.maxS+200<b.minS||b.maxS+200<a.minS,'exterior clearance');
   }
   const r=createRun(1982,world);assert.equal(r.dataBeams.length,5);assert.equal(r.teleportPads.length,0);
-  assert.equal(r.enemyTanks.filter(e=>e.mazeId===4).length,8);
+  assert.equal(r.enemyTanks.filter(e=>e.mazeId===4&&!e.boss).length,24);
   for(const p of r.teleportPads)assert.ok(world.freePosition(p.x,p.s,34));
   assert.equal(r.recognizers.filter(e=>e.mazeId===4).length,6);
   const {inPatrolRegion}=await import('../src/levels/patrol-region.js');
-  for(const units of [r.enemyTanks,r.recognizers])for(const e of units.filter(e=>e.mazeId===4))assert.ok(inPatrolRegion(e,center));
+  for(const units of [r.enemyTanks,r.recognizers])for(const e of units.filter(e=>e.mazeId===4&&!e.boss))assert.ok(inPatrolRegion(e,center));
   const b=r.dataBeams[4];assert.equal(b.x,center.beamPosition.x);assert.equal(b.s,center.beamPosition.s);assert.ok(world.freePosition(b.x,b.s,20));
  }
 });

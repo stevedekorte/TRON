@@ -984,14 +984,14 @@ export function createGameApp() {
           'This game needs WebGL 2. Try a current desktop browser with hardware acceleration enabled.',
         );
       performance.mark('tron:assets-start');
-      const [[tank, recognizer], carrier, cloud] = await Promise.all([
+      const [[tank, recognizer, boss], carrier, cloud] = await Promise.all([
         loadingTimings.async('Tank + Recognizer models (fetch, decode, adapt)',()=>loadVehicles()),
         loadingTimings.async('Carrier model (fetch, decode, adapt)',()=>loadCarrier()),
         loadingTimings.async('Cloud model (fetch, decode, adapt)',()=>loadCloud()),
       ]);
       performance.mark('tron:assets-ready');
       const physics = loadingTimings.sync('Create debris physics world',()=>new DebrisPhysics(map.nearbyWalls));
-      view = loadingTimings.sync('Build rendering world / meshes / shadows',()=>new View($('game'), tank, recognizer, carrier, cloud, map, physics));
+      view = loadingTimings.sync('Build rendering world / meshes / shadows',()=>new View($('game'), tank, recognizer, carrier, cloud, map, physics, null, boss));
       performance.mark('tron:world-ready');
       session.arenaReady=!run.cycleRace;
       session.attachDebris(physics, view.breakups);

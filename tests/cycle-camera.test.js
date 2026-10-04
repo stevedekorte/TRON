@@ -255,3 +255,20 @@ test('death camera stays at wall height and tracks survivors from a fixed perch'
  assert(Number.isFinite(rig.camera.quaternion.w));
  rig.reset();assert.equal(rig.cycleOverview,null);
 });
+
+
+test('I/K follow zoom keeps both horizon and cycle in frame throughout zoom transitions',()=>{
+ for(const escaped of [false,true]){
+  const {bike,run,rig}=setup();bike.escaped=escaped;
+  for(const zoom of [1,2,8,32,128,32,8,2,1]){
+   rig.followZoom=zoom;
+   for(let i=0;i<90;i++){
+    const bikeScreen=frame(rig,run,1/60);
+    const direction=rig.camera.getWorldDirection(new Vector3());
+    const horizon=direction.setY(0).normalize().multiplyScalar(10000).add(rig.camera.position).project(rig.camera);
+    assert(Math.abs(horizon.y)<.8,`horizon clipped at zoom ${zoom}`);
+    assert(Math.abs(bikeScreen.y)<.95,`bike clipped at zoom ${zoom}`);
+   }
+  }
+ }
+});

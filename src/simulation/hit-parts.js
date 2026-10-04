@@ -1,3 +1,4 @@
+import {BOSS_TANK as B} from '../game/boss-tank.js';
 import {TANK} from '../game/tank.js';
 import {RECOGNIZER_SCALE} from '../game/config.js';
 // Collision regions independent of rendering; turret bounds follow the imported model.
@@ -6,6 +7,14 @@ export function enemyHitPart(enemy,point){
  const dx=point.x-enemy.x,dz=-(point.s-enemy.s);
  const x=Math.cos(enemy.yaw)*dx-Math.sin(enemy.yaw)*dz;
  if(enemy.kind==='ground'){
+  if(enemy.boss){
+   const z=Math.sin(enemy.yaw)*dx+Math.cos(enemy.yaw)*dz;
+   if(point.y<0||point.y>B.turretMaxHeightMeters)return null;
+   const a=enemy.turretYaw||0,tx=Math.cos(a)*x-Math.sin(a)*(z-B.pivot[2]),tz=Math.sin(a)*x+Math.cos(a)*(z-B.pivot[2]);
+   if(point.y>=B.turretMinHeightMeters&&Math.abs(tx)<B.turretHalfWidthMeters&&tz>B.turretFrontMeters&&tz<B.turretRearMeters)return 'turret';
+   if(point.y<B.hullHeightMeters&&Math.abs(x)<B.hullHalfWidthMeters&&Math.abs(z)<B.hullHalfLengthMeters)return Math.abs(x)>2.4?(x<0?'left-track':'right-track'):'hull';
+   return null;
+  }
   if(Math.hypot(dx,dz)>=3.5||point.y>=3.5)return null;
   if(point.y>=1.925){
    // Imported turret bounds in its own rotating frame (including barrel).

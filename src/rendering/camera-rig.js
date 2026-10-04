@@ -11,7 +11,7 @@ const CYCLE_CAMERA=Object.freeze({distanceMeters:10,heightMeters:4,wallAnchorHei
 import {applyCycleOpening,cycleFormationBlend,CYCLE_FORMATION_CAMERA} from './cycle-opening.js';
 export {CYCLE_OPENING} from './cycle-opening.js';
 const WORLD_UP = new THREE.Vector3(0,1,0);
-const CYCLE_GLANCE=Object.freeze({horizonPitchFovFraction:.25});
+const CYCLE_GLANCE=Object.freeze({horizonPitchFovFraction:.25,followPitchFovFraction:.35});
 const AERIAL_CAMERA = Object.freeze({
   transitionSeconds: 1.2,
   height: 600,
@@ -159,8 +159,12 @@ export class CameraRig {
       const orbitYaw=lookYaw+this.cycleGlance;
       this.desired.set(pose.x+Math.sin(orbitYaw)*CYCLE_CAMERA.distanceMeters,CYCLE_CAMERA.heightMeters,-pose.s+Math.cos(orbitYaw)*CYCLE_CAMERA.distanceMeters);
       this.lookDesired.set(pose.x-Math.sin(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix),CYCLE_CAMERA.lookHeightMeters,-pose.s-Math.cos(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix));
-      const {mix:aerialMix,scale:aerialScale}=this.cluAerialFraming(this.frame?.aerialMix??(this.aerial?1:0));
-      const aerialDistance=AERIAL_CAMERA.distance*aerialScale;
+      const modeAerialMix=this.frame?.aerialMix??(this.aerial?1:0);
+      const {mix:aerialMix,scale:aerialScale}=this.cluAerialFraming(modeAerialMix);
+      // I/K pulls back along a shallow boom so both the bike and horizon fit.
+      // V retains its deliberately steep aerial perspective.
+      const horizonDistance=AERIAL_CAMERA.height/Math.tan(THREE.MathUtils.degToRad(config.fov)*CYCLE_GLANCE.followPitchFovFraction);
+      const aerialDistance=THREE.MathUtils.lerp(horizonDistance,AERIAL_CAMERA.distance,modeAerialMix)*aerialScale;
       this.desired.lerp(new THREE.Vector3(pose.x+Math.sin(orbitYaw)*aerialDistance,AERIAL_CAMERA.height*aerialScale,-pose.s+Math.cos(orbitYaw)*aerialDistance),aerialMix);
       this.lookDesired.lerp(new THREE.Vector3(pose.x,0,-pose.s),aerialMix);
       const openingRoll=this.cycleOpening===null?0:applyCycleOpening(this.cycleOpening,cycleRace.site,this.desired,this.lookDesired);
@@ -178,13 +182,15 @@ export class CameraRig {
         const distance=Math.hypot(this.camera.position.x-pose.x,this.camera.position.z+pose.s);
         const close=1-THREE.MathUtils.smoothstep(distance,CYCLE_CAMERA.closeLookNearMeters,CYCLE_CAMERA.closeLookFarMeters);
         cameraLook.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),close);
-        // Glance outward toward the horizon even from an elevated I/K view.
+        // Keep the horizon in the follow view, including after wall avoidance.
         // Apply after wall correction without moving the collision-safe camera.
         const direction=cameraLook.clone().sub(this.camera.position),length=direction.length();
         const horizontal=Math.hypot(direction.x,direction.z);
         const pitch=Math.atan2(-direction.y,horizontal);
         const glancePitch=Math.min(pitch,THREE.MathUtils.degToRad(config.fov)*CYCLE_GLANCE.horizonPitchFovFraction);
-        const viewPitch=THREE.MathUtils.lerp(pitch,glancePitch,glanceMix);
+        const followPitch=Math.min(pitch,THREE.MathUtils.degToRad(config.fov)*CYCLE_GLANCE.followPitchFovFraction);
+        const basePitch=THREE.MathUtils.lerp(followPitch,pitch,modeAerialMix);
+        const viewPitch=THREE.MathUtils.lerp(basePitch,glancePitch,glanceMix);
         if(horizontal>1e-6){
           direction.multiplyScalar(length*Math.cos(viewPitch)/horizontal);
           direction.y=-length*Math.sin(viewPitch);

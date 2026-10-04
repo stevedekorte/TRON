@@ -1338,3 +1338,26 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - A cycle moving outward into an open crack stops emitting at the inner entrance, rather than waiting to reach the far side of the wall. Its existing trail starts the standard hold/flash/lower lifecycle without killing the cycle. Travel through the wall no longer leaves extra trail or occupied trail cells. Reentry enables a fresh trail.
 - Validation: 47 arena-breach, cycle-road, cycle-player and trail-damage tests passed, including an entrance test that keeps the rider alive, confirms no added trail through the wall, and verifies delayed normal expiry.
 - Browser `node tests/cycle-reentry.mjs` reached its braking check but failed its existing near-instant deceleration expectation (`speedMultiplier < .51`); the full browser scenario is not recorded as passing. The targeted simulation lifecycle checks above passed.
+
+
+## Cycle follow zoom horizon — October 3
+
+- [x] Keep I/K cycle follow zoom shallow enough to include the horizon and bike together. Pull the camera farther back as it rises, and cap downward pitch after wall avoidance. Preserve the V aerial perspective and existing side-glance framing.
+- [x] Validation: 22 camera unit tests passed, including zoom transitions in the arena and outside it. Chrome `node tests/arena-camera.mjs` passed wall clearance, forward zoom horizon and side-glance checks; the screenshot contained a black 3D scene despite passing camera-state assertions, so rendered appearance and human driving review remain unverified.
+
+
+## Large-maze tank density and update terminal — October 3
+
+- [x] Triple large labyrinth ground patrols from 8 to 24, distributed three per original broad spawn sector. Retain collision clearance, 30 m spacing, connected-corridor checks and seeded placement; smaller mazes and carrier escorts retain their counts.
+- [x] Style the standalone update page with the local FilmTerminal font, home-terminal colors, placement, glow, ENCOM logo and blinking return cursor. Relative asset URLs support the deployed subdirectory; narrow screens wrap text and reduced-motion disables blinking.
+- [x] Validation: 25 enemy-start/ground-tank/outer-maze tests passed. Chrome desktop capture inspected; font loading, background, logo and mobile overflow checks passed using `/tmp/tron-update-preview.mjs`. Gameplay performance with the increased tank count remains subject to human review.
+
+
+## Double-turret boss tank — October 3
+
+- [x] Add two bosses alongside the 24 regular large-maze patrols, starting on opposite sides of the central light beam with seeded, separated, connected spawn checks and information-limited AI. Use 12 health versus the regular 3; Clu shots deal 3 damage to boss armor, so four hits destroy it. Cap movement at 80% of normal enemy speed. Idle patrol destinations remain within the central courtyard, 100–230 m from the beam; bosses return there after combat pursuit.
+- [x] Adapt the supplied SpringSociety double-turret GLB without changing its proportions: black armor, cool highlights, painted red contour lines, ground silhouette, articulated upper assembly, recoil and two muzzle flashes. Fire a simultaneous pair from measured barrel tips on the existing enemy cadence, with clearance checks for both shots and rotating boss hit regions.
+- [x] Record embedded CC BY 4.0 provenance in model documentation and extended credits; add the styled model to its credit preview.
+- [x] Validation: 29 focused tests passed. Full suite initially passed 417/418; the sole failure expected the old eight-tank roster. Updated it for 24 regular tanks and reran all six blueprint tests successfully. Chrome `node tests/boss-tank.mjs` passed startup/roster and rotated muzzle alignment checks and captured the styled adapter. The initial full-entry browser wait timed out under software rendering; corrected smoke coverage checks CLU entry plus the isolated model. Human combat balance and hardware performance review remain pending.
+
+- [x] Courtyard follow-up: 14 boss/spawn/blueprint tests passed, including two distinct starts, 20 seconds of active court patrols, and movement confinement. Updated browser roster check for two bosses.
