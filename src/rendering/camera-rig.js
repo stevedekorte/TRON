@@ -1,3 +1,4 @@
+import {ARENA_WALL} from '../game/arena-breaches.js';
 import {updateCycleOverview} from './cycle-overview.js';
 import {cyclePlayerPose} from '../simulation/light-cycles.js';
 import { FreeCamera } from './free-camera.js';
@@ -6,10 +7,11 @@ import { BeamCamera } from './beam-camera.js';
 import { config, GUNNER, gunnerAimScale, FOLLOW_ZOOM, AERIAL_ZOOM } from '../game/config.js';
 import { TANK } from '../game/tank.js';
 import {CAMERA_CLEARANCE,clipCameraSegment,constrainCamera} from './camera-collision.js';
-import {cycleCameraWorld,cycleCameraAnchor,cycleWallFollowPosition} from './arena-camera-collision.js';
+import {ARENA_CAMERA_WALL_HEIGHT,cycleCameraWorld,cycleCameraAnchor,cycleWallFollowPosition} from './arena-camera-collision.js';
 const CYCLE_CAMERA=Object.freeze({distanceMeters:10,heightMeters:4,wallAnchorHeightMeters:7,lookAheadMeters:8,lookHeightMeters:1,closeLookNearMeters:2.5,closeLookFarMeters:7,responsePerSecond:8,glanceRadians:Math.PI*2/3,glanceResponsePerSecond:28,roadGlanceResponsePerSecond:4,turnLookRadians:Math.PI/5,turnLookResponsePerSecond:4,turnLookFullSpeedMetersPerSecond:5});
 import {applyCycleOpening,cycleFormationBlend,CYCLE_FORMATION_CAMERA} from './cycle-opening.js';
 export {CYCLE_OPENING} from './cycle-opening.js';
+export const CYCLE_COCKPIT=Object.freeze({enterWallDistanceMeters:16,exitWallDistanceMeters:24,eyeHeightMeters:3,backMeters:2.5,sideMeters:2.5,lookHeightMeters:1,lookAheadMeters:5,responsePerSecond:10});
 const WORLD_UP = new THREE.Vector3(0,1,0);
 const CYCLE_GLANCE=Object.freeze({horizonPitchFovFraction:.25,followPitchFovFraction:.35});
 const AERIAL_CAMERA = Object.freeze({
@@ -60,6 +62,8 @@ export class CameraRig {
     this.cycleGlanceInput = 0;
     this.cycleGlance = 0;
     this.cycleTurnLook = 0;
+    this.cycleCockpit=false;
+    this.cycleCockpitMix=0;
   }
   finishCycleOpening() {
     this.cycleOpening=null;
@@ -167,21 +171,74 @@ export class CameraRig {
       const aerialDistance=THREE.MathUtils.lerp(horizonDistance,AERIAL_CAMERA.distance,modeAerialMix)*aerialScale;
       this.desired.lerp(new THREE.Vector3(pose.x+Math.sin(orbitYaw)*aerialDistance,AERIAL_CAMERA.height*aerialScale,-pose.s+Math.cos(orbitYaw)*aerialDistance),aerialMix);
       this.lookDesired.lerp(new THREE.Vector3(pose.x,0,-pose.s),aerialMix);
+      const wallDistance=ARENA_WALL.innerMeters-Math.max(Math.abs(pose.x-cycleRace.site.x),Math.abs(pose.s-cycleRace.site.s));
+      const cockpitAllowed=wallDistance>=0&&this.cycleOpening===null&&!escaped&&bike?.alive&&aerialMix===0;
+      this.cycleCockpit=!!cockpitAllowed&&wallDistance<(this.cycleCockpit?CYCLE_COCKPIT.exitWallDistanceMeters:CYCLE_COCKPIT.enterWallDistanceMeters);
+      const cockpitTarget=this.cycleCockpit?1:0;
+      this.cycleCockpitMix=this.freshCamera?cockpitTarget:THREE.MathUtils.lerp(this.cycleCockpitMix,cockpitTarget,1-Math.exp(-dt*CYCLE_COCKPIT.responsePerSecond));
+      if(this.cycleOpening!==null)this.cycleCockpitMix=0;
+      const cockpitEye=cycleCameraAnchor(pose,cycleRace,CYCLE_COCKPIT.eyeHeightMeters,CAMERA_CLEARANCE.radiusMeters);
+      cockpitEye.x+=Math.sin(orbitYaw)*CYCLE_COCKPIT.backMeters;
+      cockpitEye.z+=Math.cos(orbitYaw)*CYCLE_COCKPIT.backMeters;
+      if(wallDistance>=0){
+        const limit=ARENA_WALL.innerMeters-CAMERA_CLEARANCE.radiusMeters-CAMERA_CLEARANCE.contactMarginMeters;
+        cockpitEye.x=cycleRace.site.x+THREE.MathUtils.clamp(cockpitEye.x-cycleRace.site.x,-limit,limit);
+        cockpitEye.z=-cycleRace.site.s+THREE.MathUtils.clamp(cockpitEye.z+cycleRace.site.s,-limit,limit);
+      }
+      // If the wall removes the rear offset, use a little room to either
+      // side so the cycle remains in frame beneath this elevated camera.
+      if(this.cycleCockpit&&Math.hypot(cockpitEye.x-pose.x,cockpitEye.z+pose.s)<1){
+        const limit=ARENA_WALL.innerMeters-CAMERA_CLEARANCE.radiusMeters-CAMERA_CLEARANCE.contactMarginMeters;
+        let best=cockpitEye;
+        for(const side of [-1,1]){
+          const candidate=cockpitEye.clone().add(new THREE.Vector3(Math.cos(orbitYaw)*CYCLE_COCKPIT.sideMeters*side,0,-Math.sin(orbitYaw)*CYCLE_COCKPIT.sideMeters*side));
+          candidate.x=cycleRace.site.x+THREE.MathUtils.clamp(candidate.x-cycleRace.site.x,-limit,limit);
+          candidate.z=-cycleRace.site.s+THREE.MathUtils.clamp(candidate.z+cycleRace.site.s,-limit,limit);
+          if(Math.hypot(candidate.x-pose.x,candidate.z+pose.s)>Math.hypot(best.x-pose.x,best.z+pose.s))best=candidate;
+        }
+        cockpitEye.copy(best);
+      }
+      const cockpitLook=new THREE.Vector3(pose.x,CYCLE_COCKPIT.eyeHeightMeters,-pose.s).add(new THREE.Vector3(-Math.sin(orbitYaw),0,-Math.cos(orbitYaw)).multiplyScalar(CYCLE_COCKPIT.lookAheadMeters));
+      cockpitLook.y=CYCLE_COCKPIT.lookHeightMeters;
+      this.desired.lerp(cockpitEye,this.cycleCockpitMix);
+      this.lookDesired.lerp(cockpitLook,this.cycleCockpitMix);
+      // When zooming out from the rider position, clear the roof before
+      // moving beyond the enclosure; smoothing into its face would stall.
+      const roofClearance=ARENA_CAMERA_WALL_HEIGHT+CAMERA_CLEARANCE.radiusMeters+CAMERA_CLEARANCE.contactMarginMeters;
+      if(this.cycleOpening===null&&wallDistance>=0&&aerialMix>0&&this.desired.y>roofClearance&&this.camera.position.y<roofClearance&&!this.freshCamera){
+        const limit=ARENA_WALL.innerMeters-CAMERA_CLEARANCE.radiusMeters-CAMERA_CLEARANCE.contactMarginMeters;
+        this.desired.x=cycleRace.site.x+THREE.MathUtils.clamp(this.desired.x-cycleRace.site.x,-limit,limit);
+        this.desired.z=-cycleRace.site.s+THREE.MathUtils.clamp(this.desired.z+cycleRace.site.s,-limit,limit);
+      }
+      const insideLimit=ARENA_WALL.innerMeters-CAMERA_CLEARANCE.radiusMeters-CAMERA_CLEARANCE.contactMarginMeters;
+      const cockpitReturn=this.cycleCockpit&&Math.max(Math.abs(this.camera.position.x-cycleRace.site.x),Math.abs(this.camera.position.z+cycleRace.site.s))>insideLimit;
+      if(cockpitReturn){
+        this.desired.copy(cockpitEye);
+        this.desired.y=Math.max(this.camera.position.y,roofClearance);
+      }
       const openingRoll=this.cycleOpening===null?0:applyCycleOpening(this.cycleOpening,cycleRace.site,this.desired,this.lookDesired);
       const cycleAnchor=cycleCameraAnchor(pose,cycleRace,CYCLE_CAMERA.wallAnchorHeightMeters,CAMERA_CLEARANCE.radiusMeters);
       const cycleWorld=cycleCameraWorld(this.world,cycleRace);
-      if(this.cycleOpening===null&&aerialMix===0&&cycleWallFollowPosition(cycleWorld,pose,cycleRace,this.desired,cycleAnchor,CAMERA_CLEARANCE.radiusMeters,previousCamera))
+      if(this.cycleOpening===null&&aerialMix===0&&this.cycleCockpitMix<.01&&cycleWallFollowPosition(cycleWorld,pose,cycleRace,this.desired,cycleAnchor,CAMERA_CLEARANCE.radiusMeters,previousCamera))
         this.lookDesired.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),.5);
       const blend=this.cycleOpening!==null||this.freshCamera?1:1-Math.exp(-dt*CYCLE_CAMERA.responsePerSecond);
       this.camera.position.lerp(this.desired,blend);this.look.lerp(this.lookDesired,blend);
-      constrainCamera(cycleWorld,cycleAnchor,this.camera.position,previousCamera,CAMERA_CLEARANCE.radiusMeters,this.cycleOpening===null&&aerialMix===0,this.collisionRecovery,dt);
+      if(cockpitReturn&&previousCamera&&previousCamera.y<roofClearance){
+        // First rise vertically on the current side of the wall, then cross.
+        this.camera.position.copy(previousCamera);
+        this.camera.position.y=THREE.MathUtils.lerp(previousCamera.y,roofClearance+1,blend);
+      }
+      // Cockpit recovery must follow the bike instead of climbing/stalling on
+      // the wall. The raised anchor and rider eye are both inside the arena.
+      if(this.cycleCockpitMix>.01)this.collisionRecovery.active=false;
+      constrainCamera(cycleWorld,cycleAnchor,this.camera.position,previousCamera,CAMERA_CLEARANCE.radiusMeters,this.cycleOpening===null&&aerialMix===0&&!cockpitReturn,this.cycleCockpitMix>.01?null:this.collisionRecovery,dt);
       const cameraLook=this.look.clone();
       if(this.cycleOpening===null){
         // When a wall shortens the boom, look down toward the bike instead of
         // keeping an eight-meter forward target that loses it below frame.
         const distance=Math.hypot(this.camera.position.x-pose.x,this.camera.position.z+pose.s);
         const close=1-THREE.MathUtils.smoothstep(distance,CYCLE_CAMERA.closeLookNearMeters,CYCLE_CAMERA.closeLookFarMeters);
-        cameraLook.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),close);
+        cameraLook.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),close*(1-this.cycleCockpitMix));
         // Keep the horizon in the follow view, including after wall avoidance.
         // Apply after wall correction without moving the collision-safe camera.
         const direction=cameraLook.clone().sub(this.camera.position),length=direction.length();
