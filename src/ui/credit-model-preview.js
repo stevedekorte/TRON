@@ -1,3 +1,4 @@
+import {createBossTank} from '../rendering/boss-tank.js';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createTank} from '../rendering/models.js';
@@ -6,6 +7,7 @@ import {disposeSceneResources} from '../rendering/scene-resources.js';
 const PREVIEW={gapPixels:40,minWidthPixels:260,maxWidthPixels:460,heightPixels:320,fadeSeconds:.8};
 const models=[
  ['ARABINOWITZ','tank',null],
+ ['SPRINGSOCIETY','boss',null],
  ['SHRIKER1','recognizer',new URL('../../docs/models/tron_1982_recognizer.glb',import.meta.url).href],
  ['3D MODEL: TRON CARRIER','carrier',new URL('../../docs/models/tron_1982_carrier.glb',import.meta.url).href],
  ['3D MODEL: TRON SUNSHIP','sailer',new URL('../../docs/models/tron_1982_solar_sailer.glb',import.meta.url).href],
@@ -35,9 +37,9 @@ export class CreditModelPreview{
  }
  async load(entry,generation){
   try{
-   const root=entry[1]==='tank'?(await createTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
+   const root=entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
    if(generation!==this.generation){disposeSceneResources(root);return;}
-   root.traverse(o=>{if(o.userData.breakupExclude||o.name==='muzzle-flash')o.visible=false;});
+   root.traverse(o=>{if((o.userData.breakupExclude&&!o.userData.bossTrim)||o.name==='muzzle-flash')o.visible=false;});
    // A wrapper preserves the asset's internal transforms and original proportions.
    const box=new T.Box3().setFromObject(root),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3());
    root.position.sub(center);const model=new T.Group();model.add(root);model.scale.setScalar(2/Math.max(size.x,size.y,size.z));

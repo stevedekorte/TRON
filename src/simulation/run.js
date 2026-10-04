@@ -1,3 +1,4 @@
+import {bossMuzzlePoses} from '../game/boss-tank.js';
 import {surfaceImpact} from './surface-impact.js';
 import {configFor,attachSettings} from '../game/config.js';
 import {createActiveTeleportPads as createTeleportPads} from '../levels/teleporters.js';
@@ -75,6 +76,7 @@ export function moveTank(run,dx,ds) {
 
 // Match the current model adapter's turret pivot and level muzzle in meters.
 export function cannonPose(run) {
+  if(run.boss){const [a,b]=bossMuzzlePoses(run);return {...a,x:(a.x+b.x)/2,s:(a.s+b.s)/2};}
   const yaw = run.yaw + run.turretYaw;
   const mx=TANK.muzzle[0]-TANK.pivot[0], mz=TANK.muzzle[2]-TANK.pivot[2];
   const tx = Math.cos(run.turretYaw) * mx + Math.sin(run.turretYaw) * mz;

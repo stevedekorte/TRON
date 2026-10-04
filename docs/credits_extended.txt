@@ -35,6 +35,12 @@ arabinowitz
   Adapted for scale, materials, turret articulation, recoil and destruction.
   Source records: Sketchfab Standard; creator also specifies editorial use.
 
+SpringSociety
+  Double turret Clu Light Tank — boss tank.
+  https://sketchfab.com/3d-models/double-turret-clu-light-tank-83df27ea6c08441a809bb5376301d430
+  CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+  Adapted for scale, dark armor, red edge trim, turret motion and paired fire.
+
 Shriker1
   Tron 1982 Recognizer
   Used for the patrolling, pursuing and carrier-escort Recognizers.

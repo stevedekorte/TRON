@@ -9,6 +9,7 @@ try{
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
  await page.locator('#start-cycles').click();
  await page.waitForFunction(()=>__tron.state.playerVehicle==='cycle'&&__tron.state.cycleRace.phase==='racing',null,{timeout:60000});
+ await page.waitForTimeout(5000);
  const height=await page.evaluate(async()=>{
   const {loadLightCycles}=await import('/src/rendering/light-cycles.js'),{Box3}=await import('/node_modules/three/build/three.module.js');
   const [gold]=await loadLightCycles(),bounds=new Box3().setFromObject(gold);
@@ -28,6 +29,13 @@ try{
   if(key)await page.keyboard.up(key);
  }
  await page.keyboard.down('KeyK');await page.waitForTimeout(1600);await page.keyboard.up('KeyK');
+ const followPitch=await page.evaluate(async()=>{
+  const {Vector3,Quaternion}=await import('/node_modules/three/build/three.module.js');
+  const c=__tron.state.camera,d=new Vector3(0,0,-1).applyQuaternion(new Quaternion().fromArray(c.rotation));
+  return {down:Math.asin(-d.y),fov:c.fov};
+ });
+ assert(followPitch.down<followPitch.fov*Math.PI/360,'I/K follow view includes the horizon without glancing');
+ await page.screenshot({path:'test-results/cycle-zoom-follow-horizon.png'});
  await page.keyboard.down('KeyJ');await page.waitForTimeout(1000);
  const pitch=await page.evaluate(async()=>{
   const {Vector3,Quaternion}=await import('/node_modules/three/build/three.module.js');

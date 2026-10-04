@@ -1,3 +1,4 @@
+import {BOSS_TANK,bossMuzzlePoses,inBossCourt} from '../game/boss-tank.js';
 import {inPatrolRegion} from '../levels/patrol-region.js';
 import {enemyPlanningBudget} from './planning-budget.js';
 import {groundRoute,GroundRoutePlanner} from './ground-routing.js';
@@ -39,7 +40,15 @@ function patrolHasExit(p,world,config){
  return cache.points.get(p);
 }
 export const GROUND_TANK_COUNT=ESCORT.count+GROUND_PATROL.count*MAZE_INSTANCES.length;
-export const groundTankCount=(world=DEFAULT_WORLD)=>ESCORT.count+world.MAZE_INSTANCES.reduce((sum,m)=>sum+(m.patrols?.groundCount??GROUND_PATROL.count),0);
+export const groundTankCount=(world=DEFAULT_WORLD)=>ESCORT.count+world.MAZE_INSTANCES.reduce((sum,m)=>sum+(m.patrols?.groundCount??GROUND_PATROL.count)+(m.patrols?BOSS_TANK.count:0),0);
+export function bossTankIndices(world){
+ let index=ESCORT.count;const indices=[];
+ for(const m of world.MAZE_INSTANCES){
+  index+=m.patrols?.groundCount??GROUND_PATROL.count;
+  if(m.patrols)for(let i=0;i<BOSS_TANK.count;i++)indices.push(index++);
+ }
+ return indices;
+}
 const patrolCache=new WeakMap();
 function groundPatrolCells(world,vehicleConfig=configFor(null)){
  const cached=patrolCache.get(world);if(cached?.radius===vehicleConfig.tankRadius)return cached.cells;
@@ -52,8 +61,14 @@ export function escortSlot(index,time,world=DEFAULT_WORLD){const CARRIER=carrier
 export function createGroundTanks(random=Math.random,world=DEFAULT_WORLD,config=configFor(null)){
  const {MAZE_INSTANCES}=world,patrolCells=groundPatrolCells(world,config),GROUND_TANK_COUNT=groundTankCount(world),CARRIER=carrierFor(world);
  const starts=[];
- for(const m of MAZE_INSTANCES)for(let sector=0;sector<(m.patrols?.groundCount??GROUND_PATROL.count);sector++){
-  const candidates=patrolCells.filter(p=>p.mazeId===m.id&&inPatrolRegion(p,m,m.patrols?sector:null,m.patrols?.groundCount??1)&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
+ for(const m of MAZE_INSTANCES)for(let sector=0;sector<(m.patrols?.groundCount??GROUND_PATROL.count)+(m.patrols?BOSS_TANK.count:0);sector++){
+  // Keep broad spawn sectors when increasing density: narrower angular
+  // slices can contain only sealed pockets of the traced maze.
+  const boss=!!m.patrols&&sector>=m.patrols.groundCount;
+  const sectorCount=m.patrols?.groundSpawnSectors??m.patrols?.groundCount??1;
+  const candidates=patrolCells.filter(p=>p.mazeId===m.id&&(boss?
+   inBossCourt(p,m)&&((p.x>m.beamPosition.x)===(sector-m.patrols.groundCount===0)):
+   inPatrolRegion(p,m,m.patrols?sector%sectorCount:null,sectorCount))&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
   // Blueprint outlines include enclosed pockets. Free floor alone does not
   // make a valid patrol spawn: the tank must be able to leave its corridor.
   let p;
@@ -62,21 +77,27 @@ export function createGroundTanks(random=Math.random,world=DEFAULT_WORLD,config=
    if(patrolHasExit(candidate,world,config)){p=candidate;break;}
   }
   if(!p)throw new Error(`No connected ground patrol spawn in maze ${m.id}`);
-  starts.push(p);
+  starts.push({...p,boss});
  }
  return Array.from({length:GROUND_TANK_COUNT},(_,index)=>{
   const patrol=index>=ESCORT.count,position=patrol?starts[index-ESCORT.count]:escortSlot(index,0,world),speed=patrol?0:Math.min(CARRIER.speed,config.maxSpeed);
-  return attachWorld({...position,index,id:100+index,kind:'ground',role:patrol?'patrol':'escort',patrolSeed:Math.floor(random()*4294967296),weaponSeed:Math.floor(random()*4294967296),patrolGoal:null,alertUntil:0,y:3.8,yaw:patrol?random()*Math.PI*2:-Math.PI/2,turretYaw:0,speed,vx:speed,vs:0,vy:0,state:patrol?'patrol':'escort',health:3,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]},world);
+  return attachWorld({...position,index,id:100+index,kind:'ground',role:patrol?'patrol':'escort',patrolSeed:Math.floor(random()*4294967296),weaponSeed:Math.floor(random()*4294967296),patrolGoal:null,alertUntil:0,y:3.8,yaw:patrol?random()*Math.PI*2:-Math.PI/2,turretYaw:0,speed,vx:speed,vs:0,vy:0,state:patrol?'patrol':'escort',health:position.boss?BOSS_TANK.health:BOSS_TANK.normalHealth,hit:0,recoil:0,cooldown:index*.2,memory:null,canSee:false,targetGone:false,nextSense:index*.025,nextRadio:0,lastBroadcast:-Infinity,neutralizationSent:false,goal:null,nextRoute:0,path:[]},world);
  });
 }
 function patrolGoal(e,now,others){
- const patrolCells=groundPatrolCells(worldFor(e),configFor(e));
+ const world=worldFor(e),court=e.boss?world.MAZE_INSTANCES.find(m=>m.id===e.mazeId):null;
+ const patrolCells=groundPatrolCells(world,configFor(e));
+ if(court&&!inBossCourt(e,court)){
+  const home=patrolCells.filter(p=>p.mazeId===e.mazeId&&inBossCourt(p,court)).sort((a,b)=>Math.hypot(a.x-e.x,a.s-e.s)-Math.hypot(b.x-e.x,b.s-e.s))[0];
+  if(home){e.patrolGoal=null;return home;}
+ }
  if(e.patrolGoal&&Math.hypot(e.x-e.patrolGoal.x,e.s-e.patrolGoal.s)>6)return e.patrolGoal;
  const cells=patrolCells.filter(p=>p.mazeId===e.mazeId);
  const random=()=>{e.patrolSeed=(Math.imul(e.patrolSeed,1664525)+1013904223)>>>0;return e.patrolSeed/4294967296;};
  // Patrol one visible corridor segment at a time; choose again at its end.
  // This keeps exploration responsive instead of repeatedly solving long routes.
  const navigable=p=>{
+  if(court&&!inBossCourt(p,court))return false;
   if(Math.hypot(p.x-e.x,p.s-e.s)>=180||!clear(e,p))return false;
   const dx=p.x-e.x,ds=p.s-e.s,length2=dx*dx+ds*ds;
   return !others.some(o=>{
@@ -169,7 +190,7 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
    if(!withdrawing&&e.canSee&&Math.hypot(e.x-e.memory.x,e.s-e.memory.s)<100)targetSpeed=0;
    if(active.some(o=>o!==e&&Math.hypot(o.x-e.x,o.s-e.s)<12&&(-Math.sin(e.yaw)*(o.x-e.x)+Math.cos(e.yaw)*(o.s-e.s))>0))targetSpeed=0;
   }
-  targetSpeed*=mobility.speed;
+  targetSpeed*=mobility.speed*(e.boss?BOSS_TANK.speedMultiplier:1);
   e.speed+=clamp(targetSpeed-e.speed,-18*dt,8*dt);
   const x=e.x,s=e.s,moveX=-Math.sin(e.yaw)*e.speed*dt,moveS=Math.cos(e.yaw)*e.speed*dt;
   // Steering must obey the same swept margin as pathfinding, including while turning.
@@ -191,10 +212,14 @@ export function updateGroundTanks(run,dt,moveTank,cannonPose){
   if(withdrawing||!aim||!e.canSee||run.time-e.memory.seenAt>.3||e.cooldown>0||Math.hypot(aim.x-e.x,aim.s-e.s)>ESCORT.fireRange)continue;
   const bearing=-Math.atan2(aim.x-pose.x,aim.s-pose.s);
   if(Math.abs(angleDelta(pose.yaw,bearing))>.035||!clearShot(e,pose,aim,active))continue;
-  const shot=enemyShot(e,pose,aim);
-  if(!clearShot(e,pose,shot.target,active)){e.cooldown=.25;continue;}
-  run.projectiles.push({...pose,vx:shot.vx,vs:shot.vs,vy:shot.vy,life:2.5,faction:'enemy',owner:e.id});
-  e.cooldown=shot.cooldown;e.recoil=1;run.events.push({type:'enemyShot',emitterId:e.id,x:pose.x,y:pose.y,s:pose.s});
+  const muzzles=e.boss?bossMuzzlePoses(e):[pose];
+  const shots=muzzles.map(muzzle=>({pose:muzzle,shot:enemyShot(e,muzzle,aim)}));
+  if(shots.some(({pose,shot})=>!clearShot(e,pose,shot.target,active))){e.cooldown=.25;continue;}
+  for(const {pose,shot} of shots){
+   run.projectiles.push({...pose,vx:shot.vx,vs:shot.vs,vy:shot.vy,life:2.5,faction:'enemy',owner:e.id});
+   run.events.push({type:'enemyShot',emitterId:e.id,x:pose.x,y:pose.y,s:pose.s});
+  }
+  e.cooldown=shots[0].shot.cooldown;e.recoil=1;
  }
 }
 function clearShot(e,pose,aim,others){
