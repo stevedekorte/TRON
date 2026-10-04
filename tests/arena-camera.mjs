@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-angle=swiftshader']});
 try{
  const page=await browser.newPage({viewport:{width:1250,height:1000},reducedMotion:'reduce'}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
@@ -17,18 +17,19 @@ try{
  });
  await page.evaluate(()=>{
   const race=__tron.state.cycleRace,b=race.cycles[race.playerId];
-  race.arenaPaused=true;Object.assign(b,{x:408/4.8,previousX:408/4.8,z:0,previousZ:0,progress:1,yaw:Math.PI/2,dir:3});
+  race.arenaPaused=true;Object.assign(b,{alive:true,x:408/4.8,previousX:408/4.8,z:0,previousZ:0,progress:1,yaw:Math.PI/2,dir:3});
   __tron.place({cycleRace:race});
  });
- await page.waitForTimeout(200);
+ await page.waitForTimeout(1200);
  for(const key of [null,'KeyJ','KeyL']){
   if(key){await page.keyboard.down(key);await page.waitForTimeout(250);}
-  const state=await page.evaluate(()=>{const s=__tron.state,b=s.cycleRendering.bikes[s.cycleRace.playerId];return {camera:s.camera,bike:b.position,screen:__tron.project({x:b.position[0],y:1,s:-b.position[2]})};});
-  assert(state.camera.y>height+.3,'camera stays above the actual cycle model');
+  const state=await page.evaluate(()=>{const s=__tron.state,b=s.cycleRendering.bikes[s.cycleRace.playerId];return {camera:s.camera,bike:b.position,visible:b.visible,screen:__tron.project({x:b.position[0],y:1,s:-b.position[2]})};});
+  assert.equal(state.visible,true,'keep own cycle visible in close-wall view');
+  assert(state.camera.y<3.2&&state.camera.y>2.8,'camera settles just above the cycle');
   if(!key)await page.screenshot({path:'test-results/arena-camera-close-wall.png'});
   if(key)await page.keyboard.up(key);
  }
- await page.keyboard.down('KeyK');await page.waitForTimeout(1600);await page.keyboard.up('KeyK');
+ await page.keyboard.down('KeyK');await page.waitForFunction(()=>__tron.state.camera.y>20,null,{timeout:20000});await page.keyboard.up('KeyK');
  const followPitch=await page.evaluate(async()=>{
   const {Vector3,Quaternion}=await import('/node_modules/three/build/three.module.js');
   const c=__tron.state.camera,d=new Vector3(0,0,-1).applyQuaternion(new Quaternion().fromArray(c.rotation));

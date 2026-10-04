@@ -1374,3 +1374,16 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Add the original neutral BIT OBJ beside ControllingTransmission's credit, with its lavender flat-shaded appearance, using the existing live preview and synchronized fade. Reuse the locally supplied MIT-licensed model; no new asset or attribution source.
 - [x] Chrome `node tests/credit-models.mjs --previews-only` passed all ten model previews, synchronized fades, narrow-screen hiding, pending-load cancellation and disposal. Inspected the BIT screenshot. This isolated run excludes the previously recorded full-game credit-navigation timeout.
+
+
+## Arena wall rider-view fallback — October 4
+
+- [x] Enter a forward rider-height POV within 16 m of an arena wall, returning to chase only beyond 24 m to prevent repeated switching. Smooth camera position and direction; hide the followed cycle's exterior during the transition so the camera cannot look through its own mesh. J/L glances keep the horizon level.
+- [x] Preserve manual I/K and V views. Clear the enclosure roof before zooming outward and return over the interior before lowering from an exterior aerial position. Do not apply the close-wall fallback to the film entrance or escaped road cycles.
+- [x] Validation: 24 camera tests passed, covering four walls, corners, moving/glancing cycles, zoom handoff, reset, and recovery from an embedded camera. Inspected Chrome rider-view capture at `test-results/arena-camera-close-wall.png`. Human driving review remains pending.
+
+
+## Above-cycle wall fallback — October 4 correction
+
+- [x] Replace the close-wall POV with a camera 3 m above the floor and up to 2.5 m behind the cycle, clamped inward at the arena boundary. Keep the bike visible and look slightly down/forward while retaining the horizon. Preserve the existing entry/exit thresholds and wall/zoom recovery.
+- [x] All 24 camera tests passed, including wall and corner clearance, zoom transitions and embedded-camera recovery.
