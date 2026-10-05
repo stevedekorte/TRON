@@ -32,7 +32,7 @@ test('large maze starts with 24 separated tank patrols while other formations re
  assert(large);
  const tanks=run.enemyTanks.filter(e=>e.role==='patrol'&&!e.boss&&e.mazeId===large.id);
  assert.equal(tanks.length,24);
- assert.equal(run.enemyTanks.filter(e=>e.boss).length,2);
+ assert.equal(run.enemyTanks.filter(e=>e.boss).length,4);
  for(const tank of tanks){
   assert(world.freePosition(tank.x,tank.s,4.5));
   assert(tanks.every(other=>other===tank||Math.hypot(tank.x-other.x,tank.s-other.s)>30));

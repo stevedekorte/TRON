@@ -1,6 +1,6 @@
 // Double turret Clu Light Tank: uniform 6.5 m hull width, Y-up, -Z forward.
 export const BOSS_TANK=Object.freeze({
- count:2,courtInnerRadiusMeters:100,courtOuterRadiusMeters:230,
+ count:4,courtInnerRadiusMeters:100,courtOuterRadiusMeters:230,
  health:12,normalHealth:3,speedMultiplier:.8,
  scale:6.5/(.07995702373578287+.07995700823285372),
  sourceCenterZ:(-.09561913696595892+.12177490388750008)/2,
@@ -23,4 +23,10 @@ export function bossMuzzlePoses(tank){
 export function inBossCourt(point,maze){
  const center=maze.beamPosition??maze,radius=Math.hypot(point.x-center.x,point.s-center.s);
  return radius>=BOSS_TANK.courtInnerRadiusMeters&&radius<=BOSS_TANK.courtOuterRadiusMeters;
+}
+
+export function bossCourtSector(point,maze){
+ const center=maze.beamPosition??maze;
+ const angle=(Math.atan2(point.s-center.s,point.x-center.x)+Math.PI*2)%(Math.PI*2);
+ return Math.floor(angle/(Math.PI*2)*BOSS_TANK.count);
 }

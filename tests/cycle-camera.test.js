@@ -61,7 +61,7 @@ test('spectator camera follows the selected survivor without changing the player
  const {run,rig,bike}=setup();bike.alive=false;
  const survivor={...bike,id:2,alive:true,x:20,previousX:20,z:0,previousZ:0};
  run.cycleRace.cycles.push(survivor);run.cycleSpectating=true;run.cycleFollowId=2;
- frame(rig,run,1/60);
+ for(let i=0;i<120;i++)frame(rig,run,1/60);
  const pose=cyclePlayerPose({...run.cycleRace,playerId:2});
  assert(Math.hypot(rig.camera.position.x-pose.x,rig.camera.position.z+pose.s)<11);
  assert.equal(run.cycleRace.playerId,0);
@@ -231,6 +231,8 @@ test('death camera stays at wall height and tracks survivors from a fixed perch'
  const start=rig.camera.position.clone();bike.alive=false;run.cycleSpectating=true;run.cycleFollowId=null;
  const survivor={...bike,id:1,alive:true,x:20,previousX:20,z:0,previousZ:0};
  run.cycleRace.cycles.push(survivor);
+ const rotation=rig.camera.quaternion.clone();
+ for(let i=0;i<180;i++){frame(rig,run,1/60);assert(rig.camera.position.equals(start));assert(rig.camera.quaternion.equals(rotation));}
  frame(rig,run,1/60);assert(rig.camera.position.distanceTo(start)<1);
  for(let i=0;i<240;i++){
   frame(rig,run,1/60);
@@ -271,4 +273,58 @@ test('I/K follow zoom keeps both horizon and cycle in frame throughout zoom tran
    }
   }
  }
+});
+
+
+test('spectator switches preserve zoom and ease between moving targets, including rapid switches',()=>{
+ const {run,rig,bike}=setup();bike.alive=false;
+ run.cycleRace.cycles.push({...bike,id:1,alive:true,x:25,previousX:25,z:0,previousZ:0},{...bike,id:2,alive:true,x:-25,previousX:-25,z:15,previousZ:15});
+ run.cycleSpectating=true;run.cycleFollowId=1;rig.followZoom=8;rig.aerialZoom=1.5;
+ frame(rig,run,1/60);const start=rig.camera.position.clone();
+ run.cycleFollowId=2;frame(rig,run,1/60);
+ assert(rig.camera.position.distanceTo(start)<.1,'first frame must not teleport to the other bike');
+ for(let i=0;i<30;i++){run.cycleRace.cycles[2].x+=.02;run.cycleRace.cycles[2].previousX+=.02;frame(rig,run,1/60);}
+ const mid=rig.camera.position.clone();assert(mid.distanceTo(start)>10);
+ run.cycleFollowId=1;frame(rig,run,1/60);assert(rig.camera.position.distanceTo(mid)<.1,'rapid reversal starts at the displayed camera');
+ for(let i=0;i<100;i++)frame(rig,run,1/60);
+ assert.equal(rig.followZoom,8);assert.equal(rig.aerialZoom,1.5);assert.equal(rig.cycleSwitch,null);
+ assert(rig.camera.position.distanceTo(start)<.01,'settles at the original zoomed framing');
+ rig.reset();assert.equal(rig.cycleSwitch,null);
+});
+
+
+test('spectator rotation eases through opposite headings without a look-at flip',()=>{
+ const {run,rig,bike}=setup();bike.alive=false;
+ run.cycleRace.cycles.push({...bike,id:1,alive:true,x:20,previousX:20,z:0,previousZ:0,dir:0},{...bike,id:2,alive:true,x:-20,previousX:-20,z:0,previousZ:0,dir:2});
+ run.cycleSpectating=true;run.cycleFollowId=1;frame(rig,run,1/60);
+ const start=rig.camera.quaternion.clone();run.cycleFollowId=2;
+ let previous=start.clone(),largest=0;
+ for(let i=0;i<100;i++){
+  frame(rig,run,1/60);const angle=previous.angleTo(rig.camera.quaternion);largest=Math.max(largest,angle);
+  if(i===0)assert(angle<.001,'rotation must ease out of the previous view');
+  assert(angle<.1,`abrupt rotation at frame ${i}: ${angle}`);previous.copy(rig.camera.quaternion);
+ }
+ assert(start.angleTo(rig.camera.quaternion)>3,'completes the opposite-heading turn');assert(largest>.01);
+ run.cycleFollowId=1;frame(rig,run,1/60);for(let i=0;i<20;i++)frame(rig,run,1/60);
+ previous.copy(rig.camera.quaternion);run.cycleFollowId=2;frame(rig,run,1/60);
+ assert(previous.angleTo(rig.camera.quaternion)<.001,'rapid selection preserves displayed orientation');
+});
+
+
+test('a followed survivor death holds the displayed camera before selecting another, and manual selection can skip it',()=>{
+ const {bike,run,rig}=setup();bike.alive=false;
+ const survivor={...bike,id:1,alive:true,x:20,previousX:20},next={...bike,id:2,alive:true,x:-20,previousX:-20};
+ run.cycleRace.cycles.push(survivor,next);run.cycleSpectating=true;run.cycleFollowId=1;
+ frame(rig,run,1/60);const position=rig.camera.position.clone(),rotation=rig.camera.quaternion.clone();
+ survivor.alive=false;
+ for(let i=0;i<120;i++){frame(rig,run,1/60);assert(rig.camera.position.equals(position));assert(rig.camera.quaternion.equals(rotation));}
+ const elapsed=rig.cycleDeathHold.elapsed;
+ rig.update(run,run,0,1,'paused',{});assert.equal(rig.cycleDeathHold.elapsed,elapsed);
+ for(let i=0;i<65;i++)frame(rig,run,1/60);
+ assert.equal(rig.cycleDeathHold.elapsed,3);assert(rig.camera.position.equals(position));
+ run.cycleFollowId=2;frame(rig,run,1/60);assert.equal(rig.cycleDeathHold,null);assert(rig.cycleSwitch);
+ for(let i=0;i<90;i++)frame(rig,run,1/60);
+ next.alive=false;frame(rig,run,1/60);assert.equal(rig.cycleDeathHold.id,2);
+ survivor.alive=true;run.cycleFollowId=1;frame(rig,run,1/60);assert.equal(rig.cycleDeathHold,null);
+ rig.reset();assert.equal(rig.cycleDeathsHeld.size,0);
 });

@@ -1387,3 +1387,81 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Replace the close-wall POV with a camera 3 m above the floor and up to 2.5 m behind the cycle, clamped inward at the arena boundary. Keep the bike visible and look slightly down/forward while retaining the horizon. Preserve the existing entry/exit thresholds and wall/zoom recovery.
 - [x] All 24 camera tests passed, including wall and corner clearance, zoom transitions and embedded-camera recovery.
+
+
+## Smooth cycle spectator selection — October 4
+
+- [x] Preserve follow/aerial zoom when arrow keys select a surviving cycle. Replace the camera snap and inter-cycle translation jump with a 1.2-second eased position/look transition toward the moving target; rapid selections restart from the displayed view. Retain wall constraints and close-wall framing.
+- [x] Validation: 25 cycle/arena camera tests passed, including rapid reversal, moving target, unchanged zoom and settled framing. Chrome `node tests/cycle-follow-spectator.mjs` passed arrow selection/wraparound, zoom preservation, survivor meters, automatic target replacement and restart.
+
+
+## Spectator rotation smoothing — October 4
+
+- [x] Interpolate the displayed camera quaternion toward the destination framing over the same eased 1.2-second switch. Keep orientation independent of interpolated look-at points, which can cross the camera and cause a sudden flip. Rapid selections begin at the current displayed orientation.
+- [x] All 26 camera tests passed, including bounded frame-to-frame rotation through an opposite-heading switch, eased first frame and rapid target reversal.
+
+
+## Cycle crash camera hold — October 4
+
+- [x] Hold the displayed camera position and orientation for three seconds after the player's cycle dies, before the existing overview zoom. Hold a followed survivor's crash view for the same duration before automatically selecting another living cycle and using the smooth spectator transition.
+- [x] Pause freezes the hold timer; arrow-key selection can skip the hold. Reset clears per-cycle hold history so subsequent games behave consistently.
+- [x] Validation: all 27 cycle/arena camera tests passed, including player death, followed survivor death, frozen position/orientation, pause and manual override.
+
+
+## Four central-beam bosses — October 4
+
+- [x] Increase the light-beam court guard from two boss tanks to four. Seed one start in each angular quarter of the courtyard, preserving minimum spacing, connected-floor checks, existing courtyard patrol behavior, health, paired fire and slower movement.
+- [x] Eight boss/spawn tests passed, including all four distinct starting sectors, spacing and 20 seconds of active courtyard patrols.
+
+
+## Credit preview framing and darker vehicle details — October 4
+
+- [x] Darken the Recognizer's credit-preview faces while preserving its red trim. Fit each model to the available space beside the complete credit text, with outer margins and clearance above the logo; enlarge the carrier and solar sailer previews.
+- [x] Ten credit previews passed Chrome/SwiftShader rendering, projected framing bounds, synchronized fade, narrow-window hiding, reset during loading and disposal checks (`node tests/credit-models.mjs --previews-only`). Inspected Recognizer, carrier and solar sailer captures.
+- [x] Dim the boss tank's red edge material from `#a32619` to `#76190f` in the shared model adapter.
+
+
+## Credit vehicle surface fidelity — October 4
+
+- [x] Apply the game's existing cycle surface and wheel-hub repairs to the credit preview instead of displaying the uncorrected export.
+- [x] Load the carrier through its game adapter, preserving its hull treatment, panel seams and lights; reduce preview illumination to 15% for the darker in-game appearance. Other previews retain their lighting.
+
+
+## Shared reference-based Solar Sailer appearance — October 5
+
+- [x] Use the game Solar Sailer adapter in credits so both views share materials and details. Match `docs/references/images/Solar Sailor/SolarSailerRef.jpg` with dark blue hull surfaces, translucent blue-gray sails, pale illuminated rigging, colored navigation lamps and a white radial beam-coupling star. Replace the amber transit beam with a warm-white core and cool halo.
+- [x] Preserve each material's base opacity during transit fades so the sail fabric stays translucent at full visibility. Preview framing excludes the hidden source guide beam.
+- [x] Validation: two transit/beam timing tests and ten Chrome credit-preview checks passed. Chrome Solar Sailer fixture verified repeated-pass resource stability, reset, beam endpoints/fades, sail opacity, beam-coupling presence and resource disposal. Inspected game and credit renders; final film fidelity remains subject to visual review.
+
+
+## Solar Sailer full-sail mode and credit beam — October 5
+
+- [x] Add a translucent cruise state and a bright opaque full-sail state based on `Sailor Full.png`. After twelve seconds of cruise, fill the sails over three seconds while smoothly accelerating to four times cruise speed. Integrate the acceleration for continuous position; compute beam fade timing from the shorter transit duration.
+- [x] Credits use the same sail transition and include short white beam segments on both sides, with a cool halo and the existing coupling star. Fit the complete ship and beam inside the preview margins.
+- [x] Three simulation checks cover cruise speed, full-sail speed, continuous transition distance, exact transit endpoint, repetition and beam fades.
+
+
+## Hide unused shuttle credit — October 5
+
+- [x] Remove the unused carrier shuttle from the displayed and extended credits and remove its preview mapping. Preserve the model files for possible later use; the separate maze credit remains.
+
+
+## Screenshot shortcut — October 5
+
+- [x] Change screenshot capture from B/F9 to Shift+B and update the control hint. Preserve modifier exclusions and repeat protection.
+
+
+## Preserve rapid light-cycle input — October 5
+
+- [x] Replace the single pending keyboard turn with an ordered queue. Preserve two rapid taps delivered before the next simulation step, with a combined two-turn limit across keyboard and race queues to avoid a delayed backlog. Clear queued turns on reset.
+- [x] Cycle player and application refactoring tests passed, including rapid opposing taps, queue order/capacity and reset.
+- Remaining latency: arena turns are committed only at 4.8-meter cell boundaries (up to 125 ms at 38.4 m/s cruise, 250 ms at half-speed braking), plus frame scheduling. Removing this quantization requires a separate continuous-turn/collision design; this change fixes dropped taps, not the grid delay.
+
+
+## Immediate arena turns and deliberate AI reactions — October 5
+
+- [x] Remove grid-boundary turn scheduling for all arena cycles. Store continuous positions and apply player turns on the next 120 Hz simulation step; the 4.8-meter occupancy grid remains only a route-planning approximation. Preserve exact fractional trail corners.
+- [x] Sweep cycle discs against actual visible trail segments and their end caps; check moving cycle bodies simultaneously. Preserve trail damage, length limits, crash decay, wall breaches and road transitions. Road riders use exact trail geometry once the arena has continuous trails.
+- [x] Limit autonomous steering, turbo and brake decisions to one every 0.2 seconds. The player has no AI reaction delay.
+- [x] Slow arena turbo acceleration response from 2 to 1.4 per second (about 2.14 seconds to 95% of the requested speed change); retain top speed and brake response. Reduce road turbo acceleration multiplier from 1.6 to 1.3.
+- [x] Validation: all 433 simulation tests passed. Additional continuous-turn/road/breach/trail checks passed after road collision integration. Chrome 154 with SwiftShader verified a real keyboard turn at x=0.37, z=0.0966667 grid units: the emitted trail corner exactly matched the position at keydown; inspected rendered capture and no page errors. This verifies removal of grid waiting, not total input-to-display latency on users' hardware.

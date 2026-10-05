@@ -13,15 +13,32 @@ try{
   window.showModel=index=>{tribute.index=index;tribute.count=0;tribute.phase='body';tribute.nextCharacter=tribute.elapsed;tribute.output.textContent='';tribute.line=null;tribute.typed.style.opacity='1';tribute.update(.1);tribute.preview.update(tribute,.1);};
   return document.fonts.ready;
  });
- const pages=await page.evaluate(()=>modelPages);assert.equal(pages.length,10);
+ const pages=await page.evaluate(()=>modelPages);assert.equal(pages.length,9);
  assert(pages.some(p=>p.model==='bit'));
- assert(pages.some(p=>p.model==='maze'));assert(pages.some(p=>p.model==='shuttle'));
+ assert(pages.some(p=>p.model==='maze'));assert(!pages.some(p=>p.model==='shuttle'));
  for(const entry of pages){
   await page.evaluate(index=>showModel(index),entry.index);
   await page.waitForFunction(model=>tribute.preview.model&&tribute.preview.element.dataset.model===model,entry.model);
   await page.evaluate(()=>{tribute.preview.update(tribute,.7);});
   const metrics=await page.evaluate(()=>({opacity:Number(tribute.preview.element.style.opacity),hidden:tribute.preview.element.hidden,width:tribute.preview.element.getBoundingClientRect().width}));assert.equal(metrics.hidden,false);assert(metrics.width>=260);assert(metrics.opacity>.95);
+  const framing=await page.evaluate(async()=>{
+   const {creditPreviewPoints}=await import('/src/ui/credit-preview-framing.js');const p=tribute.preview;
+   const points=creditPreviewPoints(p.model).map(v=>v.project(p.camera));
+   const bounds=p.element.getBoundingClientRect();let faceColor=null;p.model.traverse(o=>{if(o.material?.name==='Base')faceColor=o.material.color.getHex();});
+   return {extent:Math.max(...points.flatMap(p=>[Math.abs(p.x),Math.abs(p.y)])),right:bounds.right,bottom:bounds.bottom,faceColor};
+  });
+  assert(framing.extent>.82&&framing.extent<.85,'fit visible model within healthy margins');
+  assert(framing.right<=1560&&framing.bottom<=750,'respect page and logo margins');
+  if(entry.model==='recognizer')assert.equal(framing.faceColor,0x05070a);
   await page.screenshot({path:`test-results/credit-model-${entry.model}.png`});
+  if(entry.model==='sailer'){
+   const state=await page.evaluate(()=>{
+    const p=tribute.preview;p.age=16;p.update(tribute,0);
+    let beams=0,sails=0;p.model.traverse(o=>{if(o.name==='Credit transit beam')beams++;if(o.material?.name.startsWith('Translucent sail')&&o.material.opacity===1)sails++;});
+    return {beams,sails};
+   });assert.equal(state.beams,4);assert(state.sails>0);
+   await page.screenshot({path:'test-results/credit-model-sailer-full.png'});
+  }
   await page.evaluate(()=>{tribute.typed.style.opacity='.4';tribute.phase='fade';tribute.preview.update(tribute,0);});assert.equal(await page.evaluate(()=>Number(tribute.preview.element.style.opacity)),.4);
  }
  await page.setViewportSize({width:800,height:700});await page.evaluate(()=>tribute.preview.update(tribute,0));assert(await page.evaluate(()=>tribute.preview.element.hidden&&!tribute.preview.model));
@@ -40,5 +57,5 @@ try{
  await page.keyboard.press('Enter');assert(await page.locator('.credit-model-preview').evaluate(e=>e.hidden));
  assert.deepEqual(errors,[]);
  }
- console.log('Ten credit models rendered; synchronized fade, narrow-window hiding, reset during load and disposal passed.');
+ console.log('Nine credit models rendered; synchronized fade, narrow-window hiding, reset during load and disposal passed.');
 }finally{await browser.close();}

@@ -14,9 +14,12 @@ export class InputController {
     this.clearKeys();
     this.mouseFire = false;
     this.fireQueued = false;
-    this.cycleTurnQueued = 0;
+    this.cycleTurns = [];
     this.cycleReverseQueued = false;
     this.mouseTarget = null;
+  }
+  queueCycleTurn(turn,pendingTurns=0){
+    if(this.cycleTurns.length+pendingTurns<2)this.cycleTurns.push(Math.sign(turn));
   }
   release(key){
     this.keys.delete(key);
@@ -24,7 +27,7 @@ export class InputController {
   }
   consume() {
     this.fireQueued = false;
-    this.cycleTurnQueued = 0;
+    this.cycleTurns.shift();
     this.cycleReverseQueued = false;
     this.mouseTarget = null;
   }
@@ -32,7 +35,7 @@ export class InputController {
     const held = (...keys) => keys.some((key) => this.keys.has(key));
     const road=run.playerVehicle==='cycle'&&run.cycleRace?.cycles[run.cycleRace.playerId]?.escaped;
     return {
-      cycleTurn:this.cycleTurnQueued,
+      cycleTurn:this.cycleTurns[0]??0,
       cycleRoad:road?{cruise:true,speedAdjust:held('KeyS')?-1:Number(held('KeyW')),reverse:this.cycleReverseQueued,turbo:held('KeyT','Space')&&!held('KeyX'),brake:held('KeyX'),steer:Number(held('KeyD','ArrowRight'))-Number(held('KeyA','ArrowLeft'))}:{},
       cycleTurbo:run.playerVehicle==='cycle'&&held('KeyW','KeyT','Space')&&!held('KeyS','KeyX'),
       cycleSlow:run.playerVehicle==='cycle'&&held('KeyS','KeyX'),

@@ -74,22 +74,22 @@ test('cycle turbo accepts partial charge, boosts the player and autonomous cycle
  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';b.turboCharge=.2;
  const start=b.z,other=race.cycles[0].z;
  s.advance({cycleTurbo:true},.25);
- assert(b.speedMultiplier>1.5&&b.speedMultiplier<1.7,'turbo is still building speed after a quarter second');
- assert(start-b.z+b.progress>2&&start-b.z+b.progress<3);assert.equal(other-race.cycles[0].z,2);
+ assert(b.speedMultiplier>1.4&&b.speedMultiplier<1.5,'turbo is still building speed after a quarter second');
+ assert(start-b.z>2&&start-b.z<3);assert(Math.abs(other-race.cycles[0].z-2)<1e-8);
  assert(Math.abs(b.turboCharge-.15)<1e-8);assert.equal(b.boosting,true);
  const before=b.speedMultiplier;s.advance({},.25);assert(b.speedMultiplier>1&&b.speedMultiplier<before);assert.equal(b.boosting,false);assert(b.turboCharge>.15);
 });
 test('empty turbo stays at normal speed while held; release recharges and allows reuse',()=>{
  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';b.turboCharge=.005;
  s.advance({cycleTurbo:true},.2);assert.equal(b.turboCharge,0);assert.equal(b.boosting,false);
- const before=b.z;s.advance({cycleTurbo:true},.25);assert.equal(before-b.z,2);assert.equal(b.turboCharge,0);
+ const before=b.z;s.advance({cycleTurbo:true},.25);assert(before-b.z>=2&&before-b.z<2.1);assert.equal(b.turboCharge,0);
  s.advance({},.2);assert(b.turboCharge>0&&b.turboCharge<1);
  s.advance({cycleTurbo:true},.01);assert.equal(b.boosting,true);
 });
-test('boosted cycle cannot jump through an occupied trail cell',()=>{
+test('boosted cycle cannot jump through an actual trail segment',()=>{
  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';
- const startZ=b.z,width=173;race.occupied[(b.z-2+86)*width+b.x+86]=4;
- s.advance({cycleTurbo:true},.25);assert.equal(b.alive,false);assert.equal(b.z,startZ-1);assert.equal(race.crashes.filter(c=>c.id===1).length,1);
+ const startZ=b.z,width=173;race.occupied[(b.z-2+86)*width+b.x+86]=4;race.trails.push({bikeId:3,team:1,dir:1,x1:b.x-2,z1:b.z-2,x2:b.x+2,z2:b.z-2});
+ s.advance({cycleTurbo:true},.25);assert.equal(b.alive,false);assert(b.z>startZ-2&&b.z<startZ-1.8);assert.equal(race.crashes.filter(c=>c.id===1).length,1);
 });
 test('W/T/Space control cycle turbo, S takes priority, and I/K do not affect speed',async()=>{
  const {InputController}=await import('../src/app/input-controller.js');const input=new InputController();
@@ -237,7 +237,8 @@ test('teammates conserve launch turbo while enemies boost; all brake near blocke
   else {assert(b.boosting);assert(b.turboCharge<1);assert(b.speedMultiplier>1);}
  }
  const b=r.cycles[0],dz=b.dir===0?-1:1;
- r.occupied[(b.z+dz*3+C.halfCells)*(C.halfCells*2+1)+b.x+C.halfCells]=6;
+ r.occupied[(Math.round(b.z)+dz*3+C.halfCells)*(C.halfCells*2+1)+Math.round(b.x)+C.halfCells]=6;
+ b.nextReactionAt=r.elapsed;
  s.advance({},1/120);assert(b.braking);assert(!b.boosting);assert(b.brakeCharge<1);
 });
 
@@ -249,8 +250,20 @@ test('teammates boost to outpace a nearby opponent and conserve charge after pul
  Object.assign(enemy,{x:3,previousX:3,z:-6,previousZ:-6,dir:0});
  s.advance({},1/120);assert(b.boosting);assert(b.turboCharge<1);
  Object.assign(enemy,{z:12,previousZ:12});
- const charge=b.turboCharge;s.advance({},1/120);assert(!b.boosting);assert(b.turboCharge>charge);
+ const charge=b.turboCharge;b.nextReactionAt=r.elapsed;s.advance({},1/120);assert(!b.boosting);assert(b.turboCharge>charge);
  Object.assign(enemy,{z:-6,previousZ:-6,dir:2});
  s.advance({},1/120);assert(!b.boosting,'do not boost into an oncoming opponent');
  enemy.dir=0;enemy.alive=false;s.advance({},1/120);assert(!b.boosting);
 });
+
+ test('rapid cycle turns retain order between simulation steps without a long backlog',async()=>{
+ const {InputController}=await import('../src/app/input-controller.js');const input=new InputController();
+ input.queueCycleTurn(-1);input.queueCycleTurn(1);input.queueCycleTurn(-1);
+ assert.equal(input.command({}).cycleTurn,-1);input.consume();
+ assert.equal(input.command({}).cycleTurn,1);input.consume();
+ assert.equal(input.command({}).cycleTurn,0);
+ input.queueCycleTurn(-1,2);assert.equal(input.command({}).cycleTurn,0);
+ input.queueCycleTurn(1,1);input.queueCycleTurn(-1,1);
+ assert.equal(input.command({}).cycleTurn,1);input.consume();assert.equal(input.command({}).cycleTurn,0);
+ input.queueCycleTurn(-1);input.clear();assert.equal(input.command({}).cycleTurn,0);
+ });

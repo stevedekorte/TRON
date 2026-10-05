@@ -85,9 +85,6 @@ Daniel Preti
   The original large OBJ was removed at the user's request; exported
   models, material file and conversion scripts are retained.
 
-Carrier shuttle
-  Modeled locally for this project from film references.
-
 Maze and level geometry
   Traced/generated locally from supplied blueprints. The blueprint artists were not identified in the supplied
 files; no individual authorship is inferred.
