@@ -1,7 +1,7 @@
 import {CreditModelPreview} from '../ui/credit-model-preview.js';
 import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
-import {CYCLE_OPENING} from '../rendering/camera-rig.js';
+import {CYCLE_OPENING,CYCLE_DEATH_HOLD_SECONDS} from '../rendering/camera-rig.js';
 import { LoadingTimings } from './loading-timings.js';
 import { CYCLE_TESTING } from '../game/light-cycles.js';
 import {CycleTuning} from '../ui/cycle-tuning.js';
@@ -419,7 +419,7 @@ export function createGameApp() {
       return;
     }
     if (
-      ['F9', 'KeyB'].includes(event.code) &&
+      event.code === 'KeyB' && event.shiftKey &&
       !event.metaKey &&
       !event.ctrlKey &&
       !event.altKey &&
@@ -469,7 +469,7 @@ export function createGameApp() {
         return;
       }
       if(['KeyA','ArrowLeft','KeyD','ArrowRight'].includes(key)){
-        event.preventDefault();keys.add(key);if(!event.repeat)inputController.cycleTurnQueued=['KeyA','ArrowLeft'].includes(key)?-1:1;return;
+        event.preventDefault();keys.add(key);if(!event.repeat)inputController.queueCycleTurn(['KeyA','ArrowLeft'].includes(key)?-1:1,run.cycleRace?.pendingTurns.length??0);return;
       }
       if(['KeyP','KeyF','KeyO'].includes(key)){event.preventDefault();return;}
     }
@@ -564,7 +564,6 @@ export function createGameApp() {
     const index=survivors.findIndex(b=>b.id===run.cycleFollowId);
     run.cycleFollowId=survivors.length?survivors[(index<0?(direction<0?survivors.length-1:0):(index+direction+survivors.length)%survivors.length)].id:null;
     if(view.cameraRig.freeCamera.active)view.cameraRig.freeCamera.exit();
-    view.cameraRig.freshCamera=true;
     inputController.clear();
   }
   function syncCycleSpectator() {
@@ -579,7 +578,7 @@ export function createGameApp() {
       if(view.cameraRig.freeCamera.active)view.cameraRig.freeCamera.exit();
     }
     if(run.cycleSpectating){
-      if(run.cycleFollowId!=null&&!run.cycleRace.cycles.some(b=>b.alive&&b.id===run.cycleFollowId))followCycle();
+      if(run.cycleFollowId!=null&&!run.cycleRace.cycles.some(b=>b.alive&&b.id===run.cycleFollowId)&&view.cameraRig.cycleDeathHold?.id===run.cycleFollowId&&view.cameraRig.cycleDeathHold.elapsed>=CYCLE_DEATH_HOLD_SECONDS)followCycle();
       $('free-camera-help').hidden=true;
     }
   }

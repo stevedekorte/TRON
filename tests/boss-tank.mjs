@@ -8,7 +8,7 @@ try{
  await page.goto('http://localhost:5173/');
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled,null,{timeout:120000});
  const roster=await page.evaluate(()=>({tanks:__tron.state.enemyTanks,bosses:__tron.state.enemyTanks.filter(e=>e.boss),visuals:__tron.state.enemyTankVisuals.length}));
- assert.equal(roster.bosses.length,2);assert.equal(roster.bosses[0].health,12);assert.equal(roster.visuals,roster.tanks.length);
+ assert.equal(roster.bosses.length,4);assert.equal(roster.bosses[0].health,12);assert.equal(roster.visuals,roster.tanks.length);
  await page.locator('#start').click();
  await page.waitForFunction(()=>['entering','running'].includes(__tron.state.mode),null,{timeout:60000});
  assert.deepEqual(errors,[]);

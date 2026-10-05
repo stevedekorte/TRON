@@ -39,16 +39,17 @@ test('boss barrel armor follows turret rotation independently of its hull',()=>{
  assert.equal(enemyHitPart(e,{x:10,s:10,y:2}),null);
 });
 
-test('two bosses start on opposite sides of the beam and patrol within the central court',async()=>{
+test('four bosses start around the beam and patrol within the central court',async()=>{
  const {browserScenario}=await import('../src/game/browser-scenario.js');
- const {inBossCourt}=await import('../src/game/boss-tank.js');
+ const {inBossCourt,bossCourtSector}=await import('../src/game/boss-tank.js');
  const {world}=browserScenario({pathname:'/',search:'?layoutSeed=1982'}),court=world.MAZE_INSTANCES.find(m=>m.patrols);
  const run=createRun(1982,world),bosses=run.enemyTanks.filter(e=>e.boss);
- assert.equal(bosses.length,2);assert(bosses[0].x>court.beamPosition.x);assert(bosses[1].x<court.beamPosition.x);
+ assert.equal(bosses.length,4);assert.deepEqual(bosses.map(e=>bossCourtSector(e,court)),[0,1,2,3]);
+ for(const boss of bosses)assert(bosses.every(other=>other===boss||Math.hypot(boss.x-other.x,boss.s-other.s)>30));
  const starts=bosses.map(e=>({...e}));run.enemyTanks=bosses;run.recognizers=[];run.x=run.s=-9000;
  for(let i=0;i<1200;i++){
   run.time=i/60;updateGroundTanks(run,1/60,(e,dx,ds)=>{e.x+=dx;e.s+=ds;},cannonPose);
   for(const e of bosses){assert(inBossCourt(e.goal,court));assert(Math.hypot(e.x-court.beamPosition.x,e.s-court.beamPosition.s)<=231);}
  }
- for(let i=0;i<2;i++)assert(Math.hypot(bosses[i].x-starts[i].x,bosses[i].s-starts[i].s)>20);
+ for(let i=0;i<bosses.length;i++)assert(Math.hypot(bosses[i].x-starts[i].x,bosses[i].s-starts[i].s)>20);
 });

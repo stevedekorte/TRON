@@ -1,4 +1,4 @@
-import {BOSS_TANK,bossMuzzlePoses,inBossCourt} from '../game/boss-tank.js';
+import {BOSS_TANK,bossMuzzlePoses,inBossCourt,bossCourtSector} from '../game/boss-tank.js';
 import {inPatrolRegion} from '../levels/patrol-region.js';
 import {enemyPlanningBudget} from './planning-budget.js';
 import {groundRoute,GroundRoutePlanner} from './ground-routing.js';
@@ -67,7 +67,7 @@ export function createGroundTanks(random=Math.random,world=DEFAULT_WORLD,config=
   const boss=!!m.patrols&&sector>=m.patrols.groundCount;
   const sectorCount=m.patrols?.groundSpawnSectors??m.patrols?.groundCount??1;
   const candidates=patrolCells.filter(p=>p.mazeId===m.id&&(boss?
-   inBossCourt(p,m)&&((p.x>m.beamPosition.x)===(sector-m.patrols.groundCount===0)):
+   inBossCourt(p,m)&&bossCourtSector(p,m)===sector-m.patrols.groundCount:
    inPatrolRegion(p,m,m.patrols?sector%sectorCount:null,sectorCount))&&starts.every(q=>Math.hypot(p.x-q.x,p.s-q.s)>30));
   // Blueprint outlines include enclosed pockets. Free floor alone does not
   // make a valid patrol spawn: the tank must be able to leave its corridor.

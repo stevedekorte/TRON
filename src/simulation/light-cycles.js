@@ -1,3 +1,4 @@
+import {continuousCycle,turnContinuousCycle,advanceContinuousCycles,cycleCollisionTrails,sweepCycleSegment} from './cycle-continuous.js';
 import {damageCycleTrail,expireDamagedTrails} from './cycle-trail-damage.js';
 import {cycleWallContact} from './cycle-wall-contact.js';
 import {trimCycleTrails,rebuildTrailOccupancy} from './cycle-trails.js';
@@ -8,9 +9,9 @@ import { arenaSite } from '../levels/arena.js';
 const raceWorlds=new WeakMap();
 export const attachCycleWorld=(race,world)=>raceWorlds.set(race,world);
 const side=C.halfCells*2+1;
-const cell=(x,z)=>(z+C.halfCells)*side+x+C.halfCells;
+const cell=(x,z)=>(Math.round(z)+C.halfCells)*side+Math.round(x)+C.halfCells;
 const inside=(x,z)=>Math.abs(x)<=C.halfCells&&Math.abs(z)<=C.halfCells;
-const occupant=(r,x,z)=>inside(x,z)?r.occupied[cell(x,z)]:(r.outerOccupied?.[`${x},${z}`]??0);
+const occupant=(r,x,z)=>inside(Math.round(x),Math.round(z))?r.occupied[cell(x,z)]:(r.outerOccupied?.[`${Math.round(x)},${Math.round(z)}`]??0);
 const outsideClear=(r,x,z)=>{
  if(Math.max(Math.abs(x),Math.abs(z))*C.cellMeters<ARENA_WALL.outerMeters)return true;
  const world=raceWorlds.get(r);if(!world)return true;
@@ -41,7 +42,7 @@ export function createCycleRace(world,seed=1982){
   raceWorlds.set(r,world);resetCycleRound(r);return r;
 }
 export function resetCycleRound(r){
-  r.arenaPaused=false;r.attemptResolved=false;r.pendingTurns=[];r.round++;r.phase='countdown';r.remaining=C.countdownSeconds;r.elapsed=0;r.accumulator=0;r.winner=null;
+  r.continuousTrails=false;r.arenaPaused=false;r.attemptResolved=false;r.pendingTurns=[];r.round++;r.phase='countdown';r.remaining=C.countdownSeconds;r.elapsed=0;r.accumulator=0;r.winner=null;
   r.occupied=new Uint8Array(side*side);r.outerOccupied={};r.breaches??=[];r.trails=[];r.crashes=[];
   if((r.startWithBreach??CYCLE_TESTING.startWithBreach)&&r.playerId!==undefined&&!r.breaches.some(b=>b.axis==='z'&&b.sign===-1&&b.along===0))r.breaches.push({axis:'z',sign:-1,along:0,id:r.breaches.length,time:r.time});
   const startRow=Math.floor((ARENA_WALL.innerMeters-C.lengthMeters/2-C.startWallClearanceMeters)/C.cellMeters);
@@ -201,11 +202,12 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
     if(r.remaining<=0){if(r.phase==='result'){if(r.playerId===undefined)resetCycleRound(r);}else {r.phase='racing';startCycleTrails(r);}}
     return;
   }
+  for(const b of r.cycles)if(b.alive&&!b.escaped)continuousCycle(r,b);
+  if(player?.alive&&!player.escaped&&r.pendingTurns.length)turnContinuousCycle(r,player,r.pendingTurns.shift());
   r.elapsed+=dt;r.accumulator+=dt;
   const interval=C.cellMeters/C.speedMetersPerSecond;
   r.accumulator%=interval;
-  // Advance to the next crossing (or charge exhaustion), so a fast player
-  // cannot tunnel through occupied cells and simultaneous arrivals stay fair.
+  // Continuous movement at bounded 120 Hz steps, independent of the AI map grid.
   let remaining=dt;
   while(remaining>1e-9&&r.phase==='racing'){
     const alive=r.cycles.filter(b=>b.alive&&!b.escaped);
@@ -213,10 +215,17 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
     for(const b of alive){
       let wantsTurbo=turbo,wantsBrake=slow;
       if(b.id!==r.playerId){
-        const [dx,dz]=DIR[b.dir];let clear=0;
-        while(clear<C.aiTurboClearCells&&free(r,b.x+dx*(clear+1),b.z+dz*(clear+1)))clear++;
-        wantsBrake=clear<C.aiBrakeClearCells&&(b.braking||b.brakeCharge>=C.aiReserveStartCharge);
-        wantsTurbo=hasTurboReason(r,b)&&clear>=C.aiTurboClearCells&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge);
+        b.nextReactionAt??=0;
+        if(r.elapsed>=b.nextReactionAt){
+          const [dx,dz]=DIR[b.dir];let clear=0;
+          while(clear<C.aiTurboClearCells&&free(r,b.x+dx*(clear+1),b.z+dz*(clear+1)))clear++;
+          b.aiBrake=clear<C.aiBrakeClearCells&&(b.braking||b.brakeCharge>=C.aiReserveStartCharge);
+          b.aiTurbo=hasTurboReason(r,b)&&clear>=C.aiTurboClearCells&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge);
+          const dir=chooseCycleDirection(r,b),delta=(dir-b.dir+4)%4;
+          if(delta===1||delta===3)turnContinuousCycle(r,b,delta===1?1:-1);
+          b.nextReactionAt=r.elapsed+C.aiReactionSeconds;
+        }
+        wantsBrake=!!b.aiBrake;wantsTurbo=!!b.aiTurbo;
       }
       b.brakeCharge??=1;
       b.braking=wantsBrake&&b.brakeCharge>1e-9;
@@ -224,23 +233,21 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
       b.reserveTurboRequested=wantsTurbo;b.reserveBrakeRequested=wantsBrake;
       b.targetSpeedMultiplier=b.braking?C.slowSpeedMultiplier:b.boosting?C.turboSpeedMultiplier:1;
       b.travelRate=(b.speedMultiplier??1)/interval;
-      slice=Math.min(slice,(1-b.progress)/b.travelRate);
+
       if(b.braking)slice=Math.min(slice,b.brakeCharge*C.brakeDurationSeconds);
       if(b.boosting)slice=Math.min(slice,b.turboCharge*C.turboDurationSeconds);
     }
     for(const b of alive){
-      b.progress+=slice*b.travelRate;b.renderTravel+=slice*b.travelRate;
+      b.renderTravel+=slice*b.travelRate;
       if(b.braking){b.brakeCharge=Math.max(0,b.brakeCharge-slice/C.brakeDurationSeconds);if(b.brakeCharge<1e-9)b.brakeCharge=0;}
       else if(!b.reserveBrakeRequested)b.brakeCharge=Math.min(1,b.brakeCharge+slice/C.brakeRechargeSeconds);
-      b.speedMultiplier=(b.speedMultiplier??1)+(b.targetSpeedMultiplier-(b.speedMultiplier??1))*(1-Math.exp(-C.speedResponsePerSecond*slice));
+      b.speedMultiplier=(b.speedMultiplier??1)+(b.targetSpeedMultiplier-(b.speedMultiplier??1))*(1-Math.exp(-(b.targetSpeedMultiplier>(b.speedMultiplier??1)&&b.boosting?C.turboResponsePerSecond:C.speedResponsePerSecond)*slice));
       if(b.boosting){b.turboCharge=Math.max(0,b.turboCharge-slice/C.turboDurationSeconds);if(b.turboCharge<1e-9)b.turboCharge=0;}
       else if(!b.reserveTurboRequested||b.reserveBrakeRequested)b.turboCharge=Math.min(1,b.turboCharge+slice/C.turboRechargeSeconds);
     }
     updateEscapedCycles(r,slice,roadInput);
     remaining-=slice;
-    const moving=alive.filter(b=>b.progress>=1-1e-9);
-    for(const b of moving)b.progress=Math.max(0,b.progress-1);
-    if(moving.length)tickCycleRace(r,(race,bike)=>bike.id===race.playerId?(bike.dir+(race.pendingTurns.shift()||0)+4)%4:chooseCycleDirection(race,bike),moving);
+    advanceContinuousCycles(r,alive,slice,raceWorlds.get(r));
   }
   trimCycleTrails(r);
   for(const b of r.cycles)if(!b.alive||r.phase!=='racing'||b.brakeCharge<=1e-9)b.braking=false;
@@ -267,7 +274,7 @@ function reenterArena(r,b,clear){
  const dir=((Math.round(-heading/(Math.PI/2))%4)+4)%4,[dx,dz]=DIR[dir];
  const start={x:b.x,z:b.z},next={x:Math.round(b.x)+dx,z:Math.round(b.z)+dz};
  const blocked=clear(b,next)!==true;
- b.escaped=false;b.trailStopped=false;b.dir=dir;delete b.yaw;
+ b.escaped=false;b.continuousArena=false;b.trailStopped=false;b.dir=dir;delete b.yaw;
  b.lean=0;b.cornerLean=0;b.steering=0;b.reverseGear=false;b.roadSpeed=0;b.targetRoadSpeed=0;
  b.speedMultiplier=1;b.boosting=false;b.roadEntryCell=null;b.segment=undefined;
  if(b.id===r.playerId){
@@ -299,9 +306,15 @@ function updateEscapedCycles(r,dt,input,playerOnly=false){
    if(arenaWallBlocked(r,x,z)){
     const axis=Math.abs(x)>Math.abs(z)?'x':'z';return {normal:{x:axis==='x'?1:0,z:axis==='z'?1:0}};
    }
-   if(occupied&&!(occupied===b.id+1&&key===b.roadEntryCell)){
+   if(!r.continuousTrails&&occupied&&!(occupied===b.id+1&&key===b.roadEntryCell)){
     const cx=Math.round(x),cz=Math.round(z),dx=b.x-cx,dz=b.z-cz;
     return {normal:Math.abs(dx)>Math.abs(dz)?{x:1,z:0}:{x:0,z:1},trailHit:occupied!==b.id+1?{owner:occupied-1,x:cx,z:cz}:null};
+   }
+  }
+  if(r.continuousTrails){
+   for(const {trail,a,end:tail} of cycleCollisionTrails(r)){
+    const hit=sweepCycleSegment({x:b.x,z:b.z},to,a,tail);
+    if(hit)return {normal:{x:b.x-hit.x,z:b.z-hit.z},trailHit:trail.bikeId!==b.id?{owner:trail.bikeId,x:hit.x,z:hit.z}:null};
    }
   }
   // Sweep against live cycle bodies as well as walls and stored trails.

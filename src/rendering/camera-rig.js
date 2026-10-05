@@ -19,6 +19,8 @@ const AERIAL_CAMERA = Object.freeze({
   height: 600,
   distance: Math.hypot(180, 320),
 });
+const CYCLE_SWITCH_SECONDS=1.2;
+export const CYCLE_DEATH_HOLD_SECONDS=3;
 const GUNNER_TRANSITION_SECONDS = 0.75;
 const IMPACT_SHAKE = Object.freeze({ pitch: 0.012, yaw: 0.009, roll: 0.006 });
 const ENCOUNTER_FRAMING=Object.freeze({fadeOutAerialMix:.08});
@@ -59,6 +61,10 @@ export class CameraRig {
     this.cycleOpening = null;
     this.cycleOverview = null;
     this.cycleAnchor = null;
+    this.cycleFollowedId=undefined;
+    this.cycleDeathHold=null;
+    this.cycleDeathsHeld=new Set();
+    this.cycleSwitch=null;
     this.cycleGlanceInput = 0;
     this.cycleGlance = 0;
     this.cycleTurnLook = 0;
@@ -136,15 +142,41 @@ export class CameraRig {
   update(run, previous, alpha, dt, mode, { x, s, yaw, turretYaw, fragments = [], cycleRace = run.cycleRace }) {
     if (this.freeCamera.active) return { tankVisible: run.playerVehicle!=='cycle' };
     if(run.playerVehicle==='cycle'){
-      if(run.cycleSpectating&&run.cycleFollowId==null)return updateCycleOverview(this,cycleRace,dt);
+      if(run.cycleSpectating){
+        const watchedId=run.cycleFollowId??cycleRace.playerId;
+        const watched=cycleRace.cycles.find(b=>b.id===watchedId);
+        if(this.cycleDeathHold?.id!==watchedId)this.cycleDeathHold=null;
+        if(watched&&!watched.alive&&!this.cycleDeathsHeld.has(watchedId)){
+          this.cycleDeathsHeld.add(watchedId);
+          this.cycleDeathHold={id:watchedId,elapsed:0};
+          this.cycleSwitch=null;
+        }
+        if(this.cycleDeathHold){
+          const hold=this.cycleDeathHold;
+          if(hold.elapsed<CYCLE_DEATH_HOLD_SECONDS){
+            hold.elapsed=Math.min(CYCLE_DEATH_HOLD_SECONDS,hold.elapsed+(mode==='paused'?0:dt));
+            return {tankVisible:false};
+          }
+          // Automatic survivor selection runs in the application on the next
+          // frame. Keep the crash view fixed until that selection happens.
+          if(run.cycleFollowId!=null&&!watched?.alive)return {tankVisible:false};
+        }
+      }
+
+      if(run.cycleSpectating&&run.cycleFollowId==null){this.cycleFollowedId=null;this.cycleSwitch=null;return updateCycleOverview(this,cycleRace,dt);}
       this.cycleOverview=null;
       const previousCamera=this.freshCamera?null:this.camera.position.clone();
       const followedId=run.cycleSpectating&&run.cycleFollowId!=null?run.cycleFollowId:cycleRace.playerId;
       const pose=cyclePlayerPose({...cycleRace,playerId:followedId});
+      if(run.cycleSpectating&&this.cycleFollowedId!==undefined&&this.cycleFollowedId!==followedId){
+        this.cycleSwitch={position:this.camera.position.clone(),look:this.look.clone(),rotation:this.camera.quaternion.clone(),elapsed:0};
+        this.collisionRecovery.active=false;this.freshCamera=false;
+      }
+      this.cycleFollowedId=followedId;
       // Track translation with the same pose used by the cycle mesh. Smoothing
       // absolute positions makes fixed simulation steps bob against the camera,
       // especially at turbo speed. Only ease the orbit/height relative to it.
-      if(this.cycleAnchor&&!this.freshCamera){
+      if(this.cycleAnchor&&!this.freshCamera&&!this.cycleSwitch){
         const moveX=pose.x-this.cycleAnchor.x,moveZ=this.cycleAnchor.s-pose.s;
         this.camera.position.x+=moveX;this.camera.position.z+=moveZ;
         this.look.x+=moveX;this.look.z+=moveZ;
@@ -222,7 +254,16 @@ export class CameraRig {
       if(this.cycleOpening===null&&aerialMix===0&&this.cycleCockpitMix<.01&&cycleWallFollowPosition(cycleWorld,pose,cycleRace,this.desired,cycleAnchor,CAMERA_CLEARANCE.radiusMeters,previousCamera))
         this.lookDesired.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),.5);
       const blend=this.cycleOpening!==null||this.freshCamera?1:1-Math.exp(-dt*CYCLE_CAMERA.responsePerSecond);
-      this.camera.position.lerp(this.desired,blend);this.look.lerp(this.lookDesired,blend);
+      if(this.cycleSwitch){
+        const transition=this.cycleSwitch;
+        transition.elapsed+=mode==='paused'?0:dt;
+        const t=THREE.MathUtils.smootherstep(Math.min(1,transition.elapsed/CYCLE_SWITCH_SECONDS),0,1);
+        this.camera.position.lerpVectors(transition.position,this.desired,t);
+        this.look.lerpVectors(transition.look,this.lookDesired,t);
+        transition.mix=t;
+      }else{
+        this.camera.position.lerp(this.desired,blend);this.look.lerp(this.lookDesired,blend);
+      }
       if(cockpitReturn&&previousCamera&&previousCamera.y<roofClearance){
         // First rise vertically on the current side of the wall, then cross.
         this.camera.position.copy(previousCamera);
@@ -232,13 +273,18 @@ export class CameraRig {
       // the wall. The raised anchor and rider eye are both inside the arena.
       if(this.cycleCockpitMix>.01)this.collisionRecovery.active=false;
       constrainCamera(cycleWorld,cycleAnchor,this.camera.position,previousCamera,CAMERA_CLEARANCE.radiusMeters,this.cycleOpening===null&&aerialMix===0&&!cockpitReturn,this.cycleCockpitMix>.01?null:this.collisionRecovery,dt);
-      const cameraLook=this.look.clone();
+      // Interpolating look-at points can flip the camera when the flight
+      // path passes through one. Blend orientations toward the destination
+      // framing instead, independently of the camera's translation.
+      const cameraLook=this.cycleSwitch
+        ?this.camera.position.clone().add(this.lookDesired.clone().sub(this.desired))
+        :this.look.clone();
       if(this.cycleOpening===null){
         // When a wall shortens the boom, look down toward the bike instead of
         // keeping an eight-meter forward target that loses it below frame.
         const distance=Math.hypot(this.camera.position.x-pose.x,this.camera.position.z+pose.s);
         const close=1-THREE.MathUtils.smoothstep(distance,CYCLE_CAMERA.closeLookNearMeters,CYCLE_CAMERA.closeLookFarMeters);
-        cameraLook.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),close*(1-this.cycleCockpitMix));
+        cameraLook.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),close*(1-this.cycleCockpitMix)*(this.cycleSwitch?0:1));
         // Keep the horizon in the follow view, including after wall avoidance.
         // Apply after wall correction without moving the collision-safe camera.
         const direction=cameraLook.clone().sub(this.camera.position),length=direction.length();
@@ -256,6 +302,11 @@ export class CameraRig {
       }
       this.camera.lookAt(cameraLook);
       this.camera.rotateZ(openingRoll);
+      if(this.cycleSwitch){
+        const transition=this.cycleSwitch,target=this.camera.quaternion.clone();
+        this.camera.quaternion.slerpQuaternions(transition.rotation,target,transition.mix);
+        if(transition.mix===1)this.cycleSwitch=null;
+      }
       this.camera.far=12000;
       this.camera.fov=this.cycleOpening===null?config.fov:THREE.MathUtils.lerp(config.fov,CYCLE_FORMATION_CAMERA.fovDegrees,cycleFormationBlend(this.cycleOpening));
       this.camera.updateProjectionMatrix();this.freshCamera=false;

@@ -22,6 +22,8 @@ try{
  await page.waitForFunction(()=>__tron.state.cycleFollowId===0);
  await page.waitForFunction(()=>document.querySelector('#cycle-controls').textContent.includes('ENTER TO RESTART'));
  assert.equal(await page.locator('#cycle-controls').textContent(),'CYCLE DETROYED - ARROW KEYS TO FOLLOW - ENTER TO RESTART');
+ await page.keyboard.down('KeyK');await page.waitForFunction(()=>__tron.state.followZoom>3);await page.keyboard.up('KeyK');
+ const zoom=await page.evaluate(()=>({follow:__tron.state.followZoom,aerial:__tron.state.aerialZoom}));
  for(const [key,id] of [['ArrowRight',2],['ArrowRight',3],['ArrowLeft',2],['ArrowLeft',0],['ArrowLeft',5],['ArrowRight',0]]){
   await page.keyboard.press(key);await page.waitForFunction(id=>__tron.state.cycleFollowId===id,id);
   await page.waitForTimeout(50);
@@ -30,9 +32,10 @@ try{
   assert.equal(meters.turbo,`scaleX(${b.turboCharge})`);assert.equal(meters.brake,`scaleX(${b.brakeCharge})`);
   assert.equal(meters.boosting,b.boosting);assert.equal(meters.braking,b.braking);
   assert(!s.camera.free);assert.equal(s.cycleRace.playerId,1);
-  assert(Math.hypot(s.camera.x-(s.cycleRace.site.x+b.x*4.8),s.camera.z-(-s.cycleRace.site.s+b.z*4.8))<15);
+  assert.equal(s.followZoom,zoom.follow);assert.equal(s.aerialZoom,zoom.aerial);
  }
  await page.evaluate(()=>{const r=__tron.state.cycleRace;r.cycles[0].alive=false;__tron.place({cycleRace:r});});
+ await page.waitForTimeout(1000);assert.equal(await page.evaluate(()=>__tron.state.cycleFollowId),0,'hold dead survivor before automatic replacement');
  await page.waitForFunction(()=>__tron.state.cycleFollowId===2);
  await page.waitForFunction(()=>document.querySelector('#turbo-fill').style.transform==='scaleX(0.3)'&&document.querySelector('#cycle-brake-fill').style.transform==='scaleX(0.4)');
  await page.screenshot({path:'test-results/cycle-follow-spectator.png'});
@@ -40,5 +43,5 @@ try{
  await page.keyboard.press('Enter');
  await page.waitForFunction(round=>__tron.state.cycleRace.round===round+1&&!__tron.state.cycleSpectating,round);
  assert.deepEqual(errors,[]);
- console.log('Cycle death message, left/right survivor selection, wraparound, target death and restart passed.');
+ console.log('Preserved spectator zoom, cycle death message, left/right survivor selection, wraparound, target death and restart passed.');
 }finally{await browser.close();}

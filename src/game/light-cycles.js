@@ -8,7 +8,8 @@ export const LIGHT_CYCLES = Object.freeze({
   playerAttempts: 3,
   entranceFormationSpacingCells: 1,
   // Reach 95% of a requested speed change in about 1.5 seconds.
-  slowSpeedMultiplier: .5, speedResponsePerSecond: 2, speedStepSeconds: 1 / 120,
+  slowSpeedMultiplier: .5, speedResponsePerSecond: 2, turboResponsePerSecond: 1.4,
+  aiReactionSeconds:.2, speedStepSeconds: 1 / 120,
   turboDurationSeconds: 5, turboRechargeSeconds: 60, turboSpeedMultiplier: 2.5,
   brakeDurationSeconds:5, brakeRechargeSeconds:60,
   aiTurboClearCells:28, aiBrakeClearCells:5, aiReserveStartCharge:.35,
@@ -29,7 +30,7 @@ export function cycleTrailState(age) {
   return {height:1-t,flash:0};
 }
 
-export const cycleFraction = (race, bike) => bike.escaped ? 1 : race.phase === "racing" && bike.alive
+export const cycleFraction = (race, bike) => bike.escaped || bike.continuousArena ? 1 : race.phase === "racing" && bike.alive
   ? (bike.progress ?? race.accumulator / (LIGHT_CYCLES.cellMeters / LIGHT_CYCLES.speedMetersPerSecond)) : 1;
 
 export const CYCLE_JEV = Object.freeze({replanSeconds:4, goalSeconds:6, responseMaxAgeSeconds:2.5, rangeMeters:240, goalCells:40, minGoalCells:8, directionWeight:24});

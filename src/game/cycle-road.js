@@ -8,7 +8,7 @@ export const ROAD_CYCLE=Object.freeze({
  wheelbaseMeters:2.1,steeringRadians:.5,
  lowSpeedVisibleLeanScale:.4,lowSpeedSteeringRadians:.45,lowSpeedSteeringBuildSeconds:.18,
  steeringBlendStartMetersPerSecond:3,steeringBlendEndMetersPerSecond:12,steeringBuildSeconds:.6,steeringSpeedScaleMetersPerSecond:35,steeringReleasePerSecond:5,
- turboAccelerationMultiplier:1.6,turboMaxSpeedMetersPerSecond:80,
+ turboAccelerationMultiplier:1.3,turboMaxSpeedMetersPerSecond:80,
  lateralAccelerationMetersPerSecondSquared:14,maxYawRadiansPerSecond:1.8,
  leanResponsePerSecond:10,maxLeanRadians:Math.PI/3,gravityMetersPerSecondSquared:9.81,
 });

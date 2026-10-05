@@ -18,6 +18,6 @@ export function interpolateCycleRace(race,alpha){
   }
   const yaw=b.yaw===undefined?undefined:(old.yaw??b.yaw)+(b.yaw-(old.yaw??b.yaw))*blend;
   const lean=(old.lean??b.lean??0)+((b.lean??0)-(old.lean??b.lean??0))*blend;
-  return {...b,yaw,lean,x,previousX:x,z,previousZ:z,progress:f-(1-blend)*b.renderTravel};
+  return {...b,yaw,lean,x,previousX:x,z,previousZ:z,progress:b.continuousArena?1:f-(1-blend)*b.renderTravel};
  })};
 }

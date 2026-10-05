@@ -17,7 +17,7 @@ export async function createBossTank(){
  const meshes=[];scene.traverse(o=>{if(o.isMesh)meshes.push(o);});
  const originals=new Set(),textures=new Set();
  const body=new THREE.MeshPhongMaterial({name:'Boss_Body_Black',color:0x070b10,specular:0x7ed9f2,shininess:48,side:THREE.DoubleSide});
- const trim=new THREE.LineBasicMaterial({name:'Boss_Red_Trim',color:0xa32619});
+ const trim=new THREE.LineBasicMaterial({name:'Boss_Red_Trim',color:0x76190f});
  for(const mesh of meshes){
   originals.add(mesh.material);for(const v of Object.values(mesh.material))if(v?.isTexture)textures.add(v);
   const moving=/Mesh_00(02|28|29)_/.test(mesh.name);
