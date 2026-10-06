@@ -222,7 +222,7 @@ export function createGameApp() {
     jev.resetScheduling();
     autoplay.reset();
     loadingTimings.checkpoint('Start requested');
-    run = loadingTimings.sync('New game simulation reset',()=>session.reset(selectedGame==='space'?browserRunSeed(location):undefined));
+    run = loadingTimings.sync('New game simulation reset',()=>session.reset(browserRunSeed(location)));
     run.speed = config.maxSpeed;
     if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({entranceFormation:!testCycleStart,startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
     else startPursuit(run);
