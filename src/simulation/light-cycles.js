@@ -252,12 +252,7 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
   trimCycleTrails(r);
   for(const b of r.cycles)if(!b.alive||r.phase!=='racing'||b.brakeCharge<=1e-9)b.braking=false;
   for(const b of r.cycles)if(!b.alive||r.phase!=='racing'||b.turboCharge<=1e-9)b.boosting=false;
-  if(r.elapsed>=C.roundSeconds&&r.phase==='racing'){
-    const counts=[0,1].map(t=>r.cycles.filter(b=>b.alive&&b.team===t).length);
-    r.winner=counts[0]===counts[1]?null:counts[0]>counts[1]?0:1;
-    if(r.winner!==null)r.scores[r.winner]++;
-    r.phase='result';r.remaining=C.restartSeconds;
-  }
+
 }
 
 export function cyclePlayerPose(r){

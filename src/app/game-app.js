@@ -1,3 +1,4 @@
+import {CLU_DEATH_CAMERA,livingCluKiller} from '../game/clu-death.js';
 import {CreditModelPreview} from '../ui/credit-model-preview.js';
 import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
@@ -97,7 +98,7 @@ export function createGameApp() {
   const openingMessage = $('terminal-text').textContent;
   const cluAccessMessage = 'REQUEST ACCESS TO CLU PROGRAM\nCODE 6 PASSWORD TO MEMORY 0222';
   const accessPrinter = new HumanTerminalPrinter($('terminal-text'),cluAccessMessage);
-  let deathElapsed = 0,
+  let deathElapsed = 0, deathHoldSeconds = DEATH_TERMINAL.holdSeconds,
     outroFade = 0;
   let disposed = false;
   let tuningWasPlaying=false;
@@ -824,11 +825,12 @@ export function createGameApp() {
       return;
     }
     if (!['running', 'entering'].includes(mode)) return;
+    if(deathElapsed===0)deathHoldSeconds=livingCluKiller(run)?CLU_DEATH_CAMERA.holdSeconds:DEATH_TERMINAL.holdSeconds;
     deathElapsed += dt;
-    sound.fadeMusic(deathElapsed / (DEATH_TERMINAL.holdSeconds + DEATH_TERMINAL.fadeSeconds));
+    sound.fadeMusic(deathElapsed / (deathHoldSeconds + DEATH_TERMINAL.fadeSeconds));
     const amount = Math.max(
       0,
-      Math.min(1, (deathElapsed - DEATH_TERMINAL.holdSeconds) / DEATH_TERMINAL.fadeSeconds),
+      Math.min(1, (deathElapsed - deathHoldSeconds) / DEATH_TERMINAL.fadeSeconds),
     );
     fade.hidden = amount === 0;
     fade.style.opacity = String(amount);

@@ -15,7 +15,7 @@ export const LIGHT_CYCLES = Object.freeze({
   aiTurboClearCells:28, aiBrakeClearCells:5, aiReserveStartCharge:.35,
   teammateRaceRangeMeters:120, teammateRaceLaneMeters:24,
   teammateTurboLeadMeters:24, teammateTurboReleaseLeadMeters:40, teammateRaceHeadingDot:.7,
-  countdownSeconds: .3, roundSeconds: 120, restartSeconds: 6,
+  countdownSeconds: .3, restartSeconds: 6,
   lookAheadCells: 45, floodCells: 360,
   colors: [0xffc52e, 0x48baff],
 });

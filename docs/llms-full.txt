@@ -1480,6 +1480,37 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Validation: all 433 simulation tests passed. Additional continuous-turn/road/breach/trail checks passed after road collision integration. Chrome 154 with SwiftShader verified a real keyboard turn at x=0.37, z=0.0966667 grid units: the emitted trail corner exactly matched the position at keydown; inspected rendered capture and no page errors. This verifies removal of grid waiting, not total input-to-display latency on users' hardware.
 
 
+## CLU killer follow shot — October 5
+
+- [x] Record the attacker ID on fatal enemy cannon hits and Recognizer stomps. If that enemy survives, hold the game view for four seconds before the existing terminal fade. Unknown/dead killers and cycle endings keep their previous timing.
+- [x] Ease camera position, orientation and field of view into CLU's normal follow offset around the living killer over two seconds, pointing at the enemy. Follow aircraft altitude; retain wall sweeps and lateral recovery. Pause freezes the shot, reset clears it, and losing the killer holds the last view.
+- [x] Unit validation covers fatal-shot/stomp attribution, missing/dead killers, cycle exclusion, camera easing, moving targets, aircraft altitude, pause/reset and wall-safe motion.
+
+## Remove premature cycle match timeout — October 5
+
+- [x] Remove the legacy two-minute match limit and its survivor-count winner selection. Matches continue while both teams have survivors and resolve only on team elimination. Rendering instance capacity is a separate setting, not a gameplay deadline.
+- [x] Nineteen cycle/race checks passed, including a regression across the former 120-second boundary and at 300/1800 seconds with unequal survivor counts; eliminating the final opponent still awards the round exactly once.
+- [x] Final validation: `npm test` passed all 440 tests and `npm run build` passed. `node tests/clu-killer-view.mjs` passed in headless Chrome on this Mac: the killer remained framed during the four-second hold, the terminal appeared after the existing fade (measured 4.9 seconds), and no page errors occurred. Inspected `test-results/clu-killer-follow.png`. Earlier forced-SwiftShader runs timed out during the typed opening; the normal-renderer run completed.
+
+## Cycle match result orbit — October 5
+
+- [x] Smoothly blend position, rotation and field of view over 2.5 seconds into the closest normal cycle camera distance (10 meters behind, 4 meters high), then continue a slow 0.16 radian/second orbit. Keep the orbit inside arena walls and preserve collision sweeps during the transition.
+- [x] Select the surviving player first, then the followed surviving winner, then another winner. Ties use the last crashed cycle's final position. Display GOLD/BLUE TEAM WINS or TIED MATCH! in the upper middle; Enter restarts using the existing match flow.
+- [x] Unit checks cover target priority, tie selection, smooth position/orientation, orbit distance, pause and reset.
+- [x] Validation: all 442 tests passed before the additional corner-orbit regression, and all three result-camera tests then passed. Production build passed. Headless Chrome on this Mac verified gold, blue and tied banners, a rendered close orbit, and Enter clearing the result on restart, with no page errors; inspected `test-results/cycle-result-0.png`. An initial synthetic crash omitted its coordinates and caused an audio error; the corrected browser fixture passed.
+
+## Darker blue cycle credit preview — October 5
+
+- [x] Give the credit model a deeper blue body and accent color, with preview lighting reduced to 75%. These settings belong to the credits preview adapter.
+- [x] Chrome preview checks passed for all nine models, fades, responsive hiding and disposal; visually inspected the darker cycle capture (`test-results/credit-model-cycle.png`).
+
+## Speed-responsive cycle follow camera — October 5
+
+- [x] Ease the following distance in proportion to actual cycle speed: 10 meters at arena cruise, 7.8 at full turbo and 10.8 at half-speed braking. Bound the distance scale to 0.78–1.16 with a 2.5/second response. Road riding uses actual speed relative to its configured cruise limit; spectators use their followed bike's speed.
+- [x] Retain existing zoom, horizon framing, wall avoidance, launch shots and result orbit. Camera state resets with the rig. Regression checks cover smooth acceleration/braking response, road speeds and spectator selection; the zoom comparison uses equal relative cruise speeds.
+- [x] Final verification: all 445 tests and the production build passed. Chrome measured cruise/turbo/braking camera distances of 10.000/7.800/10.800 meters, with no page errors; inspected the turbo capture. Credit preview and match-result browser checks also passed for this release.
+
+
 ---
 
 <!-- Page: assets -->

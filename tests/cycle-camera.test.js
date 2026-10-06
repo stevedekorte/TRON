@@ -214,7 +214,7 @@ test('Clu exterior zoom starts at the normal camera and reaches the aerial range
 test('cycle follow zoom has matching arena and road framing and returns to normal at minimum',()=>{
  const positions=[];
  for(const escaped of [false,true]){
-  const {bike,run,rig}=setup();bike.previousZ=bike.z;bike.escaped=escaped;bike.roadSpeed=0;
+  const {bike,run,rig}=setup();bike.previousZ=bike.z;bike.escaped=escaped;bike.roadSpeed=55;
   frame(rig,run,1/60);const normal=rig.camera.position.clone();
   rig.followZoom=128;rig.freshCamera=true;frame(rig,run,1/60);
   assert.equal(rig.camera.position.y,2400);positions.push(rig.camera.position.clone());
@@ -327,4 +327,19 @@ test('a followed survivor death holds the displayed camera before selecting anot
  next.alive=false;frame(rig,run,1/60);assert.equal(rig.cycleDeathHold.id,2);
  survivor.alive=true;run.cycleFollowId=1;frame(rig,run,1/60);assert.equal(rig.cycleDeathHold,null);
  rig.reset();assert.equal(rig.cycleDeathsHeld.size,0);
+});
+test('actual cycle speed smoothly shortens turbo follow distance and lengthens braking distance',()=>{
+ const {run,rig,bike}=setup();bike.progress=1;frame(rig,run,1/60);
+ const distance=()=>Math.hypot(rig.camera.position.x-cyclePlayerPose(run.cycleRace).x,rig.camera.position.z+cyclePlayerPose(run.cycleRace).s);
+ assert(Math.abs(distance()-10)<1e-8);
+ bike.speedMultiplier=2.5;frame(rig,run,1/60);assert(distance()<10&&distance()>9.9);
+ for(let i=0;i<360;i++)frame(rig,run,1/60);assert(Math.abs(distance()-7.8)<.001);
+ bike.speedMultiplier=.5;for(let i=0;i<360;i++)frame(rig,run,1/60);assert(Math.abs(distance()-10.8)<.001);
+ rig.reset();assert.equal(rig.cycleSpeedDistanceScale,1);
+});
+test('road speed and spectator target determine the speed camera response',()=>{
+ const {run,rig,bike}=setup();bike.progress=1;bike.alive=false;
+ const target={...bike,id:2,alive:true,escaped:true,roadSpeed:80};run.cycleRace.cycles.push(target);run.cycleSpectating=true;run.cycleFollowId=2;
+ for(let i=0;i<360;i++)frame(rig,run,1/60);assert(rig.cycleSpeedDistanceScale<1);
+ target.roadSpeed=0;for(let i=0;i<360;i++)frame(rig,run,1/60);assert(Math.abs(rig.cycleSpeedDistanceScale-1.16)<.001);
 });
