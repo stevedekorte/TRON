@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {contains,subtractAll,edgeCuts} from './wall-cut-polygons.js';
 import {seededRandom} from '../game/random.js';
-export const MAZE_WALL_DAMAGE=Object.freeze({radiusMeters:1.7,maxRadiusMeters:4.5,depthMeters:1.05,maxDepthMeters:1.8,growthMeters:.45,edgeMarginMeters:.12,maxCavities:96,fragmentsPerHit:7,maxFragments:84,fragmentSeconds:2.8,gravityMetersPerSecondSquared:9.81});
+export const MAZE_WALL_DAMAGE=Object.freeze({radiusMeters:1.7,sizeScaleMin:1,sizeScaleMax:3,maxRadiusMeters:4.5,depthMeters:1.05,maxDepthMeters:1.8,growthMeters:.45,edgeMarginMeters:.12,maxCavities:96,fragmentsPerHit:7,maxFragments:84,fragmentSeconds:2.8,gravityMetersPerSecondSquared:9.81});
 const local=(face,p)=>({x:(p.x-face.a.x)*face.ux+(p.z+face.a.s)*face.uz,y:p.y});
 const world=(face,x,y,depth=0)=>[face.a.x+face.ux*x-face.nx*depth,y,-face.a.s+face.uz*x+face.ns*depth];
 /** Shallow presentation-only cavities: the solid maze collision prisms stay intact. */
@@ -42,10 +42,11 @@ export class MazeWallDamage{
    });
    const bound=Math.max(...cavity.cuts.flatMap(c=>c.shape.map(([x,y])=>Math.hypot(x,y))));
    for(const cut of cavity.cuts)cut.shape=cut.shape.map(([x,y])=>[x/bound,y/bound]);
+   cavity.sizeScale=C.sizeScaleMin+random()*(C.sizeScaleMax-C.sizeScaleMin);
    this.cavities.push(cavity);
   }
-  const limit=Math.min(C.maxRadiusMeters,cavity.x-C.edgeMarginMeters,face.length-cavity.x-C.edgeMarginMeters,cavity.y-C.edgeMarginMeters,face.height-cavity.y-C.edgeMarginMeters,...same.filter(c=>c!==cavity).map(c=>Math.hypot(c.x-cavity.x,c.y-cavity.y)-c.radius-C.edgeMarginMeters));
-  cavity.radius=Math.min(limit,cavity.hits?cavity.radius+C.growthMeters:C.radiusMeters);
+  const limit=Math.min(C.maxRadiusMeters*cavity.sizeScale,cavity.x-C.edgeMarginMeters,face.length-cavity.x-C.edgeMarginMeters,cavity.y-C.edgeMarginMeters,face.height-cavity.y-C.edgeMarginMeters,...same.filter(c=>c!==cavity).map(c=>Math.hypot(c.x-cavity.x,c.y-cavity.y)-c.radius-C.edgeMarginMeters));
+  cavity.radius=Math.min(limit,cavity.hits?cavity.radius+C.growthMeters*cavity.sizeScale:C.radiusMeters*cavity.sizeScale);
   cavity.depth=Math.min(C.maxDepthMeters,cavity.hits?cavity.depth+.18:C.depthMeters,cavity.radius*.7);
   cavity.hits++;this.dirty=true;this.spawnFragments(event,cavity.hits);return true;
  }
