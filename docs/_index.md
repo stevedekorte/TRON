@@ -1565,3 +1565,8 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Four damage tests passed, including raycasts across overlapping cuts verifying the deepest floor is exposed without unintended holes. Chrome real-shot/growth/expiry/reset checks passed. Inspected the close oblique render; production build passed.
 
 - [x] Release verification: all 453 simulation/geometry tests passed before deploying the accumulated wall-damage, turbo-release and recognizer-spread changes.
+
+## Variable wall-damage size — October 6
+
+- [x] Assign each new damage cluster a reproducible uniform 1×–3× footprint scale (2× average), retained for subsequent growth and its maximum radius. Keep the existing depth limit and face-edge/neighbor clearance, which can constrain the footprint near boundaries.
+- [x] Five damage tests passed, including sampled range/mean and stable growth scaling; production build passed. No browser opened.

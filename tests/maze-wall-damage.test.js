@@ -26,7 +26,7 @@ test('floor and vehicle hits are ignored; debris pauses, expires, and reset rest
 test('repeated hits remain bounded and leave intact face borders',()=>{
  const {damage,hit}=fixture();
  for(let i=0;i<100;i++)damage.hit(hit);damage.update(0);
- assert(damage.cavities[0].radius<=C.maxRadiusMeters);assert(damage.cavities[0].depth<=C.maxDepthMeters);assert(damage.fragments.length<=C.maxFragments);
+ assert(damage.cavities[0].radius<=C.maxRadiusMeters*damage.cavities[0].sizeScale);assert(damage.cavities[0].depth<=C.maxDepthMeters);assert(damage.fragments.length<=C.maxFragments);
  assert(!damage.hit({...hit,x:0}));damage.dispose();
 });
 test('overlapping geometric cuts are sealed and reveal the deepest flat recess',()=>{
@@ -45,4 +45,17 @@ test('overlapping geometric cuts are sealed and reveal the deepest flat recess',
   if(covering.length>1)overlaps++;
  }
  assert(recessed>20&&intact>20&&overlaps>10);damage.dispose();
+});
+test('damage size varies from 1x to 3x and stays stable as a cluster grows',()=>{
+ const sizes=[];
+ for(let i=0;i<80;i++){
+  const {damage,hit}=fixture();damage.hit({...hit,x:6+i*.1});
+  const c=damage.cavities[0],scale=c.sizeScale;sizes.push(scale);
+  assert(scale>=1&&scale<=3);
+  assert(Math.abs(c.radius-C.radiusMeters*scale)<1e-8);
+  damage.hit({...hit,x:6+i*.1});assert.equal(c.sizeScale,scale);
+  damage.dispose();
+ }
+ assert(Math.min(...sizes)<1.3&&Math.max(...sizes)>2.7);
+ assert(Math.abs(sizes.reduce((a,b)=>a+b,0)/sizes.length-2)<.2);
 });
