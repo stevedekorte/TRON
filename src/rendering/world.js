@@ -11,7 +11,7 @@ function distantFog(shader,falloff=200){
 }
 export function createWorld(scene,world=DEFAULT_WORLD,arena=null) {
   const {MAZE_INSTANCES,WALLS,WALL_HEIGHT,HALF,FLOOR_HALF,BASIS,wallAt}=world;
-  const positions=[],colors=[],exposed=[],shadowIds=[];let shadowId=0;
+  const positions=[],colors=[],exposed=[],shadowIds=[],damageFaces=[];let shadowId=0;
   function quad(a,b,c,d,tone) {for(const p of [a,b,c,a,c,d]){positions.push(...p);colors.push(...tone);shadowIds.push(shadowId);}}
   for(const w of WALLS) {
     shadowId++;
@@ -23,6 +23,8 @@ export function createWorld(scene,world=DEFAULT_WORLD,arena=null) {
       if(wallAt((a.x+b.x)/2+nx*.1,(a.s+b.s)/2+ns*.1))continue;
       exposed.push({...edge,shadowId});
       const shade=1+nx*.25-ns*.12;
+      const length=Math.hypot(b.x-a.x,b.s-a.s);
+      damageFaces.push({a,b,nx,ns,length,ux:(b.x-a.x)/length,uz:-(b.s-a.s)/length,height:h,start:positions.length/3,shadowId,tone:WALL_FACE_TONE.map(channel=>channel*shade)});
       quad([a.x,0,-a.s],[b.x,0,-b.s],[b.x,h,-b.s],[a.x,h,-a.s],WALL_FACE_TONE.map(channel=>channel*shade));
 
     }
@@ -98,7 +100,7 @@ export function createWorld(scene,world=DEFAULT_WORLD,arena=null) {
       float distantReadability=smoothstep(350.,1600.,distance(cameraPosition.xz,vSlab.xz));
       diffuseColor.rgb+=vec3(.005,.012,.028)*distantReadability;`);
   };
-  const slabs=new THREE.Mesh(geometry,slabMaterial);slabs.userData.shadowPositions=shadowPositions;slabs.userData.shadowIds=casterShadowIds;scene.add(slabs);
+  const slabs=new THREE.Mesh(geometry,slabMaterial);slabs.userData.damageFaces=damageFaces;slabs.userData.shadowPositions=shadowPositions;slabs.userData.shadowIds=casterShadowIds;scene.add(slabs);
   const aerialView={value:0};
   const arenaFootprint={value:new THREE.Vector3(arena?.position.x??0,arena?.position.z??0,arena?466:0)};
   const floorMaterial=new THREE.MeshBasicMaterial({color:0x2b4362});

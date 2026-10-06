@@ -1530,3 +1530,38 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Share the game's cool hemisphere/key/fill lights and ACES exposure with the light-cycle credit shot. Share the bike's roughness, metalness and reduced ambient response so the preview has the same directional highlights and dark shaded surfaces. Retain the requested darker blue preview colors.
 - [x] Other credit models retain their existing lighting and tone mapping; switch the lighting group with the active credit.
 - [x] Production build passed. Chrome rendered all nine credit models and passed fade/resizing/disposal checks; inspected the updated cycle credit capture. The in-game cycle camera/rendering browser check also passed without page errors.
+
+## Shallow maze wall damage — October 5
+
+- [x] Tank bullet impacts cut angular, recessed cavities into upright maze slab faces. Nearby repeated hits enlarge/deepen the same cavity; faceted dark interiors give depth, crossed seam lines are clipped, and a small burst of solid fragments flies outward and falls. Damage lasts for the current game and resets with the view/new game.
+- [x] Keep solid collision and navigation prisms unchanged. Protect wall edges, floor contacts and roofs; cap cavities at 96, simultaneous fragments at 84, and fragment lifetime at 2.8 seconds. This is shallow slab damage, not passable breaches or general destruction of decorative ledges.
+- [x] Reuse immutable wall data and cached caster bins. Only damaged faces need new projected shadow polygons; reset restores the original mesh/shadow resources. On this Mac, a three-hit CPU check measured wall rebuilds at 18.1/5.4/4.6 ms and shadow updates at 10.8/3.2/3.1 ms (before optimization, full shadow rebuilds were about 98 ms). These are local CPU measurements, not a hardware-wide performance guarantee.
+- [x] All 451 tests passed, including recessed geometry, repeated impacts, edge/debris bounds, pause, expiry and reset. Chrome verified real Space-key shots growing one cavity, fragment expiry and new-game cleanup; inspected impact and settled captures. Existing maze-shadow browser checks passed, including unchanged overlapping-shadow coverage. JEV 503 responses are deliberately stubbed in the browser fixture and excluded from renderer errors.
+- [x] Production build passed.
+
+## Blockier wall damage and releasable CLU turbo — October 6
+
+- [x] Replace radial crater outlines with uneven rectangular breaks and individually chipped corners. Offset and vary the recessed back face; eject block-shaped fragments.
+- [x] Releasing the last held forward key (W or Up) stops CLU's active turbo, returns unused charge to the reserve, and uses the existing smooth deceleration to the normal speed limit. Cruise-throttle selection remains intact.
+- [x] Targeted damage/turbo simulation checks passed, including charge preservation and smooth return to cruise.
+- [x] All 452 tests and the production build passed. Chrome verified repeated real shots, the blockier rendered recess, fragment expiry/reset, and W release cancelling turbo with reserve remaining; inspected the updated settled capture.
+
+## Slightly tighter recognizer auto aim — October 6
+
+- [x] Reduce CLU's recognizer auto-aim spread by 20% on both axes (maximum yaw ±1.92°, pitch ±0.96°). Keep tank-target horizontal spread and exact manual aiming unchanged.
+
+- [x] All 31 cannon/gunner tests and the production build passed.
+
+## Jagged hallway-wall fractures — October 6
+
+- [x] Follow the user's oblique hallway reference with staggered angular ledges and concave notches. Vary recessed vertex depths, darken the back faces, and brighten exposed fracture shelves. Initial depth is 1.05 m, bounded by cavity radius and the existing maximum.
+- [x] Triangulate concave back faces and clip decorative seams at every polygon crossing. Preserve solid gameplay collision and bounded, resettable damage resources.
+- [x] Four geometry/lifecycle tests passed, including a raycast sweep checking that concave breaks remain sealed. Chrome verified real shots, growth, debris expiry/reset and turbo release; inspected the game capture and a close oblique geometry render. Production build passed.
+
+## Geometric prism wall cuts — October 6
+
+- [x] Refine damage from the second supplied film reference: overlapping rotated squares and elongated hexagons cut straight into the wall, with independently chosen flat depths. Replace the continuous stepped/tapered outline with three bounded convex prism cuts per impact cluster.
+- [x] Subtract deeper cuts from shallower floors and expose only surviving side-wall intervals. Skip disjoint polygon subdivisions; preserve radius/depth limits, collision, shadow refresh, seam clipping and reset lifecycle.
+- [x] Four damage tests passed, including raycasts across overlapping cuts verifying the deepest floor is exposed without unintended holes. Chrome real-shot/growth/expiry/reset checks passed. Inspected the close oblique render; production build passed.
+
+- [x] Release verification: all 453 simulation/geometry tests passed before deploying the accumulated wall-damage, turbo-release and recognizer-spread changes.

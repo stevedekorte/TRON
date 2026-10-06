@@ -34,7 +34,7 @@ import { Terminal, TerminalTribute, TerminalPrinter, HumanTerminalPrinter } from
 import { View } from '../rendering/view.js';
 import { Sound } from '../audio/sound.js';
 import { FLIGHT, FLIGHT_DEFAULTS } from '../simulation/flight.js';
-import { startPursuit, boostTank } from '../simulation/run.js';
+import { startPursuit, boostTank, stopTankTurbo } from '../simulation/run.js';
 import { config, defaults, GUNNER, AERIAL_ZOOM, FOLLOW_ZOOM } from '../game/config.js';
 
 export function createGameApp() {
@@ -633,6 +633,7 @@ export function createGameApp() {
   listen(window, 'keyup', (e) => {
     idleTime = 0;
     inputController.release(e.code);
+    if(run.playerVehicle!=='cycle'&&['KeyW','ArrowUp'].includes(e.code)&&!keys.has('KeyW')&&!keys.has('ArrowUp'))stopTankTurbo(run);
   });
   listen($('game'), 'pointerdown', (e) => {
     idleTime = 0;
