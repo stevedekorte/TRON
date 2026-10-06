@@ -84,6 +84,8 @@ export class HudPresenter {
     const result=cycleMode&&race.phase==='result';
     const resultText=$('cycle-result');
     resultText.hidden=!result;
+    resultText.classList.toggle('gold-winner',result&&race.winner===0);
+    resultText.classList.toggle('blue-winner',result&&race.winner===1);
     resultText.textContent=result?(race.winner==null?'TIED MATCH!':`${race.winner===0?'GOLD':'BLUE'} TEAM WINS`):'';
     const dead=cycleMode&&!race.cycles[race.playerId].alive;
     cycleControls.hidden=!run.arenaWaiting&&(!dead||result);
