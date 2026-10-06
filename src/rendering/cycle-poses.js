@@ -1,4 +1,4 @@
-import {cycleFraction} from '../game/light-cycles.js';
+import {LIGHT_CYCLES,cycleFraction} from '../game/light-cycles.js';
 /** One fixed step of visual interpolation, shared by bikes, trails and camera.
  * Collision state remains untouched; deaths/results display their impact pose. */
 export function interpolateCycleRace(race,alpha){
@@ -18,6 +18,9 @@ export function interpolateCycleRace(race,alpha){
   }
   const yaw=b.yaw===undefined?undefined:(old.yaw??b.yaw)+(b.yaw-(old.yaw??b.yaw))*blend;
   const lean=(old.lean??b.lean??0)+((b.lean??0)-(old.lean??b.lean??0))*blend;
-  return {...b,yaw,lean,x,previousX:x,z,previousZ:z,progress:b.continuousArena?1:f-(1-blend)*b.renderTravel};
+  // Continuous trail endpoints are at the latest simulation pose; bikes are
+  // interpolated one step behind it. Carry that exact visible lag to the wall.
+  const renderTrailLagMeters=b.continuousArena&&!b.escaped?(Math.abs(b.x-x)+Math.abs(b.z-z))*LIGHT_CYCLES.cellMeters:0;
+  return {...b,yaw,lean,x,previousX:x,z,previousZ:z,renderTrailLagMeters,progress:b.continuousArena?1:f-(1-blend)*b.renderTravel};
  })};
 }

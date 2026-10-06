@@ -79,7 +79,7 @@ export class LightCycleWalls {
       const bikeLife=cycleTrailState(bike.alive||!crash?-1:r.time-crash.time);
       if(bikeLife.height<=0)continue;
       const offsets=[];let totalPath=bike.expiredTrailMeters??0;for(const t of segments){offsets.push(totalPath);totalPath+=Math.hypot(t.x2-t.x1,t.z2-t.z1)*C.cellMeters;}
-      let trim=cycleTrailHeadTrim(r,bike,r.phase==='racing'?(bike.progress??fraction):fraction);
+      let trim=cycleTrailHeadTrim(r,bike,r.phase==='racing'?(bike.progress??fraction):fraction)+(bike.renderTrailLagMeters??0);
       let behind=bike.alive&&!bike.escaped?0:1e6;
       for(let i=segments.length-1;i>=0;i--){
         const t=segments[i];

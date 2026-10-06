@@ -1496,3 +1496,9 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Ease the following distance in proportion to actual cycle speed: 10 meters at arena cruise, 7.8 at full turbo and 10.8 at half-speed braking. Bound the distance scale to 0.78–1.16 with a 2.5/second response. Road riding uses actual speed relative to its configured cruise limit; spectators use their followed bike's speed.
 - [x] Retain existing zoom, horizon framing, wall avoidance, launch shots and result orbit. Camera state resets with the rig. Regression checks cover smooth acceleration/braking response, road speeds and spectator selection; the zoom comparison uses equal relative cruise speeds.
 - [x] Final verification: all 445 tests and the production build passed. Chrome measured cruise/turbo/braking camera distances of 10.000/7.800/10.800 meters, with no page errors; inspected the turbo capture. Credit preview and match-result browser checks also passed for this release.
+
+## Stable light-wall connection — October 5
+
+- [x] Fix the curved wall end jitter introduced by continuous arena motion: the bike was interpolated between simulation steps while the emitter used the latest un-interpolated trail endpoint. Carry the visible bike's path lag into presentation-only head trimming, keeping the curved boundary fixed at the rear axle without modifying collision trails.
+- [x] Regression checks cover all four headings, braking/cruise/turbo step distances, irregular render fractions and unchanged simulation state. The browser curve fixture also checks rear-axle alignment through interpolated turbo frames.
+- [x] All 446 tests and the production build passed. Chrome's rendered curve check passed with no browser errors; inspected `test-results/cycle-wall-curve.png` and verified fixed rear-axle alignment.
