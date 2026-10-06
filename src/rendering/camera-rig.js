@@ -1,3 +1,7 @@
+import {LIGHT_CYCLES} from '../game/light-cycles.js';
+import {ROAD_CYCLE} from '../game/cycle-road.js';
+import {CycleResultCamera} from './cycle-result-camera.js';
+import {CluDeathCamera} from './clu-death-camera.js';
 import {ARENA_WALL} from '../game/arena-breaches.js';
 import {updateCycleOverview} from './cycle-overview.js';
 import {cyclePlayerPose} from '../simulation/light-cycles.js';
@@ -19,6 +23,7 @@ const AERIAL_CAMERA = Object.freeze({
   height: 600,
   distance: Math.hypot(180, 320),
 });
+export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,minDistanceScale:.78,maxDistanceScale:1.16,responsePerSecond:2.5});
 const CYCLE_SWITCH_SECONDS=1.2;
 export const CYCLE_DEATH_HOLD_SECONDS=3;
 const GUNNER_TRANSITION_SECONDS = 0.75;
@@ -35,6 +40,8 @@ export class CameraRig {
     this.aerialZoom = 1;
     this.aerialBlend = 0;
     this.beamCamera = new BeamCamera();
+    this.deathCamera = new CluDeathCamera();
+    this.cycleResultCamera = new CycleResultCamera();
     this.followPosition = new THREE.Vector3();
     this.look = new THREE.Vector3();
     this.desired = new THREE.Vector3();
@@ -45,6 +52,8 @@ export class CameraRig {
   reset() {
     if (this.freeCamera.active) this.freeCamera.exit();
     this.beamCamera.reset();
+    this.deathCamera.reset();
+    this.cycleResultCamera.reset();
     this.beamCinematic = null;
     this.zoomTransition = null;
     this.zoomFov = undefined;
@@ -61,6 +70,7 @@ export class CameraRig {
     this.cycleOpening = null;
     this.cycleOverview = null;
     this.cycleAnchor = null;
+    this.cycleSpeedDistanceScale=1;
     this.cycleFollowedId=undefined;
     this.cycleDeathHold=null;
     this.cycleDeathsHeld=new Set();
@@ -141,6 +151,8 @@ export class CameraRig {
   }
   update(run, previous, alpha, dt, mode, { x, s, yaw, turretYaw, fragments = [], cycleRace = run.cycleRace }) {
     if (this.freeCamera.active) return { tankVisible: run.playerVehicle!=='cycle' };
+    if(this.deathCamera.update(this,run,dt,mode))return {tankVisible:false};
+    if(this.cycleResultCamera.update(this,run,cycleRace,dt,mode))return {tankVisible:false};
     if(run.playerVehicle==='cycle'){
       if(run.cycleSpectating){
         const watchedId=run.cycleFollowId??cycleRace.playerId;
@@ -183,6 +195,12 @@ export class CameraRig {
       }
       this.cycleAnchor=pose;
       const bike=cycleRace.cycles.find(b=>b.id===followedId),escaped=bike?.escaped;
+      // Use actual speed, not pedal state, so the camera follows acceleration and braking.
+      const cruiseSpeed=escaped?(cycleRace.roadConfig?.maxSpeedMetersPerSecond??ROAD_CYCLE.maxSpeedMetersPerSecond):LIGHT_CYCLES.speedMetersPerSecond;
+      const speed=escaped?Math.abs(bike.roadSpeed??cruiseSpeed):(bike.speedMultiplier??1)*cruiseSpeed;
+      const speedScale=THREE.MathUtils.clamp(1+(1-speed/cruiseSpeed)*CYCLE_SPEED_CAMERA.distanceChangePerSpeedRatio,CYCLE_SPEED_CAMERA.minDistanceScale,CYCLE_SPEED_CAMERA.maxDistanceScale);
+      if(mode!=='paused')this.cycleSpeedDistanceScale=THREE.MathUtils.lerp(this.cycleSpeedDistanceScale,speedScale,1-Math.exp(-dt*CYCLE_SPEED_CAMERA.responsePerSecond));
+      const followDistance=CYCLE_CAMERA.distanceMeters*this.cycleSpeedDistanceScale;
       const glanceTarget=-(this.cycleGlanceInput||0)*CYCLE_CAMERA.glanceRadians;
       const glanceResponse=escaped?CYCLE_CAMERA.roadGlanceResponsePerSecond:CYCLE_CAMERA.glanceResponsePerSecond;
       this.cycleGlance+=(glanceTarget-this.cycleGlance)*(1-Math.exp(-dt*glanceResponse));
@@ -193,7 +211,7 @@ export class CameraRig {
       this.cycleTurnLook+=(turnTarget-this.cycleTurnLook)*(1-Math.exp(-dt*CYCLE_CAMERA.turnLookResponsePerSecond));
       const lookYaw=pose.yaw+this.cycleTurnLook*(1-glanceMix);
       const orbitYaw=lookYaw+this.cycleGlance;
-      this.desired.set(pose.x+Math.sin(orbitYaw)*CYCLE_CAMERA.distanceMeters,CYCLE_CAMERA.heightMeters,-pose.s+Math.cos(orbitYaw)*CYCLE_CAMERA.distanceMeters);
+      this.desired.set(pose.x+Math.sin(orbitYaw)*followDistance,CYCLE_CAMERA.heightMeters,-pose.s+Math.cos(orbitYaw)*followDistance);
       this.lookDesired.set(pose.x-Math.sin(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix),CYCLE_CAMERA.lookHeightMeters,-pose.s-Math.cos(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix));
       const modeAerialMix=this.frame?.aerialMix??(this.aerial?1:0);
       const {mix:aerialMix,scale:aerialScale}=this.cluAerialFraming(modeAerialMix);

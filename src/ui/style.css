@@ -118,3 +118,6 @@ body.cycle-loading::after{content:'';position:fixed;inset:0;z-index:20;backgroun
 
 #hint[hidden]{display:none}
 #controls-prompt{position:fixed;top:24px;left:0;right:0;text-align:center;color:#91bcd0;pointer-events:none}
+
+#cycle-result{position:fixed;top:20%;left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);letter-spacing:.08em;pointer-events:none;z-index:5}
+body.terminal #cycle-result{display:none}

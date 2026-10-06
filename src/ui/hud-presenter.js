@@ -81,12 +81,16 @@ export class HudPresenter {
     }
     document.body.classList.toggle('playing-cycle',cycleMode);
     const cycleControls=$('cycle-controls');
+    const result=cycleMode&&race.phase==='result';
+    const resultText=$('cycle-result');
+    resultText.hidden=!result;
+    resultText.textContent=result?(race.winner==null?'TIED MATCH!':`${race.winner===0?'GOLD':'BLUE'} TEAM WINS`):'';
     const dead=cycleMode&&!race.cycles[race.playerId].alive;
-    cycleControls.hidden=!run.arenaWaiting&&!dead&&!(cycleMode&&race.phase==='result');
+    cycleControls.hidden=!run.arenaWaiting&&(!dead||result);
     cycleControls.textContent=run.arenaWaiting?'LOADING CYCLE ARENA...':dead?'CYCLE DETROYED - ARROW KEYS TO FOLLOW - ENTER TO RESTART':'MATCH COMPLETE · RETURN / NEW MATCH';
     const promptKey=cycleMode?`cycle:${race.round}`:'clu';
     if(this.promptRun!==run||this.promptKey!==promptKey){this.promptRun=run;this.promptKey=promptKey;this.promptSeconds=0;}
-    const playing=mode==='running'&&!run.arenaWaiting&&!dead&&!run.crushed&&rig.cycleOpening===null;
+    const playing=mode==='running'&&!run.arenaWaiting&&!dead&&!run.crushed&&!result&&rig.cycleOpening===null;
     if(playing)this.promptSeconds+=dt;
     $('controls-prompt').hidden=!playing||this.promptSeconds>=5;
     $('gunner-sight').hidden =
@@ -137,7 +141,7 @@ export class HudPresenter {
     this.jevWasUnavailable=unavailable;
     this.warnings.set('jev',unavailable&&now<this.jevNoticeUntil
       ?{level:'warning',label:'JEV unavailable',detail:'',transient:true}:null);
-    const watchedCycleId=run.cycleSpectating?(run.cycleFollowId??view.cameraRig.cycleOverview?.trackedId??race?.playerId):race?.playerId;
+    const watchedCycleId=result?rig.cycleResultCamera.shot?.id:run.cycleSpectating?(run.cycleFollowId??view.cameraRig.cycleOverview?.trackedId??race?.playerId):race?.playerId;
     const cycleBike=cycleMode?(race.cycles.find(b=>b.id===watchedCycleId)??race.cycles[race.playerId]):null;
     const roadHealthBike=cycleBike?.escaped?cycleBike:null;
     document.body.classList.toggle('cycle-road',!!roadHealthBike);

@@ -123,3 +123,12 @@ test('CLU opening zoom moves during the terminal fade instead of holding its fir
  rig.opening=.05;rig.begin(run,1/60,'entering');rig.update(run,run,1,1/60,'entering',run);
  assert(rig.camera.position.y<initial-1,'zoom must already descend early in the fade');
 });
+
+test('killer follow transition sweeps around maze walls without crossing their faces',()=>{
+ const rig=new CameraRig(world);rig.camera.position.set(0,8,0);rig.camera.lookAt(0,2,-10);
+ const run={crushed:true,killedBy:100,enemyTanks:[{id:100,kind:'ground',health:3,state:'patrol',x:35,s:0,yaw:0,turretYaw:0}],recognizers:[]};
+ for(let i=0;i<240;i++){
+  const previous=rig.camera.position.clone();rig.deathCamera.update(rig,run,1/60,'running');clear(previous,rig.camera.position);clear(rig.camera.position);
+ }
+ assert(rig.camera.position.x>10,'reach the killer side of the wall');
+});

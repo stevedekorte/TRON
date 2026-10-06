@@ -3,13 +3,14 @@ import { LIGHT_CYCLES as C, cycleTrailState } from '../game/light-cycles.js';
 import {cycleTrailHeadTrim} from '../game/cycle-trails.js';
 export const CYCLE_WALL_STYLE=Object.freeze({
   colors:[0xde8308,0x167dd8], thicknessMeters:.18,
+  instancesPerTeam:5820,
   flareLengthMeters:10, flareColor:0xfff6dc,
   stripeSpacingMeters:12, stripeHalfWidthMeters:.035, edgeWidthMeters:.025,
   connectionLengthMeters:1.2, connectionCurveSegments:16, connectionHeightSegments:48,
   rearAxleBehindMeters:C.lengthMeters*.347, wheelCenterHeightMeters:.642,
   wheelRadiusMeters:.565, wheelClearanceMeters:.025, floorHeightMeters:.021,
 });
-const CAPACITY=Math.ceil(C.roundSeconds*C.speedMetersPerSecond/C.cellMeters)*6+60;
+const CAPACITY=CYCLE_WALL_STYLE.instancesPerTeam;
 /** Opaque trail sheets. Each instance carries its distance along the path from the bike's tail. */
 export class LightCycleWalls {
   constructor(root){

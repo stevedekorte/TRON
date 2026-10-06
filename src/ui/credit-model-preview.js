@@ -11,7 +11,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createTank} from '../rendering/models.js';
 import {disposeSceneResources} from '../rendering/scene-resources.js';
 
-const PREVIEW={gapPixels:40,minWidthPixels:260,edgeMarginPixels:40,bottomClearanceFraction:.25,fadeSeconds:.8,carrierLightingScale:.15,sailerStateTimeScale:3};
+const PREVIEW={gapPixels:40,minWidthPixels:260,edgeMarginPixels:40,bottomClearanceFraction:.25,fadeSeconds:.8,carrierLightingScale:.15,cycleLightingScale:.75,cycleBodyBlue:0x164b8a,cycleAccentBlue:0x2359b0,sailerStateTimeScale:3};
 const models=[
  ['CONTROLLINGTRANSMISSION','bit',null],
  ['LOCAL MAZE AND LEVEL WORK','maze',null],
@@ -51,6 +51,12 @@ export class CreditModelPreview{
    if(entry[1]==='cycle'){
     root.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();}});
     repairCycleHubs(root);
+    root.traverse(o=>{
+     for(const material of o.material?[].concat(o.material):[]){
+      if(material.name==='_6')material.color.setHex(PREVIEW.cycleBodyBlue);
+      if(material.name==='Color_I03')material.color.setHex(PREVIEW.cycleAccentBlue);
+     }
+    });
    }
    root.traverse(o=>{if((o.userData.breakupExclude&&!o.userData.bossTrim)||o.name==='muzzle-flash')o.visible=false;});
    if(entry[1]==='recognizer')root.traverse(o=>{
@@ -81,7 +87,7 @@ export class CreditModelPreview{
   this.element.style.opacity=String(opacity);
   if(!this.model)return;
   if(this.key==='sailer')applySolarSailerState(this.sailerMaterials,solarSailerTransit(this.age*PREVIEW.sailerStateTimeScale).charge);
-  this.scene.children.forEach(o=>{if(o.isLight)o.intensity=o.userData.previewIntensity*(this.key==='carrier'?PREVIEW.carrierLightingScale:1);});
+  this.scene.children.forEach(o=>{if(o.isLight)o.intensity=o.userData.previewIntensity*(this.key==='carrier'?PREVIEW.carrierLightingScale:this.key==='cycle'?PREVIEW.cycleLightingScale:1);});
   this.model.rotation.y=-.45; // Stable three-quarter inspection view, without distracting motion.
   if(this.framedModel!==this.model||this.width!==width||this.height!==height){fitCreditPreview(this.camera,this.model,width/height,this.key==='maze');this.framedModel=this.model;}
   if(this.width!==width||this.height!==height){this.renderer.setSize(width,height);this.width=width;this.height=height;}

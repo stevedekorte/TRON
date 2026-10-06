@@ -54,3 +54,11 @@ test('full and fractional own trails remain collidable after corners',()=>{
  updateCycleRace(r,.25);updateCycleRace(r,.25,1);updateCycleRace(r,.25,1);updateCycleRace(r,.25,1);
  assert(!b.alive);assert.equal(r.crashes.filter(c=>c.id===0).length,1);
 });
+
+ test('match has no time limit while either team has a survivor',()=>{
+ for(const elapsed of [119.99,120,300,1800]){
+  const r=fixture();r.elapsed=elapsed;r.cycles[2].alive=false;r.cycles[4].alive=false;r.cycles[5].alive=false;
+  updateCycleRace(r,1/60);assert.equal(r.phase,'racing');assert.equal(r.winner,null);assert.deepEqual(r.scores,[0,0]);
+  r.cycles[3].alive=false;updateCycleRace(r,1/60);assert.equal(r.phase,'result');assert.equal(r.winner,0);assert.deepEqual(r.scores,[1,0]);
+ }
+ });
