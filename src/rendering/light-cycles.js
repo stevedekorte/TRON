@@ -4,7 +4,7 @@ import {CycleTireTraces} from './cycle-tire-traces.js';
 import {materializationDuration,materializationPhase} from '../game/materialization.js';
 import { CycleExplosions } from './cycle-explosions.js';
 import { RecognizerShadows } from './recognizer-shadows.js';
-import { repairCycleSurface, repairCycleHubs } from './cycle-surface.js';
+import { repairCycleSurface, repairCycleHubs, removeCycleInscriptions } from './cycle-surface.js';
 import { LightCycleWalls } from './light-cycle-walls.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -15,6 +15,7 @@ export const CYCLE_MODEL_STYLE=Object.freeze({blueBody:0x086ac4,blueTrim:0x084b9
 export async function loadLightCycles(){
   return Promise.all([goldUrl,blueUrl].map(async(url,team)=>{
     const {scene}=await new GLTFLoader().loadAsync(url);
+    removeCycleInscriptions(scene);
     const bounds=new THREE.Box3().setFromObject(scene);
     scene.scale.setScalar(C.lengthMeters/(bounds.max.z-bounds.min.z));
     scene.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();o.material.roughness=.4;o.material.metalness=.15;

@@ -1516,6 +1516,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Regression checks cover all four headings, braking/cruise/turbo step distances, irregular render fractions and unchanged simulation state. The browser curve fixture also checks rear-axle alignment through interpolated turbo frames.
 - [x] All 446 tests and the production build passed. Chrome's rendered curve check passed with no browser errors; inspected `test-results/cycle-wall-curve.png` and verified fixed rear-axle alignment.
 
+## Remove embedded cycle lettering — October 5
+
+- [x] Remove the 29 separately named signature/date meshes from each loaded gold and blue bike before sizing and surface repair. Apply the same filter to the credits preview. Keep source GLBs and author attribution intact.
+- [x] Production build, Chrome curve preview and all nine credit-preview checks passed. Inspected the cleaned bike capture; no browser errors reported.
+
 
 ---
 
@@ -2938,6 +2943,10 @@ The four Daniel Preti signature/date inscriptions are preserved in `preti_arena_
 ## Double-turret boss tank
 
 User-supplied `extra/double_turret_clu_light_tank.glb`: **Double turret Clu Light Tank** by **SpringSociety**, [Sketchfab source](https://sketchfab.com/3d-models/double-turret-clu-light-tank-83df27ea6c08441a809bb5376301d430), **CC BY 4.0**, from embedded metadata. Original GLB remains unchanged. Runtime adapter uniformly normalizes hull width to 6.5 m, turns forward to -Z, grounds the hull, replaces materials with dark blue-black armor and non-emissive red contour lines, articulates the twin-gun upper assembly, and adds paired muzzle flashes and projected shadows. Both projectile origins are measured from barrel-tip geometry. Four bosses patrol the central beam courtyard alongside the large-maze patrols; 12 health versus 3, with 3 damage per Clu shot, and 80% normal movement speed.
+
+### Cycle inscription cleanup — October 5
+
+The game and credits adapters omit the separate `DANIEL_PRETI` / `daniel_preti` signature/date meshes (29 per bike) from loaded light cycles. Original source GLBs, metadata and extended-credit attribution remain intact; no chassis or wheel meshes are filtered.
 
 
 ---

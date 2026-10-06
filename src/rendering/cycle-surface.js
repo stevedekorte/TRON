@@ -73,3 +73,12 @@ export function repairCycleHubs(scene) {
     mesh.position.set(h.x,h.y,h.z);mesh.scale.set(h.rx,h.r,h.r);scene.add(mesh);
   }
 }
+
+/** Omit the source's separate extruded signature/date lettering from the bike.
+ * Attribution remains in the credits and source asset metadata. */
+export function removeCycleInscriptions(scene){
+ const inscriptions=[];
+ scene.traverse(o=>{if(o.isMesh&&/daniel_preti/i.test(o.name))inscriptions.push(o);});
+ for(const mesh of inscriptions){mesh.removeFromParent();mesh.geometry.dispose();}
+ return inscriptions.length;
+}
