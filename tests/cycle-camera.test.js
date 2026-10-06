@@ -343,3 +343,22 @@ test('road speed and spectator target determine the speed camera response',()=>{
  for(let i=0;i<360;i++)frame(rig,run,1/60);assert(rig.cycleSpeedDistanceScale<1);
  target.roadSpeed=0;for(let i=0;i<360;i++)frame(rig,run,1/60);assert(Math.abs(rig.cycleSpeedDistanceScale-1.16)<.001);
 });
+test('curved trail connection stays fixed at the rear axle across render fractions and speeds',async()=>{
+ const {Group,Matrix4}=await import('three');
+ const {interpolateCycleRace}=await import('../src/rendering/cycle-poses.js');
+ const {LightCycleWalls,CYCLE_WALL_STYLE}=await import('../src/rendering/light-cycle-walls.js');
+ const root=new Group(),walls=new LightCycleWalls(root),matrix=new Matrix4();
+ for(const [dir,dx,dz] of [[0,0,-1],[1,1,0],[2,0,1],[3,-1,0]])for(const travel of [.03,.0666667,.1666667]){
+  const b={id:0,team:0,alive:true,continuousArena:true,segment:0,dir,x:dx*20,z:dz*20,previousX:dx*(20-travel),previousZ:dz*(20-travel),progress:1,renderTravel:travel,renderPrevious:{x:dx*(20-travel),z:dz*(20-travel),dir}};
+  const race={phase:'racing',time:1,cycles:[b],trails:[{bikeId:0,team:0,dir,x1:0,z1:0,x2:b.x,z2:b.z}],crashes:[]};
+  for(const alpha of [0,.1,.8,.3,.99,1]){
+   const rendered=interpolateCycleRace(race,alpha),bike=rendered.cycles[0];walls.update(rendered,1);
+   walls.meshes[0].getMatrixAt(0,matrix);
+   const end=new Vector3(.5,0,0).applyMatrix4(matrix);
+   const behind=(bike.x*4.8-end.x)*dx+(bike.z*4.8-end.z)*dz;
+   assert(Math.abs(behind-CYCLE_WALL_STYLE.rearAxleBehindMeters)<.00002,`${dir}/${travel}/${alpha}: ${behind}`);
+   assert.equal(race.trails[0].x2,b.x);assert.equal(race.cycles[0].renderTrailLagMeters,undefined);
+  }
+ }
+ for(const mesh of walls.meshes){mesh.geometry.dispose();mesh.material.dispose();}
+});
