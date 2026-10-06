@@ -1502,3 +1502,8 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Fix the curved wall end jitter introduced by continuous arena motion: the bike was interpolated between simulation steps while the emitter used the latest un-interpolated trail endpoint. Carry the visible bike's path lag into presentation-only head trimming, keeping the curved boundary fixed at the rear axle without modifying collision trails.
 - [x] Regression checks cover all four headings, braking/cruise/turbo step distances, irregular render fractions and unchanged simulation state. The browser curve fixture also checks rear-axle alignment through interpolated turbo frames.
 - [x] All 446 tests and the production build passed. Chrome's rendered curve check passed with no browser errors; inspected `test-results/cycle-wall-curve.png` and verified fixed rear-axle alignment.
+
+## Remove embedded cycle lettering — October 5
+
+- [x] Remove the 29 separately named signature/date meshes from each loaded gold and blue bike before sizing and surface repair. Apply the same filter to the credits preview. Keep source GLBs and author attribution intact.
+- [x] Production build, Chrome curve preview and all nine credit-preview checks passed. Inspected the cleaned bike capture; no browser errors reported.

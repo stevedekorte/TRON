@@ -1,6 +1,6 @@
 import {fitCreditPreview,creditPreviewPoints} from './credit-preview-framing.js';
 import {createCreditBit} from '../rendering/credit-bit.js';
-import {repairCycleSurface,repairCycleHubs} from '../rendering/cycle-surface.js';
+import {repairCycleSurface,repairCycleHubs,removeCycleInscriptions} from '../rendering/cycle-surface.js';
 import {createCreditMaze} from '../rendering/credit-maze.js';
 import {solarSailerTransit} from '../game/solar-sailer.js';
 import {loadSolarSailer,applySolarSailerState} from '../rendering/solar-sailer.js';
@@ -49,6 +49,7 @@ export class CreditModelPreview{
    const root=entry[1]==='sailer'?(await loadSolarSailer({previewBeam:true})).ship:entry[1]==='carrier'?await loadCarrier():entry[1]==='bit'?await createCreditBit():entry[1]==='maze'?createCreditMaze():entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
    if(generation!==this.generation){disposeSceneResources(root);return;}
    if(entry[1]==='cycle'){
+    removeCycleInscriptions(root);
     root.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();}});
     repairCycleHubs(root);
     root.traverse(o=>{

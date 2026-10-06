@@ -110,3 +110,7 @@ The four Daniel Preti signature/date inscriptions are preserved in `preti_arena_
 ## Double-turret boss tank
 
 User-supplied `extra/double_turret_clu_light_tank.glb`: **Double turret Clu Light Tank** by **SpringSociety**, [Sketchfab source](https://sketchfab.com/3d-models/double-turret-clu-light-tank-83df27ea6c08441a809bb5376301d430), **CC BY 4.0**, from embedded metadata. Original GLB remains unchanged. Runtime adapter uniformly normalizes hull width to 6.5 m, turns forward to -Z, grounds the hull, replaces materials with dark blue-black armor and non-emissive red contour lines, articulates the twin-gun upper assembly, and adds paired muzzle flashes and projected shadows. Both projectile origins are measured from barrel-tip geometry. Four bosses patrol the central beam courtyard alongside the large-maze patrols; 12 health versus 3, with 3 damage per Clu shot, and 80% normal movement speed.
+
+### Cycle inscription cleanup — October 5
+
+The game and credits adapters omit the separate `DANIEL_PRETI` / `daniel_preti` signature/date meshes (29 per bike) from loaded light cycles. Original source GLBs, metadata and extended-credit attribution remain intact; no chassis or wheel meshes are filtered.
