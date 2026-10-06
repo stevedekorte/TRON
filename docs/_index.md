@@ -1507,3 +1507,14 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Remove the 29 separately named signature/date meshes from each loaded gold and blue bike before sizing and surface repair. Apply the same filter to the credits preview. Keep source GLBs and author attribution intact.
 - [x] Production build, Chrome curve preview and all nine credit-preview checks passed. Inspected the cleaned bike capture; no browser errors reported.
+
+## Random player cycle slot — October 5
+
+- [x] Draw uniformly from the three live gold cycles when entering a player match and on every round reset. Select before outside-arena placement so road starts also use the chosen bike. New browser games receive fresh run seeds; explicit runSeed URLs preserve reproducible comparisons.
+- [x] Update player-control fixtures to follow the assigned ID, keeping autonomous teammates distinct from the player. A 60-match seeded regression reaches all three gold slots reproducibly; Chrome verified Enter restarts across 15 matches selected slots 0, 1 and 2 without page errors.
+- [x] All 447 simulation tests and the production build passed.
+
+## Longer CLU ending shot — October 5
+
+- [x] Double the killer-camera hold from four to eight seconds and its smooth transition from two to four seconds. Retain the existing terminal fade after the shot.
+- [x] All 447 tests and the production build passed. Chrome verified the game view still showing at 6.8 seconds after death and the terminal appearing after the hold/fade (8.85 seconds measured from the captured death frame), with no page errors.

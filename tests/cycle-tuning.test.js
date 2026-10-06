@@ -25,7 +25,7 @@ test('road tuning belongs to each session, affects movement, and survives reset 
   s.requestCycleEntry({startOutside:true});s.advance({},1/120);
   for(let i=0;i<60;i++)s.advance({cycleRoad:{cruise:true,speedAdjust:1}},1/120);
  }
- assert(a.run.cycleRace.cycles[1].roadSpeed>b.run.cycleRace.cycles[1].roadSpeed*1.8);
+ assert(a.run.cycleRace.cycles[a.run.cycleRace.playerId].roadSpeed>b.run.cycleRace.cycles[b.run.cycleRace.playerId].roadSpeed*1.8);
  assert.equal(ROAD_CYCLE.accelerationMetersPerSecondSquared,8);
  a.place({cycleRace:structuredClone(a.run.cycleRace)});assert.equal(a.run.cycleRace.roadConfig,a.settings.roadCycle);
  a.reset();assert.equal(a.run.cycleRace.roadConfig.accelerationMetersPerSecondSquared,16);

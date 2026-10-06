@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {CameraRig} from '../src/rendering/camera-rig.js';
-import {livingCluKiller} from '../src/game/clu-death.js';
+import {livingCluKiller,CLU_DEATH_CAMERA} from '../src/game/clu-death.js';
 import {config} from '../src/game/config.js';
 import {createRun,updateWeapons} from '../src/simulation/run.js';
 import {resolveCrush} from '../src/simulation/crush.js';
@@ -24,7 +24,7 @@ test('death view eases position and rotation into normal follow distance around 
  const {rig,run,enemy}=fixture(),start=rig.camera.position.clone(),rotation=rig.camera.quaternion.clone();
  assert(rig.deathCamera.update(rig,run,1/60,'running'));
  assert(rig.camera.position.distanceTo(start)<.02);assert(rig.camera.quaternion.angleTo(rotation)<.002);
- for(let i=1;i<150;i++)rig.deathCamera.update(rig,run,1/60,'running');
+ for(let i=1;i<(CLU_DEATH_CAMERA.transitionSeconds+.5)*60;i++)rig.deathCamera.update(rig,run,1/60,'running');
  assert(Math.abs(rig.camera.position.x-enemy.x-config.cameraDistance)<1e-8);
  assert(Math.abs(rig.camera.position.y-config.cameraHeight)<1e-8);
  const expected=new T.Vector3(enemy.x,2.5,-enemy.s).sub(rig.camera.position).normalize();
@@ -33,7 +33,7 @@ test('death view eases position and rotation into normal follow distance around 
 });
 test('aircraft follow uses its altitude, pause freezes and dead killer holds last shot',()=>{
  const {rig,run,enemy}=fixture();enemy.kind='recognizer';enemy.y=80;
- for(let i=0;i<150;i++)rig.deathCamera.update(rig,run,1/60,'running');assert.equal(rig.camera.position.y,80+config.cameraHeight);
+ for(let i=0;i<(CLU_DEATH_CAMERA.transitionSeconds+.5)*60;i++)rig.deathCamera.update(rig,run,1/60,'running');assert.equal(rig.camera.position.y,80+config.cameraHeight);
  const p=rig.camera.position.clone();enemy.x+=20;rig.deathCamera.update(rig,run,1,'paused');assert(rig.camera.position.equals(p));
  enemy.health=0;enemy.state='destroyed';rig.deathCamera.update(rig,run,1,'running');assert(rig.camera.position.equals(p));
  rig.reset();assert.equal(rig.deathCamera.transition,null);assert(!rig.deathCamera.update(rig,run,1/60,'running'));

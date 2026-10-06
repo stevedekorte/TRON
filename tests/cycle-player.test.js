@@ -7,7 +7,7 @@ import {cyclePlayerPose} from '../src/simulation/light-cycles.js';
 const world=browserScenario({pathname:'/',search:'?layoutSeed=1982'}).world;
 test('Recognizers retire a destroyed road player, keep patrolling, and detect again after restart',()=>{
  const s=new GameSession({world,seed:1982,settings:{vehicle:{aiMode:'tactical'}}});enter(s);
- const r=s.run,race=r.cycleRace,b=race.cycles[1];race.phase='racing';
+ const r=s.run,race=r.cycleRace,b=race.cycles[race.playerId];race.phase='racing';
  Object.assign(b,{escaped:true,alive:false,x:-4000,z:-4000,previousX:-4000,previousZ:-4000,progress:1,roadSpeed:0,roadHealth:0});
  Object.assign(r,cyclePlayerPose(race));
  const [a,c]=r.recognizers;r.recognizers=[a,c];r.enemyTanks=[];
@@ -28,19 +28,19 @@ function enter(s){s.requestCycleEntry();s.advance({},1/60);}
 test('explicit arena entry transfers control without completing the Clu game',()=>{
  const s=session(),r=s.run;assert.equal(r.cycleRace.phase,'idle');
  const before=r.cycleRace.time;s.advance({},1/60);assert.equal(r.cycleRace.time,before);
- enter(s);assert.equal(r.playerVehicle,'cycle');assert.equal(r.won,false);assert.equal(r.cycleRace.playerId,1);assert.equal(r.cycleRace.phase,'countdown');
- assert(Math.abs(r.x-r.cycleRace.site.x)<1);assert.equal(r.projectiles.length,0);
+ enter(s);assert.equal(r.playerVehicle,'cycle');assert.equal(r.won,false);assert([0,1,2].includes(r.cycleRace.playerId));assert.equal(r.cycleRace.phase,'countdown');
+ assert.equal(r.x,cyclePlayerPose(r.cycleRace).x);assert.equal(r.projectiles.length,0);
  const round=r.cycleRace.round;s.advance({},1/60);assert.equal(r.cycleRace.round,round);
 });
 test('manual cycle turns once per press and moves straight otherwise',()=>{
- const s=session();enter(s);const r=s.run, race=r.cycleRace,b=race.cycles[1];race.phase='racing';
+ const s=session();enter(s);const r=s.run, race=r.cycleRace,b=race.cycles[race.playerId];race.phase='racing';
  s.advance({cycleTurn:1},.125);assert.equal(b.dir,1);
  s.advance({},.125);assert.equal(b.dir,1);
  s.advance({cycleTurn:-1},.125);assert.equal(b.dir,0);
  assert.equal(r.shots,0);assert.equal(r.health,3);
 });
 test('player crash waits for team result, a friendly win reaches victory',()=>{
- const s=session();enter(s);const r=s.run; r.cycleRace.cycles[1].alive=false;
+ const s=session();enter(s);const r=s.run; r.cycleRace.cycles[r.cycleRace.playerId].alive=false;
  s.advance({},1/60);assert.equal(r.crushed,false);assert.equal(r.won,false);
  r.cycleRace.phase='result';r.cycleRace.winner=0;r.cycleRace.remaining=6;
  const events=s.advance({},1/60);assert.equal(r.won,true);assert(events.some(e=>e.type==='victory'));
@@ -71,25 +71,25 @@ test('explicit cycle entry waits safely for deferred arena assets',()=>{
 });
 
 test('cycle turbo accepts partial charge, boosts the player and autonomous cycles and eases on release',()=>{
- const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';b.turboCharge=.2;
- const start=b.z,other=race.cycles[0].z;
+ const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[race.playerId];race.phase='racing';b.turboCharge=.2;
+ const start=b.z,other=race.cycles.find(c=>c.team===0&&c.id!==race.playerId).z;
  s.advance({cycleTurbo:true},.25);
  assert(b.speedMultiplier>1.4&&b.speedMultiplier<1.5,'turbo is still building speed after a quarter second');
- assert(start-b.z>2&&start-b.z<3);assert(Math.abs(other-race.cycles[0].z-2)<1e-8);
+ assert(start-b.z>2&&start-b.z<3);assert(Math.abs(other-race.cycles.find(c=>c.team===0&&c.id!==race.playerId).z-2)<1e-8);
  assert(Math.abs(b.turboCharge-.15)<1e-8);assert.equal(b.boosting,true);
  const before=b.speedMultiplier;s.advance({},.25);assert(b.speedMultiplier>1&&b.speedMultiplier<before);assert.equal(b.boosting,false);assert(b.turboCharge>.15);
 });
 test('empty turbo stays at normal speed while held; release recharges and allows reuse',()=>{
- const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';b.turboCharge=.005;
+ const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[race.playerId];race.phase='racing';b.turboCharge=.005;
  s.advance({cycleTurbo:true},.2);assert.equal(b.turboCharge,0);assert.equal(b.boosting,false);
  const before=b.z;s.advance({cycleTurbo:true},.25);assert(before-b.z>=2&&before-b.z<2.1);assert.equal(b.turboCharge,0);
  s.advance({},.2);assert(b.turboCharge>0&&b.turboCharge<1);
  s.advance({cycleTurbo:true},.01);assert.equal(b.boosting,true);
 });
 test('boosted cycle cannot jump through an actual trail segment',()=>{
- const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';
+ const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[race.playerId];race.phase='racing';
  const startZ=b.z,width=173;race.occupied[(b.z-2+86)*width+b.x+86]=4;race.trails.push({bikeId:3,team:1,dir:1,x1:b.x-2,z1:b.z-2,x2:b.x+2,z2:b.z-2});
- s.advance({cycleTurbo:true},.25);assert.equal(b.alive,false);assert(b.z>startZ-2&&b.z<startZ-1.8);assert.equal(race.crashes.filter(c=>c.id===1).length,1);
+ s.advance({cycleTurbo:true},.25);assert.equal(b.alive,false);assert(b.z>startZ-2&&b.z<startZ-1.8);assert.equal(race.crashes.filter(c=>c.id===race.playerId).length,1);
 });
 test('W/T/Space control cycle turbo, S takes priority, and I/K do not affect speed',async()=>{
  const {InputController}=await import('../src/app/input-controller.js');const input=new InputController();
@@ -107,7 +107,7 @@ test('test-only cycle entry waits for assets without simulating the tank encount
  s.advance({fire:true,throttle:1},1);assert.equal(s.run.time,time);assert.equal(s.run.arenaWaiting,true);
  assert(s.run.dataBeams.every(b=>b.collectedAt===null));
  s.arenaReady=true;s.advance({},1/60);assert.equal(s.run.playerVehicle,'cycle');assert.equal(s.run.cycleAttemptsRemaining,3);
- assert.equal(s.run.cycleRace.cycles[1].turboCharge,1);assert.equal(s.run.cycleRace.phase,'countdown');
+ assert.equal(s.run.cycleRace.cycles[s.run.cycleRace.playerId].turboCharge,1);assert.equal(s.run.cycleRace.phase,'countdown');
 });
 
 
@@ -137,12 +137,12 @@ test('other cycles have approaching/receding Doppler; player cabin pitch stays s
 });
 
 test('slow pedal eases to half speed, overrides turbo, and eases back to cruise',()=>{
- const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';b.turboCharge=.5;
+ const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[race.playerId];race.phase='racing';b.turboCharge=.5;
  s.advance({cycleSlow:true,cycleTurbo:true},1/120);
  assert(b.speedMultiplier<1&&b.speedMultiplier>.5);assert.equal(b.boosting,false);assert(b.turboCharge>.5);
  s.advance({cycleSlow:true},.5);assert(b.speedMultiplier>.65&&b.speedMultiplier<.75,'S decelerates over time instead of immediately reaching half speed');
  s.advance({cycleSlow:true},1);assert(b.speedMultiplier>.5&&b.speedMultiplier<.53);
- assert.equal(race.cycles[0].speedMultiplier,1);
+ assert.equal(race.cycles.find(c=>c.team===0&&c.id!==race.playerId).speedMultiplier,1);
  const slow=b.speedMultiplier;s.advance({},1/120);assert(b.speedMultiplier>slow&&b.speedMultiplier<1);
  s.advance({},.5);assert(b.speedMultiplier>.8&&b.speedMultiplier<.9);
  s.advance({},1);assert(b.speedMultiplier>.97&&b.speedMultiplier<1);
@@ -160,16 +160,16 @@ test('default cycle testing has unlimited Return restarts and no terminal ending
 });
 
 test('escape freezes arena competitors and timer while outside enemies resume; restart reverses handoff',()=>{
- const s=new GameSession({world,seed:1982});enter(s);const r=s.run,race=r.cycleRace,b=race.cycles[1];race.phase='racing';
+ const s=new GameSession({world,seed:1982});enter(s);const r=s.run,race=r.cycleRace,b=race.cycles[race.playerId];race.phase='racing';
  Object.assign(b,{escaped:true,x:110,z:0,previousX:110,previousZ:0,progress:1,yaw:-Math.PI/2,roadSpeed:20,roadHealth:1,steering:0,lean:0});
- const competitors=JSON.stringify(race.cycles.filter(c=>c.id!==1)),elapsed=race.elapsed;
+ const competitors=JSON.stringify(race.cycles.filter(c=>c.id!==race.playerId)),elapsed=race.elapsed;
  const enemies=()=>JSON.stringify([...r.recognizers.filter(e=>e.role!=='arena-patrol'),...r.enemyTanks].map(e=>[e.x,e.s,e.y,e.yaw,e.state]));
  const before=enemies(),x=b.x;
  for(let i=0;i<60;i++)s.advance({},1/120);
  assert(race.arenaPaused);assert.equal(race.elapsed,elapsed);
  // Presentation interpolation history updates, but competitors do not move.
  const initial=JSON.parse(competitors);
- for(const other of race.cycles.filter(c=>c.id!==1)){const old=initial.find(c=>c.id===other.id);assert.equal(other.x,old.x);assert.equal(other.z,old.z);assert.equal(other.progress,old.progress);}
+ for(const other of race.cycles.filter(c=>c.id!==race.playerId)){const old=initial.find(c=>c.id===other.id);assert.equal(other.x,old.x);assert.equal(other.z,old.z);assert.equal(other.progress,old.progress);}
  assert(b.x>x);assert.notEqual(enemies(),before);assert(!r.won);
  b.alive=false;assert(s.restartCycleMatch());assert(!race.arenaPaused);
  const paused=enemies();s.advance({},1/120);assert.equal(enemies(),paused);
@@ -178,7 +178,7 @@ test('escape freezes arena competitors and timer while outside enemies resume; r
 test('arena S and X only slow the cycle, override turbo, and cannot select road reverse',async()=>{
  const {InputController}=await import('../src/app/input-controller.js');
  for(const key of ['KeyS','KeyX']){
-  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[1];race.phase='racing';
+  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[race.playerId];race.phase='racing';
   const input=new InputController();input.keys.add(key);input.keys.add('KeyW');input.cycleReverseQueued=true;
   const command=input.command(s.run);
   assert.deepEqual(command.cycleRoad,{});assert(command.cycleSlow);assert(!command.cycleTurbo);
@@ -192,10 +192,10 @@ test('home menu arena entry and restarts retain six bikes and intact walls',()=>
  s.requestCycleEntry({startOutside:false,startWithBreach:false,hideMiddleOpponent:false});s.advance({},1/120);
  const check=()=>{
   const race=s.run.cycleRace;
-  assert.equal(race.playerId,1);assert.equal(race.cycles[1].team,0);assert(!race.cycles[1].escaped);
+  assert([0,1,2].includes(race.playerId));assert.equal(race.cycles[race.playerId].team,0);assert(!race.cycles[race.playerId].escaped);
   assert.equal(race.breaches.length,0);assert.equal(race.cycles.filter(b=>b.alive).length,6);
  };
- check();s.run.cycleRace.cycles[1].alive=false;assert(s.restartCycleMatch());check();
+ check();s.run.cycleRace.cycles[s.run.cycleRace.playerId].alive=false;assert(s.restartCycleMatch());check();
 });
 
 test('completing the central beam wins Clu without waiting for or entering the arena',()=>{
@@ -236,7 +236,7 @@ test('teammates conserve launch turbo while enemies boost; all brake near blocke
   if(b.team===r.cycles[r.playerId].team){assert(!b.boosting);assert.equal(b.turboCharge,1);assert.equal(b.speedMultiplier,1);}
   else {assert(b.boosting);assert(b.turboCharge<1);assert(b.speedMultiplier>1);}
  }
- const b=r.cycles[0],dz=b.dir===0?-1:1;
+ const b=r.cycles.find(c=>c.team===0&&c.id!==r.playerId),dz=b.dir===0?-1:1;
  r.occupied[(Math.round(b.z)+dz*3+C.halfCells)*(C.halfCells*2+1)+Math.round(b.x)+C.halfCells]=6;
  b.nextReactionAt=r.elapsed;
  s.advance({},1/120);assert(b.braking);assert(!b.boosting);assert(b.brakeCharge<1);
@@ -245,7 +245,7 @@ test('teammates conserve launch turbo while enemies boost; all brake near blocke
 
 test('teammates boost to outpace a nearby opponent and conserve charge after pulling ahead',()=>{
  const s=session();enter(s);const r=s.run.cycleRace;r.phase='racing';r.occupied.fill(0);
- const b=r.cycles[0],enemy=r.cycles[3];
+ const b=r.cycles.find(c=>c.team===0&&c.id!==r.playerId),enemy=r.cycles[3];
  Object.assign(b,{x:0,previousX:0,z:0,previousZ:0,dir:0});
  Object.assign(enemy,{x:3,previousX:3,z:-6,previousZ:-6,dir:0});
  s.advance({},1/120);assert(b.boosting);assert(b.turboCharge<1);
@@ -267,3 +267,15 @@ test('teammates boost to outpace a nearby opponent and conserve charge after pul
  assert.equal(input.command({}).cycleTurn,1);input.consume();assert.equal(input.command({}).cycleTurn,0);
  input.queueCycleTurn(-1);input.clear();assert.equal(input.command({}).cycleTurn,0);
  });
+test('each match draws a gold player slot with reproducible seeded variation',()=>{
+ const sequence=()=>{
+  const s=new GameSession({world,seed:1982});s.requestCycleEntry({startOutside:false,startWithBreach:false,hideMiddleOpponent:false});s.advance({},1/120);
+  const ids=[];
+  for(let i=0;i<60;i++){
+   const race=s.run.cycleRace,b=race.cycles[race.playerId];assert(b.alive&&b.team===0);ids.push(b.id);
+   assert.equal(s.run.x,cyclePlayerPose(race).x);b.alive=false;assert(s.restartCycleMatch());
+  }
+  return ids;
+ };
+ const ids=sequence();assert.deepEqual(new Set(ids),new Set([0,1,2]));assert.deepEqual(sequence(),ids);
+});

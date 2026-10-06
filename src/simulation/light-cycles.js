@@ -53,6 +53,10 @@ export function resetCycleRound(r){
     if(active)r.occupied[cell(x,z)]=id+1;
     return {id,team,x,z,previousX:x,previousZ:z,dir,alive:active,turns:0,straight:0,progress:0,speedMultiplier:1,turboCharge:1,boosting:false,brakeCharge:1,braking:false};
   });
+  if(r.randomizePlayer){
+    const gold=r.cycles.filter(b=>b.team===0&&b.alive);
+    r.playerId=gold[Math.floor(random(r)*gold.length)].id;
+  }
   if(r.startOutside&&r.playerId!==undefined){
     const b=r.cycles[r.playerId];
     r.occupied[cell(b.x,b.z)]=0;

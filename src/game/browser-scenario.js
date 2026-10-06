@@ -18,7 +18,7 @@ export function browserScenario(location, random = Math.random) {
   });
 }
 
-// New CLU games vary patrol starts; explicit seeds keep reference runs reproducible.
+// New games vary CLU patrol starts and cycle player slots; explicit seeds keep reference runs reproducible.
 export function browserRunSeed(location,random=Math.random){
  const explicit=new URLSearchParams(location.search).get('runSeed');
  if(explicit!==null)return Number(explicit)>>>0;
