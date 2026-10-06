@@ -1,3 +1,4 @@
+import {MazeWallDamage} from './maze-wall-damage.js';
 import {GAME_LIGHTING,createGameLights} from './game-lighting.js';
 import {interpolateCycleRace} from './cycle-poses.js';
 import {SurfaceImpacts} from './surface-impacts.js';
@@ -140,6 +141,7 @@ export class View {
         ])
       : null;
     this.surfaceImpacts = new SurfaceImpacts(this.scene);
+    this.wallDamage=new MazeWallDamage(this.scene,this.world.slabs,this.world.seams);
     this.breakups = new Breakups(this.scene, map, physics);
     this.connectMazeOcclusion();
     this.searchlights = new Searchlights(this.scene, this.recognizers.length, undefined, this.map);
@@ -242,6 +244,7 @@ export class View {
     this.carrierLights.reset();
     this.breakups.clear();
     this.surfaceImpacts.clear();
+    this.wallDamage.clear();
     this.particles.length = 0;
   }
 
@@ -250,6 +253,7 @@ export class View {
     if(event.type==='hit'){
       const craft=event.subject==='tank'?this.tank:event.subject==='enemyTank'?this.enemyTanks[event.id-100]:this.recognizers.find(c=>c.id===event.id);
       this.surfaceImpacts.spawn(event,craft?.root);
+      this.wallDamage.hit(event);
     }
     if (event.type === 'destroyed' && event.subject === 'tank') {
       this.tank.turret.rotation.y = event.turretYaw;
@@ -533,6 +537,8 @@ export class View {
     for (const burst of this.breakups.bursts)
       burst.optical?.mesh.quaternion.copy(this.camera.quaternion);
     this.surfaceImpacts.update(mode==='running'?dt:0);
+    this.wallDamage.update(mode==='running'?dt:0);
+    this.mazeShadows.refreshDamage(this.world.slabs,this.wallDamage.revision);
     this.horizon.update(this.camera, !preview && !this.cameraRig.referenceCamera);
     this.renderer.info.reset();
     this.mazeShadows.update(this.renderer);
@@ -602,6 +608,7 @@ export class View {
     this.carrier?.userData.rez?.dispose();
     this.breakups.dispose();
     this.surfaceImpacts.dispose();
+    this.wallDamage.dispose();
     this.clouds?.dispose();
     this.arena?.userData.cycleRace.shadows.dispose();
     this.arena?.userData.cycleRace.tireTraces.dispose();

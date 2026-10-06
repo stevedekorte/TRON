@@ -3,7 +3,7 @@ import {intercept} from '../src/simulation/intercept.js';
 import {formationTarget} from '../src/simulation/formation.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createRun, step, moveTank, cannonTarget, cannonPose, updateWeapons, startPursuit, boostTank } from '../src/simulation/run.js';
+import { createRun, step, moveTank, cannonTarget, cannonPose, updateWeapons, startPursuit, boostTank, stopTankTurbo } from '../src/simulation/run.js';
 import { GRID, SIZE, CELL, HALF, OPEN_CELLS, SPAWN, cellCenter, gridToWorld, worldToGrid, freePosition, lineOfSight, wallIntersection, WALLS } from '../src/levels/maze.js';
 import { createRecognizers, perceive, canSeeClu, updateRecognizers, predict, SENSORS } from '../src/simulation/recognizers.js';
 import { config,RECOGNIZER_SCALE,CLU_WEAPON,angleDelta } from '../src/game/config.js';
@@ -506,4 +506,13 @@ test('Clu can spend a partially recharged turbo reserve without refilling or sta
  assert.equal(boostTank(r),true);assert(Math.abs(r.turboRemaining-2.5/6)<1e-7);
  const partial=createRun();partial.turboCooldown=59.94;
  assert.equal(boostTank(partial),true);assert(Math.abs(partial.turboRemaining-.01)<1e-7);
+});
+
+test('stopping tank turbo returns unused charge and eases speed back to cruise',()=>{
+ const r=createRun();Object.assign(r,{x:-5000,s:-5000,recognizers:[],enemyTanks:[]});
+ boostTank(r);tick(r,{throttle:1},2);const speed=r.speed,remaining=r.turboRemaining,cooldown=r.turboCooldown;
+ assert(stopTankTurbo(r));assert.equal(r.turboRemaining,0);assert.equal(r.speed,speed);
+ assert(Math.abs(r.turboCooldown-(cooldown-remaining/10*60))<1e-8);assert(!stopTankTurbo(r));
+ step(r,{throttle:1},1/60);assert(r.speed<speed);assert(r.speed>config.maxSpeed);
+ assert(boostTank(r));assert(r.turboRemaining>7);
 });

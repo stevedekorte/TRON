@@ -85,11 +85,11 @@ test('locked auto aim scatters shots across its configured cone while retaining 
  for(let i=0;i<64;i++){
   r.cooldown=0;r.projectiles=[];updateWeapons(r,{fire:true},0);
   const p=r.projectiles[0],dyaw=-Math.atan2(p.vx,p.vs)-yaw,dpitch=Math.atan2(p.vy,Math.hypot(p.vx,p.vs))-pitch;
-  assert(Math.abs(dyaw)<=CLU_WEAPON.assistYawSpread);assert(Math.abs(dpitch)<=CLU_WEAPON.assistPitchSpread);
+  assert(Math.abs(dyaw)<=CLU_WEAPON.assistYawSpread*CLU_WEAPON.recognizerSpreadScale);assert(Math.abs(dpitch)<=CLU_WEAPON.assistPitchSpread*CLU_WEAPON.recognizerSpreadScale);
   errors.push({yaw:dyaw,pitch:dpitch});
  }
- assert(errors.some(e=>Math.abs(e.yaw)>CLU_WEAPON.assistYawSpread*.5));
- assert(errors.some(e=>Math.abs(e.pitch)>CLU_WEAPON.assistPitchSpread*.75));
+ assert(errors.some(e=>Math.abs(e.yaw)>CLU_WEAPON.assistYawSpread*CLU_WEAPON.recognizerSpreadScale*.5));
+ assert(errors.some(e=>Math.abs(e.pitch)>CLU_WEAPON.assistPitchSpread*CLU_WEAPON.recognizerSpreadScale*.75));
  assert(errors.some(e=>e.yaw<0)&&errors.some(e=>e.yaw>0));
 });
 test('tank targets stay exactly level with no vertical spread in follow and turret views',()=>{

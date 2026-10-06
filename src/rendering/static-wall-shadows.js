@@ -40,11 +40,15 @@ function triangles(geometry,matrix){
  }
  return result;
 }
+const casterCache=new WeakMap();
 // Each caster triangle sweeps a prism along the light direction. Intersecting
 // that prism with a receiver triangle produces an exact planar shadow polygon.
 export function createStaticWallShadowGeometry(receiver,casterGeometry){
  receiver.updateWorldMatrix(true,false);
- const casters=triangles(casterGeometry,receiver.matrixWorld),receivers=triangles(receiver.geometry,receiver.matrixWorld),bins=new Map();
+ const receivers=triangles(receiver.geometry,receiver.matrixWorld),matrixKey=receiver.matrixWorld.elements.join(',');
+ let cached=casterCache.get(casterGeometry);
+ if(!cached||cached.matrixKey!==matrixKey){
+ const bins=new Map(),casters=triangles(casterGeometry,receiver.matrixWorld);
  for(const caster of casters){
   const [a,b,c]=caster.points,cap=planeThrough(a,b,c,a.clone().add(LIGHT));
   if(!cap||Math.abs(cap.x*LIGHT.x+cap.y*LIGHT.y+cap.z*LIGHT.z)<1e-8)continue;
@@ -52,8 +56,10 @@ export function createStaticWallShadowGeometry(receiver,casterGeometry){
   if(caster.planes.some(p=>!p))continue;
   cells(caster.bounds,key=>{if(!bins.has(key))bins.set(key,[]);bins.get(key).push(caster);});
  }
- const positions=[];
- for(const receiver of receivers){
+ cached={matrixKey,bins};casterCache.set(casterGeometry,cached);
+ }
+ const bins=cached.bins,positions=[],sourceTriangles=[];
+ for(const [sourceTriangle,receiver] of receivers.entries()){
   const candidates=new Set();cells(receiver.bounds,key=>{for(const c of bins.get(key)||[])candidates.add(c);});
   const r=receiver.bounds;
   const [ra,rb,rc]=receiver.points;
@@ -67,9 +73,9 @@ export function createStaticWallShadowGeometry(receiver,casterGeometry){
    for(let i=1;i+1<polygon.length;i++){
     const [a,b,c]=[polygon[0],polygon[i],polygon[i+1]];
     if(new T.Vector3().subVectors(b,a).cross(new T.Vector3().subVectors(c,a)).lengthSq()<1e-12)continue;
-    for(const p of [a,b,c])positions.push(p.x+lift.x,p.y+lift.y,p.z+lift.z);
+    for(const p of [a,b,c]){positions.push(p.x+lift.x,p.y+lift.y,p.z+lift.z);sourceTriangles.push(sourceTriangle);}
    }
   }
  }
- const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.computeBoundingSphere();return geometry;
+ const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('sourceTriangle',new T.Float32BufferAttribute(sourceTriangles,1));geometry.computeBoundingSphere();return geometry;
 }

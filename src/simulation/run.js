@@ -39,6 +39,13 @@ export function boostTank(run){
   return true;
 }
 
+export function stopTankTurbo(run){
+ if(run.turboRemaining<=0)return false;
+ // Return unused boost time to the reserve instead of discarding the charge.
+ run.turboCooldown=clamp(run.turboCooldown-run.turboRemaining/TURBO.duration*TURBO.rechargeSeconds,0,TURBO.rechargeSeconds);
+ run.turboRemaining=0;return true;
+}
+
 // Opening pursuit is a real initial sighting, not a scripted tracking target.
 export function startPursuit(run){
  const config=configFor(run);
@@ -133,8 +140,9 @@ export function updateWeapons(run,input,dt) {
       // Independent per-shot randomness preserves seeded encounters. Spread never
       // points below the horizon; an unassisted level shot stays exactly level.
       const random=seededRandom((run.seed^Math.imul(run.shots+1,2654435761))>>>0);
-      const yawSpread=CLU_WEAPON.assistYawSpread;
-      const pitchSpread=CLU_WEAPON.assistPitchSpread;
+      const spreadScale=target.verticalAssist?CLU_WEAPON.recognizerSpreadScale:1;
+      const yawSpread=CLU_WEAPON.assistYawSpread*spreadScale;
+      const pitchSpread=CLU_WEAPON.assistPitchSpread*spreadScale;
       const shotYaw=-Math.atan2(dx,ds)+(random()*2-1)*yawSpread;
       const pitch=Math.atan2(dy,Math.hypot(dx,ds));
       const shotPitch=clamp(pitch+(target.verticalAssist&&Math.abs(pitch)>1e-8?(random()*2-1)*pitchSpread:0),GUNNER.minPitch,GUNNER.maxPitch);

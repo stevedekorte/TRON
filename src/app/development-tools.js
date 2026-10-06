@@ -44,6 +44,7 @@ export function createDevelopmentTools({
           length: b.length,
           strength: b.strength,
         })),
+        wallDamage:{cavities:view.wallDamage.cavities.length,radii:view.wallDamage.cavities.map(c=>c.radius),fragments:view.wallDamage.fragments.length,revision:view.wallDamage.revision},
         gunnerHit: view.gunnerHit,
         enemyOutlines: view.enemyOutline.enabled,
         arena: view.arena?.position.toArray() ?? null,
