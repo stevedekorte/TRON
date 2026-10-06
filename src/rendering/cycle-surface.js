@@ -82,3 +82,15 @@ export function removeCycleInscriptions(scene){
  for(const mesh of inscriptions){mesh.removeFromParent();mesh.geometry.dispose();}
  return inscriptions.length;
 }
+
+export const CYCLE_MATERIAL_LIGHTING=Object.freeze({roughness:.4,metalness:.15,ambientScale:.35});
+export function applyCycleMaterialLighting(scene){
+ const materials=new Set();scene.traverse(o=>{if(o.isMesh)[].concat(o.material).forEach(m=>materials.add(m));});
+ for(const material of materials){
+  material.roughness=CYCLE_MATERIAL_LIGHTING.roughness;material.metalness=CYCLE_MATERIAL_LIGHTING.metalness;
+  material.onBeforeCompile=shader=>{
+   shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`outgoingLight -= reflectedLight.indirectDiffuse * ${1-CYCLE_MATERIAL_LIGHTING.ambientScale};\n#include <opaque_fragment>`);
+  };
+  material.customProgramCacheKey=()=>`cycle-directional-${CYCLE_MATERIAL_LIGHTING.ambientScale}`;
+ }
+}

@@ -92,3 +92,14 @@ test('locked auto aim scatters shots across its configured cone while retaining 
  assert(errors.some(e=>Math.abs(e.pitch)>CLU_WEAPON.assistPitchSpread*.75));
  assert(errors.some(e=>e.yaw<0)&&errors.some(e=>e.yaw>0));
 });
+test('tank targets stay exactly level with no vertical spread in follow and turret views',()=>{
+ for(const gunner of [false,true]){
+  const r=fixture();Object.assign(r,{seed:42,yaw:0,gunner,aimPitch:0});
+  r.enemyTanks=[{id:100,kind:'ground',x:r.x,s:r.s+100,y:0,vx:0,vs:0,vy:0,state:'patrol',health:3}];
+  const target=cannonTarget(r);assert.equal(target.lock,!gunner);assert.equal(target.y,cannonPose(r).y);
+  for(let i=0;i<64;i++){
+   r.cooldown=0;r.projectiles=[];updateWeapons(r,{fire:true},0);
+   assert.equal(r.projectiles[0].vy,0);
+  }
+ }
+});
