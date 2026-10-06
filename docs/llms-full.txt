@@ -1584,6 +1584,14 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Assign each new damage cluster a reproducible uniform 1×–3× footprint scale (2× average), retained for subsequent growth and its maximum radius. Keep the existing depth limit and face-edge/neighbor clearance, which can constrain the footprint near boundaries.
 - [x] Five damage tests passed, including sampled range/mean and stable growth scaling; production build passed. No browser opened.
 
+## Gold-team result text — October 6
+
+- [x] Show GOLD TEAM WINS in gold (#ffd45c); clear the winner class for blue wins, ties and other game states. Production build passed.
+
+## Arcade victory palette cycling — October 6
+
+- [x] Cycle winner text through five discrete warm gold/orange/coral colors for gold and cool cyan/blue/violet colors for blue, repeating every 1.5 seconds with a matching subtle glow. Ties retain their neutral appearance. Reduced-motion preferences use steady team colors.
+
 
 ---
 
