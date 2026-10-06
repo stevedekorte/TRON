@@ -1518,3 +1518,15 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Double the killer-camera hold from four to eight seconds and its smooth transition from two to four seconds. Retain the existing terminal fade after the shot.
 - [x] All 447 tests and the production build passed. Chrome verified the game view still showing at 6.8 seconds after death and the terminal appearing after the hold/fade (8.85 seconds measured from the captured death frame), with no page errors.
+
+## Level CLU shots against tanks — October 5
+
+- [x] Keep assisted tank-target aim at the muzzle's height, including its intercept calculation. Apply vertical shot spread only to recognizer elevation assistance; preserve horizontal assisted spread and exact manually aimed turret shots.
+- [x] Add repeated-shot checks against a ground tank in both follow and turret views, asserting zero vertical projectile velocity. Existing recognizer spread and manual-elevation checks remain active.
+- [x] All 448 tests and the production build passed.
+
+## Game-lit cycle credit preview — October 5
+
+- [x] Share the game's cool hemisphere/key/fill lights and ACES exposure with the light-cycle credit shot. Share the bike's roughness, metalness and reduced ambient response so the preview has the same directional highlights and dark shaded surfaces. Retain the requested darker blue preview colors.
+- [x] Other credit models retain their existing lighting and tone mapping; switch the lighting group with the active credit.
+- [x] Production build passed. Chrome rendered all nine credit models and passed fade/resizing/disposal checks; inspected the updated cycle credit capture. The in-game cycle camera/rendering browser check also passed without page errors.

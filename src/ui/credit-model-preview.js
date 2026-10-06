@@ -1,6 +1,7 @@
+import {GAME_LIGHTING,createGameLights} from '../rendering/game-lighting.js';
 import {fitCreditPreview,creditPreviewPoints} from './credit-preview-framing.js';
 import {createCreditBit} from '../rendering/credit-bit.js';
-import {repairCycleSurface,repairCycleHubs,removeCycleInscriptions} from '../rendering/cycle-surface.js';
+import {repairCycleSurface,repairCycleHubs,removeCycleInscriptions,applyCycleMaterialLighting} from '../rendering/cycle-surface.js';
 import {createCreditMaze} from '../rendering/credit-maze.js';
 import {solarSailerTransit} from '../game/solar-sailer.js';
 import {loadSolarSailer,applySolarSailerState} from '../rendering/solar-sailer.js';
@@ -11,7 +12,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createTank} from '../rendering/models.js';
 import {disposeSceneResources} from '../rendering/scene-resources.js';
 
-const PREVIEW={gapPixels:40,minWidthPixels:260,edgeMarginPixels:40,bottomClearanceFraction:.25,fadeSeconds:.8,carrierLightingScale:.15,cycleLightingScale:.75,cycleBodyBlue:0x164b8a,cycleAccentBlue:0x2359b0,sailerStateTimeScale:3};
+const PREVIEW={gapPixels:40,minWidthPixels:260,edgeMarginPixels:40,bottomClearanceFraction:.25,fadeSeconds:.8,carrierLightingScale:.15,cycleBodyBlue:0x164b8a,cycleAccentBlue:0x2359b0,sailerStateTimeScale:3};
 const models=[
  ['CONTROLLINGTRANSMISSION','bit',null],
  ['LOCAL MAZE AND LEVEL WORK','maze',null],
@@ -43,6 +44,7 @@ export class CreditModelPreview{
   const light=new T.DirectionalLight(0xffffff,4);light.position.set(3,5,4);this.scene.add(light);
   const rim=new T.DirectionalLight(0x76baff,3);rim.position.set(-4,2,-3);this.scene.add(rim);
   this.scene.children.forEach(o=>{if(o.isLight)o.userData.previewIntensity=o.intensity;});
+  this.cycleLights=createGameLights();this.cycleLights.visible=false;this.scene.add(this.cycleLights);
  }
  async load(entry,generation){
   try{
@@ -52,6 +54,7 @@ export class CreditModelPreview{
     removeCycleInscriptions(root);
     root.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();}});
     repairCycleHubs(root);
+    applyCycleMaterialLighting(root);
     root.traverse(o=>{
      for(const material of o.material?[].concat(o.material):[]){
       if(material.name==='_6')material.color.setHex(PREVIEW.cycleBodyBlue);
@@ -88,7 +91,10 @@ export class CreditModelPreview{
   this.element.style.opacity=String(opacity);
   if(!this.model)return;
   if(this.key==='sailer')applySolarSailerState(this.sailerMaterials,solarSailerTransit(this.age*PREVIEW.sailerStateTimeScale).charge);
-  this.scene.children.forEach(o=>{if(o.isLight)o.intensity=o.userData.previewIntensity*(this.key==='carrier'?PREVIEW.carrierLightingScale:this.key==='cycle'?PREVIEW.cycleLightingScale:1);});
+  const cycleLighting=this.key==='cycle';this.cycleLights.visible=cycleLighting;
+  this.renderer.toneMapping=cycleLighting?GAME_LIGHTING.toneMapping:T.NoToneMapping;
+  this.renderer.toneMappingExposure=cycleLighting?GAME_LIGHTING.exposure:1;
+  this.scene.children.forEach(o=>{if(o.isLight){o.visible=!cycleLighting;o.intensity=o.userData.previewIntensity*(this.key==='carrier'?PREVIEW.carrierLightingScale:1);}});
   this.model.rotation.y=-.45; // Stable three-quarter inspection view, without distracting motion.
   if(this.framedModel!==this.model||this.width!==width||this.height!==height){fitCreditPreview(this.camera,this.model,width/height,this.key==='maze');this.framedModel=this.model;}
   if(this.width!==width||this.height!==height){this.renderer.setSize(width,height);this.width=width;this.height=height;}

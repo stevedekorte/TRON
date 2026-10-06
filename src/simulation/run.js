@@ -93,15 +93,15 @@ export function cannonTarget(run) {
   let best=null;
   for(const e of [...run.recognizers,...run.enemyTanks]) {
     if(e.teleport||e.state==='destroyed'||e.state==='materializing')continue;
-    const targetY=e.kind==='ground'?2.3:e.y+1;
+    const targetY=e.kind==='ground'?pose.y:e.y+1;
     const dx=e.x-pose.x,ds=e.s-pose.s,distance=Math.hypot(dx,ds);
     const error=Math.abs(angleDelta(pose.yaw,-Math.atan2(dx,ds)));
     if(distance>CLU_WEAPON.assistRange||error>=Math.min(.4,Math.atan2(e.kind==='ground'?3.5:18*RECOGNIZER_SCALE,Math.max(1,distance))))continue;
     if(!lineOfSight(pose,{x:e.x,s:e.s,y:targetY}))continue;
-    const aim=intercept(pose,{x:e.x,s:e.s,y:targetY},{x:e.vx,y:e.vy,s:e.vs},CLU_WEAPON.speed,CLU_WEAPON.lifetime);
+    const aim=intercept(pose,{x:e.x,s:e.s,y:targetY},{x:e.vx,y:e.kind==='ground'?0:e.vy,s:e.vs},CLU_WEAPON.speed,CLU_WEAPON.lifetime);
     if(!aim||!lineOfSight(pose,aim))continue;
     if(Math.atan2(aim.y-pose.y,Math.hypot(aim.x-pose.x,aim.s-pose.s))>GUNNER.maxPitch)continue;
-    if(!best||error<best.error)best={...aim,id:e.id,distance,error,lock:true};
+    if(!best||error<best.error)best={...aim,id:e.id,distance,error,lock:true,verticalAssist:e.kind!=='ground'};
   }
   return best||{id:null,x:pose.x-Math.sin(pose.yaw)*160,s:pose.s+Math.cos(pose.yaw)*160,y:pose.y,distance:160,lock:false};
 }
@@ -137,7 +137,7 @@ export function updateWeapons(run,input,dt) {
       const pitchSpread=CLU_WEAPON.assistPitchSpread;
       const shotYaw=-Math.atan2(dx,ds)+(random()*2-1)*yawSpread;
       const pitch=Math.atan2(dy,Math.hypot(dx,ds));
-      const shotPitch=clamp(pitch+(Math.abs(pitch)>1e-8?(random()*2-1)*pitchSpread:0),GUNNER.minPitch,GUNNER.maxPitch);
+      const shotPitch=clamp(pitch+(target.verticalAssist&&Math.abs(pitch)>1e-8?(random()*2-1)*pitchSpread:0),GUNNER.minPitch,GUNNER.maxPitch);
       dx=-Math.sin(shotYaw)*Math.cos(shotPitch);ds=Math.cos(shotYaw)*Math.cos(shotPitch);dy=Math.sin(shotPitch);
     }
     const length=Math.hypot(dx,ds,dy);
