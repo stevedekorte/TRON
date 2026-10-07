@@ -37,6 +37,11 @@ export class MusicDirector {
   constructor(world) {
     this.world = world;
   }
+  preload(){
+    return this.preloading??=Promise.all([...new Set([endMusicUrl,musicUrl,...musicClips.map(c=>c.url)])].map(async url=>{
+      const response=await fetch(url,{cache:'force-cache'});if(!response.ok)throw Error(`Music: HTTP ${response.status}`);await response.arrayBuffer();
+    }));
+  }
   init(context, output) {
     const c = (this.context = context),
       limiter = output;

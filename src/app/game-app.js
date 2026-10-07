@@ -1,3 +1,4 @@
+import {preloadBitResources} from './program-preload.js';
 import {CLU_DEATH_CAMERA,livingCluKiller} from '../game/clu-death.js';
 import {CreditModelPreview} from '../ui/credit-model-preview.js';
 import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
@@ -108,11 +109,12 @@ export function createGameApp() {
   }):null;
   let arenaLoad=null,solarLoad=null;
   function loadSolarInBackground(){
-    if(solarLoad||!SOLAR_SAILER.enabled)return;
+    if(solarLoad||!SOLAR_SAILER.enabled)return solarLoad;
     solarLoad=loadingTimings.async('Solar sailer module + model',()=>import('../rendering/solar-sailer.js').then(async({loadSolarSailer,SolarSailer})=>({model:await loadSolarSailer(),SolarSailer}))).then(({model,SolarSailer})=>{
       if(disposed){disposeSceneResources(model.ship);return;}
       view.attachSolarSailer(model,SolarSailer);
     }).catch(error=>console.warn('Solar sailer unavailable:',error));
+    return solarLoad;
   }
   function loadArenaInBackground(){
     sound.loadCycleSamples();
@@ -976,6 +978,7 @@ export function createGameApp() {
 
   async function initialize() {
     try {
+      const programResources=loadingTimings.async('CLU/cycle audio and BIT resources',()=>Promise.all([sound.preload().catch(error=>console.warn('Audio preload unavailable:',error)),preloadBitResources().catch(error=>console.warn('BIT preload unavailable:',error))]));
       await loadingTimings.async('Wait for physics initialization',()=>debrisPhysicsReady);
       const context = loadingTimings.sync('Create WebGL2 context',()=>$('game').getContext('webgl2', {
         stencil: true,
@@ -1011,7 +1014,7 @@ export function createGameApp() {
 
       // Finish arena downloads and model repair before accepting a game choice.
       // A cached GLB still needs decoding/adaptation; doing that on Return stalls entry.
-      await loadArenaInBackground();
+      await Promise.all([loadArenaInBackground(),loadSolarInBackground(),programResources]);
       if(disposed||mode==='error')return;
 
       // Warm the first scene frame while the loading terminal still covers it.
