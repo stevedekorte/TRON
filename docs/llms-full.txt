@@ -1639,6 +1639,39 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Source inspection found partially overlapping coplanar triangles in the gray side plates, including overlaps between FrontColor and _LightGray_1. Keep those plates planar during smoothing and subtract already-covered areas across their meshes; retain unique surface area and interpolate original attributes. Apply the repair in game and credits without modifying source GLBs.
 - [x] Geometry regression confirms single ray intersections in overlapping and unique regions, unchanged union area and repeat-repair stability. Headless Chrome rendered both source-team adapters without WebGL errors; inspected the repaired close-up. Production build passed.
 
+## Broader cycle surface overlap repair — October 6
+
+- [x] Extend coplanar face subtraction beyond the gray side plates to all opaque authored cycle meshes, preserving unique coverage, winding, interpolated attributes, and separate parallel layers. Compare transformed planes so mesh placement is respected.
+- [x] Split the black rear wheel liner into end bands around the silver liner instead of rendering both at the same radius over the same span. Retain the black reflective outer rim finish and original GLB backups.
+- [x] Validate partial-overlap coverage and rotated/separated layers with geometry tests. Headless Chrome renders the game-lit model from four angles without WebGL errors; captures are in `test-results/cycle-surface-{front,left,rear}.png` and `cycle-self-shadow-smooth.png`. User play review of remaining shimmer is still needed; this does not claim to remove every shadow/silhouette aliasing artifact.
+
+## Correct wheel finish placement — October 6
+
+- [x] Restore team paint on outer wheel shells in the game and credits. Apply the black reflective finish only to inner wheel inserts and inward-facing rim surfaces, replacing light-colored inner liner highlights while preserving silver hubs and spokes. Reflections now come from scene lighting.
+- [x] Check gold/blue outer-wheel material preservation and render four views in headless Chrome. Original source GLBs remain unchanged.
+
+## Seal rear cycle body seams — October 7
+
+- [x] Rebuild both narrow rear body returns between the original upper and lower boundary rows, preserving the colored shell outline and preventing the underbody showing through mismatched triangles. Keep those boundary vertices fixed during smoothing; use the same repair in game and credits for both source-team models.
+- [x] Correct winding and normals on planar gray plates on both sides. A shadow-disabled render isolated the rear diagonal from shadow aliasing; reversed sliver faces were the cause. The corrected multi-angle close-ups no longer show that diagonal. Preserve separate curved parts, wheel colors and source GLBs.
+- [x] Add regression checks for outward gray plate winding, both rear returns, and sampled surface coverage along the repaired strips. Inspect headless Chrome game-lit captures from front, rear and both sides. Remaining quantization on other curved source details is not claimed eliminated.
+
+## Remove hub-to-tire highlight strips — October 7
+
+- [x] User-marked gray radial strips are fake reflections, not wheel spokes. Remove the front highlight faces and rear spoke replacement in both game and credits. Add smooth black wheel faces with a small clearance over the authored inserts so the removed strips cannot reveal holes or underlying paint. Preserve silver hubs and team-colored outer shells.
+- [x] Headless Chrome model checks and four-angle captures confirm the gray radial strips are gone; original GLBs remain preserved.
+
+## Polished black inner wheel faces — October 7
+
+- [x] Give smooth inner wheel faces and liners a physical black finish with roughness 0.08, metalness 0.5 and a smooth clearcoat (roughness 0.04). Preserve team-painted outer tires and silver hubs. Highlights are evaluated from scene lighting, without fixed gray highlight strips or added reflection graphics.
+- [x] Verify physical rim material values on both source models and render from four angles in headless Chrome without shader errors.
+
+## Unsupported mobile terminal — October 7
+
+- [x] Phones and tablets show “MOBILE TERMINALS NOT SUPPORTED” in the existing terminal style. Detect mobile browser identities, including iPads using desktop identity, rather than small window width or touchscreen presence alone.
+- [x] Stop before loading/constructing the game or registering its offline cache on unsupported devices. Keep the message readable in portrait and landscape; desktop startup and menus remain available.
+- [x] Validation: `node tests/mobile-terminal.mjs` passed in headless Chrome with iPhone 13, iPad Pro 11 and Pixel 7 emulation; none loaded game code or GLBs. A 600px desktop viewport retained the normal menu. Production build passed.
+
 
 ---
 
