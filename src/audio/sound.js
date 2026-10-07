@@ -36,6 +36,10 @@ export class Sound {
     this.sampleErrors = [];
     this.sources = new Set();
   }
+  async preload(){
+    if(!this.context)this.init();
+    await Promise.all([this.loading,this.loadCycleSamples(),this.musicDirector.preload()]);
+  }
   unlock() {
     if (!this.context) this.init();
     const c = this.context;

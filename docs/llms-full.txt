@@ -1677,6 +1677,12 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Move arena download, GLB decoding, cycle surface repair and arena attachment into the initial loading terminal before enabling program selection. Previously this work began on Return, even when the asset bytes were cached. Reuse the existing arena promise across game starts.
 - [x] Preserve the mobile early exit and loading-error handling. This shifts preparation into initial loading rather than claiming to eliminate its CPU cost.
 
+## Preload all program resources — October 7
+
+- [x] Prepare and decode CLU/cycle sound samples before the menu; warm all selected soundtrack files and the Solar Sailer alongside arena preparation. Audio playback still resumes from the user's gesture.
+- [x] Fetch BIT's document, local scripts, four OBJ models, yes/no WAV samples, font and logo into the browser HTTP cache without running BIT, opening its microphone or sending a JEV request. BIT still initializes its own page and audio context when selected.
+- [x] Headless Chrome confirms arena, audio/BIT resources and Solar Sailer finish before the home menu, and cycle selection causes no GLB downloads. Desktop initial loading carries the preparation cost; mobile still exits before loading the game.
+
 
 ---
 
