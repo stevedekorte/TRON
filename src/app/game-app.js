@@ -116,7 +116,7 @@ export function createGameApp() {
   }
   function loadArenaInBackground(){
     sound.loadCycleSamples();
-    if(arenaLoad||!run.cycleRace)return;
+    if(arenaLoad||!run.cycleRace)return arenaLoad;
     session.arenaReady=!!view.arena;
     if(view.arena)return;
     arenaLoad=loadingTimings.async('Arena module + models / cycle setup',()=>import('../rendering/arena.js').then(({loadArena})=>loadArena(map,[view.world.floor]))).then(arena=>{
@@ -124,6 +124,7 @@ export function createGameApp() {
       loadingTimings.sync('Attach arena / floor',()=>view.attachArena(arena));session.arenaReady=true;
       loadingTimings.checkpoint('Arena assets ready');loadingTimings.print();
     }).catch(error=>{if(!disposed)fail('Unable to load the cycle arena. Please reload to retry. '+error.message);});
+    return arenaLoad;
   }
   let mouseWasLocked = false;
   let inspectWasPaused = false;
@@ -1007,6 +1008,11 @@ export function createGameApp() {
       listen(motionPreference, 'change', (e) => {
         view.cameraRig.reducedMotion = e.matches;
       });
+
+      // Finish arena downloads and model repair before accepting a game choice.
+      // A cached GLB still needs decoding/adaptation; doing that on Return stalls entry.
+      await loadArenaInBackground();
+      if(disposed||mode==='error')return;
 
       // Warm the first scene frame while the loading terminal still covers it.
       loadingTimings.sync('First render submission / shader setup',()=>view.render(run, session.previous, 1, 0, 'ready'));

@@ -1672,6 +1672,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Stop before loading/constructing the game or registering its offline cache on unsupported devices. Keep the message readable in portrait and landscape; desktop startup and menus remain available.
 - [x] Validation: `node tests/mobile-terminal.mjs` passed in headless Chrome with iPhone 13, iPad Pro 11 and Pixel 7 emulation; none loaded game code or GLBs. A 600px desktop viewport retained the normal menu. Production build passed.
 
+## Prepare Light Cycles before the menu — October 7
+
+- [x] Move arena download, GLB decoding, cycle surface repair and arena attachment into the initial loading terminal before enabling program selection. Previously this work began on Return, even when the asset bytes were cached. Reuse the existing arena promise across game starts.
+- [x] Preserve the mobile early exit and loading-error handling. This shifts preparation into initial loading rather than claiming to eliminate its CPU cost.
+
 
 ---
 
