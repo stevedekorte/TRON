@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const CYCLE_SURFACE = Object.freeze({
   creaseRadians: Math.PI / 4, smoothingPasses: 3,
@@ -35,6 +35,7 @@ export function repairCycleSurface(source) {
   // diagonal into the adjoining curved shell opens a hairline/shadow crease.
   for(const v of vertices)if(Math.abs(Math.abs(v.point.x)-.11295)<.00002&&v.point.y>.21&&v.point.y<.64&&v.point.z>-.36&&v.point.z<.44)v.locked=true;
   for(const v of vertices)if(Math.abs(Math.abs(v.point.x)-.0841)<.0001)v.locked=true;
+  for(const v of vertices)if(Math.abs(v.point.x)>.084&&Math.abs(v.point.x)<.1131&&v.point.z>=.255&&v.point.z<=.2851&&v.point.y>=.217696&&v.point.y<.437)v.locked=true;
   // Paired smoothing/inflation reduces export stair steps without shrinking wheels.
   for(let pass=0;pass<CYCLE_SURFACE.smoothingPasses;pass++)for(const weight of [CYCLE_SURFACE.smoothWeight,CYCLE_SURFACE.restoreWeight]){
     const next=vertices.map(v=>{
@@ -124,7 +125,7 @@ export function refineCycleRearWheel(scene){
  return candidates.length;
 }
 
-export const CYCLE_WHEEL_INTERIORS=Object.freeze({radius:.164,segments:128,centerY:.2545485,frontZ:-.56,rearZ:.56,frontX:.10545,frontThickness:.018,rearThickness:.025});
+export const CYCLE_WHEEL_INTERIORS=Object.freeze({radius:.164,segments:128,centerY:.2545485,frontZ:-.56,rearZ:.56,frontX:.10545,frontThickness:.018,rearThickness:.025,rearSilverWidth:.0212,capClearance:.0003});
 /** The dark wheel inserts contain overlapping quantized discs. Replace those
  * circular liners only; retain the inset faces, spokes and hub caps. */
 export function refineCycleWheelInteriors(scene){
@@ -140,11 +141,25 @@ export function refineCycleWheelInteriors(scene){
  for(const [end,meshes] of Object.entries(groups)){
   if(!meshes.length)continue;
   const material=meshes[0].material,front=end==='front';
-  const geometry=new THREE.CylinderGeometry(C.radius,C.radius,front?C.frontThickness:C.rearThickness,C.segments,1,true);
+  // The silver rear liner owns the middle span; black end bands must not
+  // occupy that same cylindrical surface (which flickers as the view moves).
+  let geometry;
+  if(front)geometry=new THREE.CylinderGeometry(C.radius,C.radius,C.frontThickness,C.segments,1,true);
+  else{
+   const width=(C.rearThickness-C.rearSilverWidth)/2;
+   const bands=[-1,1].map(side=>{const g=new THREE.CylinderGeometry(C.radius,C.radius,width,C.segments,1,true);g.translate(0,side*(C.rearSilverWidth+width)/2,0);return g;});
+   geometry=mergeGeometries(bands);bands.forEach(g=>g.dispose());
+  }
   geometry.rotateZ(Math.PI/2);
   for(const x of front?[-C.frontX,C.frontX]:[0]){
    const mesh=new THREE.Mesh(geometry,material);mesh.name=`Smooth ${end} wheel interior`;mesh.userData.refinedWheelInterior=true;
    mesh.position.set(x,C.centerY,front?C.frontZ:C.rearZ);scene.add(mesh);count++;
+   const depth=front?C.frontThickness:C.rearThickness;
+   for(const side of [-1,1]){
+    const capGeometry=new THREE.CircleGeometry(C.radius,C.segments);capGeometry.rotateY(side*Math.PI/2);
+    const cap=new THREE.Mesh(capGeometry,material);cap.name='Smooth black wheel face';cap.userData.cycleWheelCap=true;
+    cap.position.set(x+side*(depth/2+C.capClearance),C.centerY,front?C.frontZ:C.rearZ);scene.add(cap);
+   }
   }
   for(const mesh of meshes){
    const g=mesh.geometry,p=g.attributes.position,ids=g.index?.array??Array.from({length:p.count},(_,i)=>i),keep=[];
@@ -158,57 +173,63 @@ export function refineCycleWheelInteriors(scene){
  return count;
 }
 
-export const CYCLE_REAR_SPOKE=Object.freeze({innerRadius:.042,outerRadius:.166,innerHalfWidth:.006,outerHalfWidth:.017,innerHalfDepth:.013,outerHalfDepth:.0136});
-/** Rebuild the rear silver spoke and its circular inner liner from measured
- * dimensions. The exported spoke's rounded coordinates form visible stairs. */
-export function refineCycleRearSpoke(scene){
- const C=CYCLE_REAR_SPOKE,W=CYCLE_WHEEL_INTERIORS,candidates=[];
+/** Remove the authored gray hub-to-tire highlight strips. Keep the hubs and
+ * rebuild only the rear circular liner, which receives the black rim finish. */
+export function removeCycleWheelHighlights(scene){
+ const W=CYCLE_WHEEL_INTERIORS,rear=[];
  scene.traverse(mesh=>{
-  if(!mesh.isMesh||mesh.material.name!=='FrontColor')return;
-  mesh.geometry.computeBoundingBox();const b=mesh.geometry.boundingBox,s=b.getSize(new THREE.Vector3());
-  if(b.min.z>.38&&s.x<.025&&s.y>.30&&s.y<.35&&s.z>.30&&s.z<.35)candidates.push(mesh);
+  if(!mesh.isMesh||mesh.name==='Repaired smooth wheel hub'||!['FrontColor','Color_000'].includes(mesh.material.name))return;
+  const g=mesh.geometry,p=g.attributes.position;g.computeBoundingBox();const b=g.boundingBox,size=b.getSize(new THREE.Vector3());
+  if(b.min.z>.38&&size.x<.025&&size.y>.30&&size.y<.35&&size.z>.30&&size.z<.35){rear.push(mesh);return;}
+  const ids=g.index?.array??Array.from({length:p.count},(_,i)=>i),keep=[];
+  const highlight=i=>{
+   const x=Math.abs(p.getX(i)),y=p.getY(i)-W.centerY,z=p.getZ(i)-W.frontZ;
+   return x>.085&&x<.12&&y<.001&&z<.001&&Math.hypot(y,z)<.18;
+  };
+  for(let i=0;i<ids.length;i+=3){const tri=Array.from(ids.slice(i,i+3));if(!tri.every(highlight))keep.push(...tri);}
+  g.setIndex(keep);
  });
- for(const mesh of candidates){
-  const vertices=[];
-  for(const [r,w,d] of [[C.innerRadius,C.innerHalfWidth,C.innerHalfDepth],[C.outerRadius,C.outerHalfWidth,C.outerHalfDepth]]){
-   for(const [x,side] of [[-d,-1],[d,-1],[d,1],[-d,1]])vertices.push(x,W.centerY+(-r+side*w)*Math.SQRT1_2,W.rearZ+(r+side*w)*Math.SQRT1_2);
-  }
-  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
-  geometry.setIndex([0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,1,2,6,1,6,5,2,3,7,2,7,6,3,0,4,3,4,7]);
-  const flat=geometry.toNonIndexed();geometry.dispose();flat.computeVertexNormals();flat.computeBoundingBox();flat.computeBoundingSphere();
-  mesh.geometry.dispose();mesh.geometry=flat;mesh.name='Smooth rear wheel spoke';
-  const linerGeometry=new THREE.CylinderGeometry(W.radius,W.radius,.0212,W.segments,1,true);linerGeometry.rotateZ(Math.PI/2);
+ for(const mesh of rear){
+  const linerGeometry=new THREE.CylinderGeometry(W.radius,W.radius,W.rearSilverWidth,W.segments,1,true);linerGeometry.rotateZ(Math.PI/2);
   const liner=new THREE.Mesh(linerGeometry,mesh.material);liner.name='Smooth rear silver liner';liner.position.set(0,W.centerY,W.rearZ);mesh.parent.add(liner);
+  mesh.removeFromParent();mesh.geometry.dispose();
  }
- return candidates.length;
+ return rear.length;
 }
 
 
-export const CYCLE_RIM_MATERIAL=Object.freeze({color:0x080b10,roughness:.24,metalness:.45});
-/** Separate tire/rim surfaces from the team-painted shell, using real specular
- * lighting rather than carrying the body's gold/blue color onto the wheels. */
+export const CYCLE_RIM_MATERIAL=Object.freeze({color:0x080b10,roughness:.08,metalness:.5,clearcoat:1,clearcoatRoughness:.04});
+/** Keep the outer wheel shells in their authored team paint. Only the already
+ * black wheel inserts receive the dark finish with lighting-based reflections. */
 export function applyCycleBlackRims(scene){
+ const material=new THREE.MeshPhysicalMaterial({...CYCLE_RIM_MATERIAL,side:THREE.DoubleSide});
+ material.name='Reflective black inner cycle rim';material.userData.cycleRim=true;
  const additions=[];
- const material=new THREE.MeshStandardMaterial({...CYCLE_RIM_MATERIAL,side:THREE.DoubleSide});
- material.name='Reflective black cycle rim';material.userData.cycleRim=true;
  scene.traverse(mesh=>{
   if(!mesh.isMesh)return;
-  if(mesh.name==='Refined rear wheel ring'){mesh.material=material;return;}
-  if(!['Color_D06','Color_I03','_6','Color_A01','Color_A03'].includes(mesh.material.name))return;
-  const g=mesh.geometry,p=g.attributes.position,ids=g.index?.array??Array.from({length:p.count},(_,i)=>i),keep=[],rim=[];
-  const onRim=i=>{
-   const y=p.getY(i),z=p.getZ(i),r=Math.hypot(y-.2545485,z+.56);
-   return z<-.30&&y<.510&&r>.153&&r<.267;
-  };
-  for(let i=0;i<ids.length;i+=3){const tri=Array.from(ids.slice(i,i+3));(tri.every(onRim)?rim:keep).push(...tri);}
-  if(!rim.length)return;
-  const part=g.clone();part.setIndex(rim);
-  // Weld the extracted surface by position before deriving smooth normals.
-  const expanded=part.toNonIndexed();part.dispose();expanded.deleteAttribute('normal');
-  const smooth=mergeVertices(expanded,1e-5);expanded.dispose();smooth.computeVertexNormals();smooth.computeBoundingBox();smooth.computeBoundingSphere();
-  g.setIndex(keep);
-  const wheel=new THREE.Mesh(smooth,material);wheel.name='Reflective front wheel rim';wheel.position.copy(mesh.position);wheel.quaternion.copy(mesh.quaternion);wheel.scale.copy(mesh.scale);
-  additions.push({parent:mesh.parent,wheel});
+  if(mesh.name==='Smooth rear silver liner'){mesh.material=material;return;}
+  // Split only the inward-facing narrow annulus, including the source's light
+  // highlight faces. Keep the outer sidewalls and hubs painted.
+  if(['Color_D06','Color_I03','_6','Color_A01','Color_A03','FrontColor'].includes(mesh.material.name)){
+   const g=mesh.geometry,p=g.attributes.position,ids=g.index?.array??Array.from({length:p.count},(_,i)=>i),inner=[],outer=[];
+   for(let i=0;i<ids.length;i+=3){
+    const tri=Array.from(ids.slice(i,i+3));
+    const onInner=[-.56,.56].some(z=>{
+     if(!tri.every(j=>{const r=Math.hypot(p.getY(j)-CYCLE_WHEEL_INTERIORS.centerY,p.getZ(j)-z);return r>.153&&r<.267;}))return false;
+     const n=g.attributes.normal;if(!n)return false;
+     const radial=new THREE.Vector3(0,tri.reduce((sum,j)=>sum+p.getY(j),0)/3-CYCLE_WHEEL_INTERIORS.centerY,tri.reduce((sum,j)=>sum+p.getZ(j),0)/3-z).normalize();
+     const normal=new THREE.Vector3();tri.forEach(j=>normal.add(new THREE.Vector3().fromBufferAttribute(n,j)));normal.normalize();
+     return normal.dot(radial)<-.25;
+    });
+    (onInner?inner:outer).push(...tri);
+   }
+   if(inner.length){const part=g.clone();part.setIndex(inner);g.setIndex(outer);const ring=new THREE.Mesh(part,material);ring.name='Black inner rim surface';ring.position.copy(mesh.position);ring.quaternion.copy(mesh.quaternion);ring.scale.copy(mesh.scale);additions.push({parent:mesh.parent,ring});}
+  }
+  if(mesh.material.name!=='black')return;
+  mesh.geometry.computeBoundingBox();
+  const box=mesh.geometry.boundingBox,size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+  const wheelInsert=size.x<.04&&size.y>.30&&size.y<.35&&size.z>.30&&size.z<.35&&Math.abs(center.y-CYCLE_WHEEL_INTERIORS.centerY)<.01&&Math.abs(Math.abs(center.z)-.56)<.01;
+  if(wheelInsert||mesh.userData.refinedWheelInterior||mesh.userData.cycleWheelCap)mesh.material=material;
  });
- for(const {parent,wheel} of additions)parent.add(wheel);
+ for(const {parent,ring} of additions)parent.add(ring);
 }

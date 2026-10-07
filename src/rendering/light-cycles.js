@@ -1,3 +1,4 @@
+import {repairCycleRearSeams,repairCyclePanelWinding} from './cycle-rear-seams.js';
 import {repairCyclePanelOverlaps} from './cycle-panel-overlaps.js';
 import {CarrierMaterialization} from './carrier-materialization.js';
 import {CYCLE_OPENING,CYCLE_FORMATION_MATERIALIZATION} from './cycle-opening.js';
@@ -5,7 +6,7 @@ import {CycleTireTraces} from './cycle-tire-traces.js';
 import {materializationDuration,materializationPhase} from '../game/materialization.js';
 import { CycleExplosions } from './cycle-explosions.js';
 import { RecognizerShadows } from './recognizer-shadows.js';
-import { repairCycleSurface, repairCycleHubs, refineCycleRearWheel, refineCycleWheelInteriors, refineCycleRearSpoke, applyCycleBlackRims, removeCycleInscriptions, applyCycleMaterialLighting } from './cycle-surface.js';
+import { repairCycleSurface, repairCycleHubs, refineCycleRearWheel, refineCycleWheelInteriors, removeCycleWheelHighlights, applyCycleBlackRims, removeCycleInscriptions, applyCycleMaterialLighting } from './cycle-surface.js';
 import { LightCycleWalls } from './light-cycle-walls.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -23,9 +24,11 @@ export async function loadLightCycles({refineWheels=true}={}){
     scene.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();
       if(team===1&&o.material.name==='Color_I03')o.material.color.setHex(CYCLE_MODEL_STYLE.blueBody);
       if(team===1&&o.material.name==='_6')o.material.color.setHex(CYCLE_MODEL_STYLE.blueTrim);}});
+    repairCycleRearSeams(scene);
     repairCyclePanelOverlaps(scene);
+    repairCyclePanelWinding(scene);
     repairCycleHubs(scene);
-    if(refineWheels){refineCycleRearWheel(scene);refineCycleWheelInteriors(scene);refineCycleRearSpoke(scene);applyCycleBlackRims(scene);}
+    if(refineWheels){refineCycleRearWheel(scene);refineCycleWheelInteriors(scene);removeCycleWheelHighlights(scene);applyCycleBlackRims(scene);}
     applyCycleMaterialLighting(scene);
     scene.userData.groundOffsetMeters=-new THREE.Box3().setFromObject(scene).min.y;
     // Measure the repaired rear tire instead of guessing its contact offset.

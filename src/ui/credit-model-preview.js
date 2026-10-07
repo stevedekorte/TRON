@@ -1,8 +1,9 @@
+import {repairCycleRearSeams,repairCyclePanelWinding} from '../rendering/cycle-rear-seams.js';
 import {repairCyclePanelOverlaps} from '../rendering/cycle-panel-overlaps.js';
 import {GAME_LIGHTING,createGameLights} from '../rendering/game-lighting.js';
 import {fitCreditPreview,creditPreviewPoints} from './credit-preview-framing.js';
 import {createCreditBit} from '../rendering/credit-bit.js';
-import {repairCycleSurface,repairCycleHubs, refineCycleRearWheel, refineCycleWheelInteriors, refineCycleRearSpoke, applyCycleBlackRims,removeCycleInscriptions,applyCycleMaterialLighting} from '../rendering/cycle-surface.js';
+import {repairCycleSurface,repairCycleHubs, refineCycleRearWheel, refineCycleWheelInteriors, removeCycleWheelHighlights, applyCycleBlackRims,removeCycleInscriptions,applyCycleMaterialLighting} from '../rendering/cycle-surface.js';
 import {createCreditMaze} from '../rendering/credit-maze.js';
 import {solarSailerTransit} from '../game/solar-sailer.js';
 import {loadSolarSailer,applySolarSailerState} from '../rendering/solar-sailer.js';
@@ -54,11 +55,13 @@ export class CreditModelPreview{
    if(entry[1]==='cycle'){
     removeCycleInscriptions(root);
     root.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();}});
+    repairCycleRearSeams(root);
     repairCyclePanelOverlaps(root);
+    repairCyclePanelWinding(root);
     repairCycleHubs(root);
     refineCycleRearWheel(root);
     refineCycleWheelInteriors(root);
-    refineCycleRearSpoke(root);
+    removeCycleWheelHighlights(root);
     applyCycleBlackRims(root);
     applyCycleMaterialLighting(root);
     root.traverse(o=>{
