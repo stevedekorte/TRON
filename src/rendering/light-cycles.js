@@ -1,18 +1,20 @@
+import {repairCyclePanelOverlaps} from './cycle-panel-overlaps.js';
 import {CarrierMaterialization} from './carrier-materialization.js';
 import {CYCLE_OPENING,CYCLE_FORMATION_MATERIALIZATION} from './cycle-opening.js';
 import {CycleTireTraces} from './cycle-tire-traces.js';
 import {materializationDuration,materializationPhase} from '../game/materialization.js';
 import { CycleExplosions } from './cycle-explosions.js';
 import { RecognizerShadows } from './recognizer-shadows.js';
-import { repairCycleSurface, repairCycleHubs, removeCycleInscriptions, applyCycleMaterialLighting } from './cycle-surface.js';
+import { repairCycleSurface, repairCycleHubs, refineCycleRearWheel, refineCycleWheelInteriors, refineCycleRearSpoke, applyCycleBlackRims, removeCycleInscriptions, applyCycleMaterialLighting } from './cycle-surface.js';
 import { LightCycleWalls } from './light-cycle-walls.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import goldUrl from '../../docs/models/preti_light_cycle_gold.glb?url';
 import blueUrl from '../../docs/models/preti_light_cycle_blue.glb?url';
 import { LIGHT_CYCLES as C, cycleFraction } from '../game/light-cycles.js';
+export const CYCLE_SELF_SHADOW=Object.freeze({size:1024,prefix:'cycleShadow',darkness:.65,maxCrafts:6,filterEdges:'soft',depthBias:.002});
 export const CYCLE_MODEL_STYLE=Object.freeze({blueBody:0x086ac4,blueTrim:0x084b92,ambientScale:.35});
-export async function loadLightCycles(){
+export async function loadLightCycles({refineWheels=true}={}){
   return Promise.all([goldUrl,blueUrl].map(async(url,team)=>{
     const {scene}=await new GLTFLoader().loadAsync(url);
     removeCycleInscriptions(scene);
@@ -21,8 +23,10 @@ export async function loadLightCycles(){
     scene.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();
       if(team===1&&o.material.name==='Color_I03')o.material.color.setHex(CYCLE_MODEL_STYLE.blueBody);
       if(team===1&&o.material.name==='_6')o.material.color.setHex(CYCLE_MODEL_STYLE.blueTrim);}});
-    applyCycleMaterialLighting(scene);
+    repairCyclePanelOverlaps(scene);
     repairCycleHubs(scene);
+    if(refineWheels){refineCycleRearWheel(scene);refineCycleWheelInteriors(scene);refineCycleRearSpoke(scene);applyCycleBlackRims(scene);}
+    applyCycleMaterialLighting(scene);
     scene.userData.groundOffsetMeters=-new THREE.Box3().setFromObject(scene).min.y;
     // Measure the repaired rear tire instead of guessing its contact offset.
     scene.updateMatrixWorld(true);
@@ -40,12 +44,12 @@ export class LightCycleRaceView {
   constructor(models,arena,floorReceivers=[],{arenaFloor,groundFloor}={}){
     this.arenaFloor=arenaFloor;this.groundFloor=groundFloor;
     this.root=new THREE.Group();this.root.name='Light cycle competition';arena.add(this.root);
-    this.bikes=Array.from({length:6},(_,id)=>{const root=models[id<3?0:1].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);return root;});
+    this.bikes=Array.from({length:C.maxCycles},(_,id)=>{const root=models[0].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;c.userData.originalCycleColor=m.color?.clone();materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);return root;});
     this.materializations=this.bikes.map(root=>new CarrierMaterialization(root,{axis:'z',reverse:false,isLiveMaterial:()=>false}));
-    this.materializations.forEach((rez,id)=>rez.lineMaterial.color.setHex(C.colors[id<3?0:1]));
+    this.materializations.forEach((rez,id)=>rez.lineMaterial.color.setHex(C.colors[Math.floor(id/3)]));
     const receivers=[...floorReceivers];
     const crafts=this.bikes.map(root=>{const casters=[];root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude){casters.push(o);receivers.push(o);}});return {root,casters,radius:2.6,distance:8};});
-    this.shadows=new RecognizerShadows(crafts,receivers,0,{size:512,prefix:'cycleShadow',darkness:.65,filterEdges:true,depthBias:.002});
+    this.shadows=new RecognizerShadows(crafts,receivers,0,CYCLE_SELF_SHADOW);
     this.wallRenderer=new LightCycleWalls(this.root);
     this.trails=this.wallRenderer.meshes;
     this.explosions=new CycleExplosions(this.root);
@@ -57,8 +61,19 @@ export class LightCycleRaceView {
   }
   update(r,openingFormationAge=null){
     this.root.visible=!!r&&r.phase!=='idle';if(!this.root.visible){this.tireTraces.update(null);return;}
+    for(const mesh of this.bikes)mesh.visible=false;
     const fraction=r.phase==='racing'?r.accumulator/(C.cellMeters/C.speedMetersPerSecond):1;
     for(const b of r.cycles){const fraction=cycleFraction(r,b);const mesh=this.bikes[b.id];mesh.visible=b.alive;
+      if(mesh.userData.team!==b.team){
+        mesh.userData.team=b.team;
+        const palette=[null,[CYCLE_MODEL_STYLE.blueBody,CYCLE_MODEL_STYLE.blueTrim],[0xc72828,0xe45a52],[0x178c42,0x46bd65]][b.team];
+        mesh.traverse(o=>{if(o.isMesh)for(const m of [].concat(o.material)){
+          if(m.userData.originalCycleColor)m.color.copy(m.userData.originalCycleColor);
+          if(palette&&m.name==='Color_D06')m.color.setHex(palette[0]);
+          if(palette&&['_1','Color_L12'].includes(m.name))m.color.setHex(palette[1]);
+        }});
+        this.materializations[b.id].lineMaterial.color.setHex(C.colors[b.team]);
+      }
       const x=THREE.MathUtils.lerp(b.previousX,b.x,fraction)*C.cellMeters,z=THREE.MathUtils.lerp(b.previousZ,b.z,fraction)*C.cellMeters;
       const onArena=this.arenaFloor&&Math.abs(x)<=this.arenaFloor.geometry.parameters.width/2&&Math.abs(z)<=this.arenaFloor.geometry.parameters.height/2;
       const floor=onArena?this.arenaFloor:this.groundFloor;

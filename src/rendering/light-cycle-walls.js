@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { LIGHT_CYCLES as C, cycleTrailState } from '../game/light-cycles.js';
 import {cycleTrailHeadTrim} from '../game/cycle-trails.js';
 export const CYCLE_WALL_STYLE=Object.freeze({
-  colors:[0xde8308,0x167dd8], thicknessMeters:.18,
+  colors:[0xde8308,0x167dd8,0xc92727,0x159d4b], thicknessMeters:.18,
   instancesPerTeam:5820,
   flareLengthMeters:10, flareColor:0xfff6dc,
   stripeSpacingMeters:12, stripeHalfWidthMeters:.035, edgeWidthMeters:.025,
@@ -70,8 +70,8 @@ export class LightCycleWalls {
     });
   }
   update(r,fraction){
-    const counts=[0,0];
-    const byBike=Array.from({length:6},()=>[]);
+    const counts=this.meshes.map(()=>0);
+    const byBike=Array.from({length:r.cycles.length},()=>[]);
     for(const t of r.trails)byBike[t.bikeId].push(t);
     for(const bike of r.cycles){
       const segments=byBike[bike.id];

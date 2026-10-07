@@ -38,17 +38,25 @@ function random(r){r.seed=(Math.imul(r.seed,1664525)+1013904223)>>>0;return r.se
 export function createCycleRace(world,seed=1982){
   const site=arenaSite(world);
   if(!site)return null;
-  const r={site,seed:seed>>>0,round:0,scores:[0,0],time:0};
+  const r={site,seed:seed>>>0,round:0,scores:[0,0,0,0],time:0};
   raceWorlds.set(r,world);resetCycleRound(r);return r;
+}
+export function configureCycleMatch(r,matchIndex){
+ r.teamCount=matchIndex===0?2:2+Math.floor(random(r)*3);
+ r.cyclesPerTeam=matchIndex===0?3:1+Math.floor(random(r)*3);
 }
 export function resetCycleRound(r){
   r.continuousTrails=false;r.arenaPaused=false;r.attemptResolved=false;r.pendingTurns=[];r.round++;r.phase='countdown';r.remaining=C.countdownSeconds;r.elapsed=0;r.accumulator=0;r.winner=null;
   r.occupied=new Uint8Array(side*side);r.outerOccupied={};r.breaches??=[];r.trails=[];r.crashes=[];
   if((r.startWithBreach??CYCLE_TESTING.startWithBreach)&&r.playerId!==undefined&&!r.breaches.some(b=>b.axis==='z'&&b.sign===-1&&b.along===0))r.breaches.push({axis:'z',sign:-1,along:0,id:r.breaches.length,time:r.time});
   const startRow=Math.floor((ARENA_WALL.innerMeters-C.lengthMeters/2-C.startWallClearanceMeters)/C.cellMeters);
-  r.cycles=Array.from({length:6},(_,id)=>{
-    const team=id<3?0:1,north=r.entranceFormation?team===0:team===1;
-    const x=(id%3-1)*(r.entranceFormation&&team===0?C.entranceFormationSpacingCells:12),z=north?-startRow:startRow,dir=north?2:0;
+  const teams=r.teamCount??2,count=r.cyclesPerTeam??3;
+  r.cycles=Array.from({length:teams*count},(_,id)=>{
+    const team=Math.floor(id/count),slot=id%count;
+    const lane=(slot-(count-1)/2)*(r.entranceFormation&&team===0?C.entranceFormationSpacingCells:12);
+    const north=r.entranceFormation?team===0:team===1;
+    const x=team<2?lane:(team===2?-startRow:startRow),z=team<2?(north?-startRow:startRow):lane;
+    const dir=team<2?(north?2:0):(team===2?1:3);
     const active=!((r.hideMiddleOpponent??CYCLE_TESTING.hideMiddleOpponent)&&r.playerId!==undefined&&id===4);
     if(active)r.occupied[cell(x,z)]=id+1;
     return {id,team,x,z,previousX:x,previousZ:z,dir,alive:active,turns:0,straight:0,progress:0,speedMultiplier:1,turboCharge:1,boosting:false,brakeCharge:1,braking:false};
@@ -77,12 +85,13 @@ function room(r,x,z){
 function startCycleTrails(r){
  for(const b of r.cycles){
   if(!b.alive||b.escaped)continue;
-  const sign=Math.sign(b.z),wallZ=sign*ARENA_WALL.innerMeters/C.cellMeters;
-  if(!sign)continue;
+  const [dx,dz]=DIR[b.dir];
+  const distance=(ARENA_WALL.innerMeters/C.cellMeters)-(dx?Math.abs(b.x):Math.abs(b.z));
+  const x1=b.x-dx*distance,z1=b.z-dz*distance;
   b.segment=r.trails.length;
-  r.trails.push({bikeId:b.id,team:b.team,dir:b.dir,x1:b.x,z1:wallZ,x2:b.x,z2:b.z,initial:true});
-  for(let z=b.z+sign;Math.abs(z)<=Math.floor(Math.abs(wallZ));z+=sign){
-   if(inside(b.x,z))r.occupied[cell(b.x,z)]=b.id+1;
+  r.trails.push({bikeId:b.id,team:b.team,dir:b.dir,x1,z1,x2:b.x,z2:b.z,initial:true});
+  for(let d=1;d<=Math.ceil(distance);d++){
+   const x=b.x-dx*d,z=b.z-dz*d;if(inside(x,z))r.occupied[cell(x,z)]=b.id+1;
   }
  }
 }
@@ -178,7 +187,7 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
   }
   for(const hit of trailHits)damageCycleTrail(r,hit.owner,hit.x,hit.z);
   trimCycleTrails(r);
-  const teams=[0,1].filter(team=>r.cycles.some(b=>b.alive&&b.team===team));
+  const teams=[...new Set(r.cycles.filter(b=>b.alive).map(b=>b.team))];
   if(teams.length<2){r.phase='result';r.remaining=C.restartSeconds;r.winner=teams[0]??null;if(r.winner!==null)r.scores[r.winner]++;}
 }
 export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={}){
@@ -227,7 +236,7 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
           b.aiTurbo=hasTurboReason(r,b)&&clear>=C.aiTurboClearCells&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge);
           const dir=chooseCycleDirection(r,b),delta=(dir-b.dir+4)%4;
           if(delta===1||delta===3)turnContinuousCycle(r,b,delta===1?1:-1);
-          b.nextReactionAt=r.elapsed+C.aiReactionSeconds;
+          b.nextReactionAt=r.elapsed+(C.teamReactionSeconds[b.team]??C.aiReactionSeconds);
         }
         wantsBrake=!!b.aiBrake;wantsTurbo=!!b.aiTurbo;
       }

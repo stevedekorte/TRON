@@ -26,9 +26,9 @@ export class CycleTireTraces {
   this.mesh.count=0;this.mesh.frustumCulled=false;this.mesh.renderOrder=1;
   this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.mesh.geometry.attributes.traceBirth.setUsage(THREE.DynamicDrawUsage);
   // The unsampled remainder stays attached to the contact on every frame.
-  const tipGeometry=geometry.clone();this.tipBirths=new Float32Array(6);
+  const tipGeometry=geometry.clone();this.tipBirths=new Float32Array(C.maxCycles);
   tipGeometry.setAttribute('traceBirth',new THREE.InstancedBufferAttribute(this.tipBirths,1).setUsage(THREE.DynamicDrawUsage));
-  this.tip=new THREE.InstancedMesh(tipGeometry,material,6);this.tip.name='Live tire contact traces';
+  this.tip=new THREE.InstancedMesh(tipGeometry,material,C.maxCycles);this.tip.name='Live tire contact traces';
   this.tip.count=0;this.tip.frustumCulled=false;this.tip.renderOrder=1;this.tip.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   this.pose=new THREE.Object3D();root.add(this.mesh,this.tip);
  }

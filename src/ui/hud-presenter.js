@@ -1,3 +1,4 @@
+import {LIGHT_CYCLES} from '../game/light-cycles.js';
 import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {Vector3} from 'three';
 import {assistedRecognizerTarget,ASSIST_MARKER} from '../rendering/assist-target.js';
@@ -85,8 +86,7 @@ export class HudPresenter {
     const resultText=$('cycle-result');
     resultText.hidden=!result;
     resultText.classList.toggle('gold-winner',result&&race.winner===0);
-    resultText.classList.toggle('blue-winner',result&&race.winner===1);
-    resultText.textContent=result?(race.winner==null?'TIED MATCH!':`${race.winner===0?'GOLD':'BLUE'} TEAM WINS`):'';
+    resultText.textContent=result?(race.winner==null?'TIED MATCH!':`${LIGHT_CYCLES.teamNames[race.winner]} TEAM WINS`):'';
     const dead=cycleMode&&!race.cycles[race.playerId].alive;
     cycleControls.hidden=!run.arenaWaiting&&(!dead||result);
     cycleControls.textContent=run.arenaWaiting?'LOADING CYCLE ARENA...':dead?'CYCLE DETROYED - ARROW KEYS TO FOLLOW - ENTER TO RESTART':'MATCH COMPLETE · RETURN / NEW MATCH';

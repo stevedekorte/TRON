@@ -131,6 +131,6 @@ export function advanceContinuousCycles(r,alive,dt,world){
   }
  }
  for(const hit of trailHits)damageCycleTrail(r,hit.owner,hit.x,hit.z);
- const teams=[0,1].filter(team=>r.cycles.some(b=>b.alive&&b.team===team));
+ const teams=[...new Set(r.cycles.filter(b=>b.alive).map(b=>b.team))];
  if(teams.length<2){r.phase='result';r.remaining=C.restartSeconds;r.winner=teams[0]??null;if(r.winner!==null)r.scores[r.winner]++;}
 }

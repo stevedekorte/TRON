@@ -1,7 +1,7 @@
 import { updateCycleArenaPatrol } from './arena-patrol.js';
 import {ROAD_CYCLE,validateRoadCycle} from '../game/cycle-road.js';
 import {LIGHT_CYCLES,CYCLE_TESTING} from '../game/light-cycles.js';
-import { attachCycleWorld, createCycleRace, updateCycleRace, resetCycleRound, cyclePlayerPose } from './light-cycles.js';
+import { attachCycleWorld, configureCycleMatch, createCycleRace, updateCycleRace, resetCycleRound, cyclePlayerPose } from './light-cycles.js';
 import { config, CLU_HEALTH, attachSettings } from '../game/config.js';
 import { FLIGHT } from './flight.js';
 import { HEARING } from '../game/hearing.js';
@@ -39,10 +39,15 @@ export class GameSession {
     this.previous = { ...this.run };
     return this.run;
   }
+  startCycleRound(race){
+    configureCycleMatch(race,this.cycleMatchesStarted??0);
+    this.cycleMatchesStarted=(this.cycleMatchesStarted??0)+1;
+    resetCycleRound(race);
+  }
   restartCycleMatch() {
     const r=this.run,race=r.cycleRace;
     if(r.playerVehicle!=='cycle'||!race||race.cycles[race.playerId].alive&&race.phase!=='result')return false;
-    resetCycleRound(race);r.won=false;r.crushed=false;r.health=3;
+    this.startCycleRound(race);r.won=false;r.crushed=false;r.health=3;
     r.radio=[];
     for(const e of [...r.recognizers,...r.enemyTanks]){
       e.targetGone=false;e.neutralizationSent=false;e.nextSense=r.time;
@@ -92,7 +97,7 @@ export class GameSession {
           else{
             if(!r.cycleRace.attemptResolved){r.cycleRace.attemptResolved=true;r.cycleAttemptsRemaining--;}
             if(r.cycleRace.remaining<=0){
-              if(r.cycleAttemptsRemaining>0){resetCycleRound(r.cycleRace);Object.assign(r,cyclePlayerPose(r.cycleRace));this.previous={...r};r.events.push({type:'cycleRetry'});}
+              if(r.cycleAttemptsRemaining>0){this.startCycleRound(r.cycleRace);Object.assign(r,cyclePlayerPose(r.cycleRace));this.previous={...r};r.events.push({type:'cycleRetry'});}
               else{r.crushed=true;r.health=0;}
             }
           }
@@ -106,7 +111,7 @@ export class GameSession {
       }
       if(!r.crushed&&!r.won&&r.cycleRace&&r.cycleEntryRequested){
         if(this.arenaReady===false){r.arenaWaiting=true;r.speed=0;return r.events.splice(0);}
-        r.cycleEntryRequested=false;r.arenaWaiting=false;r.playerVehicle='cycle';r.cycleAttemptsRemaining=LIGHT_CYCLES.playerAttempts;r.cycleRace.playerId=0;r.cycleRace.randomizePlayer=true;resetCycleRound(r.cycleRace);
+        r.cycleEntryRequested=false;r.arenaWaiting=false;r.playerVehicle='cycle';r.cycleAttemptsRemaining=LIGHT_CYCLES.playerAttempts;r.cycleRace.playerId=0;r.cycleRace.randomizePlayer=true;this.startCycleRound(r.cycleRace);
         r.won=false;r.speed=0;r.gunner=false;r.turretYaw=0;r.aimPitch=0;r.transferActive=false;
         r.projectiles=[];this.debris?.clear();this.physics?.clear();
         Object.assign(r,cyclePlayerPose(r.cycleRace));this.previous={...r};

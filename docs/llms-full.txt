@@ -1592,6 +1592,53 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Cycle winner text through five discrete warm gold/orange/coral colors for gold and cool cyan/blue/violet colors for blue, repeating every 1.5 seconds with a matching subtle glow. Ties retain their neutral appearance. Reduced-motion preferences use steady team colors.
 
+## Restore steady victory text — October 6
+
+- [x] Revert victory palette cycling and its glow at the user's request. Gold wins retain steady gold (#ffd45c); blue wins and ties return to the original blue-gray text.
+
+## Smoother cycle self-shadows — October 6
+
+- [x] Increase each bike's shadow tile from 512 to 1024 pixels and use the existing 36-tap Gaussian edge filter instead of four-tap bilinear filtering. Keep shadow strength and depth bias unchanged; expose the cycle-specific settings in CYCLE_SELF_SHADOW.
+- [x] Headless Chrome rendered the actual gold model with game lighting before/after the change, with no WebGL/shader errors. Inspected close-up captures: fine jagged bands along the curved body and wheel covers are substantially smoother. Added a reproducible isolated model-render check. Broader hardware performance remains unmeasured; the atlas and filtering now cost more GPU memory/work.
+
+## Reversible rear-wheel refinement — October 6
+
+- [x] Preserve byte-identical copies of the gold, blue and red source GLBs and the pre-refinement surface adapter in docs/models/archive/pre-wheel-refinement. Original runtime GLBs also remain unchanged.
+- [x] First experiment replaces only the separate rear tire ring with a smooth revolved surface using its measured axial/radial profile. Keep original hubs, spokes, front wheel, body, materials and proportions. Apply the same adapter in game and credits; CYCLE_REAR_WHEEL.enabled and the loader's refineWheels option allow direct comparison/reversion.
+- [x] Inspect same-camera original/refined Chrome renders: rear ring circumference and opening are smoother. Keep the scope at one component for user review before extending to other parts.
+
+## Smooth inner wheel liners — October 6
+
+- [x] Replace the quantized outer band of the dark front/rear wheel inserts with smooth 128-segment open cylindrical liners. Preserve the inset faces, spokes and hubs; align their outer boundary to the measured circular opening. Apply in both game and credits, leaving archived originals untouched.
+- [x] Headless Chrome checked both team models, confirmed overall bounds stay within 1 cm of originals, and rendered without shader errors. Inspected the close-up to retain the visible spokes and openings.
+
+## Four-team cycle matches and team reactions — October 6
+
+- [x] First player match per app session remains gold versus blue, three bikes each. Each subsequent restart or arena entry draws 2–4 teams and 1–3 bikes per team from the seeded RNG. Gold remains the player team with a random occupied slot. Returning home preserves the match counter; a page reload starts the sequence over.
+- [x] Add red on the west wall and green on the east wall, facing inward. Gold/blue retain their opposite starting walls. All four sides start connected to their nearest wall; equal rosters cover all nine size combinations.
+- [x] Expand models, trails, live tire traces and explosions to twelve bikes/four teams. Recolor cloned materials on roster changes, hide unused bike slots, recognize every surviving team in victory detection, and name red/green winners correctly. Keep the six-tile high-resolution shadow budget by selecting the nearest visible bikes.
+- [x] AI reaction intervals: gold/blue 0.20 s, red 0.14 s, green 0.30 s. Player inputs remain immediate.
+- [x] All 458 tests passed, including roster variation, four-sided trail starts, session continuity, red/green wins and reaction timing. Headless Chrome verified all four-team roster sizes and new winner labels without WebGL errors. Inspected an isolated four-color model render; production build passed. Browser not opened interactively.
+
+## Straight rear spoke and smooth silver liner — October 6
+
+- [x] Replace the remaining quantized rear silver spoke with a tapered straight-edged mesh and smooth circular liner. Give its side faces a small clearance over the retained dark inset to avoid the inset masking its edge. Preserve archived source models and overall bike bounds.
+- [x] Headless Chrome validated both team-source adapters and rendered the new spoke without shader errors; inspected the close-up.
+
+## Immediate home-menu access tone — October 6
+
+- [x] Schedule CLU/cycle access feedback directly after audio unlock, before simulation and view reset, instead of at the end of startup. Permit the access oscillator to queue during context resume; ordinary terminal typing still waits for a running context. Request interactive audio latency. Hardware/Bluetooth output latency remains outside this scheduling fix.
+
+## Stable side panels and black reflective wheel rims — October 6
+
+- [x] Pin the authored flat side-panel vertices during surface repair so smoothing cannot pull the shared diagonal below the window out of plane. The diagonal line also appeared without self-shadowing; it is no longer visible in the corrected close-up.
+- [x] Separate the front wheel rim faces from the team-painted shell and derive smooth normals from welded geometry. Give both rims independent near-black standard materials (roughness 0.24, metalness 0.45), preserving their finish in game/credits lighting and team recoloring. Highlights are produced by scene lights; source GLBs and archived copies remain unchanged.
+
+## Remove overlapping gray cycle-panel faces — October 6
+
+- [x] Source inspection found partially overlapping coplanar triangles in the gray side plates, including overlaps between FrontColor and _LightGray_1. Keep those plates planar during smoothing and subtract already-covered areas across their meshes; retain unique surface area and interpolate original attributes. Apply the repair in game and credits without modifying source GLBs.
+- [x] Geometry regression confirms single ray intersections in overlapping and unique regions, unchanged union area and repeat-repair stability. Headless Chrome rendered both source-team adapters without WebGL errors; inspected the repaired close-up. Production build passed.
+
 
 ---
 

@@ -25,7 +25,7 @@ test('launch trails meet the nearest arena wall and remain connected as bikes ad
 });
 test('six bikes, two equal teams, deterministic rounds with bounded trails',()=>{
  const a=race(),b=race();assert.equal(a.cycles.length,6);assert.equal(a.cycles.filter(c=>c.team===0).length,3);
- let completed=0;const expectedScores=[0,0];
+ let completed=0;const expectedScores=[0,0,0,0];
  for(let n=0;n<180*60;n++){
   const previousPhase=a.phase;updateCycleRace(a,1/60);updateCycleRace(b,1/60);
   if(previousPhase==='racing'&&a.phase==='result'){

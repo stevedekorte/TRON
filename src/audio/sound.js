@@ -84,7 +84,7 @@ export class Sound {
     return s;
   }
   init() {
-    const c = (this.context = new AudioContext());
+    const c = (this.context = new AudioContext({latencyHint:'interactive'}));
     this.master = c.createGain();
     this.master.gain.value = 0;
     const limiter = c.createDynamicsCompressor();
@@ -291,7 +291,9 @@ export class Sound {
     }
   }
   terminalTone(type) {
-    if (!this.context || this.context.state !== 'running' || this.muted) return;
+    // Access feedback may be scheduled during the trusted gesture's resume.
+    if (!this.context || this.context.state === 'closed' || this.muted ||
+        (type !== 'access' && this.context.state !== 'running')) return;
     const c = this.context,
       now = c.currentTime,
       access = type === 'access',
