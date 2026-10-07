@@ -544,7 +544,7 @@ export class View {
     this.mazeShadows.update(this.renderer);
     this.recognizerShadows.update(this.renderer, this.breakups.bursts, this.camera.position);
     this.carrierShadows?.update(this.renderer);
-    if(run.cycleRace&&run.cycleRace.phase!=='idle')this.arena?.userData.cycleRace.shadows.update(this.renderer);
+    if(run.cycleRace&&run.cycleRace.phase!=='idle')this.arena?.userData.cycleRace.shadows.update(this.renderer,[],this.camera.position);
     this.composer.render(dt);
   }
 

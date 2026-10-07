@@ -120,10 +120,5 @@ body.cycle-loading::after{content:'';position:fixed;inset:0;z-index:20;backgroun
 #controls-prompt{position:fixed;top:24px;left:0;right:0;text-align:center;color:#91bcd0;pointer-events:none}
 
 #cycle-result{position:fixed;top:20%;left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);letter-spacing:.08em;pointer-events:none;z-index:5}
-#cycle-result.gold-winner{color:#ffd45c;animation:gold-victory-colors 1.5s steps(1,end) infinite}
-#cycle-result.blue-winner{color:#63dfff;animation:blue-victory-colors 1.5s steps(1,end) infinite}
-#cycle-result.gold-winner,#cycle-result.blue-winner{text-shadow:0 0 8px currentColor}
-@keyframes gold-victory-colors{0%,100%{color:#ffe879}20%{color:#ffd04a}40%{color:#ff9f45}60%{color:#ff7161}80%{color:#ffb65a}}
-@keyframes blue-victory-colors{0%,100%{color:#8cefff}20%{color:#53d9ff}40%{color:#729cff}60%{color:#b18bff}80%{color:#8cc5ff}}
-@media(prefers-reduced-motion:reduce){#cycle-result.gold-winner,#cycle-result.blue-winner{animation:none}}
+#cycle-result.gold-winner{color:#ffd45c}
 body.terminal #cycle-result{display:none}

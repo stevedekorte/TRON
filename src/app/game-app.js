@@ -209,6 +209,8 @@ export function createGameApp() {
       console.warn('Audio unavailable; continuing silently.', e.message);
     }
     if (disposed || mode === 'error') return;
+    // Queue UI feedback before the expensive simulation/model reset.
+    if(fromTerminal)sound.terminalTone('access');
     tribute.reset();
     victoryPrinter.reset();endingStage=null;document.body.classList.remove('victory','victory-credits');
     const accessMessage=selectedGame==='space'?cluAccessMessage:openingMessage;
@@ -245,8 +247,6 @@ export function createGameApp() {
     setMode(opening ? 'entering' : 'running');
     if(!opening&&!run.arenaWaiting)sound.startMusic();
     await audioReady;
-    if (fromTerminal && !disposed && ['entering', 'running'].includes(mode))
-      sound.terminalTone('access');
   }
   function pause() {
     if (mode === 'running' || mode === 'entering') {

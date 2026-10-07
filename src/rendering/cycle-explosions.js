@@ -19,14 +19,14 @@ function glowTexture(){
   }
   const texture=new T.DataTexture(data,size,size);texture.needsUpdate=true;return texture;
 }
-/** Six reusable bursts, with no frame-by-frame resource creation or persistent wreck collision. */
+/** Reusable bursts for all twelve bikes, with no frame-by-frame resource creation or persistent wreck collision. */
 export class CycleExplosions {
   constructor(root){
     this.matrix=new T.Object3D();this.up=new T.Vector3(0,1,0);this.direction=new T.Vector3();
     const glow=glowTexture(),rayGeometry=new T.CylinderGeometry(.006,.045,1,4);
     const chipGeometry=new T.BoxGeometry(1,1,1),arcGeometry=new T.TorusGeometry(1,.008,4,64,Math.PI);
     const wheelGeometry=new T.TorusGeometry(.35,.035,5,24);
-    this.effects=Array.from({length:6},(_,id)=>{
+    this.effects=Array.from({length:C.maxCycles},(_,id)=>{
       const group=new T.Group();group.name=`Cycle explosion ${id}`;group.visible=false;root.add(group);
       const white=new T.MeshBasicMaterial({color:new T.Color(2.2,2.5,2.7),transparent:true,depthWrite:false,toneMapped:false});
       const rays=new T.InstancedMesh(rayGeometry,white,E.rayCount);rays.frustumCulled=false;rays.instanceMatrix.setUsage(T.DynamicDrawUsage);group.add(rays);
