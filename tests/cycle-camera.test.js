@@ -362,3 +362,20 @@ test('curved trail connection stays fixed at the rear axle across render fractio
  }
  for(const mesh of walls.meshes){mesh.geometry.dispose();mesh.material.dispose();}
 });
+
+test('arena turn tracking becomes gentler with distance for player and spectator views',()=>{
+ for(const spectating of [false,true]){
+  const turns=[];
+  for(const zoom of [1,16,128]){
+   const {bike,run,rig}=setup();rig.followZoom=zoom;
+   if(spectating){run.cycleSpectating=true;run.cycleFollowId=0;}
+   for(let i=0;i<180;i++)frame(rig,run,1/60);
+   const before=rig.camera.quaternion.clone();bike.dir=1;
+   for(let i=0;i<12;i++)frame(rig,run,1/60);
+   turns.push(before.angleTo(rig.camera.quaternion));
+   for(let i=0;i<600;i++)frame(rig,run,1/60);
+   assert(Math.abs(Math.sin(rig.cycleTrackingYaw-cyclePlayerPose(run.cycleRace).yaw))<.001,'eventually aligns with cycle');
+  }
+  assert(turns[0]>turns[1]&&turns[1]>turns[2],`turn rotation should decrease with distance: ${turns}`);
+ }
+});

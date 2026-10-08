@@ -1680,3 +1680,8 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Fade unselected menu text and logo for 825 ms, then immediately fade the selected label over the opening scene together with the dark background for 1100 ms. Both phases are scheduled before synchronous game setup so setup cannot postpone the selected-label animation. BIT preserves the original fade deadline across navigation. Home selections replace the intermediate access typing screen; non-home restart paths remain intact. BIT carries its label across document navigation. Reduced-motion users skip the fades.
 - [x] Headless desktop Chrome: `node tests/home-transition.mjs` passed for CLU, Light Cycles, Credits and BIT; checks animation ordering/durations and destination. `npm run build` passed. No deployment performed.
+
+## Distance-sensitive arena turn tracking — October 7
+
+- [x] Ease cycle heading independently of camera translation, zoom and deliberate glances. Keep the existing quick tracking within 12 m; progressively ease distant turns toward a 1.2/second heading response at 140 m. Use actual camera distance so wall-shortened views respond quickly. Applies to player and spectator follow views; road cycling, openings and survivor-switch transitions retain their existing behavior.
+- [x] `node --test tests/cycle-camera.test.js tests/camera-collision.test.js` passed, including near/middle/far turn comparisons and eventual heading convergence for player and spectator views. Visual driving feel remains subject to user review.
