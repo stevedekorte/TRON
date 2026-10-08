@@ -93,3 +93,21 @@ window.addEventListener('DOMContentLoaded', () => {
     observer.disconnect();window.removeEventListener('resize', centerHeading);
   }, {once:true});
 }, {once:true});
+
+// Carry the selected home label across the standalone BIT document navigation.
+window.addEventListener('DOMContentLoaded',()=>{
+  let saved;
+  try{saved=sessionStorage.getItem('tron-home-transition');sessionStorage.removeItem('tron-home-transition');}catch{}
+  if(!saved)return;
+  const template=document.createElement('template');template.innerHTML=saved;
+  const curtain=template.content.firstElementChild;
+  if(curtain?.id!=='home-transition')return;
+  document.body.append(curtain);
+  function reveal(){
+    const duration=Number(curtain.dataset.fadeDuration)||1100;
+    const elapsed=Math.max(0,Date.now()-Number(curtain.dataset.selectedFadeAt||Date.now()));
+    const remaining=Math.max(0,duration-elapsed);
+    curtain.animate([{opacity:remaining/duration},{opacity:0}],{duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:remaining,easing:'linear',fill:'forwards'}).finished.finally(()=>curtain.remove());
+  }
+  document.fonts.ready.then(()=>requestAnimationFrame(reveal));
+},{once:true});

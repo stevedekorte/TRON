@@ -1669,3 +1669,14 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Prepare and decode CLU/cycle sound samples before the menu; warm all selected soundtrack files and the Solar Sailer alongside arena preparation. Audio playback still resumes from the user's gesture.
 - [x] Fetch BIT's document, local scripts, four OBJ models, yes/no WAV samples, font and logo into the browser HTTP cache without running BIT, opening its microphone or sending a JEV request. BIT still initializes its own page and audio context when selected.
 - [x] Headless Chrome confirms arena, audio/BIT resources and Solar Sailer finish before the home menu, and cycle selection causes no GLB downloads. Desktop initial loading carries the preparation cost; mobile still exits before loading the game.
+
+## Smooth front cycle wheel shell — October 7
+
+- [x] Preserve the current surface/seam adapters in `docs/models/archive/pre-front-wheel-refinement/` before changing the front wheel. Source GLBs remain untouched; the new front wheel adapter has an explicit enable switch.
+- [x] Replace the front wheel's faceted colored shell with a symmetric revolved surface derived from its measured axial/radial profile, using 128 radial segments and 64 profile segments. Retain the body attachment geometry, team paint and polished black inner surfaces; use the same adapter in game and credits.
+- [x] Headless Chrome checks both source-team models, original versus refined bounds (within 1 cm), preserved rear seam coverage and rim materials, and renders front/rear/side views plus `test-results/cycle-wheel-wireframe.png`. The new wheel has regular curved topology; window-border geometry remains a separate follow-up.
+
+## Home selection fade — October 7
+
+- [x] Fade unselected menu text and logo for 825 ms, then immediately fade the selected label over the opening scene together with the dark background for 1100 ms. Both phases are scheduled before synchronous game setup so setup cannot postpone the selected-label animation. BIT preserves the original fade deadline across navigation. Home selections replace the intermediate access typing screen; non-home restart paths remain intact. BIT carries its label across document navigation. Reduced-motion users skip the fades.
+- [x] Headless desktop Chrome: `node tests/home-transition.mjs` passed for CLU, Light Cycles, Credits and BIT; checks animation ordering/durations and destination. `npm run build` passed. No deployment performed.

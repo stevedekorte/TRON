@@ -25,6 +25,7 @@ try{
       if(!hits.length)throw Error('Gap in rear body return');
      }
     }
+    if(!model.getObjectByName('Refined front wheel ring'))throw Error('Missing smooth front wheel');
     let count=0;model.traverse(m=>{if(m.name==='Refined rear wheel ring')count++;});
     if(count!==1)throw Error('Expected exactly one refined rear ring per team model');
     let spokes=0;model.traverse(m=>{if(m.name==='Smooth rear wheel spoke')spokes++;});
@@ -55,6 +56,8 @@ try{
   await page.evaluate(position=>{const {renderer,scene,camera}=window.shadowPreview;camera.position.set(...position);camera.lookAt(0,.65,0);renderer.render(scene,camera);},position);
   await page.screenshot({path:`test-results/cycle-surface-${name}.png`});
  }
+ await page.evaluate(()=>{const {renderer,scene,camera,view}=window.shadowPreview;view.bikes[0].traverse(m=>{if(m.isMesh)m.material.wireframe=true;});camera.position.set(3,1.5,-4);camera.lookAt(0,.65,0);renderer.render(scene,camera);});
+ await page.screenshot({path:'test-results/cycle-wheel-wireframe.png'});
  assert.deepEqual(errors,[]);
  console.log('Trimmed overlapping triangles per model:',await page.evaluate(()=>window.overlapRepairs));
  console.log('Actual cycle model and self-shadow shader rendered without WebGL errors.');
