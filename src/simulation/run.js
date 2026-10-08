@@ -1,3 +1,5 @@
+import {tankHullContact,constrainHullTurn} from './tank-hull-collision.js';
+import {tankContactPose,resolveTurretMotion,holdLodgedTurret,damageWallFromTank} from './turret-collision.js';
 import {bossMuzzlePoses} from '../game/boss-tank.js';
 import {surfaceImpact} from './surface-impact.js';
 import {configFor,attachSettings} from '../game/config.js';
@@ -24,7 +26,7 @@ export function createRun(seed=randomSeed(),world=DEFAULT_WORLD,settings=null) {
   const {SPAWN}=world;
   const random=seededRandom(seed);
   const run={...SPAWN,seed,inspection:false,teleportPads:createTeleportPads(world.MAZE_INSTANCES,world.WALL_HEIGHT),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,won:false,crushed:false,killedBy:null,cooldown:0,extraShots:CLU_WEAPON.maxExtraShots,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
+    barrelJam:null,nextWallRamAt:-Infinity,carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,won:false,crushed:false,killedBy:null,cooldown:0,extraShots:CLU_WEAPON.maxExtraShots,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
   if(config.aiMode!=='classic'&&config.aiSmallEncounter){run.recognizers=run.recognizers.slice(0,2);run.enemyTanks=run.enemyTanks.filter(e=>e.role==='patrol'&&e.mazeId===0).slice(0,1);if(run.enemyTanks[0])Object.assign(run.enemyTanks[0],{id:100,index:0});}
   run.scenario={...world.spec,runSeed:seed,configuration:settings?structuredClone(settings):null};
   if(settings){attachSettings(run,settings);for(const e of [...run.recognizers,...run.enemyTanks])attachSettings(e,settings);}
@@ -69,6 +71,15 @@ export function moveTank(run,dx,ds) {
   for(let i=0;i<steps;i++) {
     const oldX=run.x,oldS=run.s;run.x+=dx/steps;run.s+=ds/steps;
     if(run.enemyTanks?.some(e=>!e.teleport&&e.state!=='destroyed'&&Math.hypot(e.x-run.x,e.s-run.s)<radius*2)){run.x=oldX;run.s=oldS;hit=true;continue;}
+    if(run.enemyTanks){
+      for(let pass=0;pass<6;pass++){
+        const contact=tankHullContact(run);if(!contact)break;hit=true;
+        const incoming=Math.max(0,-(dx*contact.normal.x-ds*contact.normal.z)/Math.max(1e-8,Math.hypot(dx,ds)))*Math.abs(run.speed);
+        damageWallFromTank(run,contact,incoming);
+        run.x+=contact.nx*(contact.penetration+1e-5);run.s+=contact.ns*(contact.penetration+1e-5);
+      }
+      continue;
+    }
     for(let pass=0;pass<3;pass++)for(const w of nearbyWalls(run.x,run.s,radius)) {
       const point=closestWallPoint(w,run.x,run.s),inside=insideWall(w,run.x,run.s);
       if(!inside&&point.distance>=radius)continue;
@@ -188,6 +199,7 @@ export function updateWeapons(run,input,dt) {
 
 export function step(run,input,dt) {
  if(run.won)return;
+ if(run.teleport||run.crushed)run.barrelJam=null;
  const config=configFor(run);
   if(run.crushed){run.gunnerLeveling=false;run.gunnerYawMotion=0;run.gunnerPitchMotion=0;run.cruiseThrottle=false;input={};run.speed=0;run.steer=0;run.turretCentering=false;run.turboRemaining=0;}
   updateTeleporters(run);updateHearing(run);
@@ -196,6 +208,7 @@ export function step(run,input,dt) {
   if(run.transferActive&&!run.crushed){input={...input,throttle:0,steer:0};run.speed=0;run.steer=0;run.turboRemaining=0;run.cruiseThrottle=false;}
   run.turboCooldown=run.turboCooldown<=dt+1e-8?0:run.turboCooldown-dt;
   run.time+=dt;run.impact=Math.max(0,run.impact-dt*2.5);
+  const contactPoseBefore=tankContactPose(run);
   const hullYawBefore=run.yaw,aimScale=run.gunner?gunnerAimScale(run.gunnerZoom):1;
   const turretInput=clamp(input.turret||0,-1,1),pitchInput=clamp(input.aimPitch||0,-1,1);
   const manualAim=turretInput||pitchInput||input.mouseTarget;
@@ -253,13 +266,14 @@ export function step(run,input,dt) {
   run.steer=damp(run.steer,input.steer||0,8,dt);
   const turnFactor=.65+.35*(1-Math.min(1,Math.abs(run.speed)/config.maxSpeed));
   run.yaw-=run.steer*config.steering*turnFactor*(run.speed<-.5?-1:1)*dt;
+  constrainHullTurn(run,hullYawBefore);
   if(centering)run.turretHeading=run.yaw+run.turretYaw;
   else{
     run.turretYaw=yawBefore;
     stabilizeTurret(run,run.turretHeading,config.turretSpeed,dt);
   }
   const beforeX=run.x,beforeS=run.s;
-  if(moveTank(run,-Math.sin(run.yaw)*run.speed*dt,Math.cos(run.yaw)*run.speed*dt)) {
+  if(!run.barrelJam&&moveTank(run,-Math.sin(run.yaw)*run.speed*dt,Math.cos(run.yaw)*run.speed*dt)) {
     const travel=Math.hypot(run.x-beforeX,run.s-beforeS);
     const lostSpeed=Math.max(0,Math.abs(run.speed)-travel/dt);
     if(lostSpeed>2)run.impact=Math.max(run.impact,Math.min(1,lostSpeed/14));
@@ -267,6 +281,7 @@ export function step(run,input,dt) {
     // This also allows immediate reverse instead of braking stored wall pressure.
     if(travel<Math.abs(run.speed)*dt*.05)run.speed=0;
   }
+  if(!holdLodgedTurret(run,input,dt))resolveTurretMotion(run,contactPoseBefore,dt);
   updateCarrierSearch(run,dt);updateRecognizers(run,dt);updateReinforcements(run,dt);updateGroundTanks(run,dt,moveTank,cannonPose);updateWeapons(run,input,dt);collectData(run,dt);updateTeleporters(run);updateHearing(run);
   if(run.crushed)run.health=0;
   else if(run.health>0&&run.health<CLU_HEALTH.max)run.health=Math.min(CLU_HEALTH.max,run.health+CLU_HEALTH.max*dt/CLU_HEALTH.rechargeSeconds);

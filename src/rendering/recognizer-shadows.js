@@ -43,12 +43,12 @@ export class RecognizerShadows {
     }
     shader.uniforms[prefix+'Strength']={value:this.strengths};shader.uniforms[prefix+'Atlas']={value:this.target.texture};shader.uniforms[prefix+'Matrices']={value:this.entries.map(e=>e.matrix)};
     shader.vertexShader=named('varying vec3 recShadowWorld;\n')+shader.vertexShader;
-    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',named('#include <begin_vertex>\n recShadowWorld=(modelMatrix*vec4(position,1.)).xyz;'));
+    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',named(`#include <begin_vertex>\n recShadowWorld=${receiver.userData.shadowWorldExpression||'(modelMatrix*vec4(position,1.)).xyz'};`));
     shader.fragmentShader=named(`uniform sampler2D recShadowAtlas;uniform mat4 recShadowMatrices[${this.entries.length}];uniform float recShadowStrength[${this.entries.length}];varying vec3 recShadowWorld;\n`)+shader.fragmentShader;
     if(!shader.fragmentShader.includes('#include <packing>'))shader.fragmentShader='#include <packing>\n'+shader.fragmentShader;
     const authoredNormal=receiver.geometry.hasAttribute('shadowReceiverNormal');
     const wallReceiver=this.occlusion&&(receiver.isMesh||authoredNormal)&&receiver.geometry.hasAttribute('shadowWallId');
-    const surfaceNormal=prefix+'MazeNormal';
+    const surfaceNormal=prefix+'ReceiverNormal';
     if(this.occlusion&&authoredNormal){
      if(!shader.vertexShader.includes('attribute vec3 shadowReceiverNormal;'))shader.vertexShader='attribute vec3 shadowReceiverNormal;\n'+shader.vertexShader;
      shader.vertexShader=`varying vec3 ${surfaceNormal};\n`+shader.vertexShader;
@@ -62,7 +62,9 @@ export class RecognizerShadows {
      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\n${wallId}=shadowWallId;`);
      shader.fragmentShader=`varying float ${wallId};\n`+shader.fragmentShader;
     }
-    const occlusion=this.occlusion&&!receiver.userData.exactMazeFloorShadow?mazeLightVisibility(this.occlusion,prefix+'Maze',prefix+'World',wallReceiver?wallId:null,authoredNormal?surfaceNormal:null):null;
+    const unionAttenuation=receiver.userData.shadowUnionAttenuation;
+    const exactWall=prefix==='carrierShadow'&&receiver.userData.exactMazeWallShadow;
+    const occlusion=this.occlusion&&!receiver.userData.exactMazeFloorShadow&&!exactWall&&unionAttenuation===undefined?mazeLightVisibility(this.occlusion,prefix+'Maze',prefix+'World',wallReceiver?wallId:null,authoredNormal?surfaceNormal:null):null;
     if(occlusion){Object.assign(shader.uniforms,occlusion.uniforms);shader.fragmentShader=occlusion.declarations+'\n'+shader.fragmentShader;}
     const tests=this.entries.map((_,i)=>`{
      vec4 projected=recShadowMatrices[${i}]*vec4(recShadowWorld,1.);vec3 p=projected.xyz/projected.w;
@@ -91,9 +93,9 @@ export class RecognizerShadows {
      }
     }`).join('\n');
     const emissive=shader.fragmentShader.includes('totalEmissiveRadiance')?' + totalEmissiveRadiance*(1.-recShadowShade)':'';
-    shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>',named(`float recShadowShade=1.;\n${occlusion?.code||''}\n${tests}\n${occlusion?`recShadowShade=mix(1.,recShadowShade,${occlusion.visible});`:''}\ngl_FragColor.rgb=gl_FragColor.rgb*recShadowShade${emissive};\n#include <tonemapping_fragment>`));
+    shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>',named(`float recShadowShade=1.;\n${occlusion?.code||''}\n${tests}\n${occlusion?`recShadowShade=mix(1.,recShadowShade,${occlusion.visible});`:''}\n${unionAttenuation===undefined?`gl_FragColor.rgb=gl_FragColor.rgb*recShadowShade${emissive};`:`gl_FragColor.rgb=vec3(min(${unionAttenuation.toFixed(3)},recShadowShade)/max(recShadowShade,.001));`}\n#include <tonemapping_fragment>`));
    };
-   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v9:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}:exactFloor${!!receiver.userData.exactMazeFloorShadow}:occlusion${this.occlusion?.entries.length||0}`;
+   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v11:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}:union${receiver.userData.shadowUnionAttenuation??'none'}:exactWall${!!receiver.userData.exactMazeWallShadow}:exactFloor${!!receiver.userData.exactMazeFloorShadow}:occlusion${this.occlusion?.entries.length||0}`;
    // A rebuilt atlas can reuse the same shader source/key. Evict the old
    // material program bindings so Three invokes onBeforeCompile again with
    // this atlas and its current matrices instead of a disposed texture.

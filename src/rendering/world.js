@@ -86,6 +86,9 @@ export function createWorld(scene,world=DEFAULT_WORLD,arena=null) {
   seams.material.onBeforeCompile=shader=>distantFog(shader,120);
   scene.add(seams);
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setAttribute('shadowWallId',new THREE.Float32BufferAttribute(shadowIds,1));geometry.computeBoundingSphere();
+  // Stable flat receiver normals avoid derivative noise on faces grazing the light.
+  geometry.computeVertexNormals();
+  geometry.setAttribute('shadowReceiverNormal',geometry.attributes.normal.clone());
   const slabMaterial=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide});
   slabMaterial.onBeforeCompile=shader=>{
     distantFog(shader,120);

@@ -1685,3 +1685,33 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Ease cycle heading independently of camera translation, zoom and deliberate glances. Keep the existing quick tracking within 12 m; progressively ease distant turns toward a 1.2/second heading response at 140 m. Use actual camera distance so wall-shortened views respond quickly. Applies to player and spectator follow views; road cycling, openings and survivor-switch transitions retain their existing behavior.
 - [x] `node --test tests/cycle-camera.test.js tests/camera-collision.test.js` passed, including near/middle/far turn comparisons and eventual heading convergence for player and spectator views. Visual driving feel remains subject to user review.
+
+## CLU turret contact and wall ramming — October 7
+
+- [x] Add measured pivot-to-muzzle collision probes and bounded sweeps for hull movement, hull yaw and turret rotation. Stop the barrel at solid maze faces while retaining safe tangential sliding and withdrawal. Collision geometry remains separate from the model.
+- [x] Emit the existing chipped-wall/debris effect for hull or turret impacts above 30 m/s normal contact speed, with a 0.6 s per-tank damage cooldown. A muzzle impact above 40 m/s and sufficiently aligned into the face embeds the barrel 0.45 m and locks the tank/turret. Hold reverse for 8 s to extract gradually; show a HUD recovery hint. Restart, destruction and teleport clear the jam.
+- [x] Damage remains a shallow visual cavity; this does not create traversable maze breaches. Thresholds, probe spacing, embedding and recovery values live in `TURRET_CONTACT`.
+- [x] Headless desktop Chrome: `node tests/turret-wall.mjs` passed a real maze-wall ram, damage creation, stationary lodged state, HUD notice and reverse extraction. Captures: `test-results/turret-lodged.png`, `test-results/turret-freed.png`. Inspected the lodged render. Focused simulation checks cover slow contact, rotation sweeps, damage cooldown, hard lodging, extraction, reset and hull damage.
+
+## Stable carrier shadows and darker maze shading — October 7
+
+- [x] Supply explicit flat wall receiver normals, including rebuilt damage geometry, instead of screen derivatives. Treat near-parallel light angles consistently and keep the receiver varying distinct from the shader's local normal variable. This avoids alternating triangular moving-shadow patches on grazing maze faces.
+- [x] Suppress static shadow casting between coplanar neighboring wall faces with different slab IDs, accounting for float32 rounding; reject degenerate light-parallel caster triangles.
+- [x] Increase maze shadow attenuation from 40% to 60%, and carrier attenuation from 50% to 65%. Retain filtered carrier edges, static geometric shadow unions, and readable ground grid lines.
+- [x] Headless Chrome: carrier shadow edge/ray comparison, moving-shadow occlusion, grazing-angle receiver and maze grid tests passed. Grazing fixtures at 0 and 7000 m have zero spurious dark pixels; light-facing fixtures still receive the carrier shadow. Damage-geometry tests passed. Original screenshot location remains subject to user confirmation.
+
+## CLU hull corner collision — October 7
+
+- [x] Measure the imported non-turret mesh: 6.5 m width and 9.373 m length. Replace CLU's circular wall contact with an oriented rectangular footprint enclosing those bounds with a small clearance. Sweep translation and hull rotation, retain tangent sliding/reverse, and route hard hull contacts through the wall-damage mechanic. Enemy hull behavior remains unchanged.
+- [x] `node tests/tank-hull.mjs` confirms every measured hull vertex is enclosed. Unit checks cover previously missed corners, multiple headings, large turbo displacements, rotation contact and sliding. `npm test`: all 473 checks passed.
+
+## Combined carrier/maze shadows and menu cursor — October 7
+
+- [x] Compose carrier shadows with the exact static maze wall/floor polygons using minimum light visibility. Apply a compensating multiplier on the static overlays instead of multiplying two shadow attenuations or cutting the carrier coverage with the coarse maze depth atlas on wall faces. Preserve receiver-plane filtering and vehicle occlusion.
+- [x] Headless Chrome: `tests/carrier-shadow-union.mjs` covers 18,635 static-shadow pixels under a carrier shadow with zero incorrect overlap pixels. Carrier edge/ray comparisons, maze/grid rendering and all four menu transitions pass without shader errors. Original gameplay location remains subject to user confirmation.
+- [x] Fade the selection cursor in the first 825 ms stage with the other menu text. Retain its layout space but carry only the selected program name into the 1100 ms scene fade, including BIT navigation.
+
+## Immediate mobile unsupported terminal — October 8
+
+- [x] Detect mobile devices in the initial HTML and show a static, inline-styled unsupported-terminal message immediately. Desktop-only styles load through the desktop bootstrap; the confirmation script is deferred. The warning uses a fallback font immediately and does not wait for JavaScript modules, CSS downloads or the terminal font.
+- [x] Headless Chrome device profiles: iPhone, iPad and Android show the warning without loading game models; a narrow desktop still reaches the menu. The warning also remains visible with every external script, stylesheet and font request blocked. Production HTML retains the inline detector/styles and has no render-blocking game stylesheet.

@@ -14,7 +14,7 @@ export function mazeLightVisibility(atlas, prefix, worldPosition, wallId = null,
       // itself. A nearest texel straddling the roof edge must not expose them.
       vec3 ${name('Normal')}=normalize(${surfaceNormal || `cross(dFdx(${worldPosition}),dFdy(${worldPosition}))`});
       ${surfaceNormal ? '' : `if(!gl_FrontFacing)${name('Normal')}=-${name('Normal')};`}
-      if(${wallId}>.5&&dot(${name('Normal')},vec3(-.5,1.,-.5))<=0.)${name('Visible')}=0.;
+      if(${wallId}>.5&&dot(${name('Normal')},vec3(-.5,1.,-.5))<=.001)${name('Visible')}=0.;
     ` : '') +
     atlas.entries
       .map(

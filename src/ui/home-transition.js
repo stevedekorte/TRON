@@ -25,7 +25,7 @@ export function createHomeTransition(){
       const label=document.createElement('div');label.id='home-selected-label';label.textContent=button.textContent.trim();
       Object.assign(label.style,{position:'absolute',left:`${rect.left}px`,top:`${rect.top}px`,font:style.font,letterSpacing:style.letterSpacing,color:style.color,textShadow:style.textShadow,whiteSpace:'pre',textTransform:'uppercase'});
       // Include the selection cursor without copying any interactive elements.
-      const marker=document.createElement('span');marker.textContent='';
+      const marker=document.createElement('span');marker.id='home-selection-cursor';marker.textContent='';
       Object.assign(marker.style,{display:'inline-block',width:'.48em',height:'.78em',background:'currentColor',marginRight:'1ch'});
       label.prepend(marker);curtain.append(label);document.body.append(curtain);
       // Schedule both phases before resetting the simulation. The compositor can
@@ -37,9 +37,10 @@ export function createHomeTransition(){
       animations.push(sceneFade);
       const hideOriginal=button.animate([{opacity:0},{opacity:0}],{duration:0,fill:'forwards'});
       animations.push(hideOriginal);
-      await Promise.all([...document.querySelectorAll('#intro .terminal-copy,.terminal-encom,#game-menu button')]
+      await Promise.all([marker,...document.querySelectorAll('#intro .terminal-copy,.terminal-encom,#game-menu button')]
         .filter(e=>e!==button&&e.getClientRects().length).map(e=>animate(e,[{opacity:getComputedStyle(e).opacity},{opacity:0}],duration)));
       if(!active)return;
+      marker.style.opacity='0';
       curtain.style.background='#020204';
       document.body.classList.add('home-opening');
     },

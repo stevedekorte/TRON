@@ -31,7 +31,7 @@ try{
    assert(!log.some(e=>e.id==='home-selected-label'),'label inherits the background fade instead of fading separately');
    assert.equal(fade.delay,825);assert.equal(fade.duration,1100);
    assert(fade.start<=others[0].start,'shared fade is scheduled before game setup');
-   assert.equal(others.length,5);assert(!others.some(e=>e.id===id));
+   assert.equal(others.length,6);assert(others.some(e=>e.id==='home-selection-cursor'),'cursor fades in the first phase');assert(!others.some(e=>e.id===id));
    await page.locator('#home-transition').waitFor({state:'detached'});
    if(vehicle){
     await page.waitForFunction(()=>__tron.state.mode==='running');
