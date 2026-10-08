@@ -22,9 +22,20 @@
   <meta name="twitter:description" content="Enter the grid. Play CLU, race light cycles, and talk to BIT in this browser tribute to TRON (1982).">
   <meta name="twitter:image" content="https://dekorte.com/fun/TRON/images/encom-social-preview.jpg">
   <meta name="twitter:image:alt" content="A blue light cycle leaves a glowing trail across the grid inside the TRON arena.">
-  <script src="./bit/exit-confirm.js"></script>
+  <script>
+    // Run while parsing HTML, before any stylesheets, modules or game assets.
+    window.tronMobileTerminal = navigator.userAgentData?.mobile === true || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent) || (/Macintosh|MacIntel/i.test(navigator.userAgent + ' ' + navigator.platform) && navigator.maxTouchPoints > 1);
+    if (window.tronMobileTerminal) document.documentElement.classList.add('mobile-terminal');
+  </script>
+  <script defer src="./bit/exit-confirm.js"></script>
   <style>html,body{margin:0;background:#000;color:#9eb6ce}body{visibility:hidden}</style>
-  <link rel="stylesheet" href="/src/ui/style.css">
+  <style>
+    @font-face{font-family:MobileTerminal;src:url('./fonts/InterfaceRaster-Regular.ttf') format('truetype');font-display:swap}
+    #mobile-terminal-message{display:none}
+    html.mobile-terminal,html.mobile-terminal body{background:#020204;visibility:visible}
+    html.mobile-terminal body>*:not(#mobile-terminal-message){display:none!important}
+    html.mobile-terminal #mobile-terminal-message{display:block;position:absolute;left:7vw;top:28vh;width:86vw;margin:0;color:#159ddd;font:400 clamp(14px,2.6vw,24px)/1.4 MobileTerminal,monospace;letter-spacing:.025em;text-shadow:0 0 3px #0a91db}
+  </style>
   <link rel="icon" type="image/svg+xml" href="./icons/encom-e-727c3ea9d1f1.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/encom-e-727c3ea9d1f1-180.png">
@@ -32,6 +43,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body class="terminal">
+  <p id="mobile-terminal-message" role="status">MOBILE TERMINALS NOT SUPPORTED</p>
   <canvas id="game" aria-label="Three-dimensional tank chase"></canvas>
   <div class="grain" aria-hidden="true"></div>
   <header class="masthead">

@@ -5,6 +5,7 @@ import {RecognizerShadows} from './recognizer-shadows.js';
 // Bias measured in depth-buffer units plus receiver slope. Clipped shadow
 // vertices are independently rounded to float32; at distant maze coordinates
 // one unit allowed entire patches to alternate with the underlying wall.
+export const MAZE_SHADOW_STYLE=Object.freeze({darkness:.6});
 const WALL_SHADOW_DEPTH = Object.freeze({factor: -2, units: -4});
 
 // The maze is static: render its depth maps once, independently of moving casters.
@@ -25,7 +26,7 @@ export class MazeShadows extends RecognizerShadows{
   // Floor shadow coverage is exact geometry. Do not cut moving floor shadows
   // with the lower-resolution atlas: its stair steps disagree with this edge.
   if(world.floor)world.floor.userData.exactMazeFloorShadow=true;
-  const darkness=.4;
+  const darkness=MAZE_SHADOW_STYLE.darkness;
   const receivers=[];
   for(const root of vehicles)root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude)receivers.push(o);});
   super(casters,receivers,0,{size:2048,prefix:'mazeShadow',darkness,excludeSelf:true,filterEdges:true});
@@ -33,14 +34,16 @@ export class MazeShadows extends RecognizerShadows{
   // Project exact slab geometry onto the floor and multiply its existing color.
   // Stencil bit 0 makes the operation a union: overlapping triangles/slabs
   // darken each sample only once, preserving grid lines without map stair steps.
-  const material=new T.ShaderMaterial({depthTest:false,depthWrite:false,side:T.DoubleSide,
+  const material=new T.ShaderMaterial({toneMapped:false,depthTest:false,depthWrite:false,side:T.DoubleSide,
    blending:T.CustomBlending,blendSrc:T.ZeroFactor,blendDst:T.SrcColorFactor,
    blendSrcAlpha:T.ZeroFactor,blendDstAlpha:T.OneFactor,
    stencilWrite:true,stencilWriteMask:1,stencilFuncMask:1,stencilRef:1,
    stencilFunc:T.NotEqualStencilFunc,stencilZPass:T.ReplaceStencilOp,
    uniforms:{attenuation:{value:1-darkness}},
-   vertexShader:`void main(){vec4 p=modelMatrix*vec4(position,1.);p.xz+=vec2(.5)*max(0.,p.y);p.y=-.06;gl_Position=projectionMatrix*viewMatrix*p;}`,
-   fragmentShader:'uniform float attenuation;void main(){gl_FragColor=vec4(vec3(attenuation),1.);}'
+   vertexShader:`void main(){vec4 p=modelMatrix*vec4(position,1.);p.xz+=vec2(.5)*max(0.,p.y);p.y=-.06;
+#include <begin_vertex>
+gl_Position=projectionMatrix*viewMatrix*p;}`,
+   fragmentShader:'uniform float attenuation;void main(){gl_FragColor=vec4(vec3(attenuation),1.);\n#include <tonemapping_fragment>\n}'
   });
   this.floorShadow=new T.Mesh(world.slabs.geometry,material);this.floorShadow.frustumCulled=false;this.floorShadow.renderOrder=-1.5;
   this.floorShadow.matrixAutoUpdate=false;
@@ -48,8 +51,15 @@ export class MazeShadows extends RecognizerShadows{
   world.slabs.parent.add(this.floorShadow);
   const wallMaterial=material.clone();wallMaterial.depthTest=true;wallMaterial.polygonOffset=true;wallMaterial.polygonOffsetFactor=WALL_SHADOW_DEPTH.factor;wallMaterial.polygonOffsetUnits=WALL_SHADOW_DEPTH.units;
   wallMaterial.stencilWriteMask=wallMaterial.stencilFuncMask=wallMaterial.stencilRef=2;
-  wallMaterial.vertexShader='void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
+  wallMaterial.vertexShader='void main(){\n#include <begin_vertex>\ngl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
   this.wallShadow=new T.Mesh(createStaticWallShadowGeometry(world.slabs,casterGeometry||world.slabs.geometry),wallMaterial);
+  // Moving carrier shadows and exact maze polygons represent occlusion of
+  // the same light. Compose their minimum visibility, not multiplied darkness.
+  world.slabs.userData.exactMazeWallShadow=true;
+  this.floorShadow.userData.shadowUnionAttenuation=1-darkness;
+  this.floorShadow.userData.shadowWorldExpression='p.xyz';
+  this.wallShadow.userData.shadowUnionAttenuation=1-darkness;
+  world.carrierShadowOverlays=[this.floorShadow,this.wallShadow];
   this.originalWallShadow=this.wallShadow.geometry;
   this.wallShadow.renderOrder=.5;world.slabs.parent.add(this.wallShadow);
  }

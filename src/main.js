@@ -2,6 +2,7 @@ import {isMobileTerminal,showMobileTerminal} from './ui/mobile-terminal.js';
 if(isMobileTerminal()){
   showMobileTerminal();
 }else{
+  await import('./ui/style.css');
   await import('./pwa/register.js');
   // Let the static loading terminal paint before synchronous world construction.
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));

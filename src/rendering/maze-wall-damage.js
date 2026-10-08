@@ -103,6 +103,7 @@ export class MazeWallDamage{
   for(let i=0;i<positions.length/3;i++)indices[offset+i]=base.position.count+i;
   geometry.setIndex(new T.BufferAttribute(indices,1));geometry.boundingSphere=this.original.boundingSphere?.clone()??null;
   if(!geometry.boundingSphere)geometry.computeBoundingSphere();
+  geometry.computeVertexNormals();geometry.setAttribute('shadowReceiverNormal',geometry.attributes.normal.clone());
   if(this.slabs.geometry!==this.original)this.slabs.geometry.dispose();this.slabs.geometry=geometry;
   this.slabs.userData.damageReceiver?.geometry.dispose();
   const localGeometry=new T.BufferGeometry();localGeometry.setAttribute('position',new T.Float32BufferAttribute(localPositions,3));localGeometry.setAttribute('shadowWallId',new T.Float32BufferAttribute(localIds,1));

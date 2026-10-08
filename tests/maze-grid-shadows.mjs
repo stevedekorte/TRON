@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1000,height:700}}),errors=[];
+ await page.route('**/*cloudflareinsights.com/**',r=>r.fulfill({status:204,body:''}));
  if(process.env.TRON_CONTAINER){await page.emulateMedia({reducedMotion:'reduce'});page.setDefaultTimeout(120000);}
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.route('**/maze-grid-test',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0"></body>'}));await page.goto(new URL('/maze-grid-test',process.env.TRON_URL||'http://127.0.0.1:5173').href);

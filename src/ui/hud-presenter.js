@@ -59,6 +59,7 @@ export class HudPresenter {
     idleTime,
   }) {
     const cycleMode=run.playerVehicle==='cycle',race=run.cycleRace;
+    this.warnings.set('barrel-jam',!cycleMode&&run.barrelJam&&!run.crushed&&mode==='running'?{level:'warning',label:'BARREL LODGED',detail:'HOLD S TO PULL FREE'}:null);
     const marker=$('assist-marker'),rig=view.cameraRig;
     const target=mode==='running'&&!rig.freeCamera.active&&rig.opening==null?assistedRecognizerTarget(run):null;
     const lockId=target?.id??null;

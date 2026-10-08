@@ -24,7 +24,7 @@ try{
   for(let i=0;i<after.length;i+=4)if(before[i]>after[i]+8)wall++;
   carrier.visible=false;
   slabs.visible=false;shadows.strengths.fill(0);const clearGround=pixels();shadows.strengths.fill(1);const ground=pixels();let groundPixels=0,visibleGridPixels=0;
-  for(let i=0;i<ground.length;i+=4){if(clearGround[i+2]>ground[i+2]+8)groundPixels++;if(clearGround[i]>240&&ground[i]>100&&ground[i]<225)visibleGridPixels++;}
+  for(let i=0;i<ground.length;i+=4){if(clearGround[i+2]>ground[i+2]+8)groundPixels++;if(clearGround[i]>240&&ground[i]>70&&ground[i]<225)visibleGridPixels++;}
   slabs.visible=true;renderer.render(scene,camera);return {wall,groundPixels,visibleGridPixels};
  });assert.ok(result.wall>500,JSON.stringify(result));assert.ok(result.groundPixels>1000,JSON.stringify(result));assert.ok(result.visibleGridPixels>100,JSON.stringify(result));assert.deepEqual(errors,[]);await page.screenshot({path:'test-results/carrier-shadows.png'});console.log(result);
  const edges=[];
@@ -35,7 +35,7 @@ try{
    const scene=new T.Scene(),receiver=new T.Mesh(new T.PlaneGeometry(150,110),new T.MeshBasicMaterial({color:0xffffff,toneMapped:false}));receiver.position.y=50;scene.add(receiver);
    const transform=new T.Matrix4().makeRotationZ(.45);transform.setPosition(-20,80,-20);
    const root=new T.Group(),caster=new T.Mesh(new T.BoxGeometry(70,50,5).applyMatrix4(transform));root.add(caster);
-   const shadows=new RecognizerShadows([{root,casters:[caster],radius:750,distance:1800}],[receiver],0,mode==='old'?{size:1024,darkness:.5}:{...CARRIER_SHADOWS,filterEdges:mode==='smooth'?'soft':true});
+   const shadows=new RecognizerShadows([{root,casters:[caster],radius:750,distance:1800}],[receiver],0,mode==='old'?{size:1024,darkness:.5}:{...CARRIER_SHADOWS,darkness:.5,filterEdges:mode==='smooth'?'soft':true});
    const renderer=new T.WebGLRenderer();renderer.setSize(1000,700);document.body.replaceChildren(renderer.domElement);
    const camera=new T.OrthographicCamera(-75,75,52.5,-52.5,.1,1000);camera.position.set(0,50,200);camera.lookAt(0,50,0);
    const target=new T.WebGLRenderTarget(1000,700),pixels=new Uint8Array(1000*700*4),results=[];

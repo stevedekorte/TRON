@@ -2,7 +2,7 @@ import * as T from 'three';
 
 // Metres in the light's projection plane. The hash only limits CPU candidates;
 // it has no effect on the precision of the clipped shadow boundaries.
-const CELL_METERS=64,EPSILON=1e-7;
+const CELL_METERS=64,EPSILON=1e-7,COPLANAR_METERS=.01;
 // Lift clipped decals off their receiver before float32 upload. Depth bias alone
 // cannot compensate for independently rounded, nearly coplanar triangles.
 export const WALL_SHADOW_SURFACE_OFFSET_METERS=.02;
@@ -51,7 +51,7 @@ export function createStaticWallShadowGeometry(receiver,casterGeometry){
  const bins=new Map(),casters=triangles(casterGeometry,receiver.matrixWorld);
  for(const caster of casters){
   const [a,b,c]=caster.points,cap=planeThrough(a,b,c,a.clone().add(LIGHT));
-  if(!cap||Math.abs(cap.x*LIGHT.x+cap.y*LIGHT.y+cap.z*LIGHT.z)<1e-8)continue;
+  if(!cap||Math.abs(cap.x*LIGHT.x+cap.y*LIGHT.y+cap.z*LIGHT.z)<1e-4)continue;
   caster.planes=[cap,...caster.points.map((p,i)=>planeThrough(p,caster.points[(i+1)%3],p.clone().add(LIGHT),caster.points[(i+2)%3]))];
   if(caster.planes.some(p=>!p))continue;
   cells(caster.bounds,key=>{if(!bins.has(key))bins.set(key,[]);bins.get(key).push(caster);});
@@ -66,6 +66,9 @@ export function createStaticWallShadowGeometry(receiver,casterGeometry){
   const lift=new T.Vector3().subVectors(rb,ra).cross(new T.Vector3().subVectors(rc,ra)).normalize().multiplyScalar(WALL_SHADOW_SURFACE_OFFSET_METERS);
   for(const caster of candidates){
    if(receiver.id>0&&caster.id===receiver.id)continue;
+   // Adjacent slabs can share a plane but carry different wall IDs. Float32
+   // rounding must not turn those coplanar faces into triangle-shaped casters.
+   if(receiver.points.every(p=>Math.abs(dot(caster.planes[0],p))<COPLANAR_METERS))continue;
    const c=caster.bounds;
    if(c.maxY<r.minY-EPSILON||c.maxU<r.minU||c.minU>r.maxU||c.maxV<r.minV||c.minV>r.maxV)continue;
    let polygon=receiver.points;
