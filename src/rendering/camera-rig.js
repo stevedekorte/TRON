@@ -24,6 +24,7 @@ const AERIAL_CAMERA = Object.freeze({
   distance: Math.hypot(180, 320),
 });
 export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,minDistanceScale:.78,maxDistanceScale:1.16,responsePerSecond:2.5});
+export const CYCLE_TURN_TRACKING=Object.freeze({nearDistanceMeters:12,farDistanceMeters:140,nearResponsePerSecond:30,farResponsePerSecond:1.2});
 const CYCLE_SWITCH_SECONDS=1.2;
 export const CYCLE_DEATH_HOLD_SECONDS=3;
 const GUNNER_TRANSITION_SECONDS = 0.75;
@@ -78,6 +79,7 @@ export class CameraRig {
     this.cycleGlanceInput = 0;
     this.cycleGlance = 0;
     this.cycleTurnLook = 0;
+    this.cycleTrackingYaw = undefined;
     this.cycleCockpit=false;
     this.cycleCockpitMix=0;
   }
@@ -209,7 +211,18 @@ export class CameraRig {
       // Fade at walking pace/rest and give deliberate J/L glances priority.
       const turnTarget=escaped&&!this.aerial?-(bike.steering||0)*CYCLE_CAMERA.turnLookRadians*Math.min(1,Math.max(0,bike.roadSpeed||0)/CYCLE_CAMERA.turnLookFullSpeedMetersPerSecond):0;
       this.cycleTurnLook+=(turnTarget-this.cycleTurnLook)*(1-Math.exp(-dt*CYCLE_CAMERA.turnLookResponsePerSecond));
-      const lookYaw=pose.yaw+this.cycleTurnLook*(1-glanceMix);
+      // Ease the orbit heading independently of translation and deliberate glances.
+      // A distant observer watches a broad turn; a nearby rider needs fast tracking.
+      const trackingDistance=Math.hypot(this.camera.position.x-pose.x,this.camera.position.y-CYCLE_CAMERA.lookHeightMeters,this.camera.position.z+pose.s);
+      const trackingMix=THREE.MathUtils.smoothstep(trackingDistance,CYCLE_TURN_TRACKING.nearDistanceMeters,CYCLE_TURN_TRACKING.farDistanceMeters);
+      if(escaped||this.freshCamera||this.cycleOpening!==null||this.cycleSwitch||this.cycleTrackingYaw===undefined||trackingMix===0){
+        this.cycleTrackingYaw=pose.yaw;
+      }else if(mode!=='paused'){
+        const response=CYCLE_TURN_TRACKING.nearResponsePerSecond*Math.pow(CYCLE_TURN_TRACKING.farResponsePerSecond/CYCLE_TURN_TRACKING.nearResponsePerSecond,trackingMix);
+        const delta=Math.atan2(Math.sin(pose.yaw-this.cycleTrackingYaw),Math.cos(pose.yaw-this.cycleTrackingYaw));
+        this.cycleTrackingYaw+=delta*(1-Math.exp(-dt*response));
+      }
+      const lookYaw=this.cycleTrackingYaw+this.cycleTurnLook*(1-glanceMix);
       const orbitYaw=lookYaw+this.cycleGlance;
       this.desired.set(pose.x+Math.sin(orbitYaw)*followDistance,CYCLE_CAMERA.heightMeters,-pose.s+Math.cos(orbitYaw)*followDistance);
       this.lookDesired.set(pose.x-Math.sin(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix),CYCLE_CAMERA.lookHeightMeters,-pose.s-Math.cos(lookYaw)*CYCLE_CAMERA.lookAheadMeters*(1-glanceMix));
