@@ -1,3 +1,4 @@
+import {createHomeTransition} from '../ui/home-transition.js';
 import {preloadBitResources} from './program-preload.js';
 import {CLU_DEATH_CAMERA,livingCluKiller} from '../game/clu-death.js';
 import {CreditModelPreview} from '../ui/credit-model-preview.js';
@@ -162,7 +163,7 @@ export function createGameApp() {
     if (!['loading', 'ready', 'entering', 'running', 'paused', 'error'].includes(next))
       throw new Error(`Unknown application mode: ${next}`);
     mode = next;
-    if(['ready','error'].includes(next))document.body.classList.remove('cycle-intro','cycle-loading');
+    if(['ready','error'].includes(next))document.body.classList.remove('cycle-intro','cycle-loading','home-access');
     if (next !== 'running') {
       clearMouseAim();
       releaseMouse();
@@ -190,12 +191,22 @@ export function createGameApp() {
     if (next === 'paused') $('paused').focus({ preventScroll: true });
   }
 
+  const homeTransition=createHomeTransition();
   async function start() {
+    if(homeTransition.active)return;
+    const homeSelection=mode==='ready'&&!endingStage;
+    if(homeSelection){
+      void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
+      sound.terminalTone('access');
+      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'));
+      if(disposed)return;
+    }
     if(mode==='ready'&&selectedGame==='credits'){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
-      outroFade=0;startVictoryCredits();return;
+      outroFade=0;startVictoryCredits();void homeTransition.finish();return;
     }
     if(mode==='ready'&&selectedGame==='bit'){
+      try{sessionStorage.setItem('tron-home-transition',document.querySelector('#home-transition').outerHTML);}catch{}
       window.location.assign(new URL('./bit/index.html',document.baseURI).href);
       return;
     }
@@ -212,8 +223,10 @@ export function createGameApp() {
       console.warn('Audio unavailable; continuing silently.', e.message);
     }
     if (disposed || mode === 'error') return;
+    // Begin the selected-label fade as soon as the other labels have disappeared.
+    if(homeSelection)void homeTransition.finish();
     // Queue UI feedback before the expensive simulation/model reset.
-    if(fromTerminal)sound.terminalTone('access');
+    if(fromTerminal&&!homeSelection)sound.terminalTone('access');
     tribute.reset();
     victoryPrinter.reset();endingStage=null;document.body.classList.remove('victory','victory-credits');
     const accessMessage=selectedGame==='space'?cluAccessMessage:openingMessage;
@@ -242,12 +255,15 @@ export function createGameApp() {
     openingTime=0;openingTransition=false;accessHoldTime=0;
     document.body.classList.remove('access-transition','access-ready');
     accessPrinter.reset();
-    if(opening)accessPrinter.start();
+    if(opening&&!homeSelection)accessPrinter.start();
     view.cameraRig.opening = null;
     document.body.classList.toggle('cycle-intro',selectedGame==='cycles'&&!testCycleStart);
     document.body.classList.toggle('cycle-loading',selectedGame==='cycles');
     document.body.style.setProperty('--opening-fade', '1');
     setMode(opening ? 'entering' : 'running');
+    if(homeSelection){
+      if(opening){document.body.classList.add('home-access');accessHoldTime=accessHoldSeconds;beginCluGame();}
+    }
     if(!opening&&!run.arenaWaiting)sound.startMusic();
     await audioReady;
   }
@@ -281,6 +297,7 @@ export function createGameApp() {
   });
   const gameChoices=[$('start'),$('start-cycles'),$('start-bit'),$('start-credits')];
   function selectGame(game,{focus=false}={}){
+    if(homeTransition.active)return;
     selectedGame=game;
     for(const button of gameChoices){
       const selected=button.dataset.game===game;
@@ -294,6 +311,7 @@ export function createGameApp() {
   }
   selectGame(selectedGame);
   listen(window,'click',event=>{
+    if(homeTransition.active){event.preventDefault();event.stopImmediatePropagation();return;}
     if(mode==='entering'&&!openingTransition){event.preventDefault();event.stopImmediatePropagation();beginCluGame();return;}
     if(!creditsVisible())return;
     event.preventDefault();event.stopImmediatePropagation();returnToProgramSelection();
@@ -330,6 +348,7 @@ export function createGameApp() {
   },true);
   listen(window,'keyup',event=>dismissedHelpKeys.delete(event.code));
   listen(window, 'keydown', (event) => {
+    if(homeTransition.active){event.preventDefault();return;}
     idleTime = 0;
     if(dismissedHelpKeys.has(event.code)){event.preventDefault();return;}
     if(controlsHelpOpen){
@@ -874,6 +893,7 @@ export function createGameApp() {
     view.cameraRig.opening = null;
     accessPrinter.reset();openingTransition=false;
     document.body.classList.remove('access-transition','access-ready');
+    document.body.classList.remove('home-access');
     setMode('running');
     for (const key of held) keys.add(key);
     inputController.mouseFire = firing;
@@ -1177,6 +1197,7 @@ export function createGameApp() {
   }
 
   function dispose() {
+    homeTransition.clear();
     if (disposed) return;
     disposed = true;
     tribute.preview.dispose();

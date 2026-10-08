@@ -126,3 +126,7 @@ body.mobile-terminal{--terminal-left:7vw;--terminal-top:28vh;--terminal-font-siz
 body.mobile-terminal .terminal-content{width:86vw}
 body.mobile-terminal .terminal-copy{white-space:pre-wrap;line-height:1.4}
 body.mobile-terminal #hud,body.mobile-terminal #system-warnings{display:none}
+
+/* The selected home label supplies the terminal-to-scene fade. */
+body.home-access.entering .terminal-content,body.home-access.entering .terminal-encom{visibility:hidden}
+body.home-access.entering.access-transition .overlay{background:transparent}

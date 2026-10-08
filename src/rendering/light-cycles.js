@@ -1,3 +1,4 @@
+import {refineCycleFrontWheel} from './cycle-front-wheel.js';
 import {repairCycleRearSeams,repairCyclePanelWinding} from './cycle-rear-seams.js';
 import {repairCyclePanelOverlaps} from './cycle-panel-overlaps.js';
 import {CarrierMaterialization} from './carrier-materialization.js';
@@ -14,7 +15,7 @@ import goldUrl from '../../docs/models/preti_light_cycle_gold.glb?url';
 import blueUrl from '../../docs/models/preti_light_cycle_blue.glb?url';
 import { LIGHT_CYCLES as C, cycleFraction } from '../game/light-cycles.js';
 export const CYCLE_SELF_SHADOW=Object.freeze({size:1024,prefix:'cycleShadow',darkness:.65,maxCrafts:6,filterEdges:'soft',depthBias:.002});
-export const CYCLE_MODEL_STYLE=Object.freeze({blueBody:0x086ac4,blueTrim:0x084b92,ambientScale:.35});
+export const CYCLE_MODEL_STYLE=Object.freeze({blueBody:0x086ac4,blueTrim:0x084b92,redBody:0xff1010,redTrim:0xff4840,ambientScale:.35});
 export async function loadLightCycles({refineWheels=true}={}){
   return Promise.all([goldUrl,blueUrl].map(async(url,team)=>{
     const {scene}=await new GLTFLoader().loadAsync(url);
@@ -28,7 +29,7 @@ export async function loadLightCycles({refineWheels=true}={}){
     repairCyclePanelOverlaps(scene);
     repairCyclePanelWinding(scene);
     repairCycleHubs(scene);
-    if(refineWheels){refineCycleRearWheel(scene);refineCycleWheelInteriors(scene);removeCycleWheelHighlights(scene);applyCycleBlackRims(scene);}
+    if(refineWheels){refineCycleRearWheel(scene);refineCycleFrontWheel(scene);refineCycleWheelInteriors(scene);removeCycleWheelHighlights(scene);applyCycleBlackRims(scene);}
     applyCycleMaterialLighting(scene);
     scene.userData.groundOffsetMeters=-new THREE.Box3().setFromObject(scene).min.y;
     // Measure the repaired rear tire instead of guessing its contact offset.
@@ -69,7 +70,7 @@ export class LightCycleRaceView {
     for(const b of r.cycles){const fraction=cycleFraction(r,b);const mesh=this.bikes[b.id];mesh.visible=b.alive;
       if(mesh.userData.team!==b.team){
         mesh.userData.team=b.team;
-        const palette=[null,[CYCLE_MODEL_STYLE.blueBody,CYCLE_MODEL_STYLE.blueTrim],[0xc72828,0xe45a52],[0x178c42,0x46bd65]][b.team];
+        const palette=[null,[CYCLE_MODEL_STYLE.blueBody,CYCLE_MODEL_STYLE.blueTrim],[CYCLE_MODEL_STYLE.redBody,CYCLE_MODEL_STYLE.redTrim],[0x178c42,0x46bd65]][b.team];
         mesh.traverse(o=>{if(o.isMesh)for(const m of [].concat(o.material)){
           if(m.userData.originalCycleColor)m.color.copy(m.userData.originalCycleColor);
           if(palette&&m.name==='Color_D06')m.color.setHex(palette[0]);

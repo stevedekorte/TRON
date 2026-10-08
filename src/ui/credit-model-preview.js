@@ -1,3 +1,4 @@
+import {refineCycleFrontWheel} from '../rendering/cycle-front-wheel.js';
 import {repairCycleRearSeams,repairCyclePanelWinding} from '../rendering/cycle-rear-seams.js';
 import {repairCyclePanelOverlaps} from '../rendering/cycle-panel-overlaps.js';
 import {GAME_LIGHTING,createGameLights} from '../rendering/game-lighting.js';
@@ -60,6 +61,7 @@ export class CreditModelPreview{
     repairCyclePanelWinding(root);
     repairCycleHubs(root);
     refineCycleRearWheel(root);
+    refineCycleFrontWheel(root);
     refineCycleWheelInteriors(root);
     removeCycleWheelHighlights(root);
     applyCycleBlackRims(root);
