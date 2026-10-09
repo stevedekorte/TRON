@@ -7,7 +7,7 @@ export const CYCLE_OPENING=Object.freeze({startSeconds:1,durationSeconds:16,trav
 // Relative phase timing, scaled to the formation's overall duration.
 export const CYCLE_FORMATION_MATERIALIZATION=Object.freeze({openSeconds:.6,passSeconds:1.4,fadeSeconds:.75});
 export const CYCLE_FORMATION_CAMERA=Object.freeze({blendStartSeconds:14,rightMeters:8,forwardMeters:5,heightMeters:1.6,lookRightMeters:1.5,lookHeightMeters:.65,fovDegrees:38});
-const formationZ=-Math.floor((ARENA_WALL.innerMeters-LIGHT_CYCLES.lengthMeters/2-LIGHT_CYCLES.startWallClearanceMeters)/LIGHT_CYCLES.cellMeters)*LIGHT_CYCLES.cellMeters;
+const formationZ=-(ARENA_WALL.innerMeters-LIGHT_CYCLES.lengthMeters/2-LIGHT_CYCLES.lengthMeters*LIGHT_CYCLES.startWallClearanceLengths);
 export function cycleFormationBlend(progress){return MathUtils.smootherstep(progress*CYCLE_OPENING.durationSeconds,CYCLE_FORMATION_CAMERA.blendStartSeconds,CYCLE_OPENING.durationSeconds);}
 // Film opening: carrier broadside beyond the maze, to the camera's right.
 // The shallow heading exposes the open bow on the right, as in the film still.

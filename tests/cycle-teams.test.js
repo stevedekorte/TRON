@@ -15,8 +15,8 @@ test('all nine rosters spawn equal teams on distinct sides with connected starti
   r.remaining=0;updateCycleRace(r,1/120);
   for(const b of r.cycles){
    const trail=r.trails[b.segment],[dx,dz]=DIR[b.dir];
-   assert(Math.abs(Math.max(Math.abs(trail.x1),Math.abs(trail.z1))*C.cellMeters-ARENA_WALL.innerMeters)<1e-8);
-   assert((b.x-trail.x1)*dx+(b.z-trail.z1)*dz>0);
+   assert(Math.abs(Math.max(Math.abs(trail.x1),Math.abs(trail.z1))*C.cellMeters-(ARENA_WALL.innerMeters-C.lengthMeters*C.startWallClearanceLengths))<1e-8);
+   assert(Math.abs(((b.x-trail.x1)*dx+(b.z-trail.z1)*dz)*C.cellMeters-C.lengthMeters/2)<1e-8);
   }
  }
 });

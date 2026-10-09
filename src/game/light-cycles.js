@@ -3,7 +3,7 @@ export const CYCLE_TESTING = Object.freeze({ startInArena: false, startOutsideAr
 /** Arena-local meters; directions in X/Z, forward model axis -Z. */
 export const LIGHT_CYCLES = Object.freeze({
   cellMeters: 4.8, halfCells: 86, speedMetersPerSecond: 38.4,
-  lengthMeters: 3.6, trailImpactHalfGapMeters:1.6, trailHeightMeters: 1.5, startWallClearanceMeters: .5,
+  lengthMeters: 3.6, trailImpactHalfGapMeters:1.6, trailHeightMeters: 1.5, startWallClearanceLengths: 2,
   trailHoldSeconds: 3, trailFlashSeconds: .24, trailLowerSeconds: .7,
   playerAttempts: 3,
   entranceFormationSpacingCells: 1,

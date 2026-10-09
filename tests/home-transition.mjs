@@ -28,7 +28,18 @@ try{
   }else{
    await page.waitForFunction(()=>fadeLog.some(e=>e.id==='home-transition'));
    const log=await page.evaluate(()=>fadeLog),fade=log.find(e=>e.id==='home-transition'),others=log.filter(e=>e.duration===825);
-   assert(!log.some(e=>e.id==='home-selected-label'),'label inherits the background fade instead of fading separately');
+   const blink=log.find(e=>e.id==='home-selected-label');
+   assert.equal(blink.duration,1100);assert.equal(blink.delay,825);
+   const frames=await page.locator('#home-transition').evaluate(e=>JSON.parse(e.dataset.blinkFrames));
+   assert.equal(frames.filter(f=>f.opacity===0).length,2,'two quick label-only blinks');
+   assert(frames.filter(f=>f.opacity===0).every(f=>f.offset>.6&&f.offset<.85));
+   const blinkOpacities=await page.locator('#home-selected-label').evaluate(label=>{
+    const animation=label.getAnimations()[0],time=animation.currentTime,state=animation.playState,timing=animation.effect.getTiming();
+    animation.pause();
+    const result=[.60,.65,.72,.79,.90].map(f=>{animation.currentTime=timing.delay+f*timing.duration;return Number(getComputedStyle(label).opacity);});
+    animation.currentTime=time;if(state==='running')animation.play();return result;
+   });
+   assert.deepEqual(blinkOpacities,[1,0,1,0,1]);
    assert.equal(fade.delay,825);assert.equal(fade.duration,1100);
    assert(fade.start<=others[0].start,'shared fade is scheduled before game setup');
    assert.equal(others.length,6);assert(others.some(e=>e.id==='home-selection-cursor'),'cursor fades in the first phase');assert(!others.some(e=>e.id===id));

@@ -1,10 +1,13 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5181','--strictPort'],{stdio:'pipe'});
+await new Promise((resolve,reject)=>{server.stdout.on('data',chunk=>{if(chunk.toString().includes('Local:'))resolve();});server.on('exit',code=>reject(new Error('Server exited '+code)));});
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1250,height:1000}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://127.0.0.1:5173/');
+ await page.goto('http://127.0.0.1:5181/');
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
  const geometryCheck=await page.evaluate(async()=>{
    const T=await import('/node_modules/three/build/three.module.js');
@@ -47,6 +50,7 @@ try{
  assert.equal(middle.race.time,start.race.time);
  assert(middle.guard.s<start.guard.s-1,'patrol moves screen-left while race is held');
  await page.screenshot({path:'test-results/cycle-opening.png'});
+ await page.locator('#home-transition').waitFor({state:'detached'});
  await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.cycleOpening);
  await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>__tron.state.cycleOpening),paused);
  await page.keyboard.press('Enter');
@@ -65,7 +69,7 @@ try{
  await page.screenshot({path:'test-results/cycle-opening-arrival.png'});
  await page.waitForFunction(()=>__tron.state.cycleOpening>1.07);
  const formation=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace,bikes:__tron.state.cycleRendering.bikes}));
- assert.deepEqual(formation.bikes.map(b=>b.visible),[true,true,true,false,false,false]);
+ assert.deepEqual(formation.bikes.map(b=>b.visible),[true,true,true,...Array(9).fill(false)]);
  assert.equal(formation.race.time,start.race.time,'race remains held while gold team materializes');
  await page.screenshot({path:'test-results/cycle-opening-formation.png'});
  await page.waitForTimeout(300);
@@ -96,7 +100,7 @@ try{
  assert(elapsed.race<=elapsed.wall*1.15,`race advanced ${elapsed.race}s in ${elapsed.wall}s after intro`);
  assert(elapsed.race>.3,'race advances after the hold');
  await page.emulateMedia({reducedMotion:'reduce'});
- await page.goto('http://127.0.0.1:5173/');
+ await page.goto('http://127.0.0.1:5181/');
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
  await page.locator('#start-cycles').click();
  await page.waitForFunction(()=>__tron.state.playerVehicle==='cycle');
@@ -111,4 +115,4 @@ try{
  await page.waitForFunction(()=>__tron.state.recognizers.find(e=>e.role==='arena-patrol').faceTintColor===0x1c3825);
  assert.deepEqual(errors,[]);
  console.log('Cycle opening: tank covered, backward maze-facing descent, held countdown, descending camera, pause/resume, and race handoff passed.');
-}finally{await browser.close();}
+}finally{await browser.close();server.kill();}

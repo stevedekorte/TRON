@@ -49,7 +49,7 @@ export function resetCycleRound(r){
   r.continuousTrails=false;r.arenaPaused=false;r.attemptResolved=false;r.pendingTurns=[];r.round++;r.phase='countdown';r.remaining=C.countdownSeconds;r.elapsed=0;r.accumulator=0;r.winner=null;
   r.occupied=new Uint8Array(side*side);r.outerOccupied={};r.breaches??=[];r.trails=[];r.crashes=[];
   if((r.startWithBreach??CYCLE_TESTING.startWithBreach)&&r.playerId!==undefined&&!r.breaches.some(b=>b.axis==='z'&&b.sign===-1&&b.along===0))r.breaches.push({axis:'z',sign:-1,along:0,id:r.breaches.length,time:r.time});
-  const startRow=Math.floor((ARENA_WALL.innerMeters-C.lengthMeters/2-C.startWallClearanceMeters)/C.cellMeters);
+  const startRow=(ARENA_WALL.innerMeters-C.lengthMeters/2-C.lengthMeters*C.startWallClearanceLengths)/C.cellMeters;
   const teams=r.teamCount??2,count=r.cyclesPerTeam??3;
   r.cycles=Array.from({length:teams*count},(_,id)=>{
     const team=Math.floor(id/count),slot=id%count;
@@ -86,7 +86,7 @@ function startCycleTrails(r){
  for(const b of r.cycles){
   if(!b.alive||b.escaped)continue;
   const [dx,dz]=DIR[b.dir];
-  const distance=(ARENA_WALL.innerMeters/C.cellMeters)-(dx?Math.abs(b.x):Math.abs(b.z));
+  const distance=C.lengthMeters/2/C.cellMeters;
   const x1=b.x-dx*distance,z1=b.z-dz*distance;
   b.segment=r.trails.length;
   r.trails.push({bikeId:b.id,team:b.team,dir:b.dir,x1,z1,x2:b.x,z2:b.z,initial:true});
