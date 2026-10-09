@@ -198,7 +198,7 @@ export function createGameApp() {
     if(homeSelection){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
       sound.terminalTone('access');
-      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'));
+      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles'});
       if(disposed)return;
     }
     if(mode==='ready'&&selectedGame==='credits'){
@@ -223,7 +223,7 @@ export function createGameApp() {
       console.warn('Audio unavailable; continuing silently.', e.message);
     }
     if (disposed || mode === 'error') return;
-    // Begin the selected-label fade as soon as the other labels have disappeared.
+    // Remove the selected-label curtain after its scene-ready fade completes.
     if(homeSelection)void homeTransition.finish();
     // Queue UI feedback before the expensive simulation/model reset.
     if(fromTerminal&&!homeSelection)sound.terminalTone('access');
@@ -976,8 +976,10 @@ export function createGameApp() {
     if (view && mode !== 'error') {syncCycleSpectator();updateDeathTerminal(dt);}
     if (view && mode !== 'error') {
       view.cameraRig.freeCamera.update(dt, keys);
-      if (!document.hidden && !(mode==='ready'&&endingStage==='victory'))
+      if (!document.hidden && !(mode==='ready'&&endingStage==='victory')) {
         view.render(run, session.previous, mode === 'running' ? loop.alpha : 1, dt, mode);
+        if((mode==='running'||mode==='entering'&&openingTransition)&&!run.arenaWaiting&&!document.body.classList.contains('cycle-loading'))homeTransition.sceneReady();
+      }
       sound.cycleOpeningSeconds=view.cameraRig.cycleOpening===null?null:view.cameraRig.cycleOpening*CYCLE_OPENING.durationSeconds;
       sound.cycleOpeningAudio?.update(sound.cycleOpeningSeconds,mode==='running');
       sound.update(run, view.camera, mode === 'running'||mode==='entering'&&openingTransition);
