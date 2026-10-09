@@ -1720,3 +1720,8 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Use the supplied `docs/references/sounds/clue fire.mp3` for player cannon fire at its original pitch and existing shot volume. Decode it during the normal startup preload, reuse the buffer for subsequent shots, and include the hashed asset in the PWA cache. Enemy cannons retain their existing sample; the old sample remains a fallback if the new file cannot decode.
 - Validation: headless Chrome decoded the stereo clip (0.532 seconds after MP3 padding), and two player shots reused that buffer without audio-load errors. `npm run build` passed and emitted the hashed MP3 into the offline cache. Listening balance remains subject to play review.
+
+## Restore terminal/game crossfade — October 8
+
+- [x] Hold the shared selected-label/background fade until the first visible game frame has rendered. Simulation reset and shader preparation can no longer consume the fade while the canvas is hidden, which previously produced a black interval and sudden scene appearance. Preserve the 825 ms other-text fade and full 1.1-second scene dissolve. CLU and cycles use scene readiness; credits and BIT retain their document transitions.
+- Validation: `node tests/home-transition.mjs` passed for all four menu choices, including a partially faded curtain over a visible game canvas for CLU and cycles. Inspected `test-results/clu-terminal-crossfade.png`: CLU label remains visible over the emerging maze.

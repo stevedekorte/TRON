@@ -32,6 +32,15 @@ try{
    assert.equal(fade.delay,825);assert.equal(fade.duration,1100);
    assert(fade.start<=others[0].start,'shared fade is scheduled before game setup');
    assert.equal(others.length,6);assert(others.some(e=>e.id==='home-selection-cursor'),'cursor fades in the first phase');assert(!others.some(e=>e.id===id));
+   if(vehicle){
+    await page.waitForFunction(()=>{
+     const curtain=document.querySelector('#home-transition');
+     if(!curtain)return false;
+     const opacity=Number(getComputedStyle(curtain).opacity);
+     return opacity>.2&&opacity<.8&&getComputedStyle(document.querySelector('#game')).visibility==='visible'&&['entering','running'].includes(__tron.state.mode);
+    });
+    if(vehicle==='tank')await page.screenshot({path:'test-results/clu-terminal-crossfade.png'});
+   }
    await page.locator('#home-transition').waitFor({state:'detached'});
    if(vehicle){
     await page.waitForFunction(()=>__tron.state.mode==='running');
