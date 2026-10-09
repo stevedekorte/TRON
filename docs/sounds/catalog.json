@@ -178,6 +178,19 @@
       "disk": "public/audio/recognizer-approach.wav"
     },
     {
+      "id": "clu-cannon",
+      "title": "CLU cannon \u2014 supplied fire clip",
+      "group": "Current game sounds",
+      "status": "Active",
+      "use": "CLU cannon fire",
+      "notes": "User-supplied clue fire.mp3. Used unchanged at its original pitch; decoded during startup and reused for every shot. Stereo, approximately 0.57 seconds. Enemy tanks retain the previous cannon sample.",
+      "author": "User-supplied clip; original sound creator not identified",
+      "source": "../references/sounds/clue%20fire.mp3",
+      "license": "User-supplied reference for this project; redistribution rights not established",
+      "playback": "../references/sounds/clue%20fire.mp3",
+      "disk": "docs/references/sounds/clue fire.mp3"
+    },
+    {
       "id": "cannon",
       "title": "Cannon",
       "group": "Current game sounds",

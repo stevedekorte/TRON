@@ -1715,3 +1715,8 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Detect mobile devices in the initial HTML and show a static, inline-styled unsupported-terminal message immediately. Desktop-only styles load through the desktop bootstrap; the confirmation script is deferred. The warning uses a fallback font immediately and does not wait for JavaScript modules, CSS downloads or the terminal font.
 - [x] Headless Chrome device profiles: iPhone, iPad and Android show the warning without loading game models; a narrow desktop still reaches the menu. The warning also remains visible with every external script, stylesheet and font request blocked. Production HTML retains the inline detector/styles and has no render-blocking game stylesheet.
+
+## CLU cannon sound — October 8
+
+- [x] Use the supplied `docs/references/sounds/clue fire.mp3` for player cannon fire at its original pitch and existing shot volume. Decode it during the normal startup preload, reuse the buffer for subsequent shots, and include the hashed asset in the PWA cache. Enemy cannons retain their existing sample; the old sample remains a fallback if the new file cannot decode.
+- Validation: headless Chrome decoded the stereo clip (0.532 seconds after MP3 padding), and two player shots reused that buffer without audio-load errors. `npm run build` passed and emitted the hashed MP3 into the offline cache. Listening balance remains subject to play review.
