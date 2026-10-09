@@ -10,13 +10,13 @@ import {createRun} from '../src/simulation/run.js';
 import {ARENA_WALL} from '../src/game/arena-breaches.js';
 const {world}=createScenario({layout:'blueprint',centralLabyrinth:true});
 const race=()=>createCycleRace(world,1982);
-test('launch trails meet the nearest arena wall and remain connected as bikes advance',()=>{
+test('launch trails leave two cycle lengths of clearance from the nearest arena wall and remain connected as bikes advance',()=>{
  const r=race();r.remaining=0;updateCycleRace(r,1/60);
  assert.equal(r.phase,'racing');
  for(const b of r.cycles.filter(b=>b.alive)){
   const t=r.trails[b.segment];
   assert.equal(t.x1,b.x);assert.equal(t.x2,b.x);assert.equal(t.z2,b.z);
-  assert(Math.abs(Math.abs(t.z1*C.cellMeters)-ARENA_WALL.innerMeters)<1e-9);
+  assert(Math.abs(Math.abs(t.z1*C.cellMeters)-(ARENA_WALL.innerMeters-C.lengthMeters*C.startWallClearanceLengths))<1e-9);
  }
  const starts=r.trails.map(t=>t.z1);tickCycleRace(r,(_r,b)=>b.dir);
  for(const b of r.cycles.filter(b=>b.alive)){

@@ -107,6 +107,10 @@ window.addEventListener('DOMContentLoaded',()=>{
     const duration=Number(curtain.dataset.fadeDuration)||1100;
     const elapsed=Math.max(0,Date.now()-Number(curtain.dataset.selectedFadeAt||Date.now()));
     const remaining=Math.max(0,duration-elapsed);
+    if(curtain.dataset.blinkFrames&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+      const blink=curtain.querySelector('#home-selected-label')?.animate(JSON.parse(curtain.dataset.blinkFrames),{duration,fill:'both'});
+      if(blink)blink.currentTime=elapsed;
+    }
     curtain.animate([{opacity:remaining/duration},{opacity:0}],{duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:remaining,easing:'linear',fill:'forwards'}).finished.finally(()=>curtain.remove());
   }
   document.fonts.ready.then(()=>requestAnimationFrame(reveal));

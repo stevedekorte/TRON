@@ -1,7 +1,8 @@
 // Keep the selected label at its home-menu position while the scene opens.
 export const HOME_TRANSITION = {otherTextMs:825,selectedTextMs:1100};
+const SELECTED_BLINK_FRAMES=[{opacity:1,offset:0},{opacity:0,offset:.62},{opacity:1,offset:.69},{opacity:0,offset:.76},{opacity:1,offset:.83},{opacity:1,offset:1}].map(frame=>({...frame,easing:'steps(1,end)'}));
 export function createHomeTransition(){
-  let active=false,curtain=null,sceneFade=null,animations=[],waitingForScene=false,otherTextGone=false;
+  let active=false,curtain=null,sceneFade=null,labelBlink=null,animations=[],waitingForScene=false,otherTextGone=false;
   const animate=async(element,frames,duration,easing='ease-in-out')=>{
     const animation=element.animate(frames,{duration,fill:'forwards',easing});
     animations.push(animation);
@@ -9,7 +10,7 @@ export function createHomeTransition(){
   };
   function clear(){
     animations.forEach(a=>a.cancel());animations=[];
-    curtain?.remove();curtain=null;sceneFade=null;active=false;
+    curtain?.remove();curtain=null;sceneFade=null;labelBlink=null;active=false;
     waitingForScene=false;otherTextGone=false;
     document.body.classList.remove('home-opening');
   }
@@ -23,6 +24,7 @@ export function createHomeTransition(){
       curtain=document.createElement('div');curtain.id='home-transition';
       curtain.dataset.selectedFadeAt=String(Date.now()+duration);
       curtain.dataset.fadeDuration=String(HOME_TRANSITION.selectedTextMs);
+      curtain.dataset.blinkFrames=JSON.stringify(SELECTED_BLINK_FRAMES);
       Object.assign(curtain.style,{position:'fixed',inset:'0',zIndex:'1000',background:'transparent',pointerEvents:'none'});
       const label=document.createElement('div');label.id='home-selected-label';label.textContent=button.textContent.trim();
       Object.assign(label.style,{position:'absolute',left:`${rect.left}px`,top:`${rect.top}px`,font:style.font,letterSpacing:style.letterSpacing,color:style.color,textShadow:style.textShadow,whiteSpace:'pre',textTransform:'uppercase'});
@@ -37,9 +39,14 @@ export function createHomeTransition(){
         fill:'forwards',easing:'linear',
       });
       animations.push(sceneFade);
+      if(duration){
+        labelBlink=label.animate(SELECTED_BLINK_FRAMES,{delay:duration,duration:HOME_TRANSITION.selectedTextMs,fill:'both'});
+        animations.push(labelBlink);
+      }
       // Game reset and first-frame shader work can outlast the fade. Keep the
       // curtain opaque until that frame exists, then reveal it for the full duration.
       if(waitingForScene){sceneFade.pause();sceneFade.currentTime=0;}
+      if(waitingForScene&&labelBlink){labelBlink.pause();labelBlink.currentTime=0;}
       const hideOriginal=button.animate([{opacity:0},{opacity:0}],{duration:0,fill:'forwards'});
       animations.push(hideOriginal);
       await Promise.all([marker,...document.querySelectorAll('#intro .terminal-copy,.terminal-encom,#game-menu button')]
@@ -55,6 +62,7 @@ export function createHomeTransition(){
       waitingForScene=false;
       sceneFade.currentTime=sceneFade.effect.getTiming().delay;
       sceneFade.play();
+      if(labelBlink){labelBlink.currentTime=labelBlink.effect.getTiming().delay;labelBlink.play();}
     },
     async finish(){
       if(sceneFade)await sceneFade.finished.catch(()=>{});

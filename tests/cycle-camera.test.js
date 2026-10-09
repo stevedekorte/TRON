@@ -153,7 +153,7 @@ test('16-second film entrance descends, pans right and down, then accelerates ac
  assert(down.d.z<0&&Math.abs(down.d.x)<.1,'pan right toward the far end');
  assert(sample(12).p.distanceTo(sample(14).p)>sample(7).p.distanceTo(sample(9).p)*2,'rapid floor traverse follows slow descent');
  for(let t=7;t<12;t+=.05)assert(sample(t+.05).p.distanceTo(sample(t).p)/.05>35,'keep moving through the downward turn');
- assert(arrival.p.distanceTo(new Vector3(1408,1.6,-2998.2))<1e-6);
+ assert(arrival.p.distanceTo(new Vector3(1408,1.6,-2995.06))<1e-6);
  assert(arrival.d.x<-.7&&arrival.d.z<-.5,'frame the cycles from the right at an angle');
  assert.equal(CYCLE_OPENING.formationSeconds,2.75/1.5);
  assert.equal(CYCLE_OPENING.durationSeconds,16);assert.equal(CYCLE_OPENING.raceReleaseFraction,1);

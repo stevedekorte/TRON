@@ -1725,3 +1725,10 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Hold the shared selected-label/background fade until the first visible game frame has rendered. Simulation reset and shader preparation can no longer consume the fade while the canvas is hidden, which previously produced a black interval and sudden scene appearance. Preserve the 825 ms other-text fade and full 1.1-second scene dissolve. CLU and cycles use scene readiness; credits and BIT retain their document transitions.
 - Validation: `node tests/home-transition.mjs` passed for all four menu choices, including a partially faded curtain over a visible game canvas for CLU and cycles. Inspected `test-results/clu-terminal-crossfade.png`: CLU label remains visible over the emerging maze.
+
+## Menu confirmation blinks and arena launch clearance — October 8
+
+- [x] Blink the selected home-menu label off/on twice for 77 ms per phase near the end of its 1.1-second dissolve. Background fading remains continuous; game blinks share the first-frame readiness gate. BIT carries the blink frames through its document transition, and reduced-motion mode skips them.
+- [x] Place each cycle rear and initial light-wall endpoint exactly two cycle lengths (7.2 m) inside its starting arena wall, for all team counts and directions. Remove start-position grid rounding and update the materialization camera to the same formation location.
+- Validation: all 474 simulation tests passed, including all nine team/roster arrangements and updated entrance-camera endpoint checks.
+- Browser validation: `tests/home-transition.mjs` passed all four programs and the exact on/off/on/off/on blink sequence; `tests/cycle-opening.mjs` passed the full entrance, materialization, fixed launch shot, pause/resume, and camera handoff. Inspected the updated formation capture. Production build passed.
