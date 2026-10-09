@@ -6,6 +6,7 @@ import { RecognizerVoices } from './recognizer-voices.js';
 import { DEFAULT_WORLD, worldFor } from '../levels/scenario.js';
 import { TELEPORT_SOUND, teleportSamples } from './teleport.js';
 import endOfLineUrl from '../../docs/references/dialog/END OF LINE.mp3?url';
+import cluCannonUrl from '../../docs/references/sounds/clue fire.mp3?url';
 import { createTurretServo } from './turret-servo.js';
 import { TANK_EXPLOSION, tankExplosionSamples } from './tank-explosion.js';
 import { RECOGNIZER_STARTS, recognizerStarts } from '../game/recognizer-roster.js';
@@ -18,6 +19,7 @@ const files = [
   'recognizer-approach',
   'recognizer-explosion',
   'cannon',
+  'clu-cannon',
   'carrier-drone',
   'data-ring-close',
   'data-ring-open',
@@ -149,6 +151,8 @@ export class Sound {
           const response = await fetch(
             name === 'end-of-line'
               ? endOfLineUrl
+              : name === 'clu-cannon'
+                ? cluCannonUrl
               : import.meta.env.BASE_URL +
                   'audio/' +
                   name +
@@ -526,9 +530,9 @@ export class Sound {
       impactPanner.positionZ.value=-event.s;
       gain.connect(impactPanner);impactPanner.connect(this.master);
     }else gain.connect(this.master);
-    if (type === 'shot' && this.samples.cannon) {
+    if (type === 'shot' && (this.samples['clu-cannon'] || this.samples.cannon)) {
       gain.gain.value = 0.65;
-      const s = this.source(this.samples.cannon, gain);
+      const s = this.source(this.samples['clu-cannon'] || this.samples.cannon, gain);
       s.playbackRate.value = 1;
       s.onended = () => {
         s.disconnect();

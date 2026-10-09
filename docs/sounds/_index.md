@@ -105,6 +105,18 @@ Video time 126.200s; 2.080s prepared audio. Mixed film soundtrack; may include s
 
 [Source](../references/videos/1982 tron clu scene.m4a) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
+### CLU cannon — supplied fire clip
+
+**Active** · CLU cannon fire
+
+User-supplied clue fire.mp3. Used unchanged at its original pitch; decoded during startup and reused for every shot. Stereo, approximately 0.57 seconds. Enemy tanks retain the previous cannon sample.
+
+<audio controls preload="none" aria-label="CLU cannon — supplied fire clip" src="../references/sounds/clue%20fire.mp3"></audio>
+
+[Open audio file](../references/sounds/clue%20fire.mp3)
+
+[Source](../references/sounds/clue%20fire.mp3) · User-supplied clip; original sound creator not identified · User-supplied reference for this project; redistribution rights not established
+
 ### Cannon
 
 **Active** · Vehicle / combat
