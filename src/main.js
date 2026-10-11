@@ -1,4 +1,5 @@
 import {isMobileTerminal,showMobileTerminal} from './ui/mobile-terminal.js';
+import './pwa/launch.js';
 if(isMobileTerminal()){
   showMobileTerminal();
 }else{
