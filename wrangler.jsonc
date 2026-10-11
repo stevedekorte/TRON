@@ -8,6 +8,8 @@
     "ALLOWED_ORIGINS": "https://dekorte.com,https://www.dekorte.com",
     "TYPESAFE_MODEL": "jev-latest",
     "JEV_ENABLED": "true",
+    "MCP_ENABLED": "true",
+    "MCP_MODEL": "gemini-3.8-flash",
     "DAILY_REQUESTS": "unlimited",
     "DAILY_INPUT_BYTES": "unlimited",
     "IP_DAILY_REQUESTS": "unlimited",

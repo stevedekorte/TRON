@@ -1,3 +1,4 @@
+import {CycleRoster} from './cycle-roster.js';
 import {LIGHT_CYCLES} from '../game/light-cycles.js';
 import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {Vector3} from 'three';
@@ -8,6 +9,7 @@ const HEALTH_WARNING = { orange: 0.5, red: 0.25, critical: 0.1 };
 export class HudPresenter {
   constructor(world, warnings) {
     this.world = world;
+    this.cycleRoster=new CycleRoster($('cycle-roster'));
     this.assistPoint=new Vector3();
     this.warnings = warnings;
     this.mapContext = $('map').getContext('2d');
@@ -82,6 +84,7 @@ export class HudPresenter {
       }
     }
     document.body.classList.toggle('playing-cycle',cycleMode);
+    this.cycleRoster.update(race,cycleMode&&!run.arenaWaiting&&rig.cycleOpening===null);
     const cycleControls=$('cycle-controls');
     const result=cycleMode&&race.phase==='result';
     const resultText=$('cycle-result');

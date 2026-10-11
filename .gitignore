@@ -10,6 +10,7 @@ test-results/
 
 credentials/*
 !credentials/Typesafe.txt
+!credentials/Gemini.txt
 *.git-crypt-key
 TRON.key
 

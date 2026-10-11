@@ -17,3 +17,5 @@
 - [ ] Add the “We've got company” audio clip.
 - [ ] Add more soundtrack clips with appropriate cues.
 - [x] Warn mobile users that mobile is not supported yet.
+
+- [ ] Improve light cycle driving dynamics outside the arena.

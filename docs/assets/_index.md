@@ -153,3 +153,22 @@ Rapier 3D (`@dimforge/rapier3d-compat` 0.20.0), by Dimforge, Apache-2.0. The loc
 ## Cycle arena entrance audio — September 28
 
 `scripts/extract-arena-entry-sfx.py` extracts four local WAVs from the user-supplied `docs/references/videos/Enter Cycle Arena.m4v`. `public/audio/cycle-entry-source.json` records source hash, exact cut boundaries, channel selection and processing. Dialogue uses the 5.1 center channel (11.72–14.28 s and 17.32–18.65 s); transport uses the stereo downmix at 14.28–17.32 s and startup at 28.35–31.408 s. All use short edge fades, 60 Hz high-pass filtering and peak normalization to 0.72. These are TRON (1982), Walt Disney Productions soundtrack excerpts; no redistribution license was supplied. Transcription located dialogue boundaries; subjective listening approval remains pending. The full source video is not included in the game build.
+
+## MCP conversation face — October 9
+
+`docs/references/images/MCP/MCP.png` is the user-supplied TRON (1982) film still, attributed to Walt Disney Productions; no redistribution license was supplied. `src/mcp/face.js` maps this original onto a subdivided plane, trims the screenshot border through texture coordinates, and deforms the mouth/jaw during synthesized speech. No replacement image was generated. Movement was informed by the user-supplied `docs/references/videos/MCP/MCPandSARK.m4v`; the video is not bundled in the game. Speech now uses a reference-conditioned MCP clone through Chatterbox, with an installed browser voice only as fallback.
+
+
+## MCP cloned speech — October 9
+
+`public/audio/mcp-reference.wav` contains only MCP speech from 23.23–31.08 seconds of the supplied `MCPandSARK.m4v`, extracted from the 5.1 center channel. `scripts/extract-mcp-voice.py` records exact filtering, transcript, source hash and film attribution in `public/audio/mcp-reference.json`. Residual soundtrack may remain; this is not a claim of studio-isolated dialogue. The film source is TRON (1982), Walt Disney Productions; no redistribution license was supplied.
+
+`public/audio/mcp-clone-preview.wav` is newly synthesized dialogue conditioned on that reference, not a film dialogue excerpt. Its adjacent JSON records text, pinned model revision, duration and generation time. Chatterbox by Resemble AI is MIT licensed; the ONNX conversion is `onnx-community/chatterbox-ONNX`, revision `3cab09af388d3f02bba43443fce88c1f4525ac43`, run through Transformers.js 4.3.1 (Apache-2.0). Model weights download only in MCP and remain in the client's IndexedDB cache. The application uses the library's Chatterbox interfaces; no code was copied from the demonstration app.
+
+## Cycle roster renders — October 10
+
+`public/images/cycle-roster/{gold,blue,red,green}.png` are transparent orthographic top-down renders of the existing Daniel Preti light cycle asset, including the same geometry repairs and team materials used in play. The front faces upward. Source attribution and use constraints are unchanged from the underlying cycle model. Regenerate with `node scripts/render-cycle-roster.mjs` while the local Vite server is running; these static thumbnails add no runtime 3D rendering loop.
+
+## MCP same-dialogue comparison — October 10
+
+`public/audio/mcp-match/` contains the film reference excerpt, newly synthesized matching dialogue, and processed pitch/reverb candidates. `comparison.json` records the transcript, model, measurements, processing search and limitations. `scripts/match-mcp-voice.py` produces the normalized listening files used by `public/mcp-voice-comparison.html`. The original retains the film attribution and constraints above; the other samples are synthesized, not original actor recordings. Objective pitch/tail measurements are an aid to listening, not proof of a perceptual match.

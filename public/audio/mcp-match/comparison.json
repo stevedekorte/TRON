@@ -1,0 +1,210 @@
+{
+  "text": "That's right. He pushed me in the real world. Somebody pushes me, I push back. So I brought him down here.",
+  "source": "../mcp-reference.json",
+  "generation": {
+    "text": "That's right. He pushed me in the real world. Somebody pushes me, I push back. So I brought him down here.",
+    "model": "onnx-community/chatterbox-ONNX",
+    "revision": "3cab09af388d3f02bba43443fce88c1f4525ac43",
+    "durationSeconds": 6.84,
+    "generationSeconds": 12.209279542
+  },
+  "originalPitch": {
+    "medianHz": 119.11059574357535,
+    "q25Hz": 108.54168041994184,
+    "q75Hz": 128.26118194934674,
+    "voicedFrames": 148
+  },
+  "dryPitch": {
+    "medianHz": 97.55046307945841,
+    "q25Hz": 89.00877675681583,
+    "q75Hz": 102.62551891836918,
+    "voicedFrames": 136
+  },
+  "pitchRatio": 1.2210151749516085,
+  "matchedPitch": {
+    "medianHz": 122.42552644936279,
+    "q25Hz": 108.89045143744765,
+    "q75Hz": 131.58239941206745,
+    "voicedFrames": 49
+  },
+  "originalPauseRatioDb": -4.958455046942646,
+  "selectedReverb": {
+    "wet": 1.25,
+    "decaySeconds": 0.9,
+    "pauseRatioDb": -5.9235990430594665,
+    "differenceDb": 0.9651439961168204
+  },
+  "trials": [
+    {
+      "wet": 0.15,
+      "decaySeconds": 0.3,
+      "pauseRatioDb": -10.366763538007483,
+      "differenceDb": 5.408308491064837
+    },
+    {
+      "wet": 0.3,
+      "decaySeconds": 0.3,
+      "pauseRatioDb": -10.003561171439857,
+      "differenceDb": 5.045106124497211
+    },
+    {
+      "wet": 0.45,
+      "decaySeconds": 0.3,
+      "pauseRatioDb": -9.56854743653982,
+      "differenceDb": 4.610092389597174
+    },
+    {
+      "wet": 0.6,
+      "decaySeconds": 0.3,
+      "pauseRatioDb": -9.099937771617434,
+      "differenceDb": 4.141482724674788
+    },
+    {
+      "wet": 0.8,
+      "decaySeconds": 0.3,
+      "pauseRatioDb": -8.473788940320329,
+      "differenceDb": 3.515333893377683
+    },
+    {
+      "wet": 1,
+      "decaySeconds": 0.3,
+      "pauseRatioDb": -7.886482718925388,
+      "differenceDb": 2.9280276719827416
+    },
+    {
+      "wet": 1.25,
+      "decaySeconds": 0.3,
+      "pauseRatioDb": -7.238422011743705,
+      "differenceDb": 2.2799669648010585
+    },
+    {
+      "wet": 0.15,
+      "decaySeconds": 0.45,
+      "pauseRatioDb": -10.363616228201868,
+      "differenceDb": 5.405161181259222
+    },
+    {
+      "wet": 0.3,
+      "decaySeconds": 0.45,
+      "pauseRatioDb": -9.971600194106705,
+      "differenceDb": 5.0131451471640585
+    },
+    {
+      "wet": 0.45,
+      "decaySeconds": 0.45,
+      "pauseRatioDb": -9.490175503133665,
+      "differenceDb": 4.531720456191019
+    },
+    {
+      "wet": 0.6,
+      "decaySeconds": 0.45,
+      "pauseRatioDb": -8.965758025131397,
+      "differenceDb": 4.007302978188751
+    },
+    {
+      "wet": 0.8,
+      "decaySeconds": 0.45,
+      "pauseRatioDb": -8.260979989154599,
+      "differenceDb": 3.302524942211953
+    },
+    {
+      "wet": 1,
+      "decaySeconds": 0.45,
+      "pauseRatioDb": -7.597697143548372,
+      "differenceDb": 2.6392420966057255
+    },
+    {
+      "wet": 1.25,
+      "decaySeconds": 0.45,
+      "pauseRatioDb": -6.863664696485291,
+      "differenceDb": 1.9052096495426447
+    },
+    {
+      "wet": 0.15,
+      "decaySeconds": 0.65,
+      "pauseRatioDb": -10.357313068893589,
+      "differenceDb": 5.398858021950943
+    },
+    {
+      "wet": 0.3,
+      "decaySeconds": 0.65,
+      "pauseRatioDb": -9.921913493595934,
+      "differenceDb": 4.963458446653288
+    },
+    {
+      "wet": 0.45,
+      "decaySeconds": 0.65,
+      "pauseRatioDb": -9.374547361925377,
+      "differenceDb": 4.4160923149827305
+    },
+    {
+      "wet": 0.6,
+      "decaySeconds": 0.65,
+      "pauseRatioDb": -8.775315523218161,
+      "differenceDb": 3.816860476275515
+    },
+    {
+      "wet": 0.8,
+      "decaySeconds": 0.65,
+      "pauseRatioDb": -7.972192040937804,
+      "differenceDb": 3.013736993995158
+    },
+    {
+      "wet": 1,
+      "decaySeconds": 0.65,
+      "pauseRatioDb": -7.220868383318619,
+      "differenceDb": 2.262413336375973
+    },
+    {
+      "wet": 1.25,
+      "decaySeconds": 0.65,
+      "pauseRatioDb": -6.394572187565972,
+      "differenceDb": 1.4361171406233257
+    },
+    {
+      "wet": 0.15,
+      "decaySeconds": 0.9,
+      "pauseRatioDb": -10.344453861880545,
+      "differenceDb": 5.385998814937899
+    },
+    {
+      "wet": 0.3,
+      "decaySeconds": 0.9,
+      "pauseRatioDb": -9.854597041949617,
+      "differenceDb": 4.896141995006971
+    },
+    {
+      "wet": 0.45,
+      "decaySeconds": 0.9,
+      "pauseRatioDb": -9.231569914570652,
+      "differenceDb": 4.273114867628006
+    },
+    {
+      "wet": 0.6,
+      "decaySeconds": 0.9,
+      "pauseRatioDb": -8.552845543724334,
+      "differenceDb": 3.5943904967816884
+    },
+    {
+      "wet": 0.8,
+      "decaySeconds": 0.9,
+      "pauseRatioDb": -7.653825658900964,
+      "differenceDb": 2.6953706119583183
+    },
+    {
+      "wet": 1,
+      "decaySeconds": 0.9,
+      "pauseRatioDb": -6.824317667847498,
+      "differenceDb": 1.8658626209048519
+    },
+    {
+      "wet": 1.25,
+      "decaySeconds": 0.9,
+      "pauseRatioDb": -5.9235990430594665,
+      "differenceDb": 0.9651439961168204
+    }
+  ],
+  "originalTranscript": " That's right, he pushed me in the real world. Somebody pushes me, I push back, so I brought him down here.",
+  "cloneTranscript": " That's right. He pushed me in the real world. Somebody pushes me. I pushed back. So I brought him down here.",
+  "limitations": "Pitch estimator and two pause measurements are approximate; residual soundtrack, differing inflection and word timing affect them. No perceptual listening score is claimed. Whisper reads push back as pushed back in the clone. Original performance and prior approved sample are preserved."
+}

@@ -130,3 +130,9 @@ body.mobile-terminal #hud,body.mobile-terminal #system-warnings{display:none}
 /* The selected home label supplies the terminal-to-scene fade. */
 body.home-access.entering .terminal-content,body.home-access.entering .terminal-encom{visibility:hidden}
 body.home-access.entering.access-transition .overlay{background:transparent}
+
+/* Snapshot text owns the home transition while the live terminal changes mode. */
+body.home-opening #overlay,body.home-opening>.terminal-encom{visibility:hidden}
+
+/* The pre-rendered scene remains visible underneath the immediate home dissolve. */
+body.home-opening #game{visibility:visible}

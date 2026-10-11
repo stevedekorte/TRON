@@ -70,7 +70,7 @@ export function createGameApp() {
     }
   } catch {}
 
-  const session = loadingTimings.sync('Initial simulation / enemy placement',()=>new GameSession({ world: map }));
+  const session = loadingTimings.sync('Initial simulation / enemy placement',()=>new GameSession({ world: map, seed:browserRunSeed(location) }));
   const terminal = new Terminal($('terminal-text'), $('terminal-actions'));
   const tribute = new TerminalTribute($('end-tribute'), creditsText, extendedCreditsText);
   tribute.preview=new CreditModelPreview();
@@ -198,12 +198,16 @@ export function createGameApp() {
     if(homeSelection){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
       sound.terminalTone('access');
-      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles'});
+      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles'});
       if(disposed)return;
     }
     if(mode==='ready'&&selectedGame==='credits'){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
       outroFade=0;startVictoryCredits();void homeTransition.finish();return;
+    }
+    if(mode==='ready'&&selectedGame==='mcp'){
+      window.location.assign(new URL('./mcp.html',document.baseURI).href);
+      return;
     }
     if(mode==='ready'&&selectedGame==='bit'){
       try{sessionStorage.setItem('tron-home-transition',document.querySelector('#home-transition').outerHTML);}catch{}
@@ -240,14 +244,16 @@ export function createGameApp() {
     jev.resetScheduling();
     autoplay.reset();
     loadingTimings.checkpoint('Start requested');
-    run = loadingTimings.sync('New game simulation reset',()=>session.reset(browserRunSeed(location)));
+    // Home already owns a fresh simulation; rebuilding it here consumes the fade.
+    const freshHomeRun=homeSelection&&run.time===0&&!run.crushed&&!run.won;
+    if(!freshHomeRun)run = loadingTimings.sync('New game simulation reset',()=>session.reset(browserRunSeed(location)));
     run.speed = config.maxSpeed;
     if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({entranceFormation:!testCycleStart,startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
     else startPursuit(run);
     loadArenaInBackground();
     run.cruiseThrottle = true;
     session.previous = { ...run };
-    view.reset();
+    if(!freshHomeRun)view.reset();
     sound.reset();
     if(opening)sound.prepareMusic();
     view.cameraRig.aerial = false;
@@ -295,7 +301,7 @@ export function createGameApp() {
     onConfirm:()=>{setAutoplay(false);returnToProgramSelection();},
     onCancel:()=>{void resume();},
   });
-  const gameChoices=[$('start'),$('start-cycles'),$('start-bit'),$('start-credits')];
+  const gameChoices=[$('start'),$('start-cycles'),$('start-bit'),$('start-mcp'),$('start-credits')];
   function selectGame(game,{focus=false}={}){
     if(homeTransition.active)return;
     selectedGame=game;
@@ -799,7 +805,7 @@ export function createGameApp() {
   function returnToProgramSelection(){
     sound.reset();tribute.reset();victoryPrinter.reset();accessPrinter.reset();
     jev.resetScheduling();autoplay.reset();inputController.clear();releaseMouse();
-    run=session.reset();view.reset();view.cameraRig.opening=null;
+    run=session.reset(browserRunSeed(location));view.reset();view.cameraRig.opening=null;
     document.body.classList.remove('detached','victory','victory-credits');endingStage=null;
     $('terminal-text').textContent=openingMessage;
     $('terminal-text').parentElement.setAttribute('aria-label',openingMessage.replaceAll('\n','. '));
@@ -1039,12 +1045,17 @@ export function createGameApp() {
       await Promise.all([loadArenaInBackground(),loadSolarInBackground(),programResources]);
       if(disposed||mode==='error')return;
 
-      // Warm the first scene frame while the loading terminal still covers it.
+      // Compile the actual CLU opening (vehicles, carrier and shadows included)
+      // during loading, so Return does not spend the dissolve compiling shaders.
+      view.cameraRig.opening=0;
+      loadingTimings.sync('CLU opening render / shader setup',()=>view.render(run, session.previous, 1, 0, 'entering'));
+      view.cameraRig.opening=null;
       loadingTimings.sync('First render submission / shader setup',()=>view.render(run, session.previous, 1, 0, 'ready'));
       performance.mark('tron:first-frame');
       $('start').disabled = false;
       $('start-cycles').disabled = false;
       $('start-bit').disabled = false;
+      $('start-mcp').disabled = false;
       $('start-credits').disabled = false;
       terminal.finish();
       setMode('ready');

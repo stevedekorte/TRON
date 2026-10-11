@@ -7,7 +7,7 @@ async function walk(dir) {
 }
 const env=loadEnv('production',process.cwd(),'VITE_');
 await writeFile('dist/bit/config.js',`window.BIT_API_BASE = ${JSON.stringify(process.env.VITE_JEV_API_BASE || env.VITE_JEV_API_BASE || '')};\n`);
-const files = ['index.html', 'manifest.webmanifest', ...(await Promise.all(['assets','audio','fonts','images','icons','bit'].map(walk))).flat()].sort();
+const files = ['index.html', 'mcp.html', 'manifest.webmanifest', ...(await Promise.all(['assets','audio','fonts','images','icons','bit'].map(walk))).flat()].filter(file=>!file.includes('ort-wasm-')).sort();
 const template = await readFile('src/pwa/sw.js', 'utf8');
 const hash = createHash('sha256').update(template);
 let bytes = 0;

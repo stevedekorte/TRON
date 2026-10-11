@@ -1,3 +1,4 @@
+import {mcpRoute} from './mcp.js';
 import {errorBody} from '../../shared/jev-errors.js';
 import {jevQuestion} from '../../shared/jev-protocol.js';
 import {PUBLIC_LIMITS} from './budget.js';
@@ -24,8 +25,9 @@ export function createWorker(fetchImpl=fetch){return {async fetch(request,env,ct
  if(!origin||!allowed.includes(origin))return send(403,{error:'Origin rejected'});
  Object.assign(headers,{'Access-Control-Allow-Origin':origin,'Access-Control-Expose-Headers':'Retry-After'});
  const path=new URL(request.url).pathname;
- if(!['/api/jev/decision','/api/jev/status'].includes(path))return send(404,{error:'Not found'});
+ if(!['/api/jev/decision','/api/jev/status','/api/mcp/chat','/api/mcp/status'].includes(path))return send(404,{error:'Not found'});
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'86400'}});
+ if(path.startsWith('/api/mcp/'))return mcpRoute(request,env,ctx,{send,boundedJson,clientHash,fetchImpl});
  const configured=env.JEV_ENABLED==='true'&&!!env.TYPESAFE_API_KEY;
  if(path==='/api/jev/status'&&request.method==='GET')return send(200,{configured,model:env.TYPESAFE_MODEL||'jev-latest'});
  if(path!=='/api/jev/decision'||request.method!=='POST')return send(405,{error:'Method not allowed'});

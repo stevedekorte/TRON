@@ -1,0 +1,7 @@
+{
+  "text": "Welcome, program. Your connection to the Grid is now under my control.",
+  "model": "onnx-community/chatterbox-ONNX",
+  "revision": "3cab09af388d3f02bba43443fce88c1f4525ac43",
+  "durationSeconds": 5.68,
+  "generationSeconds": 12.36012975
+}

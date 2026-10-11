@@ -1732,3 +1732,70 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Place each cycle rear and initial light-wall endpoint exactly two cycle lengths (7.2 m) inside its starting arena wall, for all team counts and directions. Remove start-position grid rounding and update the materialization camera to the same formation location.
 - Validation: all 474 simulation tests passed, including all nine team/roster arrangements and updated entrance-camera endpoint checks.
 - Browser validation: `tests/home-transition.mjs` passed all four programs and the exact on/off/on/off/on blink sequence; `tests/cycle-opening.mjs` passed the full entrance, materialization, fixed launch shot, pause/resume, and camera handoff. Inspected the updated formation capture. Production build passed.
+
+## Overlapping menu/game fade and visible confirmation — October 9
+
+- [x] Begin preparing CLU/cycles immediately after selection, preserve copies of the home text above the scene, and start the background dissolve alongside the unselected-text fade after the first rendered frame. Keep the selected label on an independent layer so its blinks are not dimmed by a parent opacity.
+- [x] Use three off/on blinks at a 30% faster rate (99/1.3 ms per phase), followed by a 140 ms final text fade. BIT carries the separate background and label timelines across document navigation; reduced-motion mode skips the animation.
+- Validation: `node tests/home-transition.mjs` passed for CLU, cycles, credits, and BIT, checking the three on/off sequences and simultaneous partial background/text opacity over the visible game canvas. Inspected `test-results/clu-terminal-crossfade.png`. `npm run build` and `git diff --check` passed.
+
+## Immediate menu feedback — October 9
+
+- [x] Start the unselected-text and cursor fades on selection, independently of scene readiness, with a linear onset. Allow the browser to submit these animations before synchronous game setup. When the game frame is ready, consume any elapsed first-phase time rather than replaying the text fade; preserve three bright final label blinks and the background dissolve.
+- Validation: the browser regression checks text opacity falls while scene readiness is deliberately withheld, then exercises CLU, cycles, credits, and BIT transitions.
+
+## Synchronized immediate menu reveal — October 9
+
+- [x] Reveal the existing rendered game canvas beneath the home screen and fade its black covering layer with the same 825 ms linear timing as the unselected text. These two animations start immediately; only the selected label waits for game readiness before its final three blinks. BIT navigation starts after the background fade completes.
+- [x] Record improving outside-arena cycle driving dynamics in `TODO.md`.
+
+## CLU opening camera during menu dissolve — October 9
+
+- [x] Start CLU's prepared opening before the first dissolve frame, reuse the fresh home-screen simulation instead of rebuilding it on Return, and warm the opening's rendering during loading. Generate fresh random patrol seeds during initial loading and return to the menu; explicit comparison seeds remain reproducible.
+- Validation: `node tests/home-transition.mjs` passed in headless desktop Chrome at 1280×800 for CLU, light cycles, credits, and BIT. The regression now records camera positions during partial background opacity and verifies that CLU's opening camera moves while the game fades in, in addition to checking the three selected-label blinks.
+
+## Light-cycle menu scene isolation — October 9
+
+- [x] Keep the background cover opaque when selecting light cycles until the first arena frame has rendered, then dissolve it and the unselected text together over 825 ms. Reuse the fresh home simulation and begin cycle setup without an extra frame delay. The selected label retains its three blinks. This prevents the home screen's CLU preview from appearing before the arena while keeping the scene reveal synchronized with the text.
+- Validation: headless Chrome regression covers delayed scene readiness, checks matching text/background opacity across multiple arena reveal frames, and checks that every revealed frame during light-cycle entry belongs to the cycle game; CLU's moving-camera fade and the credits/BIT transitions also pass.
+
+## MCP conversation terminal — October 9
+
+- [x] Add MCP to the home menu, with a separate conversation page showing the supplied film image. Animate mouth/jaw and attached wireframe during speech, respect reduced motion, and provide typed input alongside speech recognition and browser TTS.
+- [x] Add bounded conversational history and a server-only, OpenAI-compatible chat relay for Vite and the production Worker. Preserve origin checks and Worker budget checks. Leave provider configuration explicit; JEV cannot generate free-form dialogue.
+- [ ] Configure the user's chosen chat provider and verify a real microphone → model → spoken reply session. The current browser checks mock these external interfaces; voice character and animation fidelity remain subject to user review.
+- Validation: `node --test tests/mcp.test.js tests/worker.test.js` passed (10 tests). `node tests/mcp.mjs` passed the mocked speech/chat loop, history, stop, exit and unavailable-service recovery. Inspected the 1280×800 headless Chrome speaking capture against the supplied still and video frames. No deployment performed.
+
+
+## MCP voice cloning and deferred model cache — October 9
+
+- [x] Extract a reproducible MCP-only reference from the user's film clip and generate new dialogue using pinned Chatterbox weights. Add a saved audition and live voice test independent of chat-provider configuration.
+- [x] Begin the model download only when entering MCP. Run inference in a WebGPU worker and cache model files atomically in bounded records in IndexedDB, separate from game/PWA updates. Stop/exit cancels worker activity and playback. Drive jaw animation from synthesized audio amplitude.
+- IndexedDB validation: `node tests/mcp-voice.mjs --local-models` passed in headless Chrome on macOS with WebGPU. Stored 14 files (1,526,346,349 bytes), generated and played new speech, then reloaded successfully with no model-weight downloads (two optional missing-file probes remain). A local fixture supplied the pinned weights to isolate persistence from remote transfer failures. Relay unit tests passed 10 tests; production build passed.
+- Validation: native CPU inference generated a 5.68-second sample in 12.36 seconds; local Whisper transcription recovered the intended sentence. Initial headless Chrome WebGPU generation took 6.61 seconds to playback and completed successfully. Clone quality still needs the user's listening judgment; full dialogue still needs a configured chat provider.
+
+## MCP chat provider — October 10
+
+- [x] Select Gemini 3.8 Flash as the default MCP conversation provider, using Google's OpenAI-compatible endpoint in both local and Worker relays. Keep the API key server-only; local status stays unconfigured until a key is supplied. Explicit endpoint/model overrides remain supported.
+- [ ] Supply the Gemini API key and verify a live conversation.
+
+- Gemini credential storage: `credentials/Gemini.txt` uses the existing git-crypt filter and an explicit ignore exception. Local MCP reads the unlocked file; public checkouts with encrypted content remain unconfigured. Production uses the Cloudflare `MCP_API_KEY` secret, never the static bundle. The authorized local key is installed. A real Gemini reply through the local relay returned HTTP 200 in 2.73 seconds; production secret upload remains pending.
+
+## Light cycle match roster — October 10
+
+- [x] Show a top-center row of top-down renders of the repaired game cycle model, facing upward and grouped by team, using each team's color; retain eliminated cycles at 20% opacity.
+- [x] Rebuild the roster for each match and keep the controls/death prompt below it. Hide the roster outside cycle play and during the opening camera sequence.
+- [x] Chrome (headless, macOS ARM64): `node tests/cycle-roster.mjs` passed for a 12-cycle/four-team match, elimination dimming, six-cycle restart, and hiding. Inspected the captured icon layout.
+
+## MCP loading and voice comparison — October 10
+
+- [x] Display a combined download meter and ETA with the active component name. Distinguish transfer completion from GPU initialization and voice conditioning. Keep the saved audition and typed chat usable while loading.
+- [x] Preserve a static face and startup error message if the renderer/module fails. Restart the local Vite server with the MCP relay. Chrome UI tests passed; the user's original blank-screen report was not reproduced.
+- [x] Cache large voice files as separate, bounded IndexedDB records in an atomic transaction. Avoid unreadable large Blob entries and IndexedDB's record-size limit. Pin model architecture and quantization metadata to remove optional generic-model 404 probes. Host the inference runtime locally.
+- [x] `node tests/mcp-voice.mjs --local-models`: Chrome/WebGPU generated speech in 6.27 seconds after initialization and reloaded all 13 cached files (1,526,293,292 bytes) with no model downloads. `node tests/mcp.mjs` passed loading, interaction, cache and startup fallback checks. MCP download/relay/Worker unit tests passed 14 tests.
+- [x] Produce a same-dialogue audition at `/mcp-voice-comparison.html`: original film excerpt, dry clone, measured pitch/reverb match, and a deeper alternative. Measurements guide the candidates; final perceptual matching remains subject to listening review.
+
+## Cycle roster circles — October 10
+
+- Replace the rendered cycle thumbnails with filled team-colored circles. Eliminated cycles keep a full-color outline and have a transparent interior. Connect adjacent teammates with matching lines spanning only the gaps; no line crosses a hollow circle or joins different teams.
+- Move the controls/death prompt up beneath the shorter roster. Keep the existing model thumbnails available for future use.

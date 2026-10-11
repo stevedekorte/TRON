@@ -1,7 +1,7 @@
 // Warm BIT's separate document and dependencies without executing it, requesting
 // microphone access, or calling JEV. Its own page still creates its audio context.
 export async function preloadBitResources(){
- const base=new URL(`${import.meta.env.BASE_URL}bit/`,location.origin);
+ const base=new URL('bit/',globalThis.document.baseURI);
  const page=await fetch(new URL('index.html',base),{cache:'force-cache'});
  if(!page.ok)throw Error(`BIT terminal: HTTP ${page.status}`);
  const document=new DOMParser().parseFromString(await page.text(),'text/html');
