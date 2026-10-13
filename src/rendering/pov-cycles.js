@@ -72,7 +72,8 @@ void main(){
  float revealed=1.-smoothstep(cut-max(fwidth(localPoint.z),.001),cut,localPoint.z);
  contour*=revealed;halo*=revealed;grid*=revealed;
  float wire=max(max(contour,grid),halo);
- float alpha=(rezSolid+(1.-rezSolid)*wire)*(1.-cockpitMix);
+ float formationAlpha=rezSolid+(1.-rezSolid)*wire;
+ float alpha=formationAlpha*(1.-cockpitMix);
  if(alpha<.002)discard;
  // Transform the world light into this cycle's coordinates for self-occlusion.
  vec3 key=normalize(vec3(-1,2,-1));
@@ -91,7 +92,7 @@ void main(){
  vec3 wireColor=(contourColor*contour+gridColor*grid+haloColor*halo)/max(contour+grid+halo,.001)*${CYCLE_REZ.lineIntensity};
  // The solid briefly blooms almost white, while glass stays dark.
  color+=mix(bodyColor,vec3(.88,1.,.8),.8)*rezGlow*${CYCLE_REZ.bodyGlowIntensity.toFixed(1)}*(h.material==2?.04:1.);
- color=mix(wireColor,color,rezSolid/max(alpha,.001));
+ color=mix(wireColor,color,rezSolid/max(formationAlpha,.001));
  float depth=-(viewMatrix*vec4(worldPoint,1)).z;
  color=mix(color,sceneFogColor,1.-exp(-sceneFogDensity*sceneFogDensity*depth*depth));
  gl_FragColor=vec4(color,alpha);

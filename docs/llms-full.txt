@@ -34,6 +34,12 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 - [x] Restrict the gray window return to the projecting rear cut face, excluding the roof lip. Give that downward-facing panel a small reflected-light floor while retaining the underbody pigment and the rest of the cycle’s deep shadows.
 - [x] Validation: 504 unit tests pass; headless Chrome on macOS passes `tests/mcp-game-launch.mjs` (audio timing, face, one-second hold, direct scene transition and music-fade trigger) and `tests/exit-confirm.mjs` (CLU/cycles/BIT confirmation and cancellation). Inspected the normally lit rear-window render in `test-results/cycle-window-rear-solid.png`. `tests/cycle-first-person.mjs` passes cockpit toggling, height and hidden-player checks; `tests/mcp.mjs` passes microphone permission, speech timing and music continuity checks. A live relay search returned an answer. These automated checks do not establish subjective sound quality.
 
+## Cycle attack tactics and cockpit fade — October 13
+
+- [x] JEV favors closing on observed enemies, intercepting ahead, cutting escape lanes and coordinated boxing-in, with self-preservation and friendly escape routes retained. Clearance score is not attack value. Local collision avoidance and observation limits remain authoritative.
+- [x] Separate materialization color coverage from cockpit opacity so entering first person fades the cycle transparently without changing its colors.
+- [x] Validation: 23 JEV/protocol/Worker unit tests passed; production build passed; headless Chrome on macOS passed the first-person entry/exit and hidden-player check. Tactical effectiveness still needs live play assessment.
+
 ## Project documents
 
 <div class="card-grid cols-2">
