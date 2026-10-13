@@ -50,7 +50,7 @@ export function createGameApp() {
   const { world: map } = scenario;
   const cycleStart = new URLSearchParams(location.search).get('cycleStart');
   const testCycleStart = cycleStart === '1';
-  let selectedGame = testCycleStart ? 'cycles' : 'space';
+  let selectedGame = 'cycles';
   const $ = (id) => document.getElementById(id);
   const inputController = new InputController();
   const loop = new GameLoop({ frame, backgroundAllowed: () => autoplay.enabled });
@@ -307,7 +307,7 @@ export function createGameApp() {
     onConfirm:()=>{setAutoplay(false);returnToProgramSelection();},
     onCancel:()=>{void resume();},
   });
-  const gameChoices=[$('start'),$('start-cycles'),$('start-bit'),$('start-mcp'),$('start-credits')];
+  const gameChoices=[...document.querySelectorAll('#game-menu .game-choice')];
   function selectGame(game,{focus=false}={}){
     if(homeTransition.active)return;
     selectedGame=game;

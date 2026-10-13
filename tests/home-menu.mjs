@@ -17,14 +17,15 @@ try{
   assert.equal(r.breaches.length,0);assert.equal(r.cycles.filter(b=>b.team===1&&b.alive).length,3);
  };
  await home();
- assert.equal(await page.locator('#start').getAttribute('aria-pressed'),'true');
+ assert.equal(await page.locator('#start-cycles').getAttribute('aria-pressed'),'true');
  assert((await page.locator('#terminal-text').textContent()).includes('ENCOM SYSTEM'));
  assert.equal(await page.locator('.terminal-controls,.terminal-menu-help').count(),0);
  const typography=await page.evaluate(()=>{const a=getComputedStyle(document.querySelector('.terminal-copy')),b=getComputedStyle(document.querySelector('#start'));return [a.fontSize,a.lineHeight,a.letterSpacing,b.fontSize,b.lineHeight,b.letterSpacing,b.borderWidth,b.outlineStyle];});
  assert.deepEqual(typography.slice(0,3),typography.slice(3,6));assert.equal(typography[6],'0px');assert.equal(typography[7],'none');
  await page.waitForTimeout(300);assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('terminal')),true);
- await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-cycles').getAttribute('aria-pressed'),'true');
- await page.keyboard.press('ArrowUp');assert.equal(await page.locator('#start').getAttribute('aria-pressed'),'true');
+ await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start').getAttribute('aria-pressed'),'true');
+ await page.keyboard.press('ArrowUp');assert.equal(await page.locator('#start-cycles').getAttribute('aria-pressed'),'true');
+ await page.keyboard.press('ArrowDown');
  await page.screenshot({path:'test-results/home-menu.png'});
  const terminalTop=await page.locator('.terminal-content').last().evaluate(e=>e.getBoundingClientRect().top);
  await page.keyboard.press('Enter');
@@ -48,7 +49,7 @@ try{
  assert(await page.locator('#autoplay-toggle').isVisible());
  assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
  await page.screenshot({path:'test-results/clu-terminal-size-hud.png'});
- await home();await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await arena();
+ await home();await page.keyboard.press('Enter');await arena();
  assert.equal(await page.locator('#cycle-controls').evaluate(e=>getComputedStyle(e).fontSize),typography[0]);
  assert.equal(await page.locator('#turbo span').evaluate(e=>getComputedStyle(e).fontSize),typography[0]);
  await page.screenshot({path:'test-results/cycle-terminal-size-hud.png'});

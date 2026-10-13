@@ -1999,3 +1999,15 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Reduce ray-cast cycle ambient intensity from 0.25 to 0.03 and fill from 0.4 to 0.04. Fully occluded key light now contributes zero instead of 15%, producing near-black self shadows while retaining the key light and thin edge highlights. Shared by gameplay, credits and the analytic study.
 - [x] Double MCP opening music playback volume from 0.3 to 0.6.
 - Validation: headless Chrome materialization shader/lifecycle check passed; inspected shadow-side and lit-side captures. Production build passed for the shadow changes; music adjustment checked directly. These changes are local following the preceding deployment.
+
+## Cycle rear window panels — October 13
+
+- [x] Assign the rear prism-cut faces of both projecting CSG windows the same gray material as the underbody. Curved glazing remains dark and reflective; material selection follows the actual CSG boundary rather than camera direction or team color. Applies to the shared analytic model in gameplay, credits and the study.
+- Validation: Chrome materialization shader/lifecycle check and production build passed. Inspected rear-view and flat-material diagnostic captures to verify the gray panel independently of the new dark shadows. Local change, not part of the preceding shadow/music deployment (which completed successfully).
+
+## Moving wheel reflections and menu/audio timing — October 13
+
+- [x] Add antialiased white spoke glints only on both black inner CSG wheel discs during motion. Cadence is 12 flashes/second at normal speed, scales with speed up to 24 at turbo, and fades out below 2 m/s. Simulation time drives phase, so rendering frame rate does not set the animation speed; stopped/formation/result cycles and static credits have no glints. Named values live in cycle-wheel-reflections.js. Raster fallback remains unchanged.
+- [x] Cue MCP music before typing, with a one-second lead from playback starting. Retain cancellation, volume and exit handling.
+- [x] Place Light Cycles first and select it by default; keyboard order follows the displayed buttons.
+- Validation: all 502 automated tests passed. Headless Chrome checked wheel on/off/stopped captures, materialization shaders, menu order/default/wraparound/Return launch, and MCP music lead-in plus permission/greeting/reply lifecycle. Inspected wheel glint capture.

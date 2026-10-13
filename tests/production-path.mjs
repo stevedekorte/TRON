@@ -9,7 +9,7 @@ try {
  page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);if(/\.(glb|wav|mp3)(\?|$)/.test(r.url()))assets.push(r.url());});
  await page.goto(url);
  await page.waitForFunction(()=>!document.querySelector('#start').disabled);
- await page.keyboard.press('Enter');
+ await page.locator('#start').click(); // Exercise CLU explicitly; Light Cycles is the default.
  await page.waitForFunction(()=>document.body.classList.contains('playing'));
  await page.waitForTimeout(3000);
  assert(assets.filter(x=>x.includes('.glb')).length>=3,'All vehicle models load');

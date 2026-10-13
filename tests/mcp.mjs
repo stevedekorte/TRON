@@ -6,8 +6,9 @@ try{
   const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(({denied})=>{
    window.events=[];window.permissionDenied=denied;
-   const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.src.includes('20%20Break')||this.src.includes('20 Break'))window.musicStartedAt=document.querySelector('#reply').textContent;return play.call(this);};
+   const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.src.includes('20%20Break')||this.src.includes('20 Break')){window.musicStartedAt=document.querySelector('#reply').textContent;window.musicCalledAt=performance.now();}return play.call(this);};
    navigator.mediaDevices.getUserMedia=async()=>{events.push(['permission',document.querySelector('#reply').textContent]);if(window.permissionDenied)throw Error('denied');return {getTracks:()=>[{stop(){}}]};};
+   new MutationObserver(()=>{if(!window.firstTypedAt&&document.querySelector('#reply')?.textContent.startsWith('R'))window.firstTypedAt=performance.now();}).observe(document,{subtree:true,childList:true,characterData:true});
    window.SpeechRecognition=class{constructor(){window.recognition=this;}start(){events.push(['listen']);}abort(){this.onend?.();}};
   },{denied});
   await page.route('**/src/mcp/voice.js',r=>r.fulfill({contentType:'application/javascript',body:`export class McpVoice {ready=false;generating=false;async load(){this.ready=true;}async generate(text){window.events.push(['speech',text]);await new Promise(r=>setTimeout(r,100));return {samples:new Float32Array(2400),sampleRate:24000};}abort(){}cancel(){}}`}));
@@ -39,7 +40,8 @@ try{
    await page.evaluate(()=>recognition.onresult({resultIndex:0,results:[[{transcript:'Hello'}]]}));
    await page.waitForFunction(()=>events.some(e=>e[0]==='speech'&&e[1]==='END OF LINE.'));
   }
-  assert.equal(await page.evaluate(()=>window.musicStartedAt),'','music begins with the first character');
+  assert.equal(await page.evaluate(()=>window.musicStartedAt),'','music begins before the first character');
+  assert(await page.evaluate(()=>firstTypedAt-musicCalledAt>=950),'music is cued at least a second before typing');
   assert.deepEqual(errors,[]);await page.close();
  }
  console.log('MCP permission after typing, denial screen, cloned greeting before listening, and spoken reply passed.');

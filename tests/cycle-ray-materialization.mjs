@@ -24,6 +24,7 @@ try{
   renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.24;
   const composer=new EffectComposer(renderer),bloom=new UnrealBloomPass(new T.Vector2(1000,700),.6,.5,.85),output=new OutputPass();
   composer.addPass(new RenderPass(scene,camera));composer.addPass(bloom);composer.addPass(output);
+  window.setWheelReflection=(phase,strength)=>{source.userData.wheelReflection={phase,strength};};
   window.capturePhase=progress=>{
    source.userData.cycleFormationProgress=progress;
    view.prepare();view.edges.render(renderer,view.root,camera);composer.render();
@@ -38,6 +39,13 @@ try{
   assert(phase.rayVisible&&phase.meshHidden&&phase.restored);assert.equal(phase.solid,expected.solid);assert.equal(phase.sweep,expected.contours);assert.equal(phase.depthWrite,expected.solid===1);
   await page.screenshot({path:`test-results/cycle-ray-rez-${name}.png`});
  }
+ await page.evaluate(()=>{setWheelReflection(.25,1);capturePhase(1);});
+ const glint=await page.screenshot({path:'test-results/cycle-wheel-glint-on.png'});
+ await page.evaluate(()=>{setWheelReflection(.75,1);capturePhase(1);});
+ const dark=await page.screenshot({path:'test-results/cycle-wheel-glint-off.png'});
+ assert(!glint.equals(dark),'moving wheel reflections alternate visibly');
+ await page.evaluate(()=>{setWheelReflection(.25,0);capturePhase(1);});
+ const stopped=await page.screenshot();assert(stopped.equals(dark),'stopped wheels have no artificial reflection');
  await page.evaluate(()=>disposePreview());assert.deepEqual(errors,[]);
  console.log('Ray-cast sweep, wire, solid fade, mesh exclusion/restoration, depth state and shader compilation passed.');
 }finally{await browser.close();}

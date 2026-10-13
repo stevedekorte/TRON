@@ -10,7 +10,6 @@ export function typeMcpAccess(element,onComplete){
  const next=()=>{
   if(cancelled)return;
   if(index<MCP_ACCESS_TEXT.length){
-   if(index===0)void music.play().catch(error=>console.warn('MCP music unavailable:',error.message));
    const character=MCP_ACCESS_TEXT[index++];
    element.textContent=MCP_ACCESS_TEXT.slice(0,index);
    const delay=character==='\n'?TIMING.linePauseMs:TIMING.keyMinMs+Math.random()*TIMING.keyVariationMs+(character===' '?TIMING.wordPauseMs:0);
@@ -24,10 +23,14 @@ export function typeMcpAccess(element,onComplete){
  beep.preload='auto';
  // Begin the one-second lead from actual playback, not from the fetch request.
  void beep.play().catch(error=>console.warn('MCP access beep unavailable:',error.message)).then(()=>{
-  if(!cancelled)timer=setTimeout(next,TIMING.startMs);
+  if(!cancelled){
+   void music.play().catch(error=>console.warn('MCP music unavailable:',error.message)).then(()=>{
+    if(!cancelled)timer=setTimeout(next,TIMING.startMs);
+   });
+  }
  });
  const cancel=()=>{music.pause();music.removeAttribute('src');music.load();cancelled=true;clearTimeout(timer);beep.pause();beep.removeAttribute('src');beep.load();element.classList.remove('typing');};
  cancel.pauseMusic=()=>music.pause();
- cancel.resumeMusic=()=>{if(index>0&&!cancelled&&!music.ended)void music.play().catch(()=>{});};
+ cancel.resumeMusic=()=>{if(!cancelled&&!music.ended)void music.play().catch(()=>{});};
  return cancel;
 }

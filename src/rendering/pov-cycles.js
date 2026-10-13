@@ -4,6 +4,7 @@ import * as T from 'three';
 import {cycleMaterializationPhase} from '../game/cycle-materialization.js';
 import {cycleSceneGLSL,CYCLE_EDGE_CONFIG,CYCLE_LIGHTING_CONFIG} from '../experiments/cycle-ray-shader.js';
 import {POV_CYCLE_SCALE} from '../experiments/pov-cycle-model.js';
+import {CYCLE_WHEEL_REFLECTIONS as WHEEL_GLINT} from './cycle-wheel-reflections.js';
 const EDGE_FILTER={radiusPixels:1.2,creaseStart:.18,creaseFull:.65,strength:.8,paintStrength:.22};
 export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.006,lineIntensity:2.2,contourColor:0xd0dc9a,gridColor:0x75b5b7,haloColor:0x39bccc,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
 const COLORS=[0xe6bd14,0x086ac4,0xff1010,0x178c42];
@@ -15,6 +16,22 @@ uniform bool edgeNormalPass,edgeMapReady;
 uniform sampler2D edgeMap;
 uniform vec2 edgeResolution;
 uniform float rezSolid,rezSweep,rezGrid,rezGlow;
+uniform float wheelPhase,wheelGlintStrength;
+float wheelReflection(vec3 point,vec3 normal,int material){
+ if(material!=2||abs(normal.x)<.9||wheelGlintStrength<=0.)return 0.;
+ // Both wheel discs share the original analytic model's axle height and centers.
+ float center=point.z<0.?-${177.5*POV_CYCLE_SCALE}:${177.5*POV_CYCLE_SCALE};
+ vec2 radial=vec2(point.z-center,point.y-${85*POV_CYCLE_SCALE});
+ float radius=length(radial),aa=max(fwidth(radius),.0005);
+ float ring=smoothstep(${WHEEL_GLINT.innerRadiusMeters}-aa,${WHEEL_GLINT.innerRadiusMeters}+aa,radius)*(1.-smoothstep(${WHEEL_GLINT.outerRadiusMeters}-aa,${WHEEL_GLINT.outerRadiusMeters}+aa,radius));
+ float angle=-2.1+.12*sin(wheelPhase*.7);
+ float delta=abs(atan(sin(atan(radial.y,radial.x)-angle),cos(atan(radial.y,radial.x)-angle)));
+ float edge=max(fwidth(delta),.001);
+ float spoke=1.-smoothstep(${WHEEL_GLINT.halfWidthRadians}-edge,${WHEEL_GLINT.halfWidthRadians}+edge,delta);
+ float phase=fract(wheelPhase);
+ float flash=smoothstep(0.,.04,phase)*(1.-smoothstep(.46,.5,phase));
+ return ring*spoke*flash*wheelGlintStrength;
+}
 float edgeCoverageAt(vec3 normal,float radius){
  vec2 uv=gl_FragCoord.xy/edgeResolution;
  float coverage=0.;
@@ -66,6 +83,7 @@ void main(){
  }
  vec3 color=lightingVisible(worldPoint,normal,normalize(cameraPosition-worldPoint),materialColor(h.material),h.material==2?90.:45.,visibility);
  color=edgeMapReady?filteredEdges(color,normal,h.material):cycleEdgeHighlights(color,normal,normalize(cameraPosition-worldPoint),h.material);
+ color=mix(color,vec3(.82,.89,1.)*${WHEEL_GLINT.intensity},wheelReflection(localPoint,h.n,h.material)*rezSolid);
  vec3 contourColor=vec3(${new T.Color(CYCLE_REZ.contourColor).toArray().join(',')});
  vec3 gridColor=vec3(${new T.Color(CYCLE_REZ.gridColor).toArray().join(',')});
  vec3 haloColor=vec3(${new T.Color(CYCLE_REZ.haloColor).toArray().join(',')});
@@ -84,7 +102,7 @@ export function createPovCycleGeometry(){
  return new T.BoxGeometry(160*scale,230.1*scale,525.2*scale).translate(0,115*scale,0);
 }
 export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeometry()){
-   const uniforms={rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
+   const uniforms={wheelPhase:{value:0},wheelGlintStrength:{value:0},rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
    const material=new T.ShaderMaterial({defines:{SHOW_CYCLE:1},uniforms,vertexShader,fragmentShader,side:T.BackSide});
    const mesh=new T.Mesh(geometry,material);mesh.name='CSG cycle';mesh.visible=false;
    mesh.onBeforeRender=(renderer,scene,camera)=>{
@@ -117,6 +135,8 @@ export class PovCycles {
    if(!proxy.visible)continue;
    const uniforms=proxy.material.uniforms;
    const phase=cycleMaterializationPhase(source.userData.cycleFormationProgress??1);
+   uniforms.wheelPhase.value=source.userData.wheelReflection?.phase??0;
+   uniforms.wheelGlintStrength.value=source.userData.wheelReflection?.strength??0;
    uniforms.rezSolid.value=phase.solid;
    uniforms.rezSweep.value=phase.contours;
    uniforms.rezGrid.value=phase.grid;
