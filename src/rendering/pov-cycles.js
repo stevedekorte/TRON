@@ -2,7 +2,7 @@
 // hit writes depth into the ordinary scene, before bloom/AA/output conversion.
 import * as T from 'three';
 import {cycleMaterializationPhase} from '../game/cycle-materialization.js';
-import {cycleSceneGLSL,CYCLE_EDGE_CONFIG} from '../experiments/cycle-ray-shader.js';
+import {cycleSceneGLSL,CYCLE_EDGE_CONFIG,CYCLE_LIGHTING_CONFIG} from '../experiments/cycle-ray-shader.js';
 import {POV_CYCLE_SCALE} from '../experiments/pov-cycle-model.js';
 const EDGE_FILTER={radiusPixels:1.2,creaseStart:.18,creaseFull:.65,strength:.8,paintStrength:.22};
 export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.006,lineIntensity:2.2,contourColor:0xd0dc9a,gridColor:0x75b5b7,haloColor:0x39bccc,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
@@ -62,7 +62,7 @@ void main(){
  float visibility=1.;
  if(rezSolid>0.&&dot(normal,key)>0.){
   vec3 localKey=normalize(mat3(inverseCycleWorld)*key);
-  if(cycleHit(localPoint+h.n*.002,localKey).material!=0)visibility=.15;
+  if(cycleHit(localPoint+h.n*.002,localKey).material!=0)visibility=${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)};
  }
  vec3 color=lightingVisible(worldPoint,normal,normalize(cameraPosition-worldPoint),materialColor(h.material),h.material==2?90.:45.,visibility);
  color=edgeMapReady?filteredEdges(color,normal,h.material):cycleEdgeHighlights(color,normal,normalize(cameraPosition-worldPoint),h.material);

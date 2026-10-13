@@ -5,7 +5,9 @@ import {Color} from 'three';
 // Closed-form intersections, not distance-field ray marching. Units are meters,
 // Y up, vehicle forward -Z. The POV-Ray model retains its original proportions.
 export const CYCLE_RAY_CONFIG={lengthMeters:3.6,bodyColor:0xe6bd14,maxDistanceMeters:1000};
-export const CYCLE_LIGHTING_CONFIG={ambientIntensity:.25,fillIntensity:.4,gridLineColor:0xcccccc};
+// Film-style contrast: a blocked key contributes no light, with only a trace
+// of ambient/fill to retain shape in the almost-black unlit surfaces.
+export const CYCLE_LIGHTING_CONFIG={ambientIntensity:.03,fillIntensity:.04,occludedKeyIntensity:0,gridLineColor:0xcccccc};
 export const CYCLE_EDGE_CONFIG={color:0x708396,strength:.55,grazingAngleCosine:.18};
 export const cycleSceneGLSL=`
 uniform vec3 bodyColor;
@@ -36,7 +38,7 @@ vec3 lightingVisible(vec3 p,vec3 n,vec3 viewDirection,vec3 albedo,float gloss,fl
 vec3 lighting(vec3 p,vec3 n,vec3 viewDirection,vec3 albedo,float gloss){
  float visibility=1.;
 #ifdef CAST_SHADOWS
- if(cycleHit(p+n*.002,normalize(vec3(-1,2,-1))).material!=0)visibility=.15;
+ if(cycleHit(p+n*.002,normalize(vec3(-1,2,-1))).material!=0)visibility=${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)};
 #endif
  return lightingVisible(p,n,viewDirection,albedo,gloss,visibility);
 }

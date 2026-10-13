@@ -4,7 +4,7 @@ const TIMING={startMs:1000,keyMinMs:35,keyVariationMs:95,wordPauseMs:90,linePaus
 /** Human-paced access request; owned timers are cancelled when the page leaves. */
 export function typeMcpAccess(element,onComplete){
  let timer,index=0,cancelled=false;
- const music=new Audio(musicUrl);music.preload='auto';music.volume=.3;
+ const music=new Audio(musicUrl);music.preload='auto';music.volume=.6;
  element.textContent='';
  element.classList.add('typing');
  const next=()=>{

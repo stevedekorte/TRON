@@ -1993,3 +1993,9 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Refine formation into defining silhouettes/creases first, cyan surface sections second, then a pale, glowing body that settles to its normal material. Timing is shared in cycle-materialization.js; yellow-green contours and cyan glow follow the supplied 42:54–42:56 film references. No riders are shown.
 - Release validation: 500 automated tests passed; production build and full opening browser check passed. Staged ray-cast captures passed without shader errors; user approved the appearance.
+
+## Cycle shadow contrast and MCP music — October 13
+
+- [x] Reduce ray-cast cycle ambient intensity from 0.25 to 0.03 and fill from 0.4 to 0.04. Fully occluded key light now contributes zero instead of 15%, producing near-black self shadows while retaining the key light and thin edge highlights. Shared by gameplay, credits and the analytic study.
+- [x] Double MCP opening music playback volume from 0.3 to 0.6.
+- Validation: headless Chrome materialization shader/lifecycle check passed; inspected shadow-side and lit-side captures. Production build passed for the shadow changes; music adjustment checked directly. These changes are local following the preceding deployment.
