@@ -1,5 +1,5 @@
 @font-face{font-family:FilmTerminal;src:url('/fonts/MCPDotMatrix-Regular.ttf') format('truetype');font-display:swap}
-:root{color-scheme:dark;--terminal-font-size:clamp(18px,1.3vw,24px);--mcp-blue:#159ddd;--mcp-dim:#0b5273;font:var(--terminal-font-size)/1.5 FilmTerminal,monospace;color:var(--mcp-blue);background:#020204}
+:root{color-scheme:dark;--terminal-font-size:clamp(18px,1.3vw,24px);--mcp-blue:#2864cf;--mcp-dim:#143267;font:var(--terminal-font-size)/1.5 FilmTerminal,monospace;color:var(--mcp-blue);background:#010207}
 *{box-sizing:border-box}body{margin:0;text-transform:uppercase}main{height:100dvh;display:flex;flex-direction:column;overflow:auto}
 #face,#face-fallback{position:relative;top:0;left:0;width:100%;height:auto;aspect-ratio:1972/896;flex:none;display:block}
 #face-fallback{position:absolute;object-fit:cover}
@@ -22,3 +22,27 @@ input{flex:1;min-width:0;padding:.35em 0;outline:none}
 #exit-confirm{font:inherit!important;color:var(--mcp-blue)!important;text-shadow:0 0 2px var(--mcp-blue)!important;letter-spacing:normal!important}
 
 ::selection{background:#071b35;color:var(--mcp-blue);text-shadow:none}
+
+/* Quiet terminal introduction; the face can be revealed in a later sequence. */
+body.mcp-terminal #face,body.mcp-terminal #face-fallback,
+body.mcp-terminal #controls,body.mcp-terminal #heard,
+body.mcp-terminal #message-form{display:none!important}
+body.mcp-terminal #conversation{
+ position:absolute;left:20.4vw;top:27.5vh;width:70vw;
+ margin:0;padding:0;
+}
+body.mcp-terminal #reply{margin:0;max-width:58ch}
+#encom-panel{
+ position:fixed;right:4vw;bottom:4vw;width:clamp(119px,13.3vw,266px);
+ aspect-ratio:840/460;pointer-events:none;filter:brightness(.6);
+ background-image:url('../../docs/references/videos/MCP/Neon ENCOM Retro Interface Badge.png');
+ background-size:199.05% 204.57%;
+ background-position:50.48% 44.70%;
+ background-repeat:no-repeat;animation:mcp-panel-reveal 4s ease-in-out both;
+}
+@media(max-width:700px){
+ body.mcp-terminal #conversation{left:7vw;top:28vh;width:86vw}
+}
+
+@keyframes mcp-panel-reveal{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#encom-panel{animation:none}}

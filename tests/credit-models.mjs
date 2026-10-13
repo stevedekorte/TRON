@@ -13,8 +13,8 @@ try{
   window.showModel=index=>{tribute.index=index;tribute.count=0;tribute.phase='body';tribute.nextCharacter=tribute.elapsed;tribute.output.textContent='';tribute.line=null;tribute.typed.style.opacity='1';tribute.update(.1);tribute.preview.update(tribute,.1);};
   return document.fonts.ready;
  });
- const pages=await page.evaluate(()=>modelPages);assert.equal(pages.length,9);
- assert(pages.some(p=>p.model==='bit'));
+ const pages=await page.evaluate(()=>modelPages);assert.equal(pages.length,10);
+ assert(pages.some(p=>p.model==='bit'));assert(pages.some(p=>p.model==='arena'&&p.text.includes('DANIEL PRETI')));
  assert(pages.some(p=>p.model==='maze'));assert(!pages.some(p=>p.model==='shuttle'));
  for(const entry of pages){
   await page.evaluate(index=>showModel(index),entry.index);
@@ -58,5 +58,5 @@ try{
  await page.keyboard.press('Enter');assert(await page.locator('.credit-model-preview').evaluate(e=>e.hidden));
  assert.deepEqual(errors,[]);
  }
- console.log('Nine credit models rendered; synchronized fade, narrow-window hiding, reset during load and disposal passed.');
+ console.log('Ten credit models rendered; synchronized fade, narrow-window hiding, reset during load and disposal passed.');
 }finally{await browser.close();}

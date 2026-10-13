@@ -6,6 +6,7 @@ import {Color} from 'three';
 // Y up, vehicle forward -Z. The POV-Ray model retains its original proportions.
 export const CYCLE_RAY_CONFIG={lengthMeters:3.6,bodyColor:0xe6bd14,maxDistanceMeters:1000};
 export const CYCLE_LIGHTING_CONFIG={ambientIntensity:.25,fillIntensity:.4,gridLineColor:0xcccccc};
+export const CYCLE_EDGE_CONFIG={color:0x708396,strength:.55,grazingAngleCosine:.18};
 export const cycleSceneGLSL=`
 uniform vec3 bodyColor;
 uniform bool shadows;
@@ -16,6 +17,16 @@ ${csgKernelGLSL}
 ${compilePovCycle()}
 #endif
 vec3 materialColor(int material){return material==1?bodyColor:material==2?vec3(.008,.011,.018):vec3(.32,.38,.48);}
+// A continuous grazing-angle band avoids the broken 2x2 patterns from
+// thresholding normal derivatives. Pixel-width filtering softens the band.
+vec3 cycleEdgeHighlights(vec3 color,vec3 normal,vec3 viewDirection,int material){
+ float facing=abs(dot(normal,viewDirection));
+ float filterWidth=max(fwidth(facing),.025);
+ float coverage=1.-smoothstep(${CYCLE_EDGE_CONFIG.grazingAngleCosine}-filterWidth,${CYCLE_EDGE_CONFIG.grazingAngleCosine}+filterWidth,facing);
+ coverage*= ${CYCLE_EDGE_CONFIG.strength}*(material==1?.22:1.);
+ vec3 ink=vec3(${new Color(CYCLE_EDGE_CONFIG.color).toArray().join(',')});
+ return mix(color,max(color,ink),coverage);
+}
 vec3 lightingVisible(vec3 p,vec3 n,vec3 viewDirection,vec3 albedo,float gloss,float visibility){
  vec3 key=normalize(vec3(-1,2,-1)),fill=normalize(vec3(1,.5,1));
  vec3 ambient=mix(vec3(.075,.065,.11),vec3(.22,.28,.4),n.y*.5+.5)*${CYCLE_LIGHTING_CONFIG.ambientIntensity.toFixed(2)};
@@ -56,7 +67,11 @@ vec3 sampleRay(vec2 pixel){
 #ifdef CAST_SHADOWS
   if(cycleHit(p+vec3(0,.002,0),normalize(vec3(-1,2,-1))).material!=0)color*=.15;
 #endif
- }else if(h.material!=0){p=ro+rd*h.t;color=lighting(p,h.n,-rd,materialColor(h.material),h.material==2?90.:45.);}
+ }else if(h.material!=0){p=ro+rd*h.t;color=lighting(p,h.n,-rd,materialColor(h.material),h.material==2?90.:45.);
+#ifdef SHOW_CYCLE
+ color=cycleEdgeHighlights(color,h.n,-rd,h.material);
+#endif
+}
  if(h.material!=0){vec4 clip=viewProjection*vec4(ro+rd*h.t,1);gl_FragDepth=clip.z/clip.w*.5+.5;}else gl_FragDepth=1.;
  return color;
 }

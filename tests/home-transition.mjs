@@ -63,6 +63,8 @@ try{
   await page.locator('#'+id).focus();
   await page.keyboard.press('Enter');
   if(vehicle==='bit'){
+   await page.waitForTimeout(250);
+   if(!page.url().includes('/bit/'))assert.equal(await page.locator('#home-transition-background').evaluate(e=>getComputedStyle(e).opacity),'1','BIT departure hides the tank scene');
    await page.waitForURL('**/bit/index.html');
    await page.waitForFunction(()=>fadeLog.some(e=>e.id==='home-selected-label'),{},{timeout:20000});
    await page.locator('#home-transition').waitFor({state:'detached'});

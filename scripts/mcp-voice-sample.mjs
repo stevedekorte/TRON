@@ -1,7 +1,7 @@
 import {ChatterboxModel,AutoTokenizer,Tensor,env} from '@huggingface/transformers';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
-import {MCP_VOICE_MODEL as config,mcpVoiceDtype} from '../src/mcp/voice-model.js';
+import {MCP_VOICE_MODEL as config,mcpVoiceDtype} from './mcp-offline-model.js';
 env.cacheDir=new URL('../.local/voice-models/',import.meta.url).pathname;
 const options={revision:config.revision};
 console.log('Loading pinned Chatterbox model; first run downloads approximately 1.5 GB.');

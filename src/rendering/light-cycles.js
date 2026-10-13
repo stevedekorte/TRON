@@ -85,6 +85,7 @@ export class LightCycleRaceView {
       const rez=this.materializations[b.id];
       const age=openingFormationAge??(r.phase==='countdown'?Math.max(0,C.countdownSeconds-r.remaining):null);
       mesh.visible=b.alive&&(age===null||age>0)&&(openingFormationAge===null||b.team===0);
+      mesh.userData.cycleFormationProgress=age===null?1:THREE.MathUtils.clamp(age/(openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds),0,1);
       if(age===null)rez.update(null);
       else {
         const timing=openingFormationAge===null?undefined:CYCLE_FORMATION_MATERIALIZATION;

@@ -1,112 +1,46 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-import {spawn} from 'node:child_process';
-const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5182','--strictPort'],{stdio:'pipe'});
-await new Promise((resolve,reject)=>{server.stdout.on('data',s=>{if(s.toString().includes('Local:'))resolve();});server.on('exit',()=>reject(Error('Vite failed')));});
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--autoplay-policy=no-user-gesture-required']});
 try{
- const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[],requests=[];
- page.on('pageerror',e=>errors.push(e.message));
- await page.addInitScript(()=>{
-  window.Worker=class{constructor(){window.voiceWorker=this;window.voiceWorkerCount=(window.voiceWorkerCount||0)+1;}terminate(){window.voiceTerminated=true;}postMessage(data){if(data.type==='generate'&&window.deferGeneration){window.deferredGeneration=data;return;}queueMicrotask(()=>this.onmessage?.({data:data.type==='load'?{id:data.id,type:'ready'}:{id:data.id,type:'error',message:'Test generation failure'}}));}};
-  window.spoken=[];window.recognitionStarts=0;
-  window.SpeechSynthesisUtterance=class{constructor(text){this.text=text;}};
-  window.speechSynthesis.speak=u=>{window.spoken.push(u.text);window.utterance=u;u.onstart?.();u.onboundary?.();};
-  window.speechSynthesis.cancel=()=>{};
-  window.SpeechRecognition=class{constructor(){window.recognition=this;}start(){window.recognitionStarts++;}abort(){queueMicrotask(()=>this.onend?.());}};
- });
- await page.route('**/api/mcp/status',r=>r.fulfill({json:{configured:true}}));
- await page.route('**/api/mcp/chat',r=>{requests.push(r.request().postDataJSON());return r.fulfill({json:{reply:'I am the Master Control Program. State your purpose, program.'}});});
- await page.route('**/cache-test',r=>r.fulfill({contentType:'text/html',body:'cache test'}));
- await page.goto('http://127.0.0.1:5182/cache-test');
- await page.evaluate(async()=>{const {createVoiceModelCache}=await import('/src/mcp/model-cache.js');const cache=createVoiceModelCache();await cache.put('test-model-revision/file',new Response(new Uint8Array([0,1,2,255]),{headers:{'Content-Type':'application/octet-stream'}}));});
- await page.reload();
- const cached=await page.evaluate(async()=>{const {createVoiceModelCache}=await import('/src/mcp/model-cache.js');const cache=createVoiceModelCache(),response=await cache.match('test-model-revision/file');return {bytes:[...new Uint8Array(await response.arrayBuffer())],missing:await cache.match('different-revision/file')===undefined};});
- assert.deepEqual(cached,{bytes:[0,1,2,255],missing:true});
- await page.goto('http://127.0.0.1:5182/mcp.html');
- await page.waitForFunction(()=>recognitionStarts>0);
- await page.screenshot({path:'test-results/mcp-idle.png'});
- await page.evaluate(()=>recognition.onresult({resultIndex:0,results:[[{transcript:'Who are you?'}]]}));
- await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('MCP CLONED VOICE'));
- assert.equal(requests[0].messages[0].content,'Who are you?');
- assert.match(await page.locator('#reply').textContent(),/Master Control Program/);
- assert.deepEqual(await page.evaluate(()=>spoken),[],'unavailable cloned voice never uses browser speech');
- await page.locator('#message').fill('Do you know Sark?');await page.locator('#message').press('Enter');
- await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('MCP CLONED VOICE'));
- assert.equal(requests[1].messages.length,3);
- assert.deepEqual(await page.evaluate(()=>spoken),[]);
- assert.equal(await page.locator('#stop').count(),0);
- assert.equal(await page.locator('#chat-status').count(),0);
- assert.equal(await page.locator('#message').evaluate(el=>getComputedStyle(el).textTransform),'uppercase');
- assert.equal(await page.locator('#reply').evaluate(el=>getComputedStyle(el).textTransform),'uppercase');
- await page.keyboard.press('Escape');await page.locator('#exit-confirm').waitFor({state:'visible'});
- await page.keyboard.press('Escape');await page.locator('#exit-confirm').waitFor({state:'hidden'});
- await page.route('**/api/mcp/chat',r=>r.fulfill({status:503,json:{error:'MCP CHAT SERVICE NOT CONFIGURED'}}));
- await page.locator('#message').fill('Hello');await page.locator('#message').press('Enter');
- await page.waitForFunction(()=>document.querySelector('#status').textContent==='MCP CHAT SERVICE NOT CONFIGURED');
- assert.equal(await page.locator('#message').isEnabled(),true);
- const loading=await browser.newPage();
- await loading.addInitScript(()=>{
-  window.SpeechRecognition=undefined;window.webkitSpeechRecognition=undefined;window.spoken=[];window.speechSynthesis.speak=u=>window.spoken.push(u.text);
-  window.Worker=class{constructor(){window.voiceWorker=this;}terminate(){window.voiceTerminated=true;}postMessage(data){window.voiceLoadRequest=data;}};
- });
- await loading.route('**/api/mcp/status',r=>r.fulfill({json:{configured:true}}));
- await loading.goto('http://127.0.0.1:5182/mcp.html');await loading.waitForFunction(()=>window.voiceLoadRequest?.type==='load');
- await loading.evaluate(()=>voiceWorker.onmessage({data:{type:'progress',stage:'downloading',component:'onnx/speech_encoder.onnx_data',totalBytes:1000,cachedBytes:250,downloadedBytes:250,etaSeconds:12}}));
- assert.match(await loading.locator('#download-detail').textContent(),/50%.*ETA 12s.*Voice encoder/);
- assert.equal(await loading.locator('#message').isEnabled(),false,'chat blocked during voice download');assert.equal(await loading.locator('#message').isEnabled(),false);assert.equal(await loading.locator('#microphone').isEnabled(),false);assert(await loading.locator('#voice-sample').isEnabled(),'sample usable during voice download');
- assert.equal(await loading.locator('#test-voice').isEnabled(),false);
- await loading.evaluate(()=>voiceWorker.onmessage({data:{type:'progress',stage:'initializing',totalBytes:1000,cachedBytes:250,downloadedBytes:750}}));
- assert.match(await loading.locator('#voice-status').textContent(),/INITIALIZING/);assert.match(await loading.locator('#download-detail').textContent(),/PREPARING SPEECH ENGINE/);
- await loading.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
- assert.equal(await loading.evaluate(()=>!!window.voiceTerminated),false,'hiding page preserves voice loading');
- await loading.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));voiceWorker.onmessage({data:{type:'progress',stage:'initializing',totalBytes:1000,cachedBytes:1000,downloadedBytes:0}});});
- assert.match(await loading.locator('#download-detail').textContent(),/ALL MODEL FILES REUSED FROM DEVICE — NO DOWNLOAD/);
- await loading.screenshot({path:'test-results/mcp-initializing.png'});
- await loading.evaluate(()=>voiceWorker.onmessage({data:{id:voiceLoadRequest.id,type:'ready'}}));await loading.waitForFunction(()=>!document.querySelector('#test-voice').disabled);
- assert.equal(await loading.locator('#voice-status').textContent(),'TTS — READY');assert(await loading.locator('#message').isEnabled());assert(await loading.locator('#message').isEnabled());
- await loading.locator('#test-voice').click();
- await loading.waitForFunction(()=>voiceLoadRequest?.type==='generate');
- await loading.evaluate(()=>voiceWorker.onmessage({data:{id:voiceLoadRequest.id,type:'error',message:'Test generation failure'}}));
- await loading.waitForFunction(()=>document.querySelector('#status').textContent.includes('MCP CLONED VOICE FAILED'));
- assert.deepEqual(await loading.evaluate(()=>spoken),[],'generation failure never falls back to browser speech');
-
- await loading.route('**/src/mcp/main.js',r=>r.abort());await loading.reload();
- await loading.waitForFunction(()=>document.querySelector('#status').textContent.includes('COULD NOT START'));
- assert(await loading.locator('#face-fallback').isVisible(),'static face survives module startup failure');await loading.close();
- const effects=await page.evaluate(async()=>{
-  const {createVoiceEffects,MCP_VOICE_EFFECTS}=await import('/src/mcp/voice-effects.js');
-  const context=new OfflineAudioContext(1,24000,24000),graph=createVoiceEffects(context),source=context.createBufferSource();
-  source.buffer=context.createBuffer(1,24,24000);source.buffer.getChannelData(0)[0]=.1;source.connect(graph.input);source.start();
-  const result=await context.startRendering(),samples=result.getChannelData(0);graph.dispose();
-  return {pitch:MCP_VOICE_EFFECTS.pitchRatio,tail:samples.slice(720).reduce((sum,x)=>sum+x*x,0),finite:samples.every(Number.isFinite)};
- });assert.equal(effects.pitch,.92);assert(effects.tail>0,'live effects produce an audible reverb tail');assert(effects.finite);
- await page.route('**/api/jev/**',r=>r.fulfill({status:503,json:{error:'test'}}));
- await page.goto('http://127.0.0.1:5182/');
- await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-mcp').disabled);
- await page.locator('#start-mcp').focus();await page.keyboard.press('Enter');
- await page.locator('#mcp-panel').waitFor();
- const panel=page.frameLocator('#mcp-panel');await panel.locator('#message:enabled').waitFor();
- const worker=await panel.locator('body').evaluate(()=>window.voiceWorkerCount||0);assert.equal(worker,1);
- await panel.locator('#message').press('Escape');await panel.locator('#exit-confirm [data-confirm]').click();
- await page.locator('#mcp-panel').waitFor({state:'hidden'});
- await page.locator('#start-mcp').focus();await page.keyboard.press('Enter');
- await page.locator('#mcp-panel').waitFor({state:'visible'});await panel.locator('#message:enabled').waitFor();
- assert.equal(await panel.locator('body').evaluate(()=>window.voiceWorkerCount||0),worker,'same worker survives return to home');
- assert.equal(await page.locator('#mcp-panel').count(),1);
- await panel.locator('body').evaluate(()=>window.deferGeneration=true);
- await panel.locator('#test-voice').click();
- await panel.locator('body').evaluate(()=>{if(!window.deferredGeneration)throw Error('generation did not start');});
- await panel.locator('#message').evaluate(()=>window.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',bubbles:true})));
- await panel.locator('#exit-confirm [data-confirm]').click();await page.locator('#mcp-panel').waitFor({state:'hidden'});
- assert.equal(await panel.locator('body').evaluate(()=>!!window.voiceTerminated),false,'exit does not discard the model during generation');
- await page.locator('#start-mcp').focus();await page.keyboard.press('Enter');await page.locator('#mcp-panel').waitFor({state:'visible'});
- assert(await panel.locator('#message').isDisabled(),'no overlapping inference while canceled reply finishes');
- await panel.locator('body').evaluate(()=>voiceWorker.onmessage({data:{id:deferredGeneration.id,type:'error',message:'Canceled generation finished'}}));
- await panel.locator('#message:enabled').waitFor();assert.equal(await panel.locator('body').evaluate(()=>voiceWorkerCount),1);
- const styles=await panel.locator('body').evaluate(()=>['message','reply','heard','status','voice-status','microphone','voice-sample'].map(id=>{const s=getComputedStyle(document.getElementById(id));return {font:s.fontFamily,size:s.fontSize,color:s.color};}));
- assert.equal(new Set(styles.map(s=>s.font)).size,1);assert.equal(new Set(styles.map(s=>s.size)).size,1);assert(styles.every(s=>['rgb(21, 157, 221)','rgb(11, 82, 115)'].includes(s.color)));
- await panel.locator('#reply').evaluate(el=>el.textContent='END OF LINE.');
- await page.screenshot({path:'test-results/mcp-dot-matrix.png'});
- assert.deepEqual(errors,[]);console.log('MCP cloned-only speech, text-only error handling, history, loading, retained worker, effects, typography and exit passed.');
-}finally{await browser.close();server.kill();}
+ for(const denied of [false,true]){
+  const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.addInitScript(({denied})=>{
+   window.events=[];window.permissionDenied=denied;
+   const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.src.includes('20%20Break')||this.src.includes('20 Break'))window.musicStartedAt=document.querySelector('#reply').textContent;return play.call(this);};
+   navigator.mediaDevices.getUserMedia=async()=>{events.push(['permission',document.querySelector('#reply').textContent]);if(window.permissionDenied)throw Error('denied');return {getTracks:()=>[{stop(){}}]};};
+   window.SpeechRecognition=class{constructor(){window.recognition=this;}start(){events.push(['listen']);}abort(){this.onend?.();}};
+  },{denied});
+  await page.route('**/src/mcp/voice.js',r=>r.fulfill({contentType:'application/javascript',body:`export class McpVoice {ready=false;generating=false;async load(){this.ready=true;}async generate(text){window.events.push(['speech',text]);await new Promise(r=>setTimeout(r,100));return {samples:new Float32Array(2400),sampleRate:24000};}abort(){}cancel(){}}`}));
+  await page.route('**/api/mcp/status',r=>r.fulfill({json:{configured:true}}));
+  await page.route('**/api/mcp/chat',r=>{return r.fulfill({json:{reply:'END OF LINE.'}});});
+  await page.route('**/cache-check',r=>r.fulfill({contentType:'text/html',body:'cache check'}));
+  await page.goto('http://127.0.0.1:5173/cache-check');
+  await page.evaluate(async()=>{
+   for(const name of ['tron-mcp-voice-models','unrelated-cache'])await new Promise((resolve,reject)=>{const r=indexedDB.open(name);r.onsuccess=()=>{r.result.close();resolve();};r.onerror=()=>reject(r.error);});
+   const cache=await caches.open('cleanup-test');await cache.put('/chatterbox-ONNX/model.onnx',new Response('old'));await cache.put('/keep-game-asset',new Response('keep'));
+   const {clearLegacyMcpCache}=await import('/src/mcp/clear-legacy-cache.js');await clearLegacyMcpCache();
+  });
+  assert.deepEqual(await page.evaluate(async()=>({old:(await indexedDB.databases()).some(d=>d.name==='tron-mcp-voice-models'),unrelated:(await indexedDB.databases()).some(d=>d.name==='unrelated-cache'),oldFile:!!await caches.match('/chatterbox-ONNX/model.onnx'),game:!!await caches.match('/keep-game-asset')})),{old:false,unrelated:true,oldFile:false,game:true});
+  await page.goto('http://127.0.0.1:5173/mcp.html');
+  await page.waitForFunction(()=>events.some(e=>e[0]==='permission'),null,{timeout:30000});
+  const events=await page.evaluate(()=>window.events);
+  assert(events[0][1].endsWith('PASSWORD: MASTER.'));
+  if(denied){
+   await page.waitForFunction(()=>document.querySelector('#reply').textContent.startsWith('MASTER CONTROL PROGRAM UNAVAILABLE\nAUDIO INPUT'));
+   assert.equal(events.length,1);
+   assert.match(await page.locator('#reply').textContent(),/ALLOW MICROPHONE ACCESS/);
+   await page.evaluate(()=>{window.permissionDenied=false;});await page.keyboard.press('Enter');
+   await page.waitForFunction(()=>events.some(e=>e[0]==='listen'),null,{timeout:15000});
+  }else{
+   await page.waitForFunction(()=>events.some(e=>e[0]==='listen'),null,{timeout:15000});
+   const order=await page.evaluate(()=>events);
+   assert.deepEqual(order.slice(0,3).map(e=>e[0]),['permission','speech','listen']);
+   assert.equal(order[1][1],'WHAT CAN I DO FOR YOU, MR. DILINGER?');
+   await page.evaluate(()=>recognition.onresult({resultIndex:0,results:[[{transcript:'Hello'}]]}));
+   await page.waitForFunction(()=>events.some(e=>e[0]==='speech'&&e[1]==='END OF LINE.'));
+  }
+  assert.equal(await page.evaluate(()=>window.musicStartedAt),'','music begins with the first character');
+  assert.deepEqual(errors,[]);await page.close();
+ }
+ console.log('MCP permission after typing, denial screen, cloned greeting before listening, and spoken reply passed.');
+}finally{await browser.close();}

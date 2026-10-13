@@ -25,7 +25,7 @@ export function createWorker(fetchImpl=fetch){return {async fetch(request,env,ct
  if(!origin||!allowed.includes(origin))return send(403,{error:'Origin rejected'});
  Object.assign(headers,{'Access-Control-Allow-Origin':origin,'Access-Control-Expose-Headers':'Retry-After'});
  const path=new URL(request.url).pathname;
- if(!['/api/jev/decision','/api/jev/status','/api/mcp/chat','/api/mcp/status'].includes(path))return send(404,{error:'Not found'});
+ if(!['/api/jev/decision','/api/jev/status','/api/mcp/chat','/api/mcp/status','/api/mcp/voice-status','/api/mcp/speech'].includes(path))return send(404,{error:'Not found'});
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'86400'}});
  if(path.startsWith('/api/mcp/'))return mcpRoute(request,env,ctx,{send,boundedJson,clientHash,fetchImpl});
  const configured=env.JEV_ENABLED==='true'&&!!env.TYPESAFE_API_KEY;

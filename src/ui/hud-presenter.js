@@ -32,7 +32,7 @@ export class HudPresenter {
         const start=this.rewardSeen[field]??0;
         const t=Math.min(1,elapsed/RESERVE_REWARD.fillMs);
         $(id==='turbo'?'turbo-fill':'cycle-brake-fill').style.transform=
-          `scaleX(${start+(1-start)*(1-(1-t)**3)})`;
+          `scaleX(${start+((this.rewardSeen.target??1)-start)*(1-(1-t)**3)})`;
       }
     }
   }

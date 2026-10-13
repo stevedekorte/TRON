@@ -575,7 +575,7 @@ export class View {
     if(run.cycleRace&&run.cycleRace.phase!=='idle')this.arena?.userData.cycleRace.shadows.update(this.renderer,[],this.camera.position);
     if(this.povCycles){
       this.povCycles.prepare();
-      try{this.composer.render(dt);}finally{this.povCycles.restore();}
+      try{this.povCycles.edges.render(this.renderer,this.povCycles.root,this.camera);this.composer.render(dt);}finally{this.povCycles.restore();}
     }else this.composer.render(dt);
   }
 

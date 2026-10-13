@@ -4,27 +4,28 @@ No font outlines or film imagery are copied. Glyph design dedicated to CC0.
 """
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
+from fontTools.pens.transformPen import TransformPen
 from pathlib import Path
 patterns = {
 'A':'01110/10001/10001/11111/10001/10001/10001',
 'B':'11110/10001/10001/11110/10001/10001/11110',
-'C':'01111/10000/10000/10000/10000/10000/01111',
+'C':'01110/10001/10000/10000/10000/10001/01110',
 'D':'11110/10001/10001/10001/10001/10001/11110',
 'E':'11111/10000/10000/11110/10000/10000/11111',
 'F':'11111/10000/10000/11110/10000/10000/10000',
-'G':'01111/10000/10000/10111/10001/10001/01111',
+'G':'01110/10001/10000/10011/10001/10001/01110',
 'H':'10001/10001/10001/11111/10001/10001/10001',
 'I':'11111/00100/00100/00100/00100/00100/11111',
 'J':'00111/00010/00010/00010/10010/10010/01100',
 'K':'10001/10010/10100/11000/10100/10010/10001',
 'L':'10000/10000/10000/10000/10000/10000/11111',
 'M':'10001/11011/10101/10101/10001/10001/10001',
-'N':'10001/11001/10101/10011/10001/10001/10001',
+'N':'10001/11001/11001/10101/10011/10011/10001',
 'O':'01110/10001/10001/10001/10001/10001/01110',
 'P':'11110/10001/10001/11110/10000/10000/10000',
 'Q':'01110/10001/10001/10001/10101/10010/01101',
 'R':'11110/10001/10001/11110/10100/10010/10001',
-'S':'01111/10000/10000/01110/00001/00001/11110',
+'S':'01110/10001/10000/01110/00001/10001/01110',
 'T':'11111/00100/00100/00100/00100/00100/00100',
 'U':'10001/10001/10001/10001/10001/10001/01110',
 'V':'10001/10001/10001/10001/10001/01010/00100',
@@ -42,9 +43,9 @@ patterns = {
 '7':'11111/00001/00010/00100/01000/01000/01000',
 '8':'01110/10001/10001/01110/10001/10001/01110',
 '9':'01110/10001/10001/01111/00001/00001/01110',
-'.':'00000/00000/00000/00000/00000/00100/00100',
+'.':'00000/00000/00000/00000/00000/00000/00100',
 ',':'00000/00000/00000/00000/00100/00100/01000',
-':':'00000/00100/00100/00000/00100/00100/00000',
+':':'00000/00000/00000/00100/00000/00000/00100',
 ';':'00000/00100/00100/00000/00100/00100/01000',
 '!':'00100/00100/00100/00100/00100/00000/00100',
 '?':'01110/10001/00001/00010/00100/00000/00100',
@@ -76,21 +77,22 @@ patterns = {
 '…':'00000/00000/00000/00000/00000/00000/10101',
 '·':'00000/00000/00000/00100/00000/00000/00000',
 }
+WIDTH_SCALE=.9
 fb=FontBuilder(1000,isTTF=True)
 glyphs={};metrics={};cmap={}
 for char,pattern in patterns.items():
- name='u%04X'%ord(char);pen=TTGlyphPen(None)
+ name='u%04X'%ord(char);outline=TTGlyphPen(None);pen=TransformPen(outline,(WIDTH_SCALE,0,0,1,0,0))
  for row,line in enumerate(pattern.split('/')):
   for col,bit in enumerate(line):
    if bit!='1':continue
    x=100+col*140;y=750-row*100;r=33
    pen.moveTo((x+r,y));pen.qCurveTo((x+r,y+r),(x,y+r));pen.qCurveTo((x-r,y+r),(x-r,y));pen.qCurveTo((x-r,y-r),(x,y-r));pen.qCurveTo((x+r,y-r),(x+r,y));pen.closePath()
- glyphs[name]=pen.glyph();metrics[name]=(840,67);cmap[ord(char)]=name
+ glyphs[name]=outline.glyph();metrics[name]=(round((420 if char==' ' else 840)*WIDTH_SCALE),round(67*WIDTH_SCALE));cmap[ord(char)]=name
 for char in 'abcdefghijklmnopqrstuvwxyz':cmap[ord(char)]=cmap[ord(char.upper())]
 for chars,target in [('–—−','-'),('‘’',"'"),('“”','"'),('\u00a0',' '),('{','('),('}',')')]:
  for char in chars:cmap[ord(char)]=cmap[ord(target)]
-glyphs['.notdef']=glyphs[cmap[ord('?')]];metrics['.notdef']=(840,67)
+glyphs['.notdef']=glyphs[cmap[ord('?')]];metrics['.notdef']=(round(840*WIDTH_SCALE),round(67*WIDTH_SCALE))
 fb.setupGlyphOrder(['.notdef']+list(glyphs.keys())[:-1]);fb.setupCharacterMap(cmap);fb.setupGlyf(glyphs);fb.setupHorizontalMetrics(metrics);fb.setupHorizontalHeader(ascent=900,descent=-150)
-fb.setupNameTable({'familyName':'MCP Dot Matrix','styleName':'Regular','uniqueFontIdentifier':'MCPDotMatrix-Regular-1','fullName':'MCP Dot Matrix Regular','psName':'MCPDotMatrix-Regular','version':'Version 1.0','copyright':'Original TRON tribute dot-matrix glyphs. CC0 1.0.'})
+fb.setupNameTable({'familyName':'MCP Dot Matrix','styleName':'Regular','uniqueFontIdentifier':'MCPDotMatrix-Regular-3','fullName':'MCP Dot Matrix Regular','psName':'MCPDotMatrix-Regular','version':'Version 1.2','copyright':'Original TRON tribute dot-matrix glyphs. CC0 1.0.'})
 fb.setupOS2(sTypoAscender=900,sTypoDescender=-150,usWinAscent=900,usWinDescent=150);fb.setupPost();fb.setupMaxp()
 path=Path('public/fonts/MCPDotMatrix-Regular.ttf');fb.save(path);print(path,path.stat().st_size)

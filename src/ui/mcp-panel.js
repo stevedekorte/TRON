@@ -14,7 +14,7 @@ export function createMcpPanel({onClose}){
    active=true;
    if(!frame){
     frame=document.createElement('iframe');frame.id='mcp-panel';frame.title='Master Control Program';frame.allow='microphone; autoplay';
-    Object.assign(frame.style,{position:'fixed',inset:'0',width:'100%',height:'100%',border:'0',zIndex:'1100',background:'#020204'});
+    Object.assign(frame.style,{position:'fixed',inset:'0',width:'100%',height:'100%',border:'0',zIndex:'1100',background:'#010207'});
     frame.src=new URL('./mcp.html',document.baseURI).href;document.body.append(frame);
    }else{frame.hidden=false;frame.contentWindow.postMessage({type:'mcp-resume'},location.origin);}
    frame.focus();

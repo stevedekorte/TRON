@@ -131,7 +131,7 @@ body.terminal #cycle-result{display:none}
 .cycle-roster-icon{position:relative;display:block;box-sizing:border-box;width:18px;height:18px;border:2px solid currentColor;border-radius:50%;background:currentColor}
 .cycle-roster-icon:not(:last-child)::after{content:"";position:absolute;left:calc(100% + 2px);top:50%;transform:translateY(-50%);width:var(--cycle-roster-gap);height:2px;background:currentColor}
 .cycle-roster-icon.eliminated{background:transparent}
-body.playing-cycle #controls-prompt,body.playing-cycle #cycle-controls{top:58px}
+body.playing-cycle #controls-prompt,body.playing-cycle #cycle-controls{top:58px;left:24px;right:24px}
 
 /* A wall elimination restores both reserves immediately; display the award filling in. */
 #vehicle-meters .reserve-reward .turbo-meter i{

@@ -1,3 +1,4 @@
+import {clearLegacyMcpCache} from '../mcp/clear-legacy-cache.js';
 import {CycleRendererControl} from '../ui/cycle-renderer-control.js';
 import {createMcpPanel} from '../ui/mcp-panel.js';
 import {createHomeTransition} from '../ui/home-transition.js';
@@ -42,6 +43,7 @@ import { startPursuit, boostTank, stopTankTurbo } from '../simulation/run.js';
 import { config, defaults, GUNNER, AERIAL_ZOOM, FOLLOW_ZOOM } from '../game/config.js';
 
 export function createGameApp() {
+  void clearLegacyMcpCache();
   performance.mark('tron:startup');
   const loadingTimings = new LoadingTimings();
   const scenario = loadingTimings.sync('Scenario / maze geometry',()=>browserScenario(location));
@@ -202,7 +204,7 @@ export function createGameApp() {
     if(homeSelection){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
       sound.terminalTone('access');
-      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles',keepCovered:selectedGame==='mcp'||selectedGame==='credits'});
+      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles',keepCovered:['mcp','credits','bit'].includes(selectedGame)});
       if(disposed)return;
     }
     if(mode==='ready'&&selectedGame==='credits'){

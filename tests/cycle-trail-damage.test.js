@@ -42,17 +42,17 @@ test('a road-mode cycle impact also splits the struck trail',async()=>{
  updateCycleRace(r,.2,0,false,false,{});
  assert(r.trails.some(t=>t.dyingAt!==undefined));assert(cycleCellFree(r,120,0));
 });
-test('opponent trail crash refills its living owner once; friendly crashes do not',()=>{
+test('opponent trail crash refills its living owner once; friendly crashes empty them',()=>{
  for(const team of [0,1]){
   const r=fixture(),owner=r.cycles[0],victim=r.cycles[3];
   Object.assign(owner,{turboCharge:.2,brakeCharge:.35});
   Object.assign(victim,{x:0,z:-1,dir:2,team});
   tickCycleRace(r,()=>2,[victim]);
   assert(!victim.alive);
-  assert.equal(owner.turboCharge,team===1?1:.2);
-  assert.equal(owner.brakeCharge,team===1?1:.35);
+  assert.equal(owner.turboCharge,team===1?1:0);
+  assert.equal(owner.brakeCharge,team===1?1:0);
   const reward=owner.reserveReward;
-  if(team===1)assert.deepEqual(reward,{turboFrom:.2,brakeFrom:.35});
+  if(team===1)assert.deepEqual(reward,{turboFrom:.2,brakeFrom:.35,target:1});
   tickCycleRace(r,()=>2,[victim]);assert.equal(owner.reserveReward,reward);
  }
 });

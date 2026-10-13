@@ -21,6 +21,7 @@ const models=[
  ['3D MODEL: TRON CARRIER','carrier',new URL('../../docs/models/tron_1982_carrier.glb',import.meta.url).href],
  ['3D MODEL: TRON SUNSHIP','sailer',new URL('../../docs/models/tron_1982_solar_sailer.glb',import.meta.url).href],
  ['JVOUILLON','cloud',new URL('../../docs/models/cloud.glb',import.meta.url).href],
+ ['DANIEL PRETI','arena',null],
  ['CARL N. HOFF','cycle',null],
 ];
 export function creditModel(message){return models.find(([label])=>message.includes(label));}
@@ -47,7 +48,8 @@ export class CreditModelPreview{
  }
  async load(entry,generation){
   try{
-   const root=entry[1]==='cycle'?(await import('../rendering/pov-cycles.js')).createPovCycleMesh(PREVIEW.cycleBodyBlue):entry[1]==='sailer'?(await loadSolarSailer({previewBeam:true})).ship:entry[1]==='carrier'?await loadCarrier():entry[1]==='bit'?await createCreditBit():entry[1]==='maze'?createCreditMaze():entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
+   if(entry[1]==='cycle'&&!this.cycleEdges){const {PovCycleEdges}=await import('../rendering/pov-cycles.js');this.cycleEdges=new PovCycleEdges();}
+   const root=entry[1]==='arena'?await (await import('../rendering/credit-arena.js')).createCreditArena():entry[1]==='cycle'?(await import('../rendering/pov-cycles.js')).createPovCycleMesh(PREVIEW.cycleBodyBlue):entry[1]==='sailer'?(await loadSolarSailer({previewBeam:true})).ship:entry[1]==='carrier'?await loadCarrier():entry[1]==='bit'?await createCreditBit():entry[1]==='maze'?createCreditMaze():entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
    if(generation!==this.generation){disposeSceneResources(root);return;}
    root.visible=true;
    root.traverse(o=>{if((o.userData.breakupExclude&&!o.userData.bossTrim)||o.name==='muzzle-flash')o.visible=false;});
@@ -84,9 +86,10 @@ export class CreditModelPreview{
   this.renderer.toneMappingExposure=cycleLighting?GAME_LIGHTING.exposure:1;
   this.scene.children.forEach(o=>{if(o.isLight){o.visible=!cycleLighting;o.intensity=o.userData.previewIntensity*(this.key==='carrier'?PREVIEW.carrierLightingScale:1);}});
   this.model.rotation.y=-.45; // Stable three-quarter inspection view, without distracting motion.
-  if(this.framedModel!==this.model||this.width!==width||this.height!==height){fitCreditPreview(this.camera,this.model,width/height,this.key==='maze');this.framedModel=this.model;}
+  if(this.framedModel!==this.model||this.width!==width||this.height!==height){fitCreditPreview(this.camera,this.model,width/height,['maze','arena'].includes(this.key));this.framedModel=this.model;}
   if(this.width!==width||this.height!==height){this.renderer.setSize(width,height);this.width=width;this.height=height;}
+  if(cycleLighting)this.cycleEdges?.render(this.renderer,this.model,this.camera);
   this.renderer.render(this.scene,this.camera);
  }
- dispose(){this.reset();this.renderer?.dispose();this.element.remove();}
+ dispose(){this.cycleEdges?.dispose();this.reset();this.renderer?.dispose();this.element.remove();}
 }

@@ -1924,7 +1924,72 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 ## Cycle wall elimination rewards — October 12
 
-- [x] An opposing cycle destroyed by a living cycle's trail fully restores the owner's turbo and brake reserves. Friendly/self collisions give no reward; existing trail splitting remains unchanged.
+- [x] An opposing cycle destroyed by a living cycle's trail fully restores the owner's turbo and brake reserves. An allied cycle crashing into the trail instead empties the owner's reserves, animating both meters downward; self collisions give no reward. Existing trail splitting remains unchanged.
 - [x] Watched-cycle meters fill brightly over 0.65 seconds, glowing for 1.1 seconds. Switching watched cycles clears the effect.
 - [x] W is the cycle turbo key and S is brake; remove T, Space and X aliases and update help. Outside the arena W accelerates/boosts; S brakes and selects reverse when pressed at a stop.
 - Validation: headless Chrome recharge presentation check and capture passed on macOS. Production build passed. Full simulation suite includes opponent/friendly awards, swept collisions and removed-key checks.
+
+
+## Arena artist credit preview — October 12
+
+- [x] Show Daniel Preti's arena architecture and game-style grid beside his extended credit, using an elevated view, proportional fitting and synchronized fades. No race simulation is created.
+- Validation: 15 focused collision/control tests passed. Headless Chrome verified reserve fill/drain and watched-cycle cleanup; all ten credit previews passed framing, fade and disposal checks. Arena render captured and inspected on macOS.
+
+
+## Credit floor and BIT transition — October 12
+
+- [x] Keep the CLU preview covered when departing the home screen for BIT; headless Chrome verified CLU, cycles, credits and BIT transitions.
+- [x] Use the usual procedural floor in the arena credit with the game's exact 4.32 m spacing and line width. Allow subpixel lines to disappear at credit-preview scale rather than widening or coarsening the grid. Gameplay floor defaults are unchanged.
+
+
+## MCP terminal introduction — October 12
+
+- [x] Hide the face, status, input and old controls. Show the MCP-font text at the opening terminal position and the supplied Neon ENCOM Retro Interface Badge at the lower-right logo position.
+- [x] Type the film's Dillinger access request with varied key timing and line pauses, request microphone access after typing finishes. Hidden face rendering is not initialized.
+- [x] Extract the opening beep from the user-supplied Dilinger.m4v, 0.295–0.620 seconds. Stereo 48 kHz WAV, 250–1800 Hz filtering, +12 dB gain and short edge fades. Film audio belongs to its original rights holders; no redistribution license asserted. Play one second before typing; browser autoplay rejection logs a warning and still permits the text sequence.
+- Validation: headless Chrome checked hidden elements, message placement, typed access text and Escape confirmation without loading the large TTS model.
+
+- MCP visual refinement: deeper blue text (#2864cf), matching dim blue, glyph outlines and advances narrowed to 90% with unchanged height, no typing cursor, and the ENCOM panel at 70% of its original size with 60% brightness, equal 4vw bottom/right margins and a four-second fade.
+
+- MCP background is near-black blue (#010207), including the iframe loading background and browser theme color.
+
+## MCP hosted voice and conversation entry — October 12
+
+- [x] Replace browser Chatterbox inference with server-proxied fal.ai Chatterbox using the existing MCP reference. Preserve pitch/reverb processing; no generic voice fallback. Local Vite reads credentials/Fal.txt; production requires the FAL_KEY Worker secret. Keys never enter browser bundles.
+- [x] Delete retired MCP IndexedDB model storage and cached ONNX/runtime requests on entry; preserve unrelated browser data.
+- [x] After access typing, request microphone access. Denial clears the terminal to MASTER CONTROL PROGRAM UNAVAILABLE. Approval plays WHAT CAN I DO FOR YOU, MR. DILINGER? through the cloned voice, then enables listening after playback finishes. Escape stops requests/audio.
+- Live fal.ai smoke test generated a short sample successfully in 13.1 seconds; this is not yet low-latency conversational speech.
+
+## Light cycle edge highlights — October 13
+
+- [x] Add thin, muted blue-gray highlights to the ray-cast cycle's surface creases and grazing rims, guided by the supplied 1982 film stills. Emphasize dark hubs, windows and underbody details; keep painted-body highlights subdued. Shared by game and credits, with named color/strength/width controls in cycle-ray-shader.js. Screen-space normal derivatives add no additional intersection rays; normal mesh rendering remains unchanged.
+- Validation: headless Chrome `node tests/raycast-cycle.mjs` and `node tests/cycle-renderer.mjs` passed without shader errors. Inspected study and game captures; switching, fallback and resource disposal checks passed. Hardware performance and motion shimmer still require human play review.
+
+## Outline filtering and MCP entry follow-up — October 13
+
+- [x] Replace discontinuous normal-derivative outlines in game/credits with an eight-tap filtered normal buffer. The cycle-only prepass adds one intersection pass; the rejected multiple-neighbor-ray approach was too expensive. Preserve normal-renderer isolation and dispose the buffer on renderer shutdown. The standalone study uses softened grazing highlights.
+- [x] Start the supplied Wendy Carlos “Break In (For Strings, Flutes And Celesta - Bonus)” recording with the first access character, at 30% volume. Pause it for exit confirmation/return home and release it on page exit. Original soundtrack rights remain with their rights holders.
+- [x] Request microphone permission before testing speech-recognition availability. Explain audio-input requirements and browser permission settings on failure; click or Return retries access. Unsupported speech-recognition browsers get a specific explanation.
+- [x] Add https://github.com/stevedekorte/TRON to Steve DeKorte's on-screen credit. credits_display.txt drives the terminal; credits_extended.txt remains linked/copied as the detailed archive.
+- Validation: headless Chrome MCP approval/denial/retry, first-character music timing, greeting-before-listening, game renderer switching/fallback and all ten model credits passed. Game and credit captures inspected. Local Vite needed a restart to install the new speech endpoints; voice-status now returns configured:true.
+
+## MCP response latency — October 13
+
+- [x] Use fal.ai Chatterbox Turbo with the same MCP audio reference and existing client pitch/reverb. Turbo uses temperature 0.7; standard-model exaggeration/cfg parameters are omitted according to its API schema. Short sentence generation and next-sentence prefetch remain enabled.
+- Measured one identical seven-word sentence: standard 2.995 seconds, Turbo 1.421 seconds. A separate local Gemini request took 2.068 seconds. These are individual service checks, not guaranteed end-to-end response times; recognition finalization, audio download, cold starts and network load add latency. Turbo voice delivery still needs user listening review.
+- Validation: all 12 focused MCP relay, validation and speech queue tests passed. Local server restarted to load the new endpoint.
+
+## Arena grid wall alignment — October 13
+
+- [x] Fit an even number of whole visual grid cells between the four inner arena walls. With the existing 409.06 m half-span, 190 cells span the floor at 4.3058947368 m each (previously 4.32 m). Center and boundary lines align without partial perimeter cells. Applies to gameplay and the shared arena credit floor; cycle movement remains continuous and unchanged.
+- Validation: direct dimension check confirmed 95 cells per half-span with zero wall remainder. Headless Chrome credit-model rendering checked the shared floor.
+
+## Ray-cast cycle materialization — October 13
+
+- [x] Keep the CSG cycle active through the opening/countdown wire sweep and solid fade, eliminating the mesh-to-ray shape change. Reuse the existing reveal timing and team colors.
+- [x] Draw antialiased construction curves directly on the analytic CSG surface at local section-plane intersections, with the filtered silhouette/crease pass. These are smooth surface cross-sections, not the old mesh's triangulation. Hidden rear surfaces stay suppressed. Named spacing, line width and intensity are in CYCLE_REZ.
+- [x] Preserve alpha/depth behavior through the fade; the normal prepass temporarily writes depth and restores the color-pass state. Raster fallback retains its existing materialization.
+- Validation: headless Chrome tests/cycle-ray-materialization.mjs captured sweep, wire, fade and solid stages; inspected wire/fade captures. Full cycle-opening and cycle-renderer checks passed (pause/resume, race handoff, switching, resource cleanup and fallback). Production build passed. Motion/fidelity remain subject to user review.
+
+- [x] Refine formation into defining silhouettes/creases first, cyan surface sections second, then a pale, glowing body that settles to its normal material. Timing is shared in cycle-materialization.js; yellow-green contours and cyan glow follow the supplied 42:54–42:56 film references. No riders are shown.
+- Release validation: 500 automated tests passed; production build and full opening browser check passed. Staged ray-cast captures passed without shader errors; user approved the appearance.

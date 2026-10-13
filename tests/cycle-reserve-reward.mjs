@@ -23,9 +23,11 @@ try{
  assert(await page.evaluate(()=>{
   rewardHud.updateReserveReward(rewardBike,1300);
   const ended=!document.querySelector('.reserve-reward');
-  rewardBike.reserveReward={turboFrom:0,brakeFrom:0};rewardHud.updateReserveReward(rewardBike,1400);
+  rewardBike.reserveReward={turboFrom:1,brakeFrom:.8,target:0};rewardHud.updateReserveReward(rewardBike,1400);
+  rewardHud.updateReserveReward(rewardBike,1725);
+  if(document.querySelector('#turbo-fill').style.transform!=='scaleX(0.125)')return false;
   rewardHud.updateReserveReward({},1500);
   return ended&&!document.querySelector('.reserve-reward');
  }));
- console.log('Bright recharge fill, completion, and watched-cycle cleanup passed.');
+ console.log('Bright recharge fill, drain, completion, and watched-cycle cleanup passed.');
 }finally{await browser.close();}

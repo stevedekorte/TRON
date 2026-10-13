@@ -1,11 +1,11 @@
 import {ARENA_WALL} from '../game/arena-breaches.js';
-import { ARENA_GRID } from '../levels/arena-grid.js';
+import { ARENA_GRID,fitArenaGridSpacing } from '../levels/arena-grid.js';
 import * as THREE from 'three';
 import {GROUND_GRID_AA_SCALE} from '../levels/ground-grid.js';
 
 export const ARENA_FLOOR=Object.freeze({
  innerWallMeters:ARENA_WALL.innerMeters,passageColor:0x062b38,
- sizeMeters:932,elevationMeters:-.06,gridMeters:ARENA_GRID.cellMeters,
+ sizeMeters:932,elevationMeters:-.06,gridMeters:fitArenaGridSpacing(ARENA_WALL.innerMeters),
  lineHalfWidthMeters:ARENA_GRID.lineHalfWidthMeters,antialiasScale:GROUND_GRID_AA_SCALE,
  fadeStartMeters:160,fadeEndMeters:650,backgroundColor:0x020c1b,lineColor:0x888888,
 });
@@ -13,6 +13,7 @@ export const ARENA_FLOOR=Object.freeze({
 // Caller owns the returned mesh and disposes its geometry/material.
 export function createArenaFloor(options={}){
  const c={...ARENA_FLOOR,...options};
+ c.gridMeters=fitArenaGridSpacing(c.innerWallMeters,c.gridMeters);
  const material=new THREE.ShaderMaterial({
   uniforms:{innerWall:{value:c.innerWallMeters},passageColor:{value:new THREE.Color(c.passageColor)},gridMeters:{value:c.gridMeters},halfWidth:{value:c.lineHalfWidthMeters},aaScale:{value:c.antialiasScale},fadeRange:{value:new THREE.Vector2(c.fadeStartMeters,c.fadeEndMeters)},background:{value:new THREE.Color(c.backgroundColor)},lineColor:{value:new THREE.Color(c.lineColor)}},
   vertexShader:`varying vec3 worldPosition; varying vec2 gridPosition;
