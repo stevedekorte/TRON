@@ -19,6 +19,10 @@
 - [Models](/models/): Imported vehicle sources and runtime adapters
 - [Carrier escape shuttle](/models/carrier-shuttle/): Reference reconstruction of the carrier escape pod
 
+## Multiplayer light cycles
+
+- [Multiplayer light cycles](/multiplayer/): Feasibility and a low cost implementation plan
+
 ## Refactoring review and design
 
 - [Refactoring review and design](/refactoring/): Explicit ownership, reproducible worlds and composed controllers

@@ -27,6 +27,8 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 - [x] Separate materialization color coverage from cockpit opacity so entering first person fades the cycle transparently without changing its colors.
 - [x] Validation: 23 JEV/protocol/Worker unit tests passed; production build passed; headless Chrome on macOS passed the first-person entry/exit and hidden-player check. Tactical effectiveness still needs live play assessment.
 
+Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compares timing, authority, hosting cost and staged acceptance checks. Implementation remains proposed.
+
 ## Project documents
 
 <div class="card-grid cols-2">
