@@ -1,4 +1,5 @@
 window.mcpBooted=true;clearTimeout(window.mcpBootTimer);
+import {createPanelActivity} from './panel-activity.js';
 import {typeMcpAccess} from './terminal-intro.js';
 import {clearLegacyMcpCache} from './clear-legacy-cache.js';
 void clearLegacyMcpCache();
@@ -9,6 +10,7 @@ const $=id=>document.getElementById(id);
 const apiBase=(import.meta.env.VITE_MCP_API_BASE||import.meta.env.VITE_JEV_API_BASE||'').replace(/\/$/,'');
 let face,recognition,recognizing=false,micEnabled=false,busy=false,leaving=false,paused=false,request,epoch=0,restartTimer;
 const history=[];
+const panelActivity=createPanelActivity($('encom-panel'));
 const audioContext=new AudioContext({latencyHint:'playback'});
 let introPlaying=true,microphoneApproved=false,microphonePending=false,voiceReadyPromise;
 const cancelIntro=typeMcpAccess($('reply'),()=>{introPlaying=false;void requestConversationAudio();},{audioContext});
@@ -59,6 +61,7 @@ async function playSamples({samples,sampleRate,processed:rendered=false},token,{
  const rate=processed?1:MCP_VOICE_EFFECTS.pitchRatio;source.playbackRate.value=rate;
  audioEffects?.dispose();audioEffects=processed?null:createVoiceEffects(audioContext);
  source.connect(audioEffects?.input||audioContext.destination);audioSource=source;
+ panelActivity.set('');
  const started=audioContext.currentTime;status('MCP SPEAKING');face?.speak(true);
  const animate=()=>{if(token!==epoch)return;const offset=Math.floor((audioContext.currentTime-started)*sampleRate*rate);let sum=0,count=0;
   for(let i=offset;i<Math.min(samples.length,offset+1024);i++){sum+=samples[i]*samples[i];count++;}
@@ -68,10 +71,11 @@ async function playSamples({samples,sampleRate,processed:rendered=false},token,{
  cancelAnimationFrame(audioFrame);finishAudio=null;audioSource=null;face?.speak(false);
 }
 async function speakCloned(text,token,{whole=false,onStart:started=()=>{},resumeListening=true}={}){
+ panelActivity.set('tts');
  let displayed=false;const onStart=()=>{if(!displayed){$('reply').textContent=text;displayed=true;started();}};
  try{
   if(whole)await playSamples(await voice.generate(text),token,{onStart});
-  else await speakSentences({text,generate:chunk=>voice.generate(chunk),play:audio=>playSamples(audio,token,{onStart}),isCurrent:()=>token===epoch,onWaiting:()=>status('MCP GENERATING VOICE…')});
+  else await speakSentences({text,generate:chunk=>voice.generate(chunk),play:audio=>playSamples(audio,token,{onStart}),isCurrent:()=>token===epoch,onWaiting:()=>{panelActivity.set('tts');status('MCP GENERATING VOICE…');}});
   if(token===epoch){if(resumeListening){setBusy(false);status('YOUR TURN');restartTimer=setTimeout(listen,350);}return true;}
  }catch(error){if(token===epoch){face?.speak(false);setBusy(false);status('MCP CLONED VOICE FAILED — REPLY SHOWN AS TEXT: '+error.message);$('reply').textContent=text+'\nMCP CLONED VOICE UNAVAILABLE';}}
  finally{if(token!==epoch){setBusy(false);if(!paused&&!leaving)status('YOUR TURN');}}
@@ -101,11 +105,11 @@ $('test-voice').onclick=()=>{
  $('reply').textContent=text;void speakCloned(text,++epoch);
 };
 function status(text){$('status').textContent=text;}
-function setBusy(value){busy=value;$('message').disabled=value||!chatConfigured||!voice.ready;$('microphone').disabled=value||!voice.ready||!recognition;$('message').placeholder=voice.ready?'SPEAK OR TYPE YOUR MESSAGE':'WAITING FOR MCP VOICE';$('voice-sample').disabled=value;$('test-voice').disabled=value||!voice.ready;$('load-voice').disabled=value||voice.ready||voiceLoading;}
-function stopListening(){clearTimeout(restartTimer);if(recognizing){recognizing=false;try{recognition.abort();}catch{}}}
+function setBusy(value){busy=value;if(!value)panelActivity.set('');$('message').disabled=value||!chatConfigured||!voice.ready;$('microphone').disabled=value||!voice.ready||!recognition;$('message').placeholder=voice.ready?'SPEAK OR TYPE YOUR MESSAGE':'WAITING FOR MCP VOICE';$('voice-sample').disabled=value;$('test-voice').disabled=value||!voice.ready;$('load-voice').disabled=value||voice.ready||voiceLoading;}
+function stopListening(){panelActivity.set('');clearTimeout(restartTimer);if(recognizing){recognizing=false;try{recognition.abort();}catch{}}}
 function listen(){
  if(!microphoneApproved||introPlaying||!chatConfigured||!voice.ready||leaving||paused||busy||document.hidden||!micEnabled||!recognition||recognizing)return;
- try{recognition.start();recognizing=true;status('LISTENING…');}catch{status('MICROPHONE BUSY — CLICK MIC TO RETRY');}
+ try{recognition.start();recognizing=true;panelActivity.set('stt');status('LISTENING…');}catch{status('MICROPHONE BUSY — CLICK MIC TO RETRY');}
 }
 function setMic(value){micEnabled=value;$('microphone').setAttribute('aria-pressed',String(value));$('microphone').textContent=value?'MIC OFF':'MIC ON';if(value)listen();else {stopListening();if(!busy)status('TYPE A MESSAGE TO MCP');}}
 function interrupt(){
@@ -121,7 +125,7 @@ function speak(text,token){
 }
 async function send(text){
  text=text.trim();if(introPlaying||!text||!chatConfigured||!voice.ready||busy||paused||leaving)return;
- stopListening();setBusy(true);$('heard').textContent=text;$('reply').textContent='';$('message').value='';status('MCP PROCESSING…');
+ stopListening();setBusy(true);$('heard').textContent=text;$('reply').textContent='';$('message').value='';status('MCP PROCESSING…');panelActivity.set('llm');
  const token=++epoch;request=new AbortController();const timeout=setTimeout(()=>request?.abort(),50000);
  const sentAt=performance.now(),waiting=setInterval(()=>{if(token===epoch)status(`WAITING FOR GEMINI — ${Math.floor((performance.now()-sentAt)/1000)}s`);},1000);
  try{
@@ -157,13 +161,13 @@ function showExit(){if(exit.open)return;cancelIntro.pauseMusic();paused=true;int
 
 window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-transition-start')cancelIntro.fadeOutMusic();if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-resume'){document.body.classList.remove('mcp-command');cancelIntro.resumeMusic();paused=false;void requestConversationAudio();face?.pause(false);listen();setBusy(voice.generating);status(voice.generating?'FINISHING PREVIOUS VOICE REQUEST…':voice.ready?'YOUR TURN':'PREPARING MCP VOICE…');}});
 window.addEventListener('keydown',e=>{if(e.code==='Escape'&&!exit.open){e.preventDefault();showExit();}});
-window.addEventListener('pagehide',()=>{leaving=true;cancelIntro();interrupt();face?.dispose();voice.cancel();audioContext?.close();exit.dispose();},{once:true});
+window.addEventListener('pagehide',()=>{leaving=true;cancelIntro();interrupt();panelActivity.dispose();face?.dispose();voice.cancel();audioContext?.close();exit.dispose();},{once:true});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){interrupt({keepVoiceLoading:true});status('TRANSMISSION PAUSED');}else listen();});
 const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(Recognition){
  recognition=new Recognition();recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;
  recognition.onresult=event=>{if(voice.ready&&!busy&&!paused&&micEnabled&&!leaving)void send(event.results[event.resultIndex][0].transcript);};
- recognition.onend=()=>{recognizing=false;if(micEnabled&&!busy&&!paused&&!leaving)restartTimer=setTimeout(listen,500);};
+ recognition.onend=()=>{recognizing=false;if(!busy)panelActivity.set('');if(micEnabled&&!busy&&!paused&&!leaving)restartTimer=setTimeout(listen,500);};
  recognition.onerror=event=>{if(event.error==='aborted')return;if(event.error==='no-speech')return;unavailable();};
 }else{$('microphone').disabled=true;$('microphone').textContent='MIC UNAVAILABLE';}
 // Do not initialize WebGL or load the face while the terminal-only introduction is active.

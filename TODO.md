@@ -1,6 +1,5 @@
 # TODO
 
-- [ ] Create a smoother light cycle model with better reflections on the inner wheel rims.
 - [ ] Improve maze geometry with more details from the movie.
 - [ ] Add the maze visible in the background of the scene where the Recognizer falls off the cliff.
 - [ ] Add a Solar Sailer rez animation.
@@ -14,8 +13,5 @@
 - [ ] Consider point tracking for the cycle arena.
 - [ ] Add more variation to cycle arena cracks.
 - [ ] Have Recognizers spot and cut off escape routes through arena cracks.
-- [ ] Add the “We've got company” audio clip.
-- [ ] Add more soundtrack clips with appropriate cues.
-- [x] Warn mobile users that mobile is not supported yet.
-
+- [ ] Add the spoken “We've got company” dialogue clip.
 - [ ] Improve light cycle driving dynamics outside the arena.

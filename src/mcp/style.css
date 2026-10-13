@@ -52,3 +52,15 @@ body.mcp-command #face,body.mcp-command #face-fallback{display:block!important;p
 body.mcp-command #face-fallback{object-fit:cover}
 body.mcp-command #conversation,body.mcp-command #encom-panel{visibility:hidden}
 @keyframes mcp-command-reveal{from{opacity:0}to{opacity:1}}
+
+/* Clips use the same 840 × 460 crop as the badge background. */
+.mcp-panel-lamp{position:absolute;inset:0;background:inherit;opacity:0;pointer-events:none}
+.mcp-panel-lamp:nth-child(1){clip-path:inset(24% 73.5% 37.5% 12%)}
+.mcp-panel-lamp:nth-child(2){clip-path:inset(34.8% 58% 37.5% 27%)}
+.mcp-panel-lamp:nth-child(3){clip-path:inset(34.8% 42.7% 37.5% 42.3%)}
+.mcp-panel-lamp:nth-child(4){clip-path:inset(34.8% 27.4% 37.5% 57.6%)}
+.mcp-panel-lamp:nth-child(5){clip-path:inset(34.8% 12.1% 37.5% 72.9%)}
+.mcp-panel-lamp:nth-child(6){clip-path:inset(65.3% 73.9% 18.5% 12%)}
+#encom-panel[data-activity] .mcp-panel-lamp{opacity:1;animation:mcp-lamp-pulse 1.8s ease-in-out infinite;animation-delay:calc(var(--lamp) * -.3s)}
+@keyframes mcp-lamp-pulse{0%,100%{filter:brightness(.35)}45%{filter:brightness(1.65)}}
+@media(prefers-reduced-motion:reduce){#encom-panel[data-activity] .mcp-panel-lamp{animation:none;filter:brightness(1.3)}}

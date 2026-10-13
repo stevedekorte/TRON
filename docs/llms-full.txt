@@ -42,6 +42,13 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 
 Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compares timing, authority, hosting cost and staged acceptance checks. Implementation remains proposed.
 
+## MCP transfer reliability and panel activity — October 13
+
+- [x] Require the real light-cycle transfer tool when the user asks to enter the grid or MCP sentences them to it; forbid dialogue-only promises of a transfer. Require the announcement to end with “END OF LINE.”
+- [x] Animate the six existing ENCOM badge lamps while listening, awaiting Gemini or generating speech. Stop the animation for playback, cancellation and errors; reduced motion uses a steady brightness change.
+- [x] Remove completed cycle-smoothing, soundtrack-cue and mobile-warning items from TODO.md; retain partially completed projects and clarify the remaining spoken dialogue clip.
+- [x] Validation: real Gemini initially returned only a promise, then returned the actual cycles action and END OF LINE with the revised prompt. MCP unit checks and production build pass. Headless Chrome passes STT/LLM/TTS lamp states, face/audio timing, one-second hold and direct game transfer. Inspected the enlarged badge capture.
+
 ## Project documents
 
 <div class="card-grid cols-2">
