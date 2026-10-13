@@ -13,7 +13,7 @@ try{
  assert(await page.locator('#reply').isVisible());assert(await page.locator('#encom-panel').isVisible());
  const box=await page.locator('#conversation').boundingBox();assert(Math.abs(box.x-1600*.204)<1);assert(Math.abs(box.y-275)<1);
  assert(!requests.some(url=>url.includes('/src/mcp/face.js')));
- await page.waitForFunction(()=>document.querySelector('#reply').textContent.includes('PASSWORD: MASTER.'),{},{timeout:25000});
+ await page.waitForFunction(()=>document.querySelector('#reply').textContent==='REQUEST: ACCESS TO MASTER CONTROL PROGRAM.',{},{timeout:25000});
  await page.waitForFunction(()=>document.querySelector('#reply').textContent.startsWith('MASTER CONTROL PROGRAM UNAVAILABLE\nAUDIO INPUT'));
  assert.match(await page.locator('#reply').textContent(),/MASTER CONTROL PROGRAM UNAVAILABLE\nAUDIO INPUT/);
  assert.equal(await page.locator('#reply').evaluate(e=>getComputedStyle(e,'::after').content),'none');

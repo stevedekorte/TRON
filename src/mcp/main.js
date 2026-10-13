@@ -31,7 +31,6 @@ async function requestConversationAudio(){
   if(leaving||paused)return;
   if(!voice.ready)throw Error('Cloned voice unavailable');
   const greeting='WHAT CAN I DO FOR YOU, MR. DILINGER?';
-  $('reply').textContent=greeting;
   const token=++epoch;
   const spoken=await speakCloned(greeting,token,{whole:true});
   if(spoken&&token===epoch&&!paused&&!leaving)setMic(true);
@@ -51,7 +50,7 @@ function renderVoiceProgress(){
 const voice=new McpVoice(progress=>{if(voiceLoading){voiceProgress={...voiceProgress,...progress};renderVoiceProgress();}});
 
 function stopClonedAudio(){cancelAnimationFrame(audioFrame);audioEffects?.dispose();audioEffects=null;if(audioSource){audioSource.onended=null;audioSource.stop();audioSource.disconnect();}audioSource=null;finishAudio?.();finishAudio=null;}
-async function playSamples({samples,sampleRate},token,{processed=false}={}){
+async function playSamples({samples,sampleRate},token,{processed=false,onStart=()=>{}}={}){
  if(token!==epoch)return;
  audioContext??=new AudioContext();await audioContext.resume();if(token!==epoch)return;
  const buffer=audioContext.createBuffer(1,samples.length,sampleRate);buffer.copyToChannel(samples,0);
@@ -64,15 +63,16 @@ async function playSamples({samples,sampleRate},token,{processed=false}={}){
   for(let i=offset;i<Math.min(samples.length,offset+1024);i++){sum+=samples[i]*samples[i];count++;}
   face?.level(Math.min(1,Math.sqrt(sum/Math.max(1,count))*7));audioFrame=requestAnimationFrame(animate);
  };
- await new Promise(resolve=>{let tail;finishAudio=()=>{clearTimeout(tail);resolve();};source.onended=()=>{source.disconnect();face?.speak(false);tail=setTimeout(resolve,processed?0:MCP_VOICE_EFFECTS.decaySeconds*1000);};source.start();animate();});
+ await new Promise(resolve=>{let tail;finishAudio=()=>{clearTimeout(tail);resolve();};source.onended=()=>{source.disconnect();face?.speak(false);tail=setTimeout(resolve,processed?0:MCP_VOICE_EFFECTS.decaySeconds*1000);};onStart();source.start();animate();});
  cancelAnimationFrame(audioFrame);finishAudio=null;audioSource=null;face?.speak(false);
 }
 async function speakCloned(text,token,{whole=false}={}){
+ let displayed=false;const onStart=()=>{if(!displayed){$('reply').textContent=text;displayed=true;}};
  try{
-  if(whole)await playSamples(await voice.generate(text),token);
-  else await speakSentences({text,generate:chunk=>voice.generate(chunk),play:audio=>playSamples(audio,token),isCurrent:()=>token===epoch,onWaiting:()=>status('MCP GENERATING VOICE…')});
+  if(whole)await playSamples(await voice.generate(text),token,{onStart});
+  else await speakSentences({text,generate:chunk=>voice.generate(chunk),play:audio=>playSamples(audio,token,{onStart}),isCurrent:()=>token===epoch,onWaiting:()=>status('MCP GENERATING VOICE…')});
   if(token===epoch){setBusy(false);status('YOUR TURN');restartTimer=setTimeout(listen,350);return true;}
- }catch(error){if(token===epoch){face?.speak(false);setBusy(false);status('MCP CLONED VOICE FAILED — REPLY SHOWN AS TEXT: '+error.message);$('reply').textContent+='\nMCP CLONED VOICE UNAVAILABLE';}}
+ }catch(error){if(token===epoch){face?.speak(false);setBusy(false);status('MCP CLONED VOICE FAILED — REPLY SHOWN AS TEXT: '+error.message);$('reply').textContent=text+'\nMCP CLONED VOICE UNAVAILABLE';}}
  finally{if(token!==epoch){setBusy(false);if(!paused&&!leaving)status('YOUR TURN');}}
 }
 async function loadVoice(){
@@ -129,7 +129,7 @@ async function send(text){
   if(typeof data.reply!=='string'||!data.reply.trim())throw new Error('MCP RETURNED AN EMPTY REPLY');
   if(token!==epoch||leaving)return;
   history.push({role:'user',content:text},{role:'assistant',content:data.reply});if(history.length>16)history.splice(0,history.length-16);
-  clearInterval(waiting);$('reply').textContent=data.reply;speak(data.reply,token);
+  clearInterval(waiting);speak(data.reply,token);
  }catch(error){if(token===epoch&&!leaving){setBusy(false);const message=error.name==='AbortError'?'GEMINI TIMED OUT — TRY AGAIN':error.message;status(message);$('reply').textContent='MASTER CONTROL PROGRAM UNAVAILABLE';$('message').value=text;}}
  finally{clearInterval(waiting);clearTimeout(timeout);if(token===epoch)request=null;}
 }

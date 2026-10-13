@@ -89,7 +89,10 @@ export class LightCycleRaceView {
       mesh.userData.cycleFormationProgress=age===null?1:THREE.MathUtils.clamp(age/(openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds),0,1);
       const moving=age===null&&r.phase==='racing'&&b.alive&&!r.arenaPaused;
       const speed=moving?(b.escaped?(b.roadSpeed??0):C.speedMetersPerSecond*(b.speedMultiplier??1)):0;
-      if(mesh.userData.reflectionCycle!==b){mesh.userData.reflectionCycle=b;mesh.userData.wheelReflection=null;}
+      // Interpolated cycle objects are replaced every rendered frame. Reset only
+      // for a new match, never on a presentation object's identity.
+      const reflectionKey=`${r.seed}:${r.round}:${b.id}`;
+      if(mesh.userData.reflectionKey!==reflectionKey){mesh.userData.reflectionKey=reflectionKey;mesh.userData.wheelReflection=null;}
       mesh.userData.wheelReflection=advanceWheelReflection(mesh.userData.wheelReflection,r.time,speed);
       if(age===null)rez.update(null);
       else {

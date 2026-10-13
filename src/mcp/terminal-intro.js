@@ -1,6 +1,6 @@
 import musicUrl from '../../docs/assets/music/Tron/20 Break In (For Strings, Flutes And Celesta - Bonus).mp3?url';
-export const MCP_ACCESS_TEXT='REQUEST: ACCESS TO MASTER CONTROL\nPROGRAM. USER CODE 00 - DILLINGER.\nPASSWORD: MASTER.'.replace(/ {2,}/g,' ');
-const TIMING={startMs:1000,keyMinMs:35,keyVariationMs:95,wordPauseMs:90,linePauseMs:420};
+export const MCP_ACCESS_TEXT='REQUEST: ACCESS TO MASTER CONTROL PROGRAM.';
+const TIMING={startMs:1000,completedHoldMs:1500,keyMinMs:35,keyVariationMs:95,wordPauseMs:90,linePauseMs:420};
 /** Human-paced access request; owned timers are cancelled when the page leaves. */
 export function typeMcpAccess(element,onComplete){
  let timer,index=0,cancelled=false;
@@ -16,7 +16,7 @@ export function typeMcpAccess(element,onComplete){
    timer=setTimeout(next,delay);
   }else{
    element.classList.remove('typing');
-   onComplete?.();
+   timer=setTimeout(()=>{if(!cancelled)onComplete?.();},TIMING.completedHoldMs);
   }
  };
  const beep=new Audio(new URL('audio/mcp-access-beep.wav',document.baseURI));

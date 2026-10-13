@@ -19,6 +19,11 @@ Wendy Carlos
   Gameplay uses locally edited excerpts from these soundtrack tracks.
   https://www.wendycarlos.com/+tron.html
 
+Wendy Carlos — MCP terminal music
+  "Break In (For Strings, Flutes And Celesta - Bonus)"
+  From the TRON soundtrack bonus tracks.
+  Used for the MCP terminal introduction.
+
 Journey
   "Only Solutions" — performed by Journey.
   From the TRON (1982) original motion picture soundtrack.

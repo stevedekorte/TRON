@@ -2013,3 +2013,10 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - Validation: all 502 automated tests passed. Headless Chrome checked wheel on/off/stopped captures, materialization shaders, menu order/default/wraparound/Return launch, and MCP music lead-in plus permission/greeting/reply lifecycle. Inspected wheel glint capture.
 
 - [x] Thin materialization surface-section lines from 0.006 m to 0.003 m half-width, reduce contour sampling radius from 1.2 px to 0.65 px, and narrow/soften the surrounding halo. Solid-cycle edge highlights are unchanged. Chrome staged shader/render checks passed and the thinner grid capture was inspected.
+
+## Live wheel animation and MCP response presentation — October 13
+
+- [x] Fix moving wheel glints being reset every frame by interpolated cycle object replacement. Reset the presentation clock only by stable seed/round/cycle ID. Live-match regression now waits for phase progression across actual game frames, in addition to the isolated shader checks.
+- [x] Shorten MCP typed access text to one line: REQUEST: ACCESS TO MASTER CONTROL PROGRAM. Hold it for 1.5 seconds before microphone permission/conversation startup. Reveal greeting and reply text at the beginning of cloned audio playback rather than while generation is pending.
+- [x] Add a separate Wendy Carlos credit for Break In (For Strings, Flutes And Celesta - Bonus), used for the MCP introduction, in displayed and extended credits.
+- Validation: all 502 automated tests passed; headless Chrome checked live wheel phase progression, the completed-intro pause, greeting/reply audio-start synchronization, and microphone allow/deny/retry paths.

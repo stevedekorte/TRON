@@ -5,13 +5,14 @@ try{
  for(const denied of [false,true]){
   const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(({denied})=>{
-   window.events=[];window.permissionDenied=denied;
+   window.events=[];window.audioStarts=[];window.generationScreens=[];window.permissionDenied=denied;
+   const start=AudioBufferSourceNode.prototype.start;AudioBufferSourceNode.prototype.start=function(...args){window.audioStarts.push(document.querySelector('#reply').textContent);return start.apply(this,args);};
    const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.src.includes('20%20Break')||this.src.includes('20 Break')){window.musicStartedAt=document.querySelector('#reply').textContent;window.musicCalledAt=performance.now();}return play.call(this);};
-   navigator.mediaDevices.getUserMedia=async()=>{events.push(['permission',document.querySelector('#reply').textContent]);if(window.permissionDenied)throw Error('denied');return {getTracks:()=>[{stop(){}}]};};
-   new MutationObserver(()=>{if(!window.firstTypedAt&&document.querySelector('#reply')?.textContent.startsWith('R'))window.firstTypedAt=performance.now();}).observe(document,{subtree:true,childList:true,characterData:true});
+   navigator.mediaDevices.getUserMedia=async()=>{window.permissionAt=performance.now();events.push(['permission',document.querySelector('#reply').textContent]);if(window.permissionDenied)throw Error('denied');return {getTracks:()=>[{stop(){}}]};};
+   new MutationObserver(()=>{if(!window.completedAt&&document.querySelector('#reply')?.textContent==='REQUEST: ACCESS TO MASTER CONTROL PROGRAM.')window.completedAt=performance.now();if(!window.firstTypedAt&&document.querySelector('#reply')?.textContent.startsWith('R'))window.firstTypedAt=performance.now();}).observe(document,{subtree:true,childList:true,characterData:true});
    window.SpeechRecognition=class{constructor(){window.recognition=this;}start(){events.push(['listen']);}abort(){this.onend?.();}};
   },{denied});
-  await page.route('**/src/mcp/voice.js',r=>r.fulfill({contentType:'application/javascript',body:`export class McpVoice {ready=false;generating=false;async load(){this.ready=true;}async generate(text){window.events.push(['speech',text]);await new Promise(r=>setTimeout(r,100));return {samples:new Float32Array(2400),sampleRate:24000};}abort(){}cancel(){}}`}));
+  await page.route('**/src/mcp/voice.js',r=>r.fulfill({contentType:'application/javascript',body:`export class McpVoice {ready=false;generating=false;async load(){this.ready=true;}async generate(text){window.generationScreens.push(document.querySelector('#reply').textContent);window.events.push(['speech',text]);await new Promise(r=>setTimeout(r,100));return {samples:new Float32Array(2400),sampleRate:24000};}abort(){}cancel(){}}`}));
   await page.route('**/api/mcp/status',r=>r.fulfill({json:{configured:true}}));
   await page.route('**/api/mcp/chat',r=>{return r.fulfill({json:{reply:'END OF LINE.'}});});
   await page.route('**/cache-check',r=>r.fulfill({contentType:'text/html',body:'cache check'}));
@@ -25,7 +26,8 @@ try{
   await page.goto('http://127.0.0.1:5173/mcp.html');
   await page.waitForFunction(()=>events.some(e=>e[0]==='permission'),null,{timeout:30000});
   const events=await page.evaluate(()=>window.events);
-  assert(events[0][1].endsWith('PASSWORD: MASTER.'));
+  assert.equal(events[0][1],'REQUEST: ACCESS TO MASTER CONTROL PROGRAM.');
+  assert(await page.evaluate(()=>permissionAt-completedAt>=1450),'completed introduction holds for 1.5 seconds');
   if(denied){
    await page.waitForFunction(()=>document.querySelector('#reply').textContent.startsWith('MASTER CONTROL PROGRAM UNAVAILABLE\nAUDIO INPUT'));
    assert.equal(events.length,1);
@@ -38,8 +40,10 @@ try{
    assert.deepEqual(order.slice(0,3).map(e=>e[0]),['permission','speech','listen']);
    assert.equal(order[1][1],'WHAT CAN I DO FOR YOU, MR. DILINGER?');
    await page.evaluate(()=>recognition.onresult({resultIndex:0,results:[[{transcript:'Hello'}]]}));
-   await page.waitForFunction(()=>events.some(e=>e[0]==='speech'&&e[1]==='END OF LINE.'));
+   await page.waitForFunction(()=>audioStarts.includes('END OF LINE.'));
+   assert.deepEqual(await page.evaluate(()=>generationScreens),['',''],'responses stay hidden while speech generates');
   }
+  assert((await page.evaluate(()=>audioStarts)).includes('WHAT CAN I DO FOR YOU, MR. DILINGER?'),'greeting text is present at audio start');
   assert.equal(await page.evaluate(()=>window.musicStartedAt),'','music begins before the first character');
   assert(await page.evaluate(()=>firstTypedAt-musicCalledAt>=950),'music is cued at least a second before typing');
   assert.deepEqual(errors,[]);await page.close();

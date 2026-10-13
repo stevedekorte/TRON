@@ -56,7 +56,7 @@ export function createDevelopmentTools({
         cycleRendering: view.arena?.userData.cycleRace ? {
           tireTraceCount: view.arena.userData.cycleRace.tireTraces.activeCount,
           visible: view.arena.userData.cycleRace.root.visible,
-          bikes: view.arena.userData.cycleRace.bikes.map(b=>({visible:b.visible,position:b.getWorldPosition(view.camera.position.clone()).toArray()})),
+          bikes: view.arena.userData.cycleRace.bikes.map(b=>({visible:b.visible,wheelReflection:b.userData.wheelReflection,position:b.getWorldPosition(view.camera.position.clone()).toArray()})),
           trailCounts: view.arena.userData.cycleRace.trails.map(m=>m.count),
         } : null,
         camera: {
