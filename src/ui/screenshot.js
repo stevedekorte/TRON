@@ -13,7 +13,8 @@ export async function saveScreenshot(view,canvas){
  screenshotStatus('SAVING SCREENSHOT…');
  const filename=`Space-Paranoids-${new Date().toISOString().replace(/[:.]/g,'-')}.png`;
  try{
-  view.composer.render(0);
+  view.povCycles?.prepare();
+  try{view.composer.render(0);}finally{view.povCycles?.restore();}
   const image=new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
   // Invoke the picker before yielding, while the key event grants activation.
   const destination=window.showSaveFilePicker?window.showSaveFilePicker({suggestedName:filename,types:[{description:'PNG image',accept:{'image/png':['.png']}}]}):null;

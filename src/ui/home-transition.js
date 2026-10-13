@@ -30,7 +30,7 @@ export function createHomeTransition(){
   }
   return {
     get active(){return active;},
-    async begin(button,{waitForScene=false,preparedScene=false,coverUntilSceneReady=false}={}){
+    async begin(button,{waitForScene=false,preparedScene=false,coverUntilSceneReady=false,keepCovered=false}={}){
       active=true;waitingForScene=waitForScene;startedAt=performance.now();
       const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
       const first=reduced?0:HOME_TRANSITION.otherTextMs,last=reduced?0:HOME_TRANSITION.selectedTextMs;
@@ -44,7 +44,7 @@ export function createHomeTransition(){
       Object.assign(background.style,{position:'absolute',inset:'0',background:'#020204'});
       curtain.append(background);document.body.append(curtain);
       // A different game must replace the home preview before it can be revealed.
-      animate(background,[{opacity:1},{opacity:0}],{duration:first,easing:'linear'},{sceneDependent:coverUntilSceneReady});
+      if(!keepCovered)animate(background,[{opacity:1},{opacity:0}],{duration:first,easing:'linear'},{sceneDependent:coverUntilSceneReady});
       const label=copy(button,'home-selected-label');label.style.whiteSpace='pre';
       const marker=document.createElement('span');marker.id='home-selection-cursor';
       Object.assign(marker.style,{display:'inline-block',width:'.48em',height:'.78em',background:'currentColor',marginRight:'1ch'});

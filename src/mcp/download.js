@@ -15,8 +15,8 @@ export async function prepareVoiceFiles({cache,baseURL,files,onProgress,fetchImp
  };
  report('checking','Saved voice files');
  for(const [file,size] of Object.entries(files)){
-  const hit=await cache.match(url(file));
-  if(hit&&Number(hit.headers.get('content-length'))===size)cachedBytes+=size;
+  const cachedSize=cache.size?await cache.size(url(file)):Number((await cache.match(url(file)))?.headers.get('content-length'));
+  if(cachedSize===size)cachedBytes+=size;
   else pending.push([file,size]);
   report('checking','Saved voice files');
  }
@@ -29,6 +29,7 @@ export async function prepareVoiceFiles({cache,baseURL,files,onProgress,fetchImp
   if(bytes!==size)throw new Error('VOICE DOWNLOAD INCOMPLETE — RETRY TO RESUME');
   const buffer=new Uint8Array(bytes);let offset=0;
   for(const chunk of chunks){buffer.set(chunk,offset);offset+=chunk.byteLength;}
+  report('saving',file);
   await cache.put(url(file),new Response(buffer,{headers:{'content-length':String(bytes),'content-type':response.headers.get('content-type')||'application/octet-stream'}}));
  }
  report('initializing','Preparing GPU — download complete');

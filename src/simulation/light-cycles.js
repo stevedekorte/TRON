@@ -1,3 +1,5 @@
+import {cycleReactionProfile,sampleCycleReaction} from './cycle-reaction.js';
+import {cycleReactionClearance} from './cycle-ai-clearance.js';
 import {continuousCycle,turnContinuousCycle,advanceContinuousCycles,cycleCollisionTrails,sweepCycleSegment} from './cycle-continuous.js';
 import {damageCycleTrail,expireDamagedTrails} from './cycle-trail-damage.js';
 import {cycleWallContact} from './cycle-wall-contact.js';
@@ -59,7 +61,7 @@ export function resetCycleRound(r){
     const dir=team<2?(north?2:0):(team===2?1:3);
     const active=!((r.hideMiddleOpponent??CYCLE_TESTING.hideMiddleOpponent)&&r.playerId!==undefined&&id===4);
     if(active)r.occupied[cell(x,z)]=id+1;
-    return {id,team,x,z,previousX:x,previousZ:z,dir,alive:active,turns:0,straight:0,progress:0,speedMultiplier:1,turboCharge:1,boosting:false,brakeCharge:1,braking:false};
+    return {reactionTiming:{...cycleReactionProfile({team})},id,team,x,z,previousX:x,previousZ:z,dir,alive:active,turns:0,straight:0,progress:0,speedMultiplier:1,turboCharge:1,boosting:false,brakeCharge:1,braking:false};
   });
   if(r.randomizePlayer){
     const gold=r.cycles.filter(b=>b.team===0&&b.alive);
@@ -97,6 +99,7 @@ function startCycleTrails(r){
 }
 export function chooseCycleDirection(r,bike){
   let best=bike.dir,bestScore=-Infinity;
+  const barriers=cycleCollisionTrails(r);
   for(const d of [bike.dir,(bike.dir+1)%4,(bike.dir+3)%4]){
     const [dx,dz]=DIR[d],x=bike.x+dx,z=bike.z+dz;
     if(!free(r,x,z))continue;
@@ -105,6 +108,8 @@ export function chooseCycleDirection(r,bike){
     const space=room(r,x,z);
     let score=Math.min(space,90)*.9+Math.min(clear,16)*.6+(d===bike.dir?5:0)+random(r)*3;
     if(space<25)score-=200;
+    const safety=cycleReactionClearance(r,bike,d,barriers);
+    if(safety<1)score-=C.aiUnsafeDirectionPenalty*(2-safety);
     const goal=bike.jevGoal;
     if(goal&&r.time<goal.expiresAt&&space>=25){
       const gx=goal.x-bike.x,gz=goal.z-bike.z,distance=Math.hypot(gx,gz);
@@ -230,13 +235,16 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
       if(b.id!==r.playerId){
         b.nextReactionAt??=0;
         if(r.elapsed>=b.nextReactionAt){
-          const [dx,dz]=DIR[b.dir];let clear=0;
-          while(clear<C.aiTurboClearCells&&free(r,b.x+dx*(clear+1),b.z+dz*(clear+1)))clear++;
-          b.aiBrake=clear<C.aiBrakeClearCells&&(b.braking||b.brakeCharge>=C.aiReserveStartCharge);
-          b.aiTurbo=hasTurboReason(r,b)&&clear>=C.aiTurboClearCells&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge);
+          b.reactionDelaySeconds=sampleCycleReaction(b,()=>random(r));
           const dir=chooseCycleDirection(r,b),delta=(dir-b.dir+4)%4;
           if(delta===1||delta===3)turnContinuousCycle(r,b,delta===1?1:-1);
-          b.nextReactionAt=r.elapsed+(C.teamReactionSeconds[b.team]??C.aiReactionSeconds);
+          // Assess reserves along the selected heading, not the old corridor.
+          const [dx,dz]=DIR[b.dir];let clear=0;
+          while(clear<C.aiTurboClearCells&&free(r,b.x+dx*(clear+1),b.z+dz*(clear+1)))clear++;
+          const safe=cycleReactionClearance(r,b,b.dir)>=1;
+          b.aiBrake=(!safe||clear<C.aiBrakeClearCells)&&(b.braking||b.brakeCharge>=C.aiReserveStartCharge);
+          b.aiTurbo=safe&&hasTurboReason(r,b)&&clear>=C.aiTurboClearCells&&(b.boosting||b.turboCharge>=C.aiReserveStartCharge);
+          b.nextReactionAt=r.elapsed+b.reactionDelaySeconds;
         }
         wantsBrake=!!b.aiBrake;wantsTurbo=!!b.aiTurbo;
       }

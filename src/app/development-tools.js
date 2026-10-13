@@ -11,6 +11,8 @@ export function createDevelopmentTools({
   frameTimes,
 }) {
   return {
+    setCycleRenderer:mode=>getView().setCycleRenderer(mode),
+    sampleCycleRenderer:(dt,active=true)=>getView().monitorCycleRenderer(dt,active),
     get state() {
       const view = getView(),
         run = session.run,
@@ -48,6 +50,9 @@ export function createDevelopmentTools({
         gunnerHit: view.gunnerHit,
         enemyOutlines: view.enemyOutline.enabled,
         arena: view.arena?.position.toArray() ?? null,
+        cycleRendererMode:view.cycleRendererMode??'normal',
+        cycleRendererReason:view.cycleRendererReason??null,
+        csgCycleCount:view.povCycles?.proxies.filter(p=>p.visible).length??0,
         cycleRendering: view.arena?.userData.cycleRace ? {
           tireTraceCount: view.arena.userData.cycleRace.tireTraces.activeCount,
           visible: view.arena.userData.cycleRace.root.visible,
@@ -86,6 +91,7 @@ export function createDevelopmentTools({
         })),
         renderer: {
           pixelRatio: view.renderer.getPixelRatio(),
+          adaptiveAA:{level:view.adaptiveAA.index,ceiling:view.adaptiveAA.ceiling,targetFps:config.targetFps,reason:view.adaptiveAA.reason},
           smaa: view.smaa.enabled,
           samples: view.composer.renderTarget1.samples,
           ...view.renderer.info.memory,

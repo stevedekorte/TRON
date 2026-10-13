@@ -9,11 +9,11 @@ export async function createMcpFace(canvas){
  texture.repeat.set(1972/2048,896/980);texture.offset.set(38/2048,59/980);
  const geometry=new THREE.PlaneGeometry(2,2,FACE.columns,FACE.rows),base=geometry.attributes.position.array.slice();
  const material=new THREE.MeshBasicMaterial({map:texture});scene.add(new THREE.Mesh(geometry,material));
- let audioLevel=null,speaking=false,started=0,lastWord=0,amount=0,frame=0,disposed=false;
+ let audioLevel=null,speaking=false,started=0,lastWord=0,amount=0,frame=0,disposed=false,paused=false;
  const motion=matchMedia('(prefers-reduced-motion: reduce)');
  function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);const aspect=w/h;camera.left=-Math.max(1,aspect/FACE.aspect);camera.right=-camera.left;camera.top=Math.max(1,FACE.aspect/aspect);camera.bottom=-camera.top;camera.updateProjectionMatrix();}
  const observer=new ResizeObserver(resize);observer.observe(canvas);resize();
- function draw(now){if(disposed)return;const t=(now-started)/1000;
+ function draw(now){if(disposed||paused)return;const t=(now-started)/1000;
   // Browser TTS supplies word boundaries, not PCM/visemes. Blend those accents
   // with a syllabic envelope; keep every wireframe line attached to the skin.
   const pulse=Math.max(0,1-(now-lastWord)/210);
@@ -29,5 +29,5 @@ export async function createMcpFace(canvas){
   pos.needsUpdate=true;renderer.render(scene,camera);frame=requestAnimationFrame(draw);
  }
  frame=requestAnimationFrame(draw);
- return {level(value){audioLevel=value;},speak(active){speaking=active;audioLevel=null;if(active)started=performance.now();},boundary(){lastWord=performance.now();},dispose(){disposed=true;cancelAnimationFrame(frame);observer.disconnect();geometry.dispose();material.dispose();texture.dispose();renderer.dispose();}};
+ return {pause(value){if(paused===value)return;paused=value;if(value)cancelAnimationFrame(frame);else frame=requestAnimationFrame(draw);},level(value){audioLevel=value;},speak(active){speaking=active;audioLevel=null;if(active)started=performance.now();},boundary(){lastWord=performance.now();},dispose(){disposed=true;cancelAnimationFrame(frame);observer.disconnect();geometry.dispose();material.dispose();texture.dispose();renderer.dispose();}};
 }

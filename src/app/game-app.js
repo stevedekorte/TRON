@@ -1,3 +1,5 @@
+import {CycleRendererControl} from '../ui/cycle-renderer-control.js';
+import {createMcpPanel} from '../ui/mcp-panel.js';
 import {createHomeTransition} from '../ui/home-transition.js';
 import {preloadBitResources} from './program-preload.js';
 import {CLU_DEATH_CAMERA,livingCluKiller} from '../game/clu-death.js';
@@ -108,6 +110,7 @@ export function createGameApp() {
     onOpen:()=>{tuningWasPlaying=['running','entering'].includes(mode);inputController.clear();releaseMouse();pause();},
     onClose:()=>{inputController.clear();if(tuningWasPlaying&&!disposed)resume();},
   }):null;
+  const cycleRendererControl=new CycleRendererControl({getView:()=>view,getRun:()=>run,getMode:()=>mode});
   let arenaLoad=null,solarLoad=null;
   function loadSolarInBackground(){
     if(solarLoad||!SOLAR_SAILER.enabled)return solarLoad;
@@ -192,13 +195,14 @@ export function createGameApp() {
   }
 
   const homeTransition=createHomeTransition();
+  const mcpPanel=createMcpPanel({onClose:()=>{homeTransition.clear();$('start-mcp').focus();}});
   async function start() {
     if(homeTransition.active)return;
     const homeSelection=mode==='ready'&&!endingStage;
     if(homeSelection){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
       sound.terminalTone('access');
-      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles'});
+      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles',keepCovered:selectedGame==='mcp'});
       if(disposed)return;
     }
     if(mode==='ready'&&selectedGame==='credits'){
@@ -206,7 +210,7 @@ export function createGameApp() {
       outroFade=0;startVictoryCredits();void homeTransition.finish();return;
     }
     if(mode==='ready'&&selectedGame==='mcp'){
-      window.location.assign(new URL('./mcp.html',document.baseURI).href);
+      sound.silence();mcpPanel.open();void homeTransition.finish();
       return;
     }
     if(mode==='ready'&&selectedGame==='bit'){
@@ -332,6 +336,7 @@ export function createGameApp() {
       ['DRIVING',...(road?['W/S / SPEED','A/D OR ARROWS / STEER','X / BRAKE / REVERSE','T/SPACE / TURBO']:['A/D OR LEFT/RIGHT / TURN','W/T/SPACE / TURBO','S/X / BRAKE'])],
       ['CAMERA','J/L / GLANCE','I/K / ZOOM','V / AERIAL'],
       ['AFTER DEATH','LEFT/RIGHT / FOLLOW CYCLES','ENTER / RESTART'],
+      ['RENDERING','SHIFT-R / NORMAL OR POV-RAY CYCLES'],
     ]:[
       ['DRIVING','WASD OR ARROWS / DRIVE','SHIFT-W / CRUISE','W OR S / CANCEL CRUISE','T / TURBO'],
       ['WEAPONS','J/L / TURRET','F OR J+L / CENTER + LEVEL','SPACE / FIRE','I/K / GUNNER AIM'],
@@ -392,6 +397,9 @@ export function createGameApp() {
         }
       }
       return;
+    }
+    if(event.code==='KeyR'&&event.shiftKey&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&run.playerVehicle==='cycle'&&['running','entering','paused'].includes(mode)){
+      event.preventDefault();if(!event.repeat)void cycleRendererControl.toggle();return;
     }
     if(mode==='running'&&(run.arenaWaiting||view.cameraRig.cycleOpening!==null)&&event.code!=='Escape'){event.preventDefault();return;}
     if(run.cycleSpectating&&['ArrowLeft','ArrowRight'].includes(event.code)){
@@ -907,7 +915,8 @@ export function createGameApp() {
   }
 
   function frame(dt, background) {
-    if (disposed) return;
+    if (disposed||mcpPanel.active) return;
+    cycleRendererControl.update();
     if(mode==='running'&&(run.playerVehicle!=='cycle'||run.cycleRace?.arenaPaused)&&run.time>=SOLAR_SAILER.backgroundLoadSeconds)loadSolarInBackground();
     if (run.crushed && run.mouseAim) clearMouseAim();
     if (!autoplay.enabled && (document.hidden || !windowFocused)) pause();
@@ -983,6 +992,8 @@ export function createGameApp() {
     if (view && mode !== 'error') {
       view.cameraRig.freeCamera.update(dt, keys);
       if (!document.hidden && !(mode==='ready'&&endingStage==='victory')) {
+        view.monitorCycleRenderer(dt,run.playerVehicle==='cycle'&&mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting&&run.cycleRace?.phase==='racing');
+        view.updateAntialiasing(dt,mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.opening===null&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting);
         view.render(run, session.previous, mode === 'running' ? loop.alpha : 1, dt, mode);
         if((mode==='running'||mode==='entering'&&openingTransition)&&!run.arenaWaiting&&!document.body.classList.contains('cycle-loading'))homeTransition.sceneReady();
       }
@@ -1107,6 +1118,7 @@ export function createGameApp() {
       bloom: [0, 1, 0.05],
       fog: [0.001, 0.009, 0.0002],
       renderScale: [0.5, 1, 0.1],
+      targetFps: [30,120,10],
     };
     const flightRanges = {
       turnRate: [0.1, 3, 0.02, 'rad/s'],
@@ -1157,6 +1169,10 @@ export function createGameApp() {
       });
       $('sliders').append(label);
     }
+    const aaControl=document.createElement('label');
+    aaControl.innerHTML='<span>Adaptive antialiasing</span><input type="checkbox" checked>';
+    listen(aaControl.querySelector('input'),'change',e=>{config.adaptiveAntialiasing=e.target.checked;view.adaptiveAA.clear();});
+    $('sliders').append(aaControl);
     const tintFields=document.createElement('fieldset');
     tintFields.innerHTML='<legend>Recognizer face tints</legend>';
     const tintInputs=[];
@@ -1210,11 +1226,13 @@ export function createGameApp() {
   }
 
   function dispose() {
+    mcpPanel.dispose();
     homeTransition.clear();
     if (disposed) return;
     disposed = true;
     tribute.preview.dispose();
     cycleTuning?.dispose();
+    cycleRendererControl.dispose();
     exitConfirm.dispose();
     jev.dispose();
     loop.dispose();

@@ -1799,3 +1799,113 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - Replace the rendered cycle thumbnails with filled team-colored circles. Eliminated cycles keep a full-color outline and have a transparent interior. Connect adjacent teammates with matching lines spanning only the gaps; no line crosses a hollow circle or joins different teams.
 - Move the controls/death prompt up beneath the shorter roster. Keep the existing model thumbnails available for future use.
+
+## Adaptive antialiasing and stable quality — October 10
+
+- [x] Query supported HDR/depth-stencil MSAA sample counts, retain SMAA, and adapt MSAA plus render pixel ratio toward a default 60 FPS target. Bound resolution to 2× and six million pixels. Development controls expose target FPS and adaptation enablement.
+- [x] Observe sustained frame pacing, exclude inactive/opening frames, and allow a settling period after changes. Increase only after 24 seconds of stable windows. A failed level lowers a session-long ceiling, preventing repeated up/down cycling; page reload starts a fresh evaluation.
+- [x] Five controller tests passed for capability limits, isolated stalls, inactive frames, upgrades, backoff, no retry of rejected levels, and the quality floor. Chrome renderer test switched from 4× MSAA at 1× resolution to SMAA at 0.85×, retained 27 textures, and reported no JS errors. Performance targets remain hardware/workload dependent; no claim of 60 FPS on every device.
+
+## MCP cache clarity and transient chat recovery — October 10
+
+- Distinguish downloading, saving each IndexedDB file, and GPU initialization. A cache-only launch explicitly reports no download. Hiding the page preserves pending voice loading; Stop/exit still cancels it. GPU initialization remains necessary after reopening.
+- Retry temporary provider errors/timeouts at most twice, with 0.5/1-second backoff and a 12-second per-attempt deadline inside the existing 45-second overall deadline. Authentication, model-access and quota errors do not retry. Explicit cancellation remains immediate.
+
+- MCP navigation keeps the home preview covered rather than flashing CLU before the separate page loads. Voice status now says “INITIALIZING VOICE FROM SAVED FILES” and distinguishes speech-engine startup from transfer. Chrome home-transition and MCP interface checks passed.
+- Gemini's compatible endpoint continued to time out from the deployed relay despite successful direct tests. Added native generateContent support while preserving custom compatible providers. Native request/response mapping, thought exclusion, bounded retries and cancellation are covered by tests.
+
+## MCP cloned voice only — October 11
+
+- [x] Remove browser/native text-to-speech entirely from MCP. If the clone is loading, unavailable, or fails generation, preserve the reply as text and show an explicit cloned-voice message. Keep the saved cloned audition.
+- [x] Chrome `node tests/mcp.mjs` verifies failed voice loading and generation never call browser speech synthesis; conversation history, Stop, exit, and cache/loading UI still pass.
+
+## MCP input waits for cloned voice — October 11
+
+- Disable the message field, Send and microphone until cloned voice initialization succeeds. Enforce the same readiness guard on submitted text and recognition callbacks. A failed/cancelled load leaves conversation input disabled and exposes the voice retry control.
+- Resume microphone listening only after voice readiness; unlock Web Audio during keyboard/pointer interaction before asynchronous chat and inference finish. No queued replies or alternate TTS voice.
+- Chrome `node tests/mcp.mjs` passed: input disabled during loading, enabled on ready, cloned-generation errors remain explicit, and browser speech synthesis is never called.
+
+## MCP connection refresh and simplified terminal — October 11
+
+- Reproduced an immediate local Gemini 503 while identical direct requests and a four-turn deployed conversation succeeded. Restarted the stale October 10 Vite process; four consecutive local and four deployed replies then succeeded (about 1–4 seconds each). The local relay now reads the credential file for each request, so key replacement takes effect without restarting. Gemini 3.8 Flash remains the model; no fallback model added.
+- Remove the top heading/home button and fill the top/width with the cropped MCP face. Put MIC, STOP, LLM and TTS indicators directly beneath it; keep progress/errors with those controls, outside the dialogue. Return submits the input without a Send button. Conversation contains only the latest user and MCP messages; Escape still opens home confirmation.
+- Verification: 11 MCP/cache unit tests, Chrome `node tests/mcp.mjs` (voice gating, Return submission, history, Stop/exit), inspected 1280×800 rendered capture, and production build passed. Live multi-turn probes verify chat only; cloned speech generation was covered by the earlier dedicated voice test, not repeated here.
+
+## MCP warm voice session, live effects and film terminal — October 11
+
+- [x] Instrument startup phases and cumulative IndexedDB read time/bytes. Real Chrome/WebGPU with local model fixtures measured cached manifest checks at 2 ms, runtime read 31 ms, tokenizer 2 ms, model loading/GPU sessions 53.20 s, reference conditioning 408 ms. A fresh fixture load measured model/GPU setup 50.27 s. Cache-read measurements overlap the model phase; they are not an additional phase. Cached reload used zero model downloads. Full reload still pays initialization cost.
+- [x] Keep MCP in a retained same-origin frame when opened from the home menu. Leaving stops audio/microphone/chat, pauses the face render, and hides the frame; returning reuses the initialized worker. Suspend the underlying game render while MCP is visible. Pending inference finishes silently before accepting another request, instead of destroying the model. Remove STOP; Escape confirmation returns home. Direct standalone MCP page navigation/full reload still tears down its worker.
+- [x] Check cache metadata without opening/prefetching large model streams during the manifest pass.
+- [x] Fix live speech bypassing the approved audition treatment: lower live playback pitch to 0.92× and apply a 0.9 s room tail/early reflections at 1.25 wet gain. This lightweight pitch shift also slows speech by 8%; it is not the audition's duration-preserving offline processor. The preprocessed sample bypasses effects, and the face follows adjusted playback timing. Listening comparison remains for the user.
+- [x] Create a local original MCP dot-matrix font from geometric glyphs, inspired by the supplied film terminal frame. Make MCP text uppercase with one font/size and only normal/dim blue text, including disabled controls, placeholders and the shared exit dialog. Other games keep their fonts.
+- Validation: real Chrome voice generation/playback and cached reload passed (`node tests/mcp-voice.mjs --local-models`, first speech ready in 4.48 s). Twelve MCP/cache unit checks passed. Browser lifecycle, typography, retained-worker, reverb-tail and Escape checks recorded in `tests/mcp.mjs`; inspected its 1280×800 font capture. Production build passed with existing asset/chunk advisories.
+
+## MCP short-sentence speech queue — October 11
+
+- Ask Gemini for one or two short, complete sentences (32 words total maximum; first sentence at most eight words). Keep the full reply visible while speaking it sentence by sentence.
+- Split speech at sentence boundaries, with a 120-character/16-word fallback for long sentences. Generate only one sentence ahead while playing the current sentence; preserve playback order, cloned-voice effects, and the existing reverb tail.
+- Escape discards buffered audio and lets in-flight generation settle silently before unlocking input. Handle speculative-generation errors immediately to avoid unhandled promise rejections, then report them after current audio finishes.
+- Validation: 16 MCP/chat/cache/speech unit checks passed, covering sentence boundaries, bounded prefetch, ordered playback, cancellation/draining, and prefetch failure. No measured real-model latency improvement claimed from these deterministic checks.
+
+## Analytic light-cycle rendering experiment — October 12
+
+- [x] Reduce the experiment's ambient intensity to 25% and fill to 40% of the original values, preserving the key light and highlights in both comparison views.
+- [x] Add isolated `raycast-cycle.html`, using Three.js/WebGL fragment shaders with closed-form ellipsoid intersections, half-space clipping and a convex chassis. This is direct ray casting, not distance-field marching. Keep all production game models/renderers unchanged.
+- [x] Match nominal length (3.6 m), width (1.014 m), height (1.52 m), camera and direct-light shader with a toggle to the existing repaired cycle mesh. The analytic model is an authored shape study, not a finished film-accurate replacement. Its panel contours and mechanical details still need work.
+- [x] Provide gold/blue, orbit/zoom, fixed 720p/1080p internal resolution, one/four primary rays per pixel and an optional hard shadow ray. Both views use the analytic vehicle as the shadow proxy; raster geometry receives hardware antialiasing while analytic edges use four ray samples by default. There are no reflected rays, ray-marching steps, texture maps, bloom, or full-game simulation in this benchmark.
+- [x] Browser test: `node tests/raycast-cycle.mjs`, headless Chrome on macOS, hardware reported `ANGLE Metal Renderer: Apple M2 Max`. After warmup, eight-second measurements at each setting sustained ~60 FPS (display-paced), p95 frame intervals 16.7–16.8 ms, with no page/shader errors. Inspected matched-camera analytic/current-model captures and a shadow capture. Production build passed with existing chunk/font/script advisories.
+
+| View | Internal resolution | Primary samples | Shadows | Median GPU ms |
+| --- | --- | --- | --- | --- |
+| Analytic cycle | 1280×720 | 4 | Off | 1.81 |
+| Analytic cycle | 1920×1080 | 4 | Off | 3.67 |
+| Current mesh + procedural grid | 1280×720 | 4 grid samples | Off | 0.85 |
+| Current mesh + procedural grid | 1920×1080 | 4 grid samples | Off | 1.25 |
+| Analytic cycle | 1920×1080 | 4 | On | 6.31 |
+
+- Limits: one vehicle, static benchmark camera, simple lights and no arena. Results do not establish full-race performance or performance on weaker integrated GPUs. Camera movement is available for manual evaluation. The current mesh remains more detailed and closer to the film; the experiment establishes smooth analytic surfaces and a measured performance baseline, not replacement readiness.
+
+## POV-Ray cycle CSG port — October 12
+
+- [x] Replace the experiment's simplified shape with Carl N. Hoff's 54-primitive model from Jason Cox's MIT-licensed `lightcycle-povray` repository. Preserve the upstream source and license in `docs/models/povray-lightcycle/`; retain the existing production mesh comparison and leave the game unchanged.
+- [x] Transcribe CSG unions, intersections and differences over transformed spheres, cylinders/cones, boxes, planes, linear prisms and tori. Evaluate sorted ray-boundary events on the GPU; torus roots use quartic stationary-point brackets. Normalize source +X-forward coordinates to -Z and 3.6 m length without stretching proportions. This is a geometry port, not a browser port of POV-Ray itself.
+- [x] Separate the inexpensive floor pass from the CSG pass; scissor the latter to conservative projected model/shadow bounds. Compile shadow-free variants and prune candidates behind the nearest part. Shadows remain optional and off by default.
+- [x] Match the production arena's 4.32 m grid spacing, 0.08 m full line width, antialiasing, distance fade and navy background. Remove floor specular lighting entirely. Per subsequent user feedback, use brighter `#cccccc` grid lines in the experiment instead of production `#888888`.
+- [x] Correct initial bounds that clipped the bulging window sides. Give the glass priority within 0.03 source units (0.21 mm at runtime) of the gold roof to resolve the source's nearly coincident 389.721/389.722-radius surfaces in GPU float precision. Keep window gloss unchanged.
+- [x] Verification: `node tests/raycast-cycle.mjs` passed in headless Chrome / ANGLE Metal / Apple M2 Max with no page or shader errors. Inspected gold front, both sides, three-quarter, shadow and blue captures. Latest eight-second runs: 720p/four samples ~60 FPS; 1080p/four samples ~47 FPS; 1080p/shadows ~12 FPS. Earlier optimized runs reached ~60 FPS at 1080p without shadows, so sustained 1080p/60 is not established (other live browser workloads may contend for the GPU). Optional shadows remain too costly for gameplay. The earlier table above describes the simpler initial model, not this detailed port.
+- [x] Production build passed with existing script/font/chunk warnings. No deployment requested or performed.
+
+## Optional mixed cycle renderer — October 12
+
+- [x] Add an explicit runtime switch (bottom-left button or Shift-R during the cycle game) between normal meshes and POV-Ray CSG cycles. POV-Ray is now the default when entering the cycle game; the CSG module and shaders are dynamically imported at that point (not during normal CLU play or the home screen). `?cycleRenderer=normal` explicitly opts out. Geometry and materials are disposed on return to normal; race/simulation state is untouched.
+- [x] Render each CSG bike through a conservative proxy box with true surface depth, linear lighting and game fog into the existing scene/composer. Arena, maze, trails, other vehicles, bloom and antialiasing retain their normal rendering. This is a mixed renderer, not full-scene ray casting. Gold/blue/red/green colors and interpolated position/rotation/lean follow the existing race view.
+- [x] Preserve wireframe materialization using the original model until solid. Preserve floor shadows using original cycle shadow casters (approximate silhouettes); expensive exact CSG shadows remain excluded from gameplay. Screenshot rendering also selects the correct bike representation.
+- [x] Isolate normal/CSG adaptive-AA controllers so CSG performance does not permanently lower normal-mode quality. Cancel stale asynchronous switches and clean up on application disposal.
+- [x] `node tests/cycle-renderer.mjs`: headless Chrome/Apple M2 Max, 1280×720; validated no CSG requests before selection, in-arena and outside-arena rendering, reversible switching, no race reset, asynchronous cancellation, keyboard/button controls, and unchanged normal geometry/draw-call counts after switching back. Inspected paired captures and live arena capture; no shader/page errors. Short mixed-mode sample p50 16.7 ms / p95 33.4 ms is a smoke check, not a sustained full-match performance guarantee.
+
+## Default POV-Ray cycles and slow-device fallback — October 12
+
+- [x] Automatically enable POV-Ray cycles on entry to the cycle game, retaining the button and Shift-R switch. Keep normal-only operation available through `?cycleRenderer=normal`.
+- [x] After four seconds of active-play warmup, measure consecutive two-second frame-time windows. Three slow windows trigger a one-way fallback to normal (below 65% of target FPS, bounded to a 20–40 FPS threshold; 39 FPS for the usual 60 FPS target). Exclude pauses, hidden/unfocused windows, loading, opening camera work, and non-racing phases. Do not automatically retry after falling back; Shift-R allows an explicit manual retry.
+- [x] Show `NORMAL (PERFORMANCE)` on the existing switch after automatic fallback. Preserve normal mode's independent AA settings and release CSG geometry/materials.
+- [x] `node --test tests/cycle-renderer-guard.test.js`: four tests cover sustained slow play, short hitches, inactive periods/warmup, one-way fallback and manual retry. Browser coverage extends the renderer-switch test to default activation and injected sustained slow frames, verifying it stays on normal afterwards.
+
+## Closer turbo cycle camera — October 12
+
+- [x] Increase the speed-driven camera approach so full turbo settles at a 5.5 m horizontal follow distance (previously 7.8 m), approximately 30% closer. Preserve normal cruising, braking pullback and exponential easing.
+- [x] Only invoke the short-boom lateral wall escape when a wall actually clips the requested camera segment. This prevents the intentionally closer turbo framing from triggering a sideways jump.
+- [x] `node --test tests/cycle-camera.test.js tests/arena-camera.test.js tests/cycle-renderer-guard.test.js`: 35 checks passed, including smooth speed framing, wall clearance, horizon visibility and fallback behavior.
+
+## Cycle self-shadowing and status controls — October 12
+
+- [x] Cast a secondary ray toward the key light on lit CSG cycle surfaces. Transform the light into each bike's local coordinates so self-shadowing follows rotated bikes correctly; keep original-mesh floor shadow proxies and the existing performance fallback.
+- [x] Handle Shift-R before opening/arena-wait and inspection input gates. Hide the renderer control in ray-cast mode; show normal mode (including performance fallback) for four seconds after switching.
+- [x] Stop hiding system warnings during cycle play. Keep JEV failures visible as `JEV UNAVAILABLE / LOCAL AI ACTIVE` until recovery; retain the brief CLU notice.
+- Validation: Chrome headless on the local Mac, `node tests/cycle-renderer.mjs` passed shader compilation, renderer switching/disposal, visible simulated JEV failure, notice expiry and performance fallback. Inspected `test-results/cycle-renderer-playing.png`. Nine cycle-JEV/renderer-guard unit checks passed. A live local `/api/jev/decision` cycle request returned a valid choice with confidence 1; this verifies the local relay, not production availability. Self-shadowing increases GPU cost; broad client performance testing remains outstanding.
+
+## Cycle AI reaction profiles and collision lookahead — October 12
+
+- [x] Each rider owns a `reactionTiming` profile: mean, standard deviation, minimum and maximum seconds. Draw a seeded truncated Gaussian for each reaction (default deviation 40 ms, bounds 70–450 ms; gold/blue mean 200 ms, red 140 ms, green 300 ms). Human input is unchanged.
+- [x] Before scoring destinations, sweep the rider's next reaction travel against continuous trails, arena walls and projected moving bodies. Unsafe directions receive priority penalties over JEV goals and interception incentives. Reserve choices use the heading selected by the turn, instead of the old heading.
+- [x] Preserve reaction limits: safety checks occur on decision ticks and account for the sampled delay plus 100 ms margin; no instantaneous emergency turn bypass.
+- Validation: `npm test` passed all 486 checks, including fractional turbo obstacle avoidance, Gaussian distribution/bounds/reproducibility, team profile defaults and existing simulation invariants. This addresses immediate collision blunders; competitive tactics and future opponent turns remain imperfect and need play review.

@@ -1,13 +1,14 @@
 // Separate from the game's service-worker cache. Download only on MCP entry.
-export function createVoiceModelCache(){
+export function createVoiceModelCache({onRead=()=>{}}={}){
  let database;
  const open=()=>database??=new Promise((resolve,reject)=>{
   const request=indexedDB.open('tron-mcp-voice-models',2);
   request.onupgradeneeded=()=>{for(const name of ['files','chunks'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name);};
   request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
  });
- async function read(store,key){const db=await open();return new Promise((resolve,reject)=>{const request=db.transaction(store).objectStore(store).get(key);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
+ async function read(store,key){const started=performance.now(),db=await open();return new Promise((resolve,reject)=>{const request=db.transaction(store).objectStore(store).get(key);request.onsuccess=()=>{onRead({store,milliseconds:performance.now()-started,bytes:request.result instanceof ArrayBuffer?request.result.byteLength:0});resolve(request.result);};request.onerror=()=>reject(request.error);});}
  return {
+  async size(key){const entry=await read('files',String(key));if(!entry||entry.chunkCount===undefined&&entry.body.size>512*1024*1024)return undefined;return entry.body.size;},
   async match(key){
    key=String(key);const entry=await read('files',key);if(!entry)return undefined;
    if(entry.chunkCount===undefined){

@@ -12,7 +12,7 @@ export const defaults = Object.freeze({
   turretSpeed: 1.2, steering: 1.25, drag: 4, tankRadius: 3.5,
   cameraDistance: 19, cameraHeight: 8, cameraLag: 5, fov: 63,
   enemySpeed: 29.7, // m/s; pursuit requests 1.15× this cruise speed.
-  bloom: 0.36, fog: 0.0024, renderScale: 1,
+  bloom: 0.36, fog: 0.0024, renderScale: 1, adaptiveAntialiasing:true, targetFps:60,
 });
 export const config = { ...defaults };
 export const clamp = (x, a, b) => Math.max(a, Math.min(b, x));

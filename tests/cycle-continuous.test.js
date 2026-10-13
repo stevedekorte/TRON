@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {resetCycleRound,updateCycleRace} from '../src/simulation/light-cycles.js';
+import {resetCycleRound,updateCycleRace,chooseCycleDirection} from '../src/simulation/light-cycles.js';
 import {LIGHT_CYCLES as C} from '../src/game/light-cycles.js';
 import {ARENA_WALL} from '../src/game/arena-breaches.js';
 import {rebuildTrailOccupancy} from '../src/simulation/cycle-trails.js';
@@ -61,4 +61,13 @@ test('full and fractional own trails remain collidable after corners',()=>{
   updateCycleRace(r,1/60);assert.equal(r.phase,'racing');assert.equal(r.winner,null);assert.deepEqual(r.scores,[0,0]);
   r.cycles[3].alive=false;updateCycleRace(r,1/60);assert.equal(r.phase,'result');assert.equal(r.winner,0);assert.deepEqual(r.scores,[1,0]);
  }
+ });
+
+ test('AI rejects a fractional obstacle inside its next turbo reaction distance',()=>{
+  const r=fixture(),b=r.cycles[1];
+  Object.assign(b,{x:0,previousX:0,z:0,previousZ:0,dir:1,speedMultiplier:2.5,boosting:true,reactionDelaySeconds:.3});
+  r.cycles[0].x=r.cycles[0].previousX=-20;
+  r.trails=[{bikeId:3,team:1,dir:0,x1:4.3,z1:-10,x2:4.3,z2:10}];
+  rebuildTrailOccupancy(r,[r.cycles[3]]);
+  assert.notEqual(chooseCycleDirection(r,b),1);
  });

@@ -42,6 +42,8 @@ test('team AI reaction delays order red faster than blue faster than green',()=>
  const r=createCycleRace(world,1982);Object.assign(r,{teamCount:4,cyclesPerTeam:1,hideMiddleOpponent:false});resetCycleRound(r);r.phase='racing';
  updateCycleRace(r,1/120);
  const delays=r.cycles.map(b=>b.nextReactionAt-r.elapsed);
- assert.deepEqual(delays,C.teamReactionSeconds);
- assert(delays[2]<delays[1]&&delays[1]<delays[3]);
+ assert.deepEqual(r.cycles.map(b=>b.reactionTiming.meanSeconds),C.teamReactionSeconds);
+ assert(delays.every((d,i)=>d>=r.cycles[i].reactionTiming.minSeconds&&d<=r.cycles[i].reactionTiming.maxSeconds));
+ assert(r.cycles[2].reactionTiming.meanSeconds<r.cycles[1].reactionTiming.meanSeconds);
+ assert(r.cycles[1].reactionTiming.meanSeconds<r.cycles[3].reactionTiming.meanSeconds);
 });

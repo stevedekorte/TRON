@@ -1,10 +1,10 @@
 import {readFileSync} from 'node:fs';
 import {mcpMessages,mcpCompletion,mcpConfig,mcpError} from '../shared/mcp-chat.js';
 export function createMcpMiddleware(env={},fetchImpl=fetch){
- const {url,key,model,configured}=mcpConfig(env);
  let busy=false;
  return async(req,res,next)=>{
   if(!['/api/mcp/status','/api/mcp/chat'].includes(req.url))return next();
+  const {url,key,model,configured}=mcpConfig(typeof env==='function'?env():env);
   const send=(code,data)=>{if(!res.writableEnded){res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));}};
   try{if(req.headers.origin&&new URL(req.headers.origin).host!==req.headers.host)return send(403,{error:'Origin rejected'});}catch{return send(403,{error:'Origin rejected'});}
   if(req.url==='/api/mcp/status'&&req.method==='GET')return send(200,{configured});
@@ -22,6 +22,12 @@ export function createMcpMiddleware(env={},fetchImpl=fetch){
  };
 }
 export function mcpPlugin(env){
- let key=env.MCP_API_KEY;
- if(!key){try{const stored=readFileSync(new URL('../credentials/Gemini.txt',import.meta.url));if(!stored.subarray(0,10).equals(Buffer.from('\0GITCRYPT\0')))key=stored.toString('utf8').trim();}catch{}}
- const middleware=createMcpMiddleware({...env,MCP_API_KEY:key});return {name:'mcp-chat',configureServer(server){server.middlewares.use(middleware);},configurePreviewServer(server){server.middlewares.use(middleware);}};}
+ const currentConfig=()=>{
+  let key=env.MCP_API_KEY;
+  if(!key){try{const stored=readFileSync(new URL('../credentials/Gemini.txt',import.meta.url));if(!stored.subarray(0,10).equals(Buffer.from('\0GITCRYPT\0')))key=stored.toString('utf8').trim();}catch{}}
+  return {...env,MCP_API_KEY:key};
+ };
+ // Read the local credential on each request so a key replacement takes effect
+ // without restarting a long-lived Vite session. Keep one shared busy guard.
+ const middleware=createMcpMiddleware(currentConfig);return {name:'mcp-chat',configureServer(server){server.middlewares.use(middleware);},configurePreviewServer(server){server.middlewares.use(middleware);}};
+}

@@ -9,6 +9,8 @@ export const LIGHT_CYCLES = Object.freeze({
   entranceFormationSpacingCells: 1,
   // Reach 95% of a requested speed change in about 1.5 seconds.
   slowSpeedMultiplier: .5, speedResponsePerSecond: 2, turboResponsePerSecond: 1.4,
+  aiReactionStandardDeviationSeconds:.04, aiReactionMinSeconds:.07, aiReactionMaxSeconds:.45,
+  aiSafetyMarginSeconds:.1, aiUnsafeDirectionPenalty:10000,
   aiReactionSeconds:.2, teamReactionSeconds:[.2,.2,.14,.3], speedStepSeconds: 1 / 120,
   turboDurationSeconds: 5, turboRechargeSeconds: 60, turboSpeedMultiplier: 2.5,
   brakeDurationSeconds:5, brakeRechargeSeconds:60,

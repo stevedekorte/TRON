@@ -1,7 +1,24 @@
-@font-face{font-family:FilmTerminal;src:url('/fonts/InterfaceRaster-Regular.ttf') format('truetype');font-display:swap}
-:root{color-scheme:dark;--terminal-font-size:clamp(14px,1.3vw,22px);font:var(--terminal-font-size)/1.4 FilmTerminal,monospace;color:#159ddd;background:#020204}
-*{box-sizing:border-box}body{margin:0}main{height:100dvh;overflow:hidden}#face{position:absolute;width:100%;height:78%;top:4%;left:0;display:block}header{position:relative;display:flex;justify-content:space-between;padding:2vh 3vw;text-shadow:0 0 5px #067abc}button,input{font:inherit;color:inherit;background:transparent;border:0}button{cursor:pointer;padding:.3em .5em}button:hover,button:focus-visible{color:#b9ebff;outline:1px solid #159ddd}button:disabled{opacity:.4;cursor:default}#conversation{position:absolute;bottom:3vh;left:6vw;right:6vw;text-shadow:0 0 4px #087da3}p{margin:.3em 0}#status{color:#91bcd0;font-size:.8em}#heard{opacity:.65}#reply{max-height:18vh;overflow:auto;white-space:pre-wrap}form{display:flex;gap:.7em;margin-top:.8em;border-bottom:1px solid #159ddd66}input{flex:1;min-width:0;padding:.35em 0;outline:none}input::placeholder{color:#159ddd88}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}@media(max-width:700px){form{flex-wrap:wrap}input{flex-basis:100%}#face{height:65%}#conversation{left:4vw;right:4vw}}
-
-#face-fallback{position:absolute;width:100%;height:68%;top:4%;object-fit:contain}#face{height:68%}#voice-controls{display:flex;flex-wrap:wrap;gap:.4em}#readiness{font-size:.8em;color:#91bcd0;margin:.7em 0}#download-row{display:flex;align-items:center;gap:1em}#voice-progress{width:clamp(140px,25vw,340px);height:.65em;accent-color:#159ddd}#download-detail{flex:1}#voice-status[data-stage="ready"]{color:#8bcba1}#chat-status[data-error="true"]{color:#efb879}@media(max-width:700px){#face,#face-fallback{height:52%}#download-row{flex-wrap:wrap}}
-
+@font-face{font-family:FilmTerminal;src:url('/fonts/MCPDotMatrix-Regular.ttf') format('truetype');font-display:swap}
+:root{color-scheme:dark;--terminal-font-size:clamp(18px,1.3vw,24px);--mcp-blue:#159ddd;--mcp-dim:#0b5273;font:var(--terminal-font-size)/1.5 FilmTerminal,monospace;color:var(--mcp-blue);background:#020204}
+*{box-sizing:border-box}body{margin:0;text-transform:uppercase}main{height:100dvh;display:flex;flex-direction:column;overflow:auto}
+#face,#face-fallback{position:relative;top:0;left:0;width:100%;height:auto;aspect-ratio:1972/896;flex:none;display:block}
+#face-fallback{position:absolute;object-fit:cover}
+button,input{font:inherit;color:inherit;background:transparent;border:0}
+button{cursor:pointer;padding:.3em .5em}button:hover,button:focus-visible{outline:1px solid var(--mcp-blue)}
+button:disabled,input:disabled{color:var(--mcp-dim);cursor:default;text-shadow:none;opacity:1}
+input::placeholder{color:var(--mcp-dim);opacity:1;text-shadow:none}
+#controls{padding:.5em 3vw 0}#control-row,#voice-controls{display:flex;align-items:center;gap:.5em;flex-wrap:wrap}
+.status-button{display:inline-block;padding:.3em .5em;border:1px solid var(--mcp-dim)}
+#controls,#conversation{text-shadow:0 0 2px var(--mcp-blue)}
+p{margin:.3em 0}#download-row{display:flex;align-items:center;gap:1em;flex-wrap:wrap}
+#voice-progress{width:clamp(140px,25vw,340px);height:.65em;accent-color:var(--mcp-blue)}#download-detail{flex:1}
+#conversation{margin:auto 3vw 1em;padding-top:.5em;flex:none}
+#reply{white-space:pre-wrap}form{display:flex;margin-top:.5em;border-bottom:1px solid var(--mcp-dim)}
+input{flex:1;min-width:0;padding:.35em 0;outline:none}
+#heard,#reply,#message{text-transform:uppercase}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 [hidden]{display:none!important}
+/* The shared exit dialog inherits MCP typography and its two text colors. */
+#exit-confirm{font:inherit!important;color:var(--mcp-blue)!important;text-shadow:0 0 2px var(--mcp-blue)!important;letter-spacing:normal!important}
+
+::selection{background:#071b35;color:var(--mcp-blue);text-shadow:none}

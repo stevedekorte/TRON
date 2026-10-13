@@ -145,8 +145,8 @@ export class HudPresenter {
       console.warn('JEV unavailable:',jev.warning.detail);
     }
     this.jevWasUnavailable=unavailable;
-    this.warnings.set('jev',unavailable&&now<this.jevNoticeUntil
-      ?{level:'warning',label:'JEV unavailable',detail:'',transient:true}:null);
+    this.warnings.set('jev',unavailable&&(cycleMode||now<this.jevNoticeUntil)
+      ?{level:'warning',label:'JEV UNAVAILABLE',detail:cycleMode?'LOCAL AI ACTIVE':'',transient:!cycleMode}:null);
     const watchedCycleId=result?rig.cycleResultCamera.shot?.id:run.cycleSpectating?(run.cycleFollowId??view.cameraRig.cycleOverview?.trackedId??race?.playerId):race?.playerId;
     const cycleBike=cycleMode?(race.cycles.find(b=>b.id===watchedCycleId)??race.cycles[race.playerId]):null;
     const roadHealthBike=cycleBike?.escaped?cycleBike:null;

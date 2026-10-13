@@ -333,7 +333,7 @@ test('actual cycle speed smoothly shortens turbo follow distance and lengthens b
  const distance=()=>Math.hypot(rig.camera.position.x-cyclePlayerPose(run.cycleRace).x,rig.camera.position.z+cyclePlayerPose(run.cycleRace).s);
  assert(Math.abs(distance()-10)<1e-8);
  bike.speedMultiplier=2.5;frame(rig,run,1/60);assert(distance()<10&&distance()>9.9);
- for(let i=0;i<360;i++)frame(rig,run,1/60);assert(Math.abs(distance()-7.8)<.001);
+ for(let i=0;i<360;i++)frame(rig,run,1/60);assert(Math.abs(distance()-5.5)<.001);
  bike.speedMultiplier=.5;for(let i=0;i<360;i++)frame(rig,run,1/60);assert(Math.abs(distance()-10.8)<.001);
  rig.reset();assert.equal(rig.cycleSpeedDistanceScale,1);
 });

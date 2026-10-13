@@ -23,7 +23,7 @@ const AERIAL_CAMERA = Object.freeze({
   height: 600,
   distance: Math.hypot(180, 320),
 });
-export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,minDistanceScale:.78,maxDistanceScale:1.16,responsePerSecond:2.5});
+export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,turboDistanceChangePerSpeedRatio:.32,minDistanceScale:.55,maxDistanceScale:1.16,responsePerSecond:2.5});
 export const CYCLE_TURN_TRACKING=Object.freeze({nearDistanceMeters:12,farDistanceMeters:140,nearResponsePerSecond:30,farResponsePerSecond:1.2});
 const CYCLE_SWITCH_SECONDS=1.2;
 export const CYCLE_DEATH_HOLD_SECONDS=3;
@@ -200,7 +200,8 @@ export class CameraRig {
       // Use actual speed, not pedal state, so the camera follows acceleration and braking.
       const cruiseSpeed=escaped?(cycleRace.roadConfig?.maxSpeedMetersPerSecond??ROAD_CYCLE.maxSpeedMetersPerSecond):LIGHT_CYCLES.speedMetersPerSecond;
       const speed=escaped?Math.abs(bike.roadSpeed??cruiseSpeed):(bike.speedMultiplier??1)*cruiseSpeed;
-      const speedScale=THREE.MathUtils.clamp(1+(1-speed/cruiseSpeed)*CYCLE_SPEED_CAMERA.distanceChangePerSpeedRatio,CYCLE_SPEED_CAMERA.minDistanceScale,CYCLE_SPEED_CAMERA.maxDistanceScale);
+      const speedResponse=speed>cruiseSpeed?CYCLE_SPEED_CAMERA.turboDistanceChangePerSpeedRatio:CYCLE_SPEED_CAMERA.distanceChangePerSpeedRatio;
+      const speedScale=THREE.MathUtils.clamp(1+(1-speed/cruiseSpeed)*speedResponse,CYCLE_SPEED_CAMERA.minDistanceScale,CYCLE_SPEED_CAMERA.maxDistanceScale);
       if(mode!=='paused')this.cycleSpeedDistanceScale=THREE.MathUtils.lerp(this.cycleSpeedDistanceScale,speedScale,1-Math.exp(-dt*CYCLE_SPEED_CAMERA.responsePerSecond));
       const followDistance=CYCLE_CAMERA.distanceMeters*this.cycleSpeedDistanceScale;
       const glanceTarget=-(this.cycleGlanceInput||0)*CYCLE_CAMERA.glanceRadians;

@@ -9,17 +9,18 @@
 <body>
 <main>
  <img id="face-fallback" src="/docs/references/images/MCP/MCP.png" alt="Master Control Program"><canvas id="face" aria-label="The Master Control Program's animated face"></canvas>
- <header><span>MASTER CONTROL PROGRAM</span><button id="home" type="button">ESC / HOME</button></header>
- <section id="conversation" aria-label="Conversation with MCP">
-  <div id="voice-controls"><button id="voice-sample" type="button">HEAR VOICE SAMPLE</button><button id="load-voice" type="button">LOAD MCP VOICE (~1.5 GB, CACHED)</button><button id="test-voice" type="button" disabled>TEST VOICE</button></div>
-  <div id="readiness" aria-label="MCP readiness">
-   <p id="voice-status" role="status">VOICE — PREPARING…</p>
-   <div id="download-row"><progress id="voice-progress" max="1" value="0" aria-label="Total MCP voice download"></progress><span id="download-detail">CHECKING SAVED FILES</span></div>
-   <p id="chat-status" role="status">CHAT — CHECKING CONFIGURATION…</p>
+ <section id="controls" aria-label="MCP controls and status">
+  <div id="control-row">
+   <button disabled id="microphone" type="button" aria-pressed="false">MIC ON</button>
+   <span class="status-button" id="voice-status" role="status">TTS — PREPARING…</span>
   </div>
+  <div id="download-row"><progress id="voice-progress" max="1" value="0" aria-label="Total MCP voice download"></progress><span id="download-detail">CHECKING SAVED FILES</span></div>
   <p id="status" role="status">STARTING MCP…</p>
+  <div id="voice-controls"><button id="voice-sample" type="button">HEAR VOICE SAMPLE</button><button id="load-voice" type="button">LOAD MCP VOICE (~1.5 GB, CACHED)</button><button id="test-voice" type="button" disabled>TEST VOICE</button></div>
+ </section>
+ <section id="conversation" aria-label="Conversation with MCP">
   <p id="heard"></p><p id="reply" aria-live="polite"></p>
-  <form id="message-form"><label class="sr-only" for="message">Message to MCP</label><input disabled id="message" maxlength="1000" autocomplete="off" placeholder="SPEAK OR TYPE YOUR MESSAGE"><button disabled id="send">SEND</button><button id="microphone" type="button" aria-pressed="false">MIC ON</button><button id="stop" type="button">STOP</button></form>
+  <form id="message-form"><label class="sr-only" for="message">Message to MCP</label><input disabled id="message" maxlength="1000" autocomplete="off" placeholder="SPEAK OR TYPE YOUR MESSAGE"></form>
  </section>
 </main>
 <script>

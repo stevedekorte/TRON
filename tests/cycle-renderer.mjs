@@ -1,0 +1,51 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1280,height:720},reducedMotion:'reduce'}),errors=[],requests=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/shader|WebGL|THREE/.test(m.text()))errors.push(m.text());});
+ page.on('request',r=>requests.push(r.url()));await page.route('**/api/jev/**',r=>r.fulfill({status:503,json:{error:'Test unavailable'}}));
+ await page.goto('http://127.0.0.1:5173/?layoutSeed=1982&cycleStart=0&cycleRenderer=normal');
+ await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled,{},{timeout:120000});
+ await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>window.__tron?.state.playerVehicle==='cycle'&&__tron.state.cycleRace.phase==='racing',{},{timeout:120000});
+ assert(!requests.some(u=>u.includes('/pov-cycles.js')||u.includes('/pov-cycle-model.js')),'normal mode must not load CSG');
+ await page.waitForFunction(()=>document.querySelector('#system-warnings').textContent.includes('JEV UNAVAILABLE'));
+ assert(await page.locator('#system-warnings').isVisible());
+ await page.keyboard.press('Escape'); // Pause the reproducible scene while comparing.
+ const before=await page.evaluate(()=>({race:__tron.state.cycleRace,rendering:__tron.state.renderer}));
+ await page.evaluate(()=>__tron.setCycleRenderer('pov'));
+ await page.waitForFunction(()=>__tron.state.csgCycleCount>0);
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'pov');
+ await page.addStyleTag({content:'#exit-confirm{visibility:hidden!important}'});
+ await page.screenshot({path:'test-results/cycle-renderer-pov.png'});
+ assert.deepEqual(await page.evaluate(()=>__tron.state.cycleRace),before.race,'switching cannot reset the race');
+ await page.evaluate(()=>__tron.setCycleRenderer('normal'));await page.waitForTimeout(100);
+ assert.equal(await page.evaluate(()=>__tron.state.csgCycleCount),0);assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'normal');
+ await page.screenshot({path:'test-results/cycle-renderer-normal.png'});
+ const after=await page.evaluate(()=>__tron.state.renderer);
+ assert.equal(after.geometries,before.rendering.geometries,'CSG geometry is released');
+ assert.equal(after.calls,before.rendering.calls,'normal draw count is unchanged');
+ assert.deepEqual(after.adaptiveAA,before.rendering.adaptiveAA,'normal quality controller is restored');
+ await page.evaluate(async()=>{await Promise.all([__tron.setCycleRenderer('pov'),__tron.setCycleRenderer('normal')]);});
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'normal','cancelled async switch must stay normal');
+ await page.evaluate(()=>__tron.setCycleRenderer('pov'));await page.waitForTimeout(200);
+ await page.keyboard.press('Escape'); // Resume without leaving the game.
+ await page.waitForTimeout(200);
+ await page.keyboard.press('Shift+KeyR');await page.waitForFunction(()=>__tron.state.cycleRendererMode==='normal');
+ await page.keyboard.press('Shift+KeyR');await page.waitForFunction(()=>__tron.state.cycleRendererMode==='pov');
+ assert(await page.locator('#cycle-renderer').isHidden());
+ await page.screenshot({path:'test-results/cycle-renderer-playing.png'});
+ console.log('Renderer switch:',await page.evaluate(()=>({mode:__tron.state.cycleRendererMode,count:__tron.state.csgCycleCount,performance:__tron.performance})));
+ await page.goto('http://127.0.0.1:5173/?layoutSeed=1982&cycleStart=1');
+ await page.waitForFunction(()=>{try{return window.__tron?.state.cycleRendererMode==='pov';}catch{return false;}},{},{timeout:120000});
+ await page.keyboard.press('Escape');
+ await page.evaluate(()=>{for(let i=0;i<320;i++)__tron.sampleCycleRenderer(.04);});
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'normal');
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRendererReason),'performance');
+ await page.keyboard.press('Escape');await page.waitForTimeout(500);
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'normal','fallback must not automatically re-enable CSG');
+ assert.match(await page.locator('#cycle-renderer').textContent(),/PERFORMANCE/);
+ await page.waitForTimeout(4100);assert(await page.locator('#cycle-renderer').isHidden());
+ assert.deepEqual(errors,[]);console.log('Lazy load, shared-scene rendering, race preservation, reversible switch and async cancellation passed.');
+}finally{await browser.close();}

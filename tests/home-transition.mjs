@@ -32,6 +32,12 @@ try{
   const result={text:Number(getComputedStyle(other).opacity),background:Number(getComputedStyle(document.querySelector('#home-transition-background')).opacity),state:other.getAnimations()[0].playState};
   transition.clear();return result;
  });
+ const mcpCover=await page.evaluate(async()=>{
+  const {createHomeTransition}=await import('/src/ui/home-transition.js');const transition=createHomeTransition();
+  await transition.begin(document.querySelector('#choice'),{keepCovered:true});
+  const opacity=getComputedStyle(document.querySelector('#home-transition-background')).opacity;transition.clear();return opacity;
+ });
+ assert.equal(mcpCover,'1','MCP navigation never reveals the CLU preview');
  assert(immediate.text<.95&&immediate.text>0,'unselected text fades before scene readiness');
  assert.equal(immediate.state,'running');assert(Math.abs(immediate.background-immediate.text)<.04,'background and text share fade progress');
  const covered=await page.evaluate(async()=>{

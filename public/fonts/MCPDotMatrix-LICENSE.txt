@@ -1,0 +1,5 @@
+MCP Dot Matrix Regular
+Original dot-matrix glyph patterns created for this TRON fan tribute, 2026.
+Inspired by the supplied film terminal reference; no film images or existing
+font outlines are incorporated. Dedicated to the public domain under CC0 1.0.
+Reproducible source: scripts/build-mcp-font.py.

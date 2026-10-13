@@ -67,7 +67,7 @@ body.entering #clu-shots{display:none}
 body.playing-cycle #hint,body.playing-cycle #clu-health,body.playing-cycle #clu-shots,body.playing-cycle #autoplay-toggle{display:none}
 body.terminal #cycle-controls{display:none}
 
-body.playing-cycle #jev-stats,body.playing-cycle #system-warnings{display:none}
+body.playing-cycle #jev-stats{display:none}
 
 body.playing-cycle.cycle-road #clu-health{display:block}
 

@@ -24,7 +24,7 @@ try{
  let downloads=0;page.context().on('request',r=>{if(/huggingface\.co|hf\.co|127\.0\.0\.1:5184/.test(r.url()))downloads++;});
  page.on('pageerror',e=>console.log('PAGE ERROR',e.name,e.message,e.stack));
  page.on('requestfailed',r=>console.log('REQUEST FAILED',r.url(),r.failure()));
- page.on('console',m=>{if(m.type()==='error')console.log(m.text());});
+ page.on('console',m=>{if(m.type()==='error'||m.text().includes('MCP voice initialization'))console.log(m.text());});
  await page.route('**/api/mcp/status',r=>r.fulfill({json:{configured:false}}));
  await page.goto('http://127.0.0.1:5183/mcp.html');await page.waitForTimeout(1000);
  const gpu=await page.evaluate(async()=>!!navigator.gpu&&!!await navigator.gpu.requestAdapter());console.log('WebGPU adapter:',gpu);assert(gpu,'WebGPU available');

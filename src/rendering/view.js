@@ -1,3 +1,5 @@
+import {CycleRendererGuard} from './cycle-renderer-guard.js';
+import {AdaptiveAA,ADAPTIVE_AA,supportedSamples} from './adaptive-aa.js';
 import {MazeWallDamage} from './maze-wall-damage.js';
 import {GAME_LIGHTING,createGameLights} from './game-lighting.js';
 import {interpolateCycleRace} from './cycle-poses.js';
@@ -39,11 +41,36 @@ import { createWorld } from './world.js';
 import { createRecognizer, cloneEnemyTank } from './models.js';
 import { config, RECOGNIZER_SCALE, angleDelta } from '../game/config.js';
 
-const EDGE_QUALITY = { minPixelRatio: 1.25, maxPixelRatio: 1.5, supersamplePixelBudget: 4000000 };
+
 const TURBO_GLOW = Object.freeze({ base: 1.8, pulse: 1.2, hz: 2, response: 10 });
 
 const AIRCRAFT_SHADOWS = Object.freeze({ maxCasters: 12 });
 export class View {
+  async setCycleRenderer(mode){
+    if(!['normal','pov'].includes(mode))throw Error('Unknown cycle renderer');
+    this.cycleRendererReason=null;
+    const request=this.cycleRendererRequest=(this.cycleRendererRequest??0)+1;
+    this.povCycles?.dispose();this.povCycles=null;this.cycleRendererMode='normal';
+    if(this.normalAdaptiveAA){this.adaptiveAA=this.normalAdaptiveAA;this.normalAdaptiveAA=null;this.adaptiveAA.clear();this.resize();}
+    if(mode==='normal')return 'normal';
+    if(!this.arena)throw Error('The arena is still loading');
+    const {PovCycles}=await import('./pov-cycles.js');
+    if(this.renderDisposed||request!==this.cycleRendererRequest)return this.cycleRendererMode;
+    const candidate=new PovCycles(this.arena.userData.cycleRace);
+    try{await candidate.warm(this.renderer,this.camera);}catch(error){candidate.dispose();throw error;}
+    if(this.renderDisposed||request!==this.cycleRendererRequest){candidate.dispose();return this.cycleRendererMode;}
+    this.normalAdaptiveAA=this.adaptiveAA;
+    this.povAdaptiveAA??=new AdaptiveAA(supportedSamples(this.renderer.getContext()));
+    this.adaptiveAA=this.povAdaptiveAA;this.adaptiveAA.clear();this.resize();
+    this.cycleRendererGuard=new CycleRendererGuard();
+    this.povCycles=candidate;this.cycleRendererMode='pov';return 'pov';
+  }
+  monitorCycleRenderer(dt,active){
+    if(this.povCycles&&this.cycleRendererGuard.sample(dt,active,config.targetFps)){
+      void this.setCycleRenderer('normal');this.cycleRendererReason='performance';
+      console.info('POV-Ray cycles: sustained low frame rate; using normal renderer. Shift-R can retry manually.');
+    }
+  }
   attachSolarSailer(model,SolarSailer){this.solarSailer=new SolarSailer(model,this.scene,this.map);}
   attachArena(arena){
     if(!arena)return;
@@ -177,9 +204,10 @@ export class View {
     this.scene.add(this.debris);
     this.particles = [];
     this.matrixObject = new THREE.Object3D();
+    this.adaptiveAA=new AdaptiveAA(supportedSamples(this.renderer.getContext()));
     const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
       type: THREE.HalfFloatType,
-      samples: 4,
+      samples: this.adaptiveAA.quality.samples,
       stencilBuffer: true,
     });
     this.composer = new EffectComposer(this.renderer, renderTarget);
@@ -217,22 +245,22 @@ export class View {
       h = window.innerHeight;
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
-    // Supersample small displays and use some Retina resolution, with a cap on
-    // extra pixels. Never reduce resolution below the previous native-size view.
-    const ratio = this.lowQuality
-      ? 1
-      : Math.max(
-          1,
-          Math.min(
-            EDGE_QUALITY.maxPixelRatio,
-            Math.max(EDGE_QUALITY.minPixelRatio, window.devicePixelRatio || 1),
-            Math.sqrt(EDGE_QUALITY.supersamplePixelBudget / (w * h)),
-          ),
-        );
+    const quality=this.adaptiveAA.quality;
+    const ratio=this.lowQuality?1:Math.min(quality.ratio,ADAPTIVE_AA.maxPixelRatio,
+      Math.max(.85,Math.sqrt(ADAPTIVE_AA.pixelBudget/(w*h))),
+      this.renderer.capabilities.maxTextureSize/Math.max(w,h));
+    // Sample count changes require new framebuffer attachments, not a new context.
+    for(const target of [this.composer.renderTarget1,this.composer.renderTarget2]){
+      if(target.samples!==quality.samples){target.dispose();target.samples=quality.samples;}
+    }
     this.renderer.setPixelRatio(ratio);
     this.composer.setPixelRatio(ratio);
     this.renderer.setSize(w * config.renderScale, h * config.renderScale, false);
     this.composer.setSize(w * config.renderScale, h * config.renderScale);
+  }
+
+  updateAntialiasing(dt,active){
+    if(this.adaptiveAA.sample(dt,active&&!this.lowQuality&&config.adaptiveAntialiasing,config.targetFps))this.resize();
   }
 
   reset() {
@@ -545,7 +573,10 @@ export class View {
     this.recognizerShadows.update(this.renderer, this.breakups.bursts, this.camera.position);
     this.carrierShadows?.update(this.renderer);
     if(run.cycleRace&&run.cycleRace.phase!=='idle')this.arena?.userData.cycleRace.shadows.update(this.renderer,[],this.camera.position);
-    this.composer.render(dt);
+    if(this.povCycles){
+      this.povCycles.prepare();
+      try{this.composer.render(dt);}finally{this.povCycles.restore();}
+    }else this.composer.render(dt);
   }
 
   connectMazeOcclusion() {
@@ -598,6 +629,7 @@ export class View {
   }
 
   dispose() {
+    this.renderDisposed=true;this.cycleRendererRequest=(this.cycleRendererRequest??0)+1;this.povCycles?.dispose();this.povCycles=null;
     if (this.disposed) return;
     this.disposed = true;
     this.carrierShadows?.dispose();

@@ -7,6 +7,8 @@ export const ARENA_CAMERA_WALL_HEIGHT=60;
 const WALL_FOLLOW=Object.freeze({minimumBoomMeters:7,sideBoomMeters:10});
 export function cycleWallFollowPosition(world,pose,race,desired,anchor,radius,previous){
  const clipped=desired.clone();clipCameraSegment(world,anchor,clipped,radius);
+ // A deliberately short turbo boom is not a wall obstruction.
+ if(clipped.distanceToSquared(desired)<1e-8)return;
  if(Math.hypot(clipped.x-pose.x,clipped.z+pose.s)>=WALL_FOLLOW.minimumBoomMeters)return;
  let best=null,score=Infinity;
  for(const side of [-1,1]){

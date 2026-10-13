@@ -21,5 +21,25 @@ test('MCP public route respects origin/configuration and validates before upstre
 });
 
 test('MCP defaults to Gemini Flash and requires its server-side key',()=>{
- const config=mcpConfig();assert.equal(config.model,'gemini-3.8-flash');assert.equal(config.url,'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');assert.equal(config.configured,false);assert.equal(mcpConfig({MCP_API_KEY:'test'}).configured,true);assert.equal(mcpConfig({MCP_CHAT_URL:'http://localhost:11434/v1/chat/completions',MCP_MODEL:'local'}).configured,true);
+ const config=mcpConfig();assert.equal(config.model,'gemini-3.8-flash');assert.equal(config.url,'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent');assert.equal(config.configured,false);assert.equal(mcpConfig({MCP_API_KEY:'test'}).configured,true);assert.equal(mcpConfig({MCP_CHAT_URL:'http://localhost:11434/v1/chat/completions',MCP_MODEL:'local'}).configured,true);
+});
+test('native Gemini keeps system instructions separate, converts history and excludes thoughts',async()=>{
+ let sent;const result=await mcpCompletion({...mcpConfig({MCP_API_KEY:'private-test-key'}),messages:[{role:'system',content:'MCP role'},{role:'user',content:'Hello'},{role:'assistant',content:'Program.'},{role:'user',content:'Directive?'}],fetchImpl:async(_,options)=>{sent=options;return Response.json({candidates:[{content:{parts:[{text:'internal',thought:true},{text:'Control the Grid.'}]}}]});}});
+ assert.equal(sent.headers['x-goog-api-key'],'private-test-key');const body=JSON.parse(sent.body);assert.equal(body.systemInstruction.parts[0].text,'MCP role');assert.equal(body.contents[1].role,'model');assert.equal(body.generationConfig.thinkingConfig.thinkingLevel,'low');assert.equal(result.reply,'Control the Grid.');
+});
+
+test('local MCP refreshes credentials between requests without rebuilding middleware',async()=>{
+ const {createMcpMiddleware}=await import('../server/mcp.js');
+ const {EventEmitter}=await import('node:events');
+ let key='old-key';const seen=[];
+ const middleware=createMcpMiddleware(()=>({MCP_API_KEY:key}),async(_,options)=>{
+  seen.push(options.headers['x-goog-api-key']);
+  return Response.json({candidates:[{content:{parts:[{text:'Program.'}]}}]});
+ });
+ async function send(){
+  const req={url:'/api/mcp/chat',method:'POST',headers:{host:'localhost'},async *[Symbol.asyncIterator](){yield JSON.stringify({messages:[{role:'user',content:'Hello'}]});}};
+  const res=new EventEmitter();res.writeHead=code=>assert.equal(code,200);res.end=()=>{res.writableEnded=true;};
+  await middleware(req,res,()=>assert.fail('request skipped'));
+ }
+ await send();key='replacement-key';await send();assert.deepEqual(seen,['old-key','replacement-key']);
 });
