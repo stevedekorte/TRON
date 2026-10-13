@@ -1,4 +1,4 @@
-# POV-Ray light cycle — isolated browser experiment
+# POV-Ray light cycle — browser rendering
 
 - Model author: **Carl N. Hoff**.
 - Retrieved 2026-10-12 from [Jason Cox's lightcycle-povray repository](https://github.com/jasonacox/lightcycle-povray).
@@ -7,4 +7,4 @@
 - Original +X-forward coordinates are rotated to -Z forward and uniformly scaled from 525 source units to 3.6 meters. Proportions are preserved; the source is narrower than the production mesh.
 - Primitives: transformed spheres/ellipsoids, capped cylinders/cones, boxes, half-spaces, nonconvex linear prisms and tori. Tori use quartic stationary points and bracketed polynomial roots, not distance-field ray marching. Other primitives use direct intersections. A sorted boundary sweep applies the CSG expression and orients subtraction normals.
 - The upstream scene's lights, reflective floor, trails and six-bike animation are not imported. The experiment uses its own direct vehicle lighting and the production arena's unlit grid constants. Shadow rays are optional. No reflected rays.
-- Scope: `raycast-cycle.html` only. Production models and game rendering remain unchanged. This is a GPU adaptation of the geometry, not the POV-Ray application or its scene-language parser.
+- Scope: the default cycle renderer, the cycle credit preview, and `raycast-cycle.html`. Original mesh assets remain available as the performance fallback. This is a GPU adaptation of the geometry, not the POV-Ray application or its scene-language parser.

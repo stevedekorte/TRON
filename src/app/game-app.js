@@ -202,7 +202,7 @@ export function createGameApp() {
     if(homeSelection){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
       sound.terminalTone('access');
-      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles',keepCovered:selectedGame==='mcp'});
+      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles',keepCovered:selectedGame==='mcp'||selectedGame==='credits'});
       if(disposed)return;
     }
     if(mode==='ready'&&selectedGame==='credits'){
@@ -1200,7 +1200,8 @@ export function createGameApp() {
       session.configure('flight', FLIGHT);
       session.configure('hearing', HEARING);
       view.resize();
-      [...$('sliders').children].forEach((label, i) => {
+      aaControl.querySelector('input').checked=config.adaptiveAntialiasing;
+      [...$('sliders').children].slice(0,tuningFields.length).forEach((label, i) => {
         const { target, key } = tuningFields[i],
           v = target[key];
         label.querySelector('input').value = v;

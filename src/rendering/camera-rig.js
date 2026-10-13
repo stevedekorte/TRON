@@ -340,7 +340,7 @@ export class CameraRig {
         if(transition.mix===1)this.cycleSwitch=null;
       }
       this.camera.far=12000;
-      this.camera.fov=this.cycleOpening===null?config.fov:THREE.MathUtils.lerp(config.fov,CYCLE_FORMATION_CAMERA.fovDegrees,cycleFormationBlend(this.cycleOpening));
+      this.camera.fov=this.cycleOpening===null?config.fov:THREE.MathUtils.lerp(config.fov,THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(CYCLE_FORMATION_CAMERA.fovDegrees/2))*Math.max(1,CYCLE_FORMATION_CAMERA.framingAspect/this.camera.aspect))),cycleFormationBlend(this.cycleOpening));
       this.camera.updateProjectionMatrix();this.freshCamera=false;
       return {tankVisible:false};
     }

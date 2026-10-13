@@ -7,6 +7,7 @@ for (const name of ['credits_extended.txt','index.html','_index.md','llms.txt','
 }
 await mkdir('dist/docs/models', { recursive: true });
 for (const name of ['_index.md','index.html']) await cp('docs/models/'+name,'dist/docs/models/'+name);
+await cp('docs/models/povray-lightcycle','dist/docs/models/povray-lightcycle',{recursive:true});
 await cp('docs/models/carrier-shuttle','dist/docs/models/carrier-shuttle',{recursive:true});
 await cp('docs/colvmn/style.css','dist/docs/colvmn/style.css');
 await cp('docs/colvmn/layout/bundle.js','dist/docs/colvmn/layout/bundle.js');

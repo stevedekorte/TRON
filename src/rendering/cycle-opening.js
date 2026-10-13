@@ -6,7 +6,7 @@ import {ARENA_WALL} from '../game/arena-breaches.js';
 export const CYCLE_OPENING=Object.freeze({startSeconds:1,durationSeconds:16,travelSeconds:16,formationSeconds:2.75/1.5,launchHoldSeconds:.6,raceReleaseFraction:1,lookDistanceMeters:100,minimumHeightMeters:4});
 // Relative phase timing, scaled to the formation's overall duration.
 export const CYCLE_FORMATION_MATERIALIZATION=Object.freeze({openSeconds:.6,passSeconds:1.4,fadeSeconds:.75});
-export const CYCLE_FORMATION_CAMERA=Object.freeze({blendStartSeconds:14,rightMeters:8,forwardMeters:5,heightMeters:1.6,lookRightMeters:1.5,lookHeightMeters:.65,fovDegrees:38});
+export const CYCLE_FORMATION_CAMERA=Object.freeze({blendStartSeconds:14,rightMeters:8,forwardMeters:5,heightMeters:.55,lookRightMeters:1.5,lookHeightMeters:.75,fovDegrees:38,framingAspect:1.9});
 const formationZ=-(ARENA_WALL.innerMeters-LIGHT_CYCLES.lengthMeters/2-LIGHT_CYCLES.lengthMeters*LIGHT_CYCLES.startWallClearanceLengths);
 export function cycleFormationBlend(progress){return MathUtils.smootherstep(progress*CYCLE_OPENING.durationSeconds,CYCLE_FORMATION_CAMERA.blendStartSeconds,CYCLE_OPENING.durationSeconds);}
 // Film opening: carrier broadside beyond the maze, to the camera's right.

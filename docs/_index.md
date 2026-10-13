@@ -1909,3 +1909,14 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Before scoring destinations, sweep the rider's next reaction travel against continuous trails, arena walls and projected moving bodies. Unsafe directions receive priority penalties over JEV goals and interception incentives. Reserve choices use the heading selected by the turn, instead of the old heading.
 - [x] Preserve reaction limits: safety checks occur on decision ticks and account for the sampled delay plus 100 ms margin; no instantaneous emergency turn bypass.
 - Validation: `npm test` passed all 486 checks, including fractional turbo obstacle avoidance, Gaussian distribution/bounds/reproducibility, team profile defaults and existing simulation invariants. This addresses immediate collision blunders; competitive tactics and future opponent turns remain imperfect and need play review.
+
+## Credit attribution, previews and launch framing — October 12
+
+- [x] Credit Carl N. Hoff's CSG cycle and Jason Cox's source repository in displayed and archival credits. Identify the custom project ray-casting kernel and Three.js integration accurately; ship the upstream MIT notice with the website.
+- [x] Render the Hoff credit with the same CSG mesh/shader factory as gameplay, including self-shadowing, preserving fade/disposal behavior. Keep Daniel Preti credited for the arena and original fallback meshes.
+- [x] Correct maze provenance per the user: traced from a TRON (1982) frame showing Flynn entering the electronic world, not an unidentified blueprint.
+- [x] Keep the home transition covered when selecting credits so the underlying CLU scene is never revealed.
+- [x] Credit blocks hold after typing for 240 words/minute plus 0.75 seconds, with a three-second minimum. Space still advances immediately.
+- [x] Lower the formation shot from 1.6 m to 0.55 m with a slightly raised gaze, preserving the right-side three-quarter view, smooth arrival and launch hold. Widen the vertical field of view on narrower windows to preserve horizontal framing.
+- Research: Carl Hoff discussed a POV-Ray tank model in [his 2005 Tron-Sector thread](https://tron-sector.com/forums/default.aspx?a=top&id=308827&pg=9). No verified downloadable tank source or reuse terms located; no tank asset imported.
+- Validation: nine credit previews rendered in headless Chrome with fade/framing/disposal checks, including the CSG shader preview; capture inspected. All 25 camera unit checks passed; `tests/home-transition.mjs` and `tests/cycle-opening.mjs` passed in headless Chrome. Inspected the lower formation capture. `npm run build` passed. Fixed the development tuning reset to exclude the new antialiasing checkbox from slider indexing.

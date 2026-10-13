@@ -66,6 +66,11 @@ try{
    await page.waitForURL('**/bit/index.html');
    await page.waitForFunction(()=>fadeLog.some(e=>e.id==='home-selected-label'),{},{timeout:20000});
    await page.locator('#home-transition').waitFor({state:'detached'});
+  }else if(id==='start-credits'){
+   await page.waitForTimeout(400);
+   assert.equal(await page.locator('#home-transition-background').evaluate(e=>getComputedStyle(e).opacity),'1');
+   await page.locator('#home-transition').waitFor({state:'detached'});
+   assert(await page.locator('body').evaluate(e=>e.classList.contains('victory-credits')));
   }else{
    await page.waitForFunction(()=>fadeLog.some(e=>e.id==='home-transition-background'));
    const log=await page.evaluate(()=>fadeLog),fade=log.find(e=>e.id==='home-transition-background'),others=log.filter(e=>e.duration===825&&e.id!=='home-transition-background');

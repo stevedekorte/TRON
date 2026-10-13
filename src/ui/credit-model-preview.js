@@ -1,10 +1,6 @@
-import {refineCycleFrontWheel} from '../rendering/cycle-front-wheel.js';
-import {repairCycleRearSeams,repairCyclePanelWinding} from '../rendering/cycle-rear-seams.js';
-import {repairCyclePanelOverlaps} from '../rendering/cycle-panel-overlaps.js';
 import {GAME_LIGHTING,createGameLights} from '../rendering/game-lighting.js';
 import {fitCreditPreview,creditPreviewPoints} from './credit-preview-framing.js';
 import {createCreditBit} from '../rendering/credit-bit.js';
-import {repairCycleSurface,repairCycleHubs, refineCycleRearWheel, refineCycleWheelInteriors, removeCycleWheelHighlights, applyCycleBlackRims,removeCycleInscriptions,applyCycleMaterialLighting} from '../rendering/cycle-surface.js';
 import {createCreditMaze} from '../rendering/credit-maze.js';
 import {solarSailerTransit} from '../game/solar-sailer.js';
 import {loadSolarSailer,applySolarSailerState} from '../rendering/solar-sailer.js';
@@ -25,7 +21,7 @@ const models=[
  ['3D MODEL: TRON CARRIER','carrier',new URL('../../docs/models/tron_1982_carrier.glb',import.meta.url).href],
  ['3D MODEL: TRON SUNSHIP','sailer',new URL('../../docs/models/tron_1982_solar_sailer.glb',import.meta.url).href],
  ['JVOUILLON','cloud',new URL('../../docs/models/cloud.glb',import.meta.url).href],
- ['DANIEL PRETI','cycle',new URL('../../docs/models/preti_light_cycle_blue.glb',import.meta.url).href],
+ ['CARL N. HOFF','cycle',null],
 ];
 export function creditModel(message){return models.find(([label])=>message.includes(label));}
 
@@ -51,28 +47,9 @@ export class CreditModelPreview{
  }
  async load(entry,generation){
   try{
-   const root=entry[1]==='sailer'?(await loadSolarSailer({previewBeam:true})).ship:entry[1]==='carrier'?await loadCarrier():entry[1]==='bit'?await createCreditBit():entry[1]==='maze'?createCreditMaze():entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
+   const root=entry[1]==='cycle'?(await import('../rendering/pov-cycles.js')).createPovCycleMesh(PREVIEW.cycleBodyBlue):entry[1]==='sailer'?(await loadSolarSailer({previewBeam:true})).ship:entry[1]==='carrier'?await loadCarrier():entry[1]==='bit'?await createCreditBit():entry[1]==='maze'?createCreditMaze():entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
    if(generation!==this.generation){disposeSceneResources(root);return;}
-   if(entry[1]==='cycle'){
-    removeCycleInscriptions(root);
-    root.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();}});
-    repairCycleRearSeams(root);
-    repairCyclePanelOverlaps(root);
-    repairCyclePanelWinding(root);
-    repairCycleHubs(root);
-    refineCycleRearWheel(root);
-    refineCycleFrontWheel(root);
-    refineCycleWheelInteriors(root);
-    removeCycleWheelHighlights(root);
-    applyCycleBlackRims(root);
-    applyCycleMaterialLighting(root);
-    root.traverse(o=>{
-     for(const material of o.material?[].concat(o.material):[]){
-      if(material.name==='_6')material.color.setHex(PREVIEW.cycleBodyBlue);
-      if(material.name==='Color_I03')material.color.setHex(PREVIEW.cycleAccentBlue);
-     }
-    });
-   }
+   root.visible=true;
    root.traverse(o=>{if((o.userData.breakupExclude&&!o.userData.bossTrim)||o.name==='muzzle-flash')o.visible=false;});
    if(entry[1]==='recognizer')root.traverse(o=>{
     for(const material of o.material?(Array.isArray(o.material)?o.material:[o.material]):[]){

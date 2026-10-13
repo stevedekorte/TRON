@@ -1,3 +1,5 @@
+export const CREDIT_READING=Object.freeze({wordsPerMinute:240,minimumSeconds:3,settleSeconds:.75});
+export function creditHoldSeconds(text){return Math.max(CREDIT_READING.minimumSeconds,(text.match(/\S+/g)?.length??0)*60/CREDIT_READING.wordsPerMinute+CREDIT_READING.settleSeconds);}
 export const EXTENDED_CREDIT_PRINT=Object.freeze({secondsPerCharacter:.018});
 
 // Static access text; the opening dissolve is handled by the main view.
@@ -62,7 +64,7 @@ export class TerminalTribute {
    this.phase=this.index===this.sentences.length-1?'waiting':'hold';this.phaseStarted=this.elapsed;this.element.classList.add('complete');
   }
   if(this.phase==='hold'){
-   if(this.elapsed-this.phaseStarted<3)return false;
+   if(this.elapsed-this.phaseStarted<creditHoldSeconds(this.sentences[this.index]))return false;
    this.phase='fade';this.phaseStarted=this.elapsed;
   }
   if(this.phase==='fade'){

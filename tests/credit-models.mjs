@@ -1,8 +1,8 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-angle=swiftshader']});
+const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
- const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/shader|WebGL|THREE/.test(m.text()))errors.push(m.text());});
  await page.route('**/credit-preview-fixture',r=>r.fulfill({contentType:'text/html',body:`<link rel="stylesheet" href="/src/ui/terminal.css"><body class="terminal detached"><div class="terminal-content"><p class="end-tribute" id="end-tribute"><span class="tribute-measure"></span><span class="tribute-typed"><span id="tribute-text"></span></span></p></div></body>`}));
  await page.goto('http://127.0.0.1:5173/credit-preview-fixture');
  await page.evaluate(async()=>{
@@ -29,6 +29,7 @@ try{
   });
   assert(framing.extent>.82&&framing.extent<.85,'fit visible model within healthy margins');
   assert(framing.right<=1560&&framing.bottom<=750,'respect page and logo margins');
+  if(entry.model==='cycle')assert(await page.evaluate(()=>{let ray=false;tribute.preview.model.traverse(o=>{if(o.material?.isShaderMaterial&&o.material.fragmentShader.includes('cycleHit'))ray=true;});return ray;}),'cycle credit uses CSG shader');
   if(entry.model==='recognizer')assert.equal(framing.faceColor,0x05070a);
   await page.screenshot({path:`test-results/credit-model-${entry.model}.png`});
   if(entry.model==='sailer'){

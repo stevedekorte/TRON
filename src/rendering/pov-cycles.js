@@ -30,21 +30,28 @@ void main(){
  #include <tonemapping_fragment>
  #include <colorspace_fragment>
 }`;
-export class PovCycles {
- constructor(raceView){
-  this.raceView=raceView;this.saved=[];
-  const scale=POV_CYCLE_SCALE;
-  this.geometry=new T.BoxGeometry(160*scale,230.1*scale,525.2*scale).translate(0,115*scale,0);
-  this.root=new T.Group();this.root.name='POV-Ray cycle renderer';raceView.root.add(this.root);
-  this.proxies=raceView.bikes.map((_,id)=>{
-   const uniforms={bodyColor:{value:new T.Color(COLORS[0])},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
+export function createPovCycleGeometry(){
+ const scale=POV_CYCLE_SCALE;
+ return new T.BoxGeometry(160*scale,230.1*scale,525.2*scale).translate(0,115*scale,0);
+}
+export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeometry()){
+   const uniforms={bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
    const material=new T.ShaderMaterial({defines:{SHOW_CYCLE:1},uniforms,vertexShader,fragmentShader,side:T.BackSide});
-   const mesh=new T.Mesh(this.geometry,material);mesh.name=`CSG cycle ${id}`;mesh.visible=false;
+   const mesh=new T.Mesh(geometry,material);mesh.name='CSG cycle';mesh.visible=false;
    mesh.onBeforeRender=(renderer,scene,camera)=>{
     uniforms.cycleWorld.value.copy(mesh.matrixWorld);uniforms.inverseCycleWorld.value.copy(mesh.matrixWorld).invert();
     uniforms.viewProjection.value.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
     uniforms.sceneFogColor.value.copy(scene.fog?.color??scene.background??new T.Color(0));uniforms.sceneFogDensity.value=scene.fog?.density??0;
    };
+ return mesh;
+}
+export class PovCycles {
+ constructor(raceView){
+  this.raceView=raceView;this.saved=[];
+  this.geometry=createPovCycleGeometry();
+  this.root=new T.Group();this.root.name='POV-Ray cycle renderer';raceView.root.add(this.root);
+  this.proxies=raceView.bikes.map((_,id)=>{
+   const mesh=createPovCycleMesh(COLORS[0],this.geometry);mesh.name=`CSG cycle ${id}`;
    this.root.add(mesh);return mesh;
   });
  }

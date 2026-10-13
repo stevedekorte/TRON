@@ -85,9 +85,23 @@ Daniel Preti
   The original large OBJ was removed at the user's request; exported
   models, material file and conversion scripts are retained.
 
+Carl N. Hoff — POV-Ray light cycle
+  Solid-geometry model adapted for the default real-time ray-cast cycles.
+  Source: Jason Cox's lightcycle-povray repository.
+  https://github.com/jasonacox/lightcycle-povray
+  Repository MIT notice: Copyright (c) 2019 Jason Cox.
+  Adapted primitives/CSG, coordinate system, scale, lighting and materials.
+  Full notice: docs/models/povray-lightcycle/LICENSE
+
+Ray-cast renderer — project implementation
+  Custom primitive intersections, CSG boundary evaluation and GPU shaders,
+  created for this project with OpenAI Codex. Three.js supplies WebGL setup,
+  scene integration and post-processing (MIT; credited below).
+  No POV-Ray engine, parser or third-party ray-casting engine is embedded.
+
 Maze and level geometry
-  Traced/generated locally from supplied blueprints. The blueprint artists were not identified in the supplied
-files; no individual authorship is inferred.
+  Traced/generated locally from a user-supplied TRON (1982) screenshot
+  showing Flynn entering the electronic world. Film imagery: Disney.
 
 Model credits record provenance and modifications. The models retain their
 respective source terms; they are not covered by the software licenses below.
