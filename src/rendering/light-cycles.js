@@ -91,8 +91,10 @@ export class LightCycleRaceView {
       const speed=moving?(b.escaped?(b.roadSpeed??0):C.speedMetersPerSecond*(b.speedMultiplier??1)):0;
       // Interpolated cycle objects are replaced every rendered frame. Reset only
       // for a new match, never on a presentation object's identity.
-      const reflectionKey=`${r.seed}:${r.round}:${b.id}`;
-      if(mesh.userData.reflectionKey!==reflectionKey){mesh.userData.reflectionKey=reflectionKey;mesh.userData.wheelReflection=null;}
+      // The seed is mutable AI random state, not a match identifier. Using it
+      // here restarts every wheel's clock whenever an AI makes a decision.
+      const reflectionKey=`${r.round}:${b.id}`;
+      if(mesh.userData.reflectionKey!==reflectionKey||r.time<(mesh.userData.wheelReflection?.time??0)){mesh.userData.reflectionKey=reflectionKey;mesh.userData.wheelReflection=null;}
       mesh.userData.wheelReflection=advanceWheelReflection(mesh.userData.wheelReflection,r.time,speed);
       if(age===null)rez.update(null);
       else {

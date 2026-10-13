@@ -6,6 +6,11 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Wheel reflections after player death — October 13
+
+- [x] Preserve each cycle’s reflection clock across AI random-state changes; reset only on a new round or simulation time rewind. Surviving cycles continue their speed-dependent flicker after the player dies.
+- [x] Verified with `node tests/home-menu-order.mjs` in headless Chrome on macOS: ray-cast renderer stays active, all surviving reflection phases advance after player death, and the dead cycle has zero reflection strength. Initial sandboxed Chrome launch aborted; rerun outside the sandbox passed.
+
 ## Project documents
 
 <div class="card-grid cols-2">
