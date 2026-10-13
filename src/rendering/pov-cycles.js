@@ -6,7 +6,7 @@ import {cycleSceneGLSL,CYCLE_EDGE_CONFIG,CYCLE_LIGHTING_CONFIG} from '../experim
 import {POV_CYCLE_SCALE} from '../experiments/pov-cycle-model.js';
 import {CYCLE_WHEEL_REFLECTIONS as WHEEL_GLINT} from './cycle-wheel-reflections.js';
 const EDGE_FILTER={radiusPixels:1.2,creaseStart:.18,creaseFull:.65,strength:.8,paintStrength:.22};
-export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.006,lineIntensity:2.2,contourColor:0xd0dc9a,gridColor:0x75b5b7,haloColor:0x39bccc,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
+export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.003,contourRadiusPixels:.65,haloRadiusPixels:1.8,haloStrength:.16,lineIntensity:2.2,contourColor:0xd0dc9a,gridColor:0x75b5b7,haloColor:0x39bccc,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
 const COLORS=[0xe6bd14,0x086ac4,0xff1010,0x178c42];
 const vertexShader=`varying vec3 localSurface;void main(){localSurface=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
 const fragmentShader=cycleSceneGLSL+`
@@ -66,8 +66,8 @@ void main(){
  vec3 footprint=max(fwidth(localPoint),vec3(.00001));
  vec3 lines=(1.-smoothstep(vec3(${CYCLE_REZ.lineHalfWidthMeters}),vec3(${CYCLE_REZ.lineHalfWidthMeters})+footprint,distanceToSection))*min(vec3(1.),vec3(${2*CYCLE_REZ.lineHalfWidthMeters})/footprint);
  float grid=max(lines.x,max(lines.y,lines.z))*rezGrid;
- float contour=edgeMapReady?min(1.,filteredEdgeCoverage(normal)*2.):0.;
- float halo=edgeMapReady?edgeCoverageAt(normal,3.)*.22:0.;
+ float contour=edgeMapReady?min(1.,edgeCoverageAt(normal,${CYCLE_REZ.contourRadiusPixels})*2.):0.;
+ float halo=edgeMapReady?edgeCoverageAt(normal,${CYCLE_REZ.haloRadiusPixels})*${CYCLE_REZ.haloStrength}:0.;
  float cut=mix(${CYCLE_REZ.frontMeters},${CYCLE_REZ.rearMeters},rezSweep);
  float revealed=1.-smoothstep(cut-max(fwidth(localPoint.z),.001),cut,localPoint.z);
  contour*=revealed;halo*=revealed;grid*=revealed;

@@ -2011,3 +2011,5 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Cue MCP music before typing, with a one-second lead from playback starting. Retain cancellation, volume and exit handling.
 - [x] Place Light Cycles first and select it by default; keyboard order follows the displayed buttons.
 - Validation: all 502 automated tests passed. Headless Chrome checked wheel on/off/stopped captures, materialization shaders, menu order/default/wraparound/Return launch, and MCP music lead-in plus permission/greeting/reply lifecycle. Inspected wheel glint capture.
+
+- [x] Thin materialization surface-section lines from 0.006 m to 0.003 m half-width, reduce contour sampling radius from 1.2 px to 0.65 px, and narrow/soften the surrounding halo. Solid-cycle edge highlights are unchanged. Chrome staged shader/render checks passed and the thinner grid capture was inspected.
