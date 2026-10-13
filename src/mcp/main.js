@@ -9,8 +9,9 @@ const $=id=>document.getElementById(id);
 const apiBase=(import.meta.env.VITE_MCP_API_BASE||import.meta.env.VITE_JEV_API_BASE||'').replace(/\/$/,'');
 let face,recognition,recognizing=false,micEnabled=false,busy=false,leaving=false,paused=false,request,epoch=0,restartTimer;
 const history=[];
+const audioContext=new AudioContext({latencyHint:'playback'});
 let introPlaying=true,microphoneApproved=false,microphonePending=false,voiceReadyPromise;
-const cancelIntro=typeMcpAccess($('reply'),()=>{introPlaying=false;void requestConversationAudio();});
+const cancelIntro=typeMcpAccess($('reply'),()=>{introPlaying=false;void requestConversationAudio();},{audioContext});
 function unavailable(message='AUDIO INPUT REQUIRED — ALLOW MICROPHONE ACCESS IN YOUR BROWSER. CLICK OR PRESS RETURN TO RETRY.'){
  microphoneApproved=false;setBusy(false);setMic(false);$('heard').textContent='';
  $('reply').textContent='MASTER CONTROL PROGRAM UNAVAILABLE\n'+message;
@@ -30,7 +31,7 @@ async function requestConversationAudio(){
   await voiceReadyPromise;
   if(leaving||paused)return;
   if(!voice.ready)throw Error('Cloned voice unavailable');
-  const greeting='WHAT CAN I DO FOR YOU, MR. DILINGER?';
+  const greeting='IDENTIFY USER AND ACCESS CODE.';
   const token=++epoch;
   const spoken=await speakCloned(greeting,token,{whole:true});
   if(spoken&&token===epoch&&!paused&&!leaving)setMic(true);
@@ -39,9 +40,9 @@ async function requestConversationAudio(){
 }
 function retryAudio(event){if(!introPlaying&&!microphoneApproved&&!microphonePending&&!paused&&!leaving&&(event.type==='pointerdown'||event.code==='Enter'))void requestConversationAudio();}
 window.addEventListener('pointerdown',retryAudio);window.addEventListener('keydown',retryAudio);
-function unlockAudio(){audioContext??=new AudioContext();void audioContext.resume().catch(()=>{});}
+function unlockAudio(){void audioContext.resume().catch(()=>{});}
 window.addEventListener('pointerdown',unlockAudio);window.addEventListener('keydown',unlockAudio);
-let audioContext,audioSource,audioFrame,voiceLoading=false,finishAudio,chatConfigured=false,audioEffects;
+let audioSource,audioFrame,voiceLoading=false,finishAudio,chatConfigured=false,audioEffects;
 let voiceLoadId=0,voiceStarted=0,voiceProgress={stage:'checking'},voiceClock;
 function renderVoiceProgress(){
  $('download-row').hidden=true;
@@ -50,9 +51,9 @@ function renderVoiceProgress(){
 const voice=new McpVoice(progress=>{if(voiceLoading){voiceProgress={...voiceProgress,...progress};renderVoiceProgress();}});
 
 function stopClonedAudio(){cancelAnimationFrame(audioFrame);audioEffects?.dispose();audioEffects=null;if(audioSource){audioSource.onended=null;audioSource.stop();audioSource.disconnect();}audioSource=null;finishAudio?.();finishAudio=null;}
-async function playSamples({samples,sampleRate},token,{processed=false,onStart=()=>{}}={}){
+async function playSamples({samples,sampleRate,processed:rendered=false},token,{processed=rendered,onStart=()=>{}}={}){
  if(token!==epoch)return;
- audioContext??=new AudioContext();await audioContext.resume();if(token!==epoch)return;
+ await audioContext.resume();if(token!==epoch)return;
  const buffer=audioContext.createBuffer(1,samples.length,sampleRate);buffer.copyToChannel(samples,0);
  const source=audioContext.createBufferSource();source.buffer=buffer;
  const rate=processed?1:MCP_VOICE_EFFECTS.pitchRatio;source.playbackRate.value=rate;
@@ -87,7 +88,7 @@ async function loadVoice(){
 $('load-voice').onclick=loadVoice;
 $('voice-sample').onclick=async()=>{
  if(busy)return;stopListening();setBusy(true);const token=++epoch;
- try{audioContext??=new AudioContext();await audioContext.resume();
+ try{await audioContext.resume();
   const response=await fetch(new URL('audio/mcp-clone-preview-deeper.wav',document.baseURI));if(!response.ok)throw new Error('VOICE SAMPLE UNAVAILABLE');
   const buffer=await audioContext.decodeAudioData(await response.arrayBuffer());
   if(token!==epoch)return;$('reply').textContent='Welcome, program. Your connection to the Grid is now under my control.';

@@ -2,9 +2,13 @@ import musicUrl from '../../docs/assets/music/Tron/20 Break In (For Strings, Flu
 export const MCP_ACCESS_TEXT='REQUEST: ACCESS TO MASTER CONTROL PROGRAM.';
 const TIMING={startMs:1000,completedHoldMs:1500,keyMinMs:35,keyVariationMs:95,wordPauseMs:90,linePauseMs:420};
 /** Human-paced access request; owned timers are cancelled when the page leaves. */
-export function typeMcpAccess(element,onComplete){
+export function typeMcpAccess(element,onComplete,{audioContext}={}){
  let timer,index=0,cancelled=false;
  const music=new Audio(musicUrl);music.preload='auto';music.volume=.6;
+ // Share the already-running output engine with speech: no new live audio
+ // context or media rerouting at the moment the MCP begins talking.
+ const musicSource=audioContext?.createMediaElementSource(music);musicSource?.connect(audioContext.destination);
+ const playMusic=async()=>{await audioContext?.resume();if(!cancelled)await music.play();};
  element.textContent='';
  element.classList.add('typing');
  const next=()=>{
@@ -24,13 +28,13 @@ export function typeMcpAccess(element,onComplete){
  // Begin the one-second lead from actual playback, not from the fetch request.
  void beep.play().catch(error=>console.warn('MCP access beep unavailable:',error.message)).then(()=>{
   if(!cancelled){
-   void music.play().catch(error=>console.warn('MCP music unavailable:',error.message)).then(()=>{
+   void playMusic().catch(error=>console.warn('MCP music unavailable:',error.message)).then(()=>{
     if(!cancelled)timer=setTimeout(next,TIMING.startMs);
    });
   }
  });
- const cancel=()=>{music.pause();music.removeAttribute('src');music.load();cancelled=true;clearTimeout(timer);beep.pause();beep.removeAttribute('src');beep.load();element.classList.remove('typing');};
+ const cancel=()=>{music.pause();musicSource?.disconnect();music.removeAttribute('src');music.load();cancelled=true;clearTimeout(timer);beep.pause();beep.removeAttribute('src');beep.load();element.classList.remove('typing');};
  cancel.pauseMusic=()=>music.pause();
- cancel.resumeMusic=()=>{if(!cancelled&&!music.ended)void music.play().catch(()=>{});};
+ cancel.resumeMusic=()=>{if(!cancelled&&!music.ended)void playMusic().catch(()=>{});};
  return cancel;
 }

@@ -15,3 +15,15 @@ export function createVoiceEffects(context){
  input.connect(output);input.connect(room);room.connect(wet);wet.connect(output);output.connect(context.destination);
  return {input,dispose(){for(const node of [input,room,wet,output])node.disconnect();}};
 }
+
+// Bake the same approved graph into PCM, including the slowed pitch and full
+// reverb tail. Cached playback is then a plain 1x source with no second effect pass.
+export async function renderVoiceEffects({samples,sampleRate}){
+ const frames=Math.ceil(samples.length/MCP_VOICE_EFFECTS.pitchRatio+sampleRate*MCP_VOICE_EFFECTS.decaySeconds);
+ const context=new OfflineAudioContext(1,frames,sampleRate),buffer=context.createBuffer(1,samples.length,sampleRate);
+ buffer.copyToChannel(samples,0);
+ const source=context.createBufferSource();source.buffer=buffer;source.playbackRate.value=MCP_VOICE_EFFECTS.pitchRatio;
+ const effects=createVoiceEffects(context);source.connect(effects.input);source.start();
+ try{const rendered=await context.startRendering();return {samples:rendered.getChannelData(0),sampleRate:rendered.sampleRate,processed:true};}
+ finally{source.disconnect();effects.dispose();}
+}

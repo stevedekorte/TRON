@@ -16,8 +16,9 @@ try{
  await page.keyboard.press('ArrowUp');assert.equal(await selected(),'cycles');
  await page.keyboard.press('Enter');
  await page.waitForFunction(()=>__tron.state.playerVehicle==='cycle',null,{timeout:60000});
- await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing'&&__tron.state.cycleRendering.bikes.some(b=>b.wheelReflection?.phase>0),null,{timeout:60000});
+ await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing'&&__tron.state.cycleRace.cycles.filter(b=>b.alive).every(b=>(__tron.state.cycleRendering.bikes[b.id].wheelReflection?.phase??0)>0),null,{timeout:60000});
  const first=await page.evaluate(()=>__tron.state.cycleRendering.bikes.map(b=>b.wheelReflection?.phase??0));
- await page.waitForFunction(first=>__tron.state.cycleRendering.bikes.some((b,i)=>(b.wheelReflection?.phase??0)>first[i]+.1),first,{timeout:15000});
+ await page.waitForFunction(first=>__tron.state.cycleRace.cycles.filter(b=>b.alive).every(b=>(__tron.state.cycleRendering.bikes[b.id].wheelReflection?.phase??0)>first[b.id]+.1),first,{timeout:15000});
+ console.log('Live wheel phases:',await page.evaluate(()=>__tron.state.cycleRace.cycles.filter(b=>b.alive).map(b=>({id:b.id,player:b.id===__tron.state.cycleRace.playerId,...__tron.state.cycleRendering.bikes[b.id].wheelReflection}))));
  assert.deepEqual(errors,[]);console.log('Menu order, initial selection, wraparound navigation and Return launch passed.');
 }finally{await browser.close();}

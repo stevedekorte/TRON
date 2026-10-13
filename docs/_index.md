@@ -2020,3 +2020,12 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Shorten MCP typed access text to one line: REQUEST: ACCESS TO MASTER CONTROL PROGRAM. Hold it for 1.5 seconds before microphone permission/conversation startup. Reveal greeting and reply text at the beginning of cloned audio playback rather than while generation is pending.
 - [x] Add a separate Wendy Carlos credit for Break In (For Strings, Flutes And Celesta - Bonus), used for the MCP introduction, in displayed and extended credits.
 - Validation: all 502 automated tests passed; headless Chrome checked live wheel phase progression, the completed-intro pause, greeting/reply audio-start synchronization, and microphone allow/deny/retry paths.
+
+## Processed MCP speech cache — October 13
+
+- [x] First MCP spoken/displayed response is IDENTIFY USER AND ACCESS CODE.
+- [x] Cache fully processed mono PCM in IndexedDB (tron-mcp-rendered-speech), including pitch slowdown and the reverb tail. Playback recognizes processed audio and bypasses the live effect graph, avoiding double processing. Concurrent requests for normalized identical text share one generation. Cache failure falls back to generation/playback.
+- [x] Keys include normalized text plus MCP_VOICE_ID, processing revision and the complete effect settings. Opening with a changed version clears old audio. Bump MCP_VOICE_ID in speech-cache.js when changing the hosted model/reference voice; numeric effect settings invalidate automatically.
+- Validation: Chrome verified one TTS request for concurrent/repeated text, byte-identical PCM after a new page reload, nonzero baked reverb tail, and fresh generation after version invalidation. MCP permission and ENTER QUERY synchronization checks passed. Live-game wheel regression was expanded to require advancing phases on every living cycle; all six cycles, including five AI, passed.
+
+- [x] Initialize one live Web Audio output before the MCP introduction and route both background music and speech through it, eliminating late output-context creation/rerouting at first speech. Cached speech also avoids live effect-graph construction. Headless Chrome verified one live context, no music pause during greeting/reply, synchronized display and 1x playback for preprocessed audio. Device-specific audible continuity still needs user listening confirmation.
