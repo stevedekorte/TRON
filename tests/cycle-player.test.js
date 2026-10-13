@@ -91,11 +91,11 @@ test('boosted cycle cannot jump through an actual trail segment',()=>{
  const startZ=b.z,width=173;race.occupied[(b.z-2+86)*width+b.x+86]=4;race.trails.push({bikeId:3,team:1,dir:1,x1:b.x-2,z1:b.z-2,x2:b.x+2,z2:b.z-2});
  s.advance({cycleTurbo:true},.25);assert.equal(b.alive,false);assert(b.z>startZ-2&&b.z<startZ-1.8);assert.equal(race.crashes.filter(c=>c.id===race.playerId).length,1);
 });
-test('W/T/Space control cycle turbo, S takes priority, and I/K do not affect speed',async()=>{
+test('W controls cycle turbo, S takes priority, and I/K do not affect speed',async()=>{
  const {InputController}=await import('../src/app/input-controller.js');const input=new InputController();
  for(const key of ['KeyI','KeyK']){input.clear();input.keys.add(key);assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,false);}
- input.clear();input.keys.add('Space');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);input.release('Space');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);
- input.clear();input.keys.add('KeyT');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);
+ input.clear();input.keys.add('Space');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);input.release('Space');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);
+ input.clear();input.keys.add('KeyT');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);
  input.keys.add('KeyS');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,true);
  input.clear();input.keys.add('KeyW');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,true);
  input.keys.add('KeyS');assert.equal(input.command({playerVehicle:'cycle'}).cycleTurbo,false);assert.equal(input.command({playerVehicle:'cycle'}).cycleSlow,true);
@@ -175,9 +175,9 @@ test('escape freezes arena competitors and timer while outside enemies resume; r
  const paused=enemies();s.advance({},1/120);assert.equal(enemies(),paused);
 });
 
-test('arena S and X only slow the cycle, override turbo, and cannot select road reverse',async()=>{
+test('arena S only slows the cycle, override turbo, and cannot select road reverse',async()=>{
  const {InputController}=await import('../src/app/input-controller.js');
- for(const key of ['KeyS','KeyX']){
+ for(const key of ['KeyS']){
   const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[race.playerId];race.phase='racing';
   const input=new InputController();input.keys.add(key);input.keys.add('KeyW');input.cycleReverseQueued=true;
   const command=input.command(s.run);

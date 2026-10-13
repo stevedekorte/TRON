@@ -26,9 +26,11 @@ test('turning away just before an arena wall does not hit a reserved future grid
 test('fractional trail crossings are swept at turbo speed and damage the actual contact point',()=>{
  const r=fixture(),b=r.cycles[0];Object.assign(b,{speedMultiplier:2.5});
  r.trails=[{bikeId:3,team:1,dir:1,x1:-2,z1:-.43,x2:2,z2:-.43}];
+ Object.assign(r.cycles[3],{turboCharge:.2,brakeCharge:.3});
  updateCycleRace(r,.1,0,true);
  assert(!b.alive);assert(Math.abs(b.z-(-.43+ARENA_WALL.cycleRadiusMeters/C.cellMeters))<1e-8);
  assert.equal(r.crashes.filter(c=>c.id===0).length,1);
+ assert.equal(r.cycles[3].turboCharge,1);assert.equal(r.cycles[3].brakeCharge,1);assert(r.cycles[3].reserveReward);
  assert(r.trails.some(t=>t.bikeId===3&&t.dyingAt!==undefined));
 });
 test('swept collision catches diagonal segment end caps without false distant contacts',()=>{

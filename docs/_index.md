@@ -1920,3 +1920,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Lower the formation shot from 1.6 m to 0.55 m with a slightly raised gaze, preserving the right-side three-quarter view, smooth arrival and launch hold. Widen the vertical field of view on narrower windows to preserve horizontal framing.
 - Research: Carl Hoff discussed a POV-Ray tank model in [his 2005 Tron-Sector thread](https://tron-sector.com/forums/default.aspx?a=top&id=308827&pg=9). No verified downloadable tank source or reuse terms located; no tank asset imported.
 - Validation: nine credit previews rendered in headless Chrome with fade/framing/disposal checks, including the CSG shader preview; capture inspected. All 25 camera unit checks passed; `tests/home-transition.mjs` and `tests/cycle-opening.mjs` passed in headless Chrome. Inspected the lower formation capture. `npm run build` passed. Fixed the development tuning reset to exclude the new antialiasing checkbox from slider indexing.
+
+
+## Cycle wall elimination rewards — October 12
+
+- [x] An opposing cycle destroyed by a living cycle's trail fully restores the owner's turbo and brake reserves. Friendly/self collisions give no reward; existing trail splitting remains unchanged.
+- [x] Watched-cycle meters fill brightly over 0.65 seconds, glowing for 1.1 seconds. Switching watched cycles clears the effect.
+- [x] W is the cycle turbo key and S is brake; remove T, Space and X aliases and update help. Outside the arena W accelerates/boosts; S brakes and selects reverse when pressed at a stop.
+- Validation: headless Chrome recharge presentation check and capture passed on macOS. Production build passed. Full simulation suite includes opponent/friendly awards, swept collisions and removed-key checks.

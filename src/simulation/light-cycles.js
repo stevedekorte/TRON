@@ -1,3 +1,4 @@
+import {rewardCycleWallOwner} from './cycle-reserve-reward.js';
 import {cycleReactionProfile,sampleCycleReaction} from './cycle-reaction.js';
 import {cycleReactionClearance} from './cycle-ai-clearance.js';
 import {continuousCycle,turnContinuousCycle,advanceContinuousCycles,cycleCollisionTrails,sweepCycleSegment} from './cycle-continuous.js';
@@ -135,7 +136,7 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
     if(!free(r,p.x,p.z)){
       crashes.add(p.b.id);
       const owner=occupant(r,p.x,p.z)-1;
-      if(owner>=0&&owner!==p.b.id)trailHits.push({owner,x:p.x,z:p.z});
+      if(owner>=0&&owner!==p.b.id)trailHits.push({owner,x:p.x,z:p.z,victim:p.b});
     }
     const world=raceWorlds.get(r);
     if(world&&Math.max(Math.abs(p.x),Math.abs(p.z))*C.cellMeters>ARENA_WALL.outerMeters){
@@ -190,7 +191,7 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
     b.x=p.x;b.z=p.z;b.dir=p.dir;if(inside(b.x,b.z))r.occupied[cell(b.x,b.z)]=b.id+1;else r.outerOccupied[`${b.x},${b.z}`]=b.id+1;
 
   }
-  for(const hit of trailHits)damageCycleTrail(r,hit.owner,hit.x,hit.z);
+  for(const hit of trailHits){rewardCycleWallOwner(r,hit.owner,hit.victim);damageCycleTrail(r,hit.owner,hit.x,hit.z);}
   trimCycleTrails(r);
   const teams=[...new Set(r.cycles.filter(b=>b.alive).map(b=>b.team))];
   if(teams.length<2){r.phase='result';r.remaining=C.restartSeconds;r.winner=teams[0]??null;if(r.winner!==null)r.scores[r.winner]++;}
@@ -354,7 +355,7 @@ function updateEscapedCycles(r,dt,input,playerOnly=false){
    let trailHit=null;
    const actualClear=(bike,to)=>{const contact=clear(bike,to);trailHit=contact?.trailHit??null;return contact;};
    if(!advanceRoadCycle(b,step,control,actualClear,r.roadConfig))r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:r.time});
-   if(trailHit)damageCycleTrail(r,trailHit.owner,trailHit.x,trailHit.z);
+   if(trailHit){if(!b.alive)rewardCycleWallOwner(r,trailHit.owner,b);damageCycleTrail(r,trailHit.owner,trailHit.x,trailHit.z);}
    if(`${Math.round(b.x)},${Math.round(b.z)}`!==b.roadEntryCell)b.roadEntryCell=null;
    if(b.alive)reenterArena(r,b,clear);
   }

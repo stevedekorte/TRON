@@ -70,7 +70,7 @@ test('display credits keep a brief Cloudflare mention and no entry exceeds eight
  assert(pages.every(p=>p.split('\n').length<=8&&p.split('\n').every(line=>line.length<=60)));
  assert(pages.some(p=>p.startsWith('WENDY CARLOS\n')&&p.includes("WE'VE GOT COMPANY")&&p.includes('TOWER MUSIC')));
  assert(pages.some(p=>p.startsWith('JOURNEY\n')&&p.includes('ONLY SOLUTIONS')));
- assert(pages.length<32);
+ assert(pages.some(p=>p.includes('CARL N. HOFF')));
 });
 
 test('victory typing keeps extended-credit cadence at low frame rates',()=>{

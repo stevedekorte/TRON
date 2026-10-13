@@ -1,3 +1,4 @@
+import {rewardCycleWallOwner} from './cycle-reserve-reward.js';
 import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR,cycleFraction,cycleTrailState} from '../game/light-cycles.js';
 import {ARENA_WALL,arenaWallBlocked,wallImpact,breachContains} from '../game/arena-breaches.js';
 import {cycleTrailHeadTrim} from '../game/cycle-trails.js';
@@ -120,7 +121,7 @@ export function advanceContinuousCycles(r,alive,dt,world){
   if(hit){
    b.alive=false;r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:r.time});
    if(hit.wall)r.breaches.push({...wallImpact(hit.x*C.cellMeters,hit.z*C.cellMeters),id:r.breaches.length,time:r.time});
-   if(hit.owner!==undefined&&hit.owner!==b.id)trailHits.push(hit);
+   if(hit.owner!==undefined&&hit.owner!==b.id)trailHits.push({...hit,victim:b});
    continue;
   }
   const mouth=wallImpact(b.x*C.cellMeters,b.z*C.cellMeters);
@@ -130,7 +131,7 @@ export function advanceContinuousCycles(r,alive,dt,world){
    rebuildTrailOccupancy(r,[b]);if(b.id===r.playerId)r.pendingTurns=[];
   }
  }
- for(const hit of trailHits)damageCycleTrail(r,hit.owner,hit.x,hit.z);
+ for(const hit of trailHits){rewardCycleWallOwner(r,hit.owner,hit.victim);damageCycleTrail(r,hit.owner,hit.x,hit.z);}
  const teams=[...new Set(r.cycles.filter(b=>b.alive).map(b=>b.team))];
  if(teams.length<2){r.phase='result';r.remaining=C.restartSeconds;r.winner=teams[0]??null;if(r.winner!==null)r.scores[r.winner]++;}
 }

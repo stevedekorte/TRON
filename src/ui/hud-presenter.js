@@ -5,6 +5,7 @@ import {Vector3} from 'three';
 import {assistedRecognizerTarget,ASSIST_MARKER} from '../rendering/assist-target.js';
 import { config, CLU_HEALTH, CLU_WEAPON, TURBO, GUNNER } from '../game/config.js';
 const $ = (id) => document.getElementById(id);
+const RESERVE_REWARD={fillMs:650,glowMs:1100};
 const HEALTH_WARNING = { orange: 0.5, red: 0.25, critical: 0.1 };
 export class HudPresenter {
   constructor(world, warnings) {
@@ -13,6 +14,27 @@ export class HudPresenter {
     this.assistPoint=new Vector3();
     this.warnings = warnings;
     this.mapContext = $('map').getContext('2d');
+  }
+  updateReserveReward(bike,now) {
+    if(this.rewardBike!==bike){
+      this.rewardBike=bike;
+      this.rewardSeen=bike?.reserveReward;
+      this.rewardStarted=null;
+    }else if(bike?.reserveReward!==this.rewardSeen){
+      this.rewardSeen=bike?.reserveReward;
+      this.rewardStarted=now;
+    }
+    const elapsed=this.rewardStarted===null?Infinity:now-this.rewardStarted;
+    const active=!!bike&&elapsed<RESERVE_REWARD.glowMs;
+    for(const [id,field] of [['turbo','turboFrom'],['cycle-brake','brakeFrom']]){
+      $(id).classList.toggle('reserve-reward',active);
+      if(active&&elapsed<RESERVE_REWARD.fillMs){
+        const start=this.rewardSeen[field]??0;
+        const t=Math.min(1,elapsed/RESERVE_REWARD.fillMs);
+        $(id==='turbo'?'turbo-fill':'cycle-brake-fill').style.transform=
+          `scaleX(${start+(1-start)*(1-(1-t)**3)})`;
+      }
+    }
   }
   drawMap(run) {
     const { HALF, BASIS, WALLS } = this.world;
@@ -181,7 +203,7 @@ export class HudPresenter {
     const turbo = $('turbo'),
       boosting = cycleMode ? cycleBike.boosting : run.turboRemaining > 0,
       charging = cycleMode ? cycleBike.turboCharge < 1 : run.turboCooldown > 0;
-    turbo.querySelector('span').textContent = roadBike ? `T/SPACE / TURBO · ${roadBike.reverseGear?'R':Math.round(roadBike.targetRoadSpeed*3.6)+' SET'} · ${Math.round(Math.abs(roadBike.roadSpeed)*3.6)} KM/H` : cycleMode ? 'W/T/SPACE / TURBO' : 'T / TURBO';
+    turbo.querySelector('span').textContent = roadBike ? `W / TURBO · ${roadBike.reverseGear?'R':Math.round(roadBike.targetRoadSpeed*3.6)+' SET'} · ${Math.round(Math.abs(roadBike.roadSpeed)*3.6)} KM/H` : cycleMode ? 'W / TURBO' : 'T / TURBO';
     turbo.setAttribute(
       'aria-label',
       boosting ? 'Turbo active' : charging ? 'Turbo recharging' : 'Turbo ready',
@@ -190,6 +212,7 @@ export class HudPresenter {
     turbo.classList.toggle('charging', charging);
     $('turbo-fill').style.transform =
       `scaleX(${cycleMode ? cycleBike.turboCharge : boosting ? run.turboRemaining / TURBO.duration : 1 - run.turboCooldown / TURBO.rechargeSeconds})`;
+    this.updateReserveReward(cycleBike,now);
     $('hint').hidden=true;
     document.body.classList.toggle('impact', run.impact > 0.6 && !view.cameraRig.reducedMotion);
     if (showSurvey) this.drawMap(run);
