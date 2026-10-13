@@ -67,12 +67,12 @@ async function playSamples({samples,sampleRate,processed:rendered=false},token,{
  await new Promise(resolve=>{let tail;finishAudio=()=>{clearTimeout(tail);resolve();};source.onended=()=>{source.disconnect();face?.speak(false);tail=setTimeout(resolve,processed?0:MCP_VOICE_EFFECTS.decaySeconds*1000);};onStart();source.start();animate();});
  cancelAnimationFrame(audioFrame);finishAudio=null;audioSource=null;face?.speak(false);
 }
-async function speakCloned(text,token,{whole=false}={}){
- let displayed=false;const onStart=()=>{if(!displayed){$('reply').textContent=text;displayed=true;}};
+async function speakCloned(text,token,{whole=false,onStart:started=()=>{},resumeListening=true}={}){
+ let displayed=false;const onStart=()=>{if(!displayed){$('reply').textContent=text;displayed=true;started();}};
  try{
   if(whole)await playSamples(await voice.generate(text),token,{onStart});
   else await speakSentences({text,generate:chunk=>voice.generate(chunk),play:audio=>playSamples(audio,token,{onStart}),isCurrent:()=>token===epoch,onWaiting:()=>status('MCP GENERATING VOICE…')});
-  if(token===epoch){setBusy(false);status('YOUR TURN');restartTimer=setTimeout(listen,350);return true;}
+  if(token===epoch){if(resumeListening){setBusy(false);status('YOUR TURN');restartTimer=setTimeout(listen,350);}return true;}
  }catch(error){if(token===epoch){face?.speak(false);setBusy(false);status('MCP CLONED VOICE FAILED — REPLY SHOWN AS TEXT: '+error.message);$('reply').textContent=text+'\nMCP CLONED VOICE UNAVAILABLE';}}
  finally{if(token!==epoch){setBusy(false);if(!paused&&!leaving)status('YOUR TURN');}}
 }
@@ -130,9 +130,24 @@ async function send(text){
   if(typeof data.reply!=='string'||!data.reply.trim())throw new Error('MCP RETURNED AN EMPTY REPLY');
   if(token!==epoch||leaving)return;
   history.push({role:'user',content:text},{role:'assistant',content:data.reply});if(history.length>16)history.splice(0,history.length-16);
-  clearInterval(waiting);speak(data.reply,token);
+  clearInterval(waiting);
+  if(data.action?.type==='launch_game'&&data.action.game==='cycles')await announceGame(data.reply,token);
+  else speak(data.reply,token);
  }catch(error){if(token===epoch&&!leaving){setBusy(false);const message=error.name==='AbortError'?'GEMINI TIMED OUT — TRY AGAIN':error.message;status(message);$('reply').textContent='MASTER CONTROL PROGRAM UNAVAILABLE';$('message').value=text;}}
  finally{clearInterval(waiting);clearTimeout(timeout);if(token===epoch)request=null;}
+}
+async function announceGame(text,token){
+ // Load the face while TTS is preparing, but reveal it only at audio start.
+ const faceReady=(async()=>{if(!face){try{const {createMcpFace}=await import('./face.js');face=await createMcpFace($('face'),{cover:true});}catch{}}})();
+ await faceReady;if(token!==epoch||paused||leaving)return;
+ face?.pause(false);
+ const spoken=await speakCloned(text,token,{resumeListening:false,onStart:()=>document.body.classList.add('mcp-command')});
+ if(!spoken||token!==epoch||paused||leaving)return;
+ await new Promise(resolve=>setTimeout(resolve,1000));
+ if(token!==epoch||paused||leaving)return;
+ paused=true;interrupt();setMic(false);face?.pause(true);
+ if(window.parent!==window)window.parent.postMessage({type:'mcp-launch',game:'cycles'},location.origin);
+ else {cancelIntro.fadeOutMusic();await new Promise(resolve=>setTimeout(resolve,1100));location.replace(new URL('./?mcpLaunch=cycles',location.href));}
 }
 $('message-form').addEventListener('submit',e=>{e.preventDefault();void send($('message').value);});
 $('microphone').onclick=()=>{if(voice.ready)setMic(!micEnabled);};
@@ -140,7 +155,7 @@ $('microphone').onclick=()=>{if(voice.ready)setMic(!micEnabled);};
 const exit=window.createExitConfirm({onConfirm:()=>{cancelIntro.pauseMusic();paused=true;interrupt();setMic(false);face?.pause(true);if(window.parent!==window){window.parent.postMessage({type:'mcp-home'},location.origin);}else{leaving=true;location.replace(new URL('./',location.href));}},onCancel:()=>{cancelIntro.resumeMusic();paused=false;status('YOUR TURN');void requestConversationAudio();listen();}});
 function showExit(){if(exit.open)return;cancelIntro.pauseMusic();paused=true;interrupt();exit.show();}
 
-window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-resume'){cancelIntro.resumeMusic();paused=false;void requestConversationAudio();face?.pause(false);setBusy(voice.generating);status(voice.generating?'FINISHING PREVIOUS VOICE REQUEST…':voice.ready?'YOUR TURN':'PREPARING MCP VOICE…');}});
+window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-transition-start')cancelIntro.fadeOutMusic();if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-resume'){document.body.classList.remove('mcp-command');cancelIntro.resumeMusic();paused=false;void requestConversationAudio();face?.pause(false);listen();setBusy(voice.generating);status(voice.generating?'FINISHING PREVIOUS VOICE REQUEST…':voice.ready?'YOUR TURN':'PREPARING MCP VOICE…');}});
 window.addEventListener('keydown',e=>{if(e.code==='Escape'&&!exit.open){e.preventDefault();showExit();}});
 window.addEventListener('pagehide',()=>{leaving=true;cancelIntro();interrupt();face?.dispose();voice.cancel();audioContext?.close();exit.dispose();},{once:true});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){interrupt({keepVoiceLoading:true});status('TRANSMISSION PAUSED');}else listen();});

@@ -197,14 +197,18 @@ export function createGameApp() {
   }
 
   const homeTransition=createHomeTransition();
-  const mcpPanel=createMcpPanel({onClose:()=>{homeTransition.clear();$('start-mcp').focus();}});
-  async function start() {
+  const mcpPanel=createMcpPanel({onClose:()=>{homeTransition.clear();$('start-mcp').focus();},onLaunch:async(game,overlay)=>{
+    homeTransition.clear();selectGame(game);windowFocused=true;window.focus();
+    await start(overlay);await homeTransition.finish();
+  }});
+  async function start(directOverlay=null) {
     if(homeTransition.active)return;
     const homeSelection=mode==='ready'&&!endingStage;
     if(homeSelection){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
-      sound.terminalTone('access');
-      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles',keepCovered:['mcp','credits','bit'].includes(selectedGame)});
+      if(directOverlay)homeTransition.beginDirect(directOverlay);
+      else {sound.terminalTone('access');
+      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles',keepCovered:['mcp','credits','bit'].includes(selectedGame)});}
       if(disposed)return;
     }
     if(mode==='ready'&&selectedGame==='credits'){
@@ -304,6 +308,7 @@ export function createGameApp() {
   }
 
   const exitConfirm=window.createExitConfirm({
+    muted:()=>sound.muted,
     onConfirm:()=>{setAutoplay(false);returnToProgramSelection();},
     onCancel:()=>{void resume();},
   });
@@ -336,7 +341,7 @@ export function createGameApp() {
     const cycle=run.playerVehicle==='cycle',road=cycle&&run.cycleRace.cycles[run.cycleRace.playerId].escaped;
     const groups=cycle?[
       ['DRIVING',...(road?['W / ACCELERATE + TURBO','A/D OR ARROWS / STEER','S / BRAKE / REVERSE']:['A/D OR LEFT/RIGHT / TURN','W / TURBO','S / BRAKE'])],
-      ['CAMERA','J/L / GLANCE','I/K / ZOOM','V / AERIAL'],
+      ['CAMERA','P / FIRST PERSON','J/L / GLANCE','I/K / ZOOM','V / AERIAL'],
       ['AFTER DEATH','LEFT/RIGHT / FOLLOW CYCLES','ENTER / RESTART'],
       ['RENDERING','SHIFT-R / NORMAL OR POV-RAY CYCLES'],
     ]:[
@@ -510,7 +515,8 @@ export function createGameApp() {
       if(['KeyA','ArrowLeft','KeyD','ArrowRight'].includes(key)){
         event.preventDefault();keys.add(key);if(!event.repeat)inputController.queueCycleTurn(['KeyA','ArrowLeft'].includes(key)?-1:1,run.cycleRace?.pendingTurns.length??0);return;
       }
-      if(['KeyP','KeyF','KeyO','KeyX','KeyT','Space'].includes(key)){event.preventDefault();return;}
+      if(key==='KeyP'){event.preventDefault();if(!event.repeat&&!run.cycleSpectating&&run.cycleRace?.cycles[run.cycleRace.playerId]?.alive){view.cameraRig.cycleFirstPerson=!view.cameraRig.cycleFirstPerson;view.cameraRig.aerial=false;}return;}
+      if(['KeyF','KeyO','KeyX','KeyT','Space'].includes(key)){event.preventDefault();return;}
     }
     if (
       !event.repeat &&
@@ -1076,7 +1082,10 @@ export function createGameApp() {
       loadingTimings.print();
       requestAnimationFrame(()=>{if(!disposed)loadingTimings.checkpoint('Frame callback after opening ready');});
       loop.start();
-      if(testCycleStart&&run.cycleRace)void start().catch(error=>{if(!disposed)fail(error.message);});
+      if(new URLSearchParams(location.search).get('mcpLaunch')==='cycles'){
+        const cover=document.createElement('div');Object.assign(cover.style,{position:'fixed',inset:'0',background:'#010207',zIndex:1100});document.body.append(cover);
+        selectGame('cycles');void start(cover).then(()=>homeTransition.finish()).finally(()=>cover.remove());
+      }else if(testCycleStart&&run.cycleRace)void start().catch(error=>{if(!disposed)fail(error.message);});
     } catch (error) {
       console.error(error);
       if (!disposed) fail(error.message);

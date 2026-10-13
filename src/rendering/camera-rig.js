@@ -25,6 +25,7 @@ const AERIAL_CAMERA = Object.freeze({
 });
 export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,turboDistanceChangePerSpeedRatio:.32,minDistanceScale:.55,maxDistanceScale:1.16,responsePerSecond:2.5});
 export const CYCLE_TURN_TRACKING=Object.freeze({nearDistanceMeters:12,farDistanceMeters:140,nearResponsePerSecond:30,farResponsePerSecond:1.2});
+export const CYCLE_FIRST_PERSON=Object.freeze({eyeHeightMeters:1.15,forwardMeters:.25,lookAheadMeters:12,responsePerSecond:5,fadeSeconds:.3,clearanceHalfWidthMeters:.7,clearanceHalfLengthMeters:1.95,clearanceHeightMeters:1.75});
 const CYCLE_SWITCH_SECONDS=1.2;
 export const CYCLE_DEATH_HOLD_SECONDS=3;
 const GUNNER_TRANSITION_SECONDS = 0.75;
@@ -72,6 +73,7 @@ export class CameraRig {
     this.cycleOverview = null;
     this.cycleAnchor = null;
     this.cycleSpeedDistanceScale=1;
+    this.cycleFirstPerson=false;this.cycleFirstPersonMix=0;this.cycleVisibility=1;this.cycleFirstPersonAge=0;this.wasCycleFirstPerson=false;
     this.cycleFollowedId=undefined;
     this.cycleDeathHold=null;
     this.cycleDeathsHeld=new Set();
@@ -156,6 +158,7 @@ export class CameraRig {
     if(this.deathCamera.update(this,run,dt,mode))return {tankVisible:false};
     if(this.cycleResultCamera.update(this,run,cycleRace,dt,mode))return {tankVisible:false};
     if(run.playerVehicle==='cycle'){
+      if(run.cycleSpectating){this.cycleFirstPerson=false;this.cycleFirstPersonMix=0;this.cycleVisibility=1;}
       if(run.cycleSpectating){
         const watchedId=run.cycleFollowId??cycleRace.playerId;
         const watched=cycleRace.cycles.find(b=>b.id===watchedId);
@@ -305,6 +308,25 @@ export class CameraRig {
       // the wall. The raised anchor and rider eye are both inside the arena.
       if(this.cycleCockpitMix>.01)this.collisionRecovery.active=false;
       constrainCamera(cycleWorld,cycleAnchor,this.camera.position,previousCamera,CAMERA_CLEARANCE.radiusMeters,this.cycleOpening===null&&aerialMix===0&&!cockpitReturn,this.cycleCockpitMix>.01?null:this.collisionRecovery,dt);
+      const firstPerson=this.cycleFirstPerson&&!run.cycleSpectating&&bike?.alive&&this.cycleOpening===null;
+      if(!bike?.alive||run.cycleSpectating)this.cycleFirstPerson=false;
+      if(firstPerson!==this.wasCycleFirstPerson){this.cycleFirstPersonAge=0;this.wasCycleFirstPerson=firstPerson;}
+      if(mode!=='paused'){
+        this.cycleFirstPersonAge+=dt;
+        const cameraTarget=firstPerson&&this.cycleFirstPersonAge>=CYCLE_FIRST_PERSON.fadeSeconds?1:0;
+        this.cycleFirstPersonMix=THREE.MathUtils.lerp(this.cycleFirstPersonMix,cameraTarget,1-Math.exp(-dt*CYCLE_FIRST_PERSON.responsePerSecond));
+        if(firstPerson)this.cycleVisibility=Math.max(0,this.cycleVisibility-dt/CYCLE_FIRST_PERSON.fadeSeconds);
+      }
+      const eye=new THREE.Vector3(pose.x-Math.sin(pose.yaw)*CYCLE_FIRST_PERSON.forwardMeters,CYCLE_FIRST_PERSON.eyeHeightMeters,-pose.s-Math.cos(pose.yaw)*CYCLE_FIRST_PERSON.forwardMeters);
+      const eyeLook=eye.clone().add(new THREE.Vector3(-Math.sin(pose.yaw+this.cycleGlance),0,-Math.cos(pose.yaw+this.cycleGlance)).multiplyScalar(CYCLE_FIRST_PERSON.lookAheadMeters));
+      this.camera.position.lerp(eye,this.cycleFirstPersonMix);
+      if(!firstPerson&&mode!=='paused'){
+        const dx=this.camera.position.x-pose.x,dz=this.camera.position.z+pose.s;
+        const side=dx*Math.cos(pose.yaw)-dz*Math.sin(pose.yaw),along=dx*Math.sin(pose.yaw)+dz*Math.cos(pose.yaw);
+        const outside=Math.abs(side)>CYCLE_FIRST_PERSON.clearanceHalfWidthMeters||Math.abs(along)>CYCLE_FIRST_PERSON.clearanceHalfLengthMeters||this.camera.position.y>CYCLE_FIRST_PERSON.clearanceHeightMeters;
+        this.cycleVisibility=outside?Math.min(1,this.cycleVisibility+dt/CYCLE_FIRST_PERSON.fadeSeconds):0;
+      }
+
       // Interpolating look-at points can flip the camera when the flight
       // path passes through one. Blend orientations toward the destination
       // framing instead, independently of the camera's translation.
@@ -332,6 +354,7 @@ export class CameraRig {
           cameraLook.copy(this.camera.position).add(direction);
         }
       }
+      cameraLook.lerp(eyeLook,this.cycleFirstPersonMix);
       this.camera.lookAt(cameraLook);
       this.camera.rotateZ(openingRoll);
       if(this.cycleSwitch){

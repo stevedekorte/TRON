@@ -326,6 +326,8 @@ export class View {
     const cycleRace=interpolateCycleRace(run.cycleRace,alpha);
     const opening=this.cameraRig.cycleOpening;
     this.arena?.userData.cycleRace.update(cycleRace,opening===null?null:Math.max(0,(opening-1)*CYCLE_OPENING.durationSeconds));
+
+
     if (this.teleportRevision !== run.teleportRevision) {
       this.cameraRig.freshCamera = true;
       this.cameraRig.gunnerTransition = null;
@@ -496,6 +498,17 @@ export class View {
       fragments,
       cycleRace,
     });
+    for(const [id,bike] of (this.arena?.userData.cycleRace.bikes??[]).entries()){
+      const mix=run.playerVehicle==='cycle'&&!run.cycleSpectating&&id===cycleRace?.playerId?1-this.cameraRig.cycleVisibility:0;
+      bike.userData.cockpitMix=mix;
+      if(mix>.999)bike.visible=false;
+      bike.traverse(o=>{if(o.isMesh)for(const material of [].concat(o.material)){
+        if(mix>0){
+          material.userData.cockpitOriginal??={opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite};
+          material.opacity=material.userData.cockpitOriginal.opacity*(1-mix);material.transparent=true;material.depthWrite=false;
+        }else if(material.userData.cockpitOriginal){Object.assign(material,material.userData.cockpitOriginal);delete material.userData.cockpitOriginal;}
+      }});
+    }
     this.tank.root.visible = cameraResult.tankVisible && run.playerVehicle!=='cycle';
     if (gunner && this.cameraRig.mouseLook)
       this.mouseTarget = mouseTarget(run, this.cameraRig.mouseLook, this.camera, [

@@ -51,10 +51,10 @@ export function compilePovCycle(){
    }else call=`${l.kind}Events(o,d,${l.data.map(number).map(n=>n+',').join('')}${i}u,normalMatrix);`;
    return `{mat4 inv=${m};vec3 o=(inv*vec4(ro,1)).xyz,d=(inv*vec4(rd,0)).xyz;mat3 normalMatrix=transpose(mat3(inv));${call}}`;
   }).join('\n');
-  // The rear cut face of the projecting window is an underbody-gray panel,
-  // not glass. Identify the actual CSG prism boundary so the curved glazing
-  // retains its material on both sides, independent of camera or team color.
-  const material=part.name==='window'?`(e.id==${leaves.findIndex(l=>l.kind==='prism')}u && n.x<-.5 ? 3 : 2)`:part.material;
+  // Only the rear prism cut on the projecting side window is a gray return.
+  // Keep the roof strip / top lip and curved glazing black. Material 4 shares
+  // the underbody pigment, with a little reflected fill on this downward face.
+  const material=part.name==='window'?`(e.id==${leaves.findIndex(l=>l.kind==='prism')}u && n.x<-.5 && abs((ro+rd*e.t).z)>23.001 ? 4 : 2)`:part.material;
   return `bool inside_${part.name}(uint bits){return ${expr};}\nvoid hit_${part.name}(vec3 ro,vec3 rd,inout Hit hit){eventCount=0;bits=0u;${calls}\n sortEvents();bool was=inside_${part.name}(bits);for(int i=0;i<80;i++){if(i>=eventCount)break;Event e=events[i];bits^=1u<<e.id;bool now=inside_${part.name}(bits);if(was!=now){vec3 n=e.n;if((dot(n,rd)<0.)!=now)n=-n;if(e.t<hit.t${part.name==='window'?' || (hit.material==1 && e.t<hit.t+.03)':''})hit=Hit(e.t,n,${material});return;}was=now;}}`;
  }).join('\n');
  return functions+`\nHit cycleHit(vec3 origin,vec3 direction){float scale=${number(POV_CYCLE_SCALE)};vec3 ro=vec3(177.5-origin.z/scale,origin.y/scale,origin.x/scale),rd=vec3(-direction.z,direction.y,direction.x);vec3 low=vec3(-85.1,-.1,-80.),high=vec3(440.1,230.,80.);vec3 inv=1./rd,a=(low-ro)*inv,b=(high-ro)*inv;vec3 nearV=min(a,b),farV=max(a,b);rangeStart=max(.0005/scale,max(nearV.x,max(nearV.y,nearV.z)));rangeEnd=min(farV.x,min(farV.y,farV.z));Hit h=emptyHit();h.t=100000.;if(rangeStart>=rangeEnd)return emptyHit();${[...povCycleParts].sort((a,b)=>(a.name==='upper'?-1:b.name==='upper'?1:0)).map(p=>`hit_${p.name}(ro,rd,h);rangeEnd=min(rangeEnd,h.t+.03);`).join('')}if(h.material==0)return emptyHit();h.t*=scale;h.n=normalize(vec3(h.n.z,h.n.y,-h.n.x));return h;}`;

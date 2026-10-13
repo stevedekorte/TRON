@@ -20,7 +20,7 @@ export function createMcpMiddleware(env={},fetchImpl=fetch){
   if(busy)return send(429,{error:'MCP IS PROCESSING ANOTHER REQUEST — TRY AGAIN'});
   busy=true;const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),speech?MCP_SPEECH.timeoutMs:45000);
   const abort=()=>controller.abort();res.on('close',abort);
-  try{send(200,speech?await mcpSpeech({text:messages,key:settings.FAL_KEY,signal:controller.signal,fetchImpl}):await mcpCompletion({messages,url,key,model,signal:controller.signal,fetchImpl}));}
+  try{send(200,speech?await mcpSpeech({text:messages,key:settings.FAL_KEY,signal:controller.signal,fetchImpl}):await mcpCompletion({messages,url,key,model,searchKey:settings.BRAVE_SEARCH_API_KEY,signal:controller.signal,fetchImpl}));}
   catch(error){console.warn('MCP upstream request failed',{kind:error.name,providerStatus:error.providerStatus,cause:error.cause?.code});const failure=speech?{status:502,message:'MCP CLONED VOICE UNAVAILABLE'}:mcpError(error);send(failure.status,{error:failure.message});}
   finally{busy=false;clearTimeout(timer);res.off('close',abort);}
  };
@@ -31,7 +31,9 @@ export function mcpPlugin(env){
   if(!key){try{const stored=readFileSync(new URL('../credentials/Gemini.txt',import.meta.url));if(!stored.subarray(0,10).equals(Buffer.from('\0GITCRYPT\0')))key=stored.toString('utf8').trim();}catch{}}
   let falKey=env.FAL_KEY;
   if(!falKey){try{const stored=readFileSync(new URL('../credentials/Fal.txt',import.meta.url));if(!stored.subarray(0,10).equals(Buffer.from('\0GITCRYPT\0')))falKey=stored.toString('utf8').trim();}catch{}}
-  return {...env,MCP_API_KEY:key,FAL_KEY:falKey};
+  let searchKey=env.BRAVE_SEARCH_API_KEY;
+  if(!searchKey){try{const stored=readFileSync(new URL('../credentials/BRAVE_SEARCH_API_KEY.txt',import.meta.url));if(!stored.subarray(0,10).equals(Buffer.from('\0GITCRYPT\0')))searchKey=stored.toString('utf8').trim();}catch{}}
+  return {...env,MCP_API_KEY:key,FAL_KEY:falKey,BRAVE_SEARCH_API_KEY:searchKey};
  };
  // Read the local credential on each request so a key replacement takes effect
  // without restarting a long-lived Vite session. Keep one shared busy guard.

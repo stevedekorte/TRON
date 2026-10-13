@@ -60,6 +60,7 @@ export function createDevelopmentTools({
           trailCounts: view.arena.userData.cycleRace.trails.map(m=>m.count),
         } : null,
         camera: {
+          cycleVisibility:view.cameraRig.cycleVisibility,cycleFirstPerson:view.cameraRig.cycleFirstPerson,cycleFirstPersonMix:view.cameraRig.cycleFirstPersonMix,
           free: view.cameraRig.freeCamera.active,
           beamCinematic: view.cameraRig.beamCinematic,
           aerialBlend: view.cameraRig.aerialBlend,

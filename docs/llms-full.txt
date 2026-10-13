@@ -24,6 +24,16 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 - [x] Preserve each cycle’s reflection clock across AI random-state changes; reset only on a new round or simulation time rewind. Surviving cycles continue their speed-dependent flicker after the player dies.
 - [x] Verified with `node tests/home-menu-order.mjs` in headless Chrome on macOS: ray-cast renderer stays active, all surviving reflection phases advance after player death, and the dead cycle has zero reflection strength. Initial sandboxed Chrome launch aborted; rerun outside the sandbox passed.
 
+## MCP game-grid transfer and search — October 13
+
+- [x] Add bounded native Gemini function calls: `send_to_light_cycles` is the only game destination, allowed before spoken text; Brave `web_search` runs only on the relay with its private credential, at most once per turn. Preserve Gemini thought signatures through tool results. Require a newline after every spoken sentence.
+- [x] Reveal the animated face full-screen at announcement audio start, wait for speech completion and one additional second, then dissolve directly into the prepared cycle scene. Fade the MCP music over the same 1.1 seconds and stop/reset it; lower its normal level by 30% (0.60 to 0.42). Escape invalidates pending transfers.
+- [x] Show `CONNECTING TO CORE...` immediately while MCP audio/resources prepare. Cache its music Blob in a dedicated `tron-mcp-music` IndexedDB store, keyed by the asset URL; release Blob URLs when leaving.
+- [x] P toggles a smooth first-person cycle camera; hide the player’s cycle in the cockpit and restore it on exit. First-person mode is limited to a living player, with the normal spectator camera after death.
+- [x] Add immediate two-note confirmation feedback to Return Home, allowing 200 ms before navigation so the beep is not cut off. Honor main-game mute.
+- [x] Restrict the gray window return to the projecting rear cut face, excluding the roof lip. Give that downward-facing panel a small reflected-light floor while retaining the underbody pigment and the rest of the cycle’s deep shadows.
+- [x] Validation: 504 unit tests pass; headless Chrome on macOS passes `tests/mcp-game-launch.mjs` (audio timing, face, one-second hold, direct scene transition and music-fade trigger) and `tests/exit-confirm.mjs` (CLU/cycles/BIT confirmation and cancellation). Inspected the normally lit rear-window render in `test-results/cycle-window-rear-solid.png`. `tests/cycle-first-person.mjs` passes cockpit toggling, height and hidden-player checks; `tests/mcp.mjs` passes microphone permission, speech timing and music continuity checks. A live relay search returned an answer. These automated checks do not establish subjective sound quality.
+
 ## Project documents
 
 <div class="card-grid cols-2">

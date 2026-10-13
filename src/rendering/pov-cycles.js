@@ -16,7 +16,7 @@ uniform bool edgeNormalPass,edgeMapReady;
 uniform sampler2D edgeMap;
 uniform vec2 edgeResolution;
 uniform float rezSolid,rezSweep,rezGrid,rezGlow;
-uniform float wheelPhase,wheelGlintStrength;
+uniform float wheelPhase,wheelGlintStrength,cockpitMix;
 float wheelReflection(vec3 point,vec3 normal,int material){
  if(material!=2||abs(normal.x)<.9||wheelGlintStrength<=0.)return 0.;
  // Both wheel discs share the original analytic model's axle height and centers.
@@ -72,7 +72,7 @@ void main(){
  float revealed=1.-smoothstep(cut-max(fwidth(localPoint.z),.001),cut,localPoint.z);
  contour*=revealed;halo*=revealed;grid*=revealed;
  float wire=max(max(contour,grid),halo);
- float alpha=rezSolid+(1.-rezSolid)*wire;
+ float alpha=(rezSolid+(1.-rezSolid)*wire)*(1.-cockpitMix);
  if(alpha<.002)discard;
  // Transform the world light into this cycle's coordinates for self-occlusion.
  vec3 key=normalize(vec3(-1,2,-1));
@@ -82,6 +82,7 @@ void main(){
   if(cycleHit(localPoint+h.n*.002,localKey).material!=0)visibility=${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)};
  }
  vec3 color=lightingVisible(worldPoint,normal,normalize(cameraPosition-worldPoint),materialColor(h.material),h.material==2?90.:45.,visibility);
+ if(h.material==4)color=max(color,materialColor(3)*${CYCLE_LIGHTING_CONFIG.windowReturnFill});
  color=edgeMapReady?filteredEdges(color,normal,h.material):cycleEdgeHighlights(color,normal,normalize(cameraPosition-worldPoint),h.material);
  color=mix(color,vec3(.82,.89,1.)*${WHEEL_GLINT.intensity},wheelReflection(localPoint,h.n,h.material)*rezSolid);
  vec3 contourColor=vec3(${new T.Color(CYCLE_REZ.contourColor).toArray().join(',')});
@@ -102,7 +103,7 @@ export function createPovCycleGeometry(){
  return new T.BoxGeometry(160*scale,230.1*scale,525.2*scale).translate(0,115*scale,0);
 }
 export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeometry()){
-   const uniforms={wheelPhase:{value:0},wheelGlintStrength:{value:0},rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
+   const uniforms={cockpitMix:{value:0},wheelPhase:{value:0},wheelGlintStrength:{value:0},rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
    const material=new T.ShaderMaterial({defines:{SHOW_CYCLE:1},uniforms,vertexShader,fragmentShader,side:T.BackSide});
    const mesh=new T.Mesh(geometry,material);mesh.name='CSG cycle';mesh.visible=false;
    mesh.onBeforeRender=(renderer,scene,camera)=>{
@@ -135,13 +136,14 @@ export class PovCycles {
    if(!proxy.visible)continue;
    const uniforms=proxy.material.uniforms;
    const phase=cycleMaterializationPhase(source.userData.cycleFormationProgress??1);
+   uniforms.cockpitMix.value=source.userData.cockpitMix??0;
    uniforms.wheelPhase.value=source.userData.wheelReflection?.phase??0;
    uniforms.wheelGlintStrength.value=source.userData.wheelReflection?.strength??0;
    uniforms.rezSolid.value=phase.solid;
    uniforms.rezSweep.value=phase.contours;
    uniforms.rezGrid.value=phase.grid;
    uniforms.rezGlow.value=phase.glow;
-   const transparent=phase.solid<1;
+   const transparent=phase.solid<1||uniforms.cockpitMix.value>.001;
    if(proxy.material.transparent!==transparent){proxy.material.transparent=transparent;proxy.material.needsUpdate=true;}
    proxy.material.depthWrite=!transparent;
    proxy.position.copy(source.position);proxy.position.y-=source.userData.groundOffsetMeters??0;

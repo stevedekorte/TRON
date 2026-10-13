@@ -46,3 +46,9 @@ body.mcp-terminal #reply{margin:0;max-width:58ch}
 
 @keyframes mcp-panel-reveal{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#encom-panel{animation:none}}
+
+/* A game-grid sentence reveals MCP only when its audio begins. */
+body.mcp-command #face,body.mcp-command #face-fallback{display:block!important;position:fixed;inset:0;width:100vw;height:100dvh;aspect-ratio:auto;z-index:5;animation:mcp-command-reveal .9s ease-out both;pointer-events:none}
+body.mcp-command #face-fallback{object-fit:cover}
+body.mcp-command #conversation,body.mcp-command #encom-panel{visibility:hidden}
+@keyframes mcp-command-reveal{from{opacity:0}to{opacity:1}}

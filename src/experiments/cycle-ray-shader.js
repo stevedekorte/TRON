@@ -7,7 +7,7 @@ import {Color} from 'three';
 export const CYCLE_RAY_CONFIG={lengthMeters:3.6,bodyColor:0xe6bd14,maxDistanceMeters:1000};
 // Film-style contrast: a blocked key contributes no light, with only a trace
 // of ambient/fill to retain shape in the almost-black unlit surfaces.
-export const CYCLE_LIGHTING_CONFIG={ambientIntensity:.03,fillIntensity:.04,occludedKeyIntensity:0,gridLineColor:0xcccccc};
+export const CYCLE_LIGHTING_CONFIG={windowReturnFill:.18,ambientIntensity:.03,fillIntensity:.04,occludedKeyIntensity:0,gridLineColor:0xcccccc};
 export const CYCLE_EDGE_CONFIG={color:0x708396,strength:.55,grazingAngleCosine:.18};
 export const cycleSceneGLSL=`
 uniform vec3 bodyColor;
@@ -71,6 +71,7 @@ vec3 sampleRay(vec2 pixel){
 #endif
  }else if(h.material!=0){p=ro+rd*h.t;color=lighting(p,h.n,-rd,materialColor(h.material),h.material==2?90.:45.);
 #ifdef SHOW_CYCLE
+ if(h.material==4)color=max(color,materialColor(3)*${CYCLE_LIGHTING_CONFIG.windowReturnFill});
  color=cycleEdgeHighlights(color,h.n,-rd,h.material);
 #endif
 }

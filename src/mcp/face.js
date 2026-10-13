@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import faceUrl from '../../docs/references/images/MCP/MCP.png?url';
 // Landmarks refer to the supplied film frame after trimming its black border.
 export const FACE={aspect:1972/896,columns:128,rows:80,mouthY:.125,mouthWidth:.28,jawTravel:.024};
-export async function createMcpFace(canvas){
+export async function createMcpFace(canvas,{cover=false}={}){
  const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0x020204);
  const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(-1,1,1,-1,.1,10);camera.position.z=2;
  const texture=await new THREE.TextureLoader().loadAsync(faceUrl);texture.colorSpace=THREE.SRGBColorSpace;
@@ -11,7 +11,7 @@ export async function createMcpFace(canvas){
  const material=new THREE.MeshBasicMaterial({map:texture});scene.add(new THREE.Mesh(geometry,material));
  let audioLevel=null,speaking=false,started=0,lastWord=0,amount=0,frame=0,disposed=false,paused=false;
  const motion=matchMedia('(prefers-reduced-motion: reduce)');
- function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);const aspect=w/h;camera.left=-Math.max(1,aspect/FACE.aspect);camera.right=-camera.left;camera.top=Math.max(1,FACE.aspect/aspect);camera.bottom=-camera.top;camera.updateProjectionMatrix();}
+ function resize(){const w=canvas.clientWidth||innerWidth,h=canvas.clientHeight||innerHeight;renderer.setSize(w,h,false);const aspect=w/h;camera.left=-(cover?Math.min:Math.max)(1,aspect/FACE.aspect);camera.right=-camera.left;camera.top=(cover?Math.min:Math.max)(1,FACE.aspect/aspect);camera.bottom=-camera.top;camera.updateProjectionMatrix();}
  const observer=new ResizeObserver(resize);observer.observe(canvas);resize();
  function draw(now){if(disposed||paused)return;const t=(now-started)/1000;
   // Browser TTS supplies word boundaries, not PCM/visemes. Blend those accents

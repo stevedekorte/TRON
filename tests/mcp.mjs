@@ -6,10 +6,10 @@ try{
   const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(({denied})=>{
    window.liveAudioContexts=0;const NativeAudioContext=window.AudioContext;window.AudioContext=class extends NativeAudioContext{constructor(...args){super(...args);window.liveAudioContexts++;}};
-   window.musicPauses=0;const pause=HTMLMediaElement.prototype.pause;HTMLMediaElement.prototype.pause=function(){if(this.src.includes('20%20Break')||this.src.includes('20 Break'))window.musicPauses++;return pause.call(this);};
+   window.musicPauses=0;const pause=HTMLMediaElement.prototype.pause;HTMLMediaElement.prototype.pause=function(){if(this.src.startsWith('blob:')||this.src.includes('20%20Break')||this.src.includes('20 Break'))window.musicPauses++;return pause.call(this);};
    window.events=[];window.audioStarts=[];window.audioRates=[];window.generationScreens=[];window.permissionDenied=denied;
    const start=AudioBufferSourceNode.prototype.start;AudioBufferSourceNode.prototype.start=function(...args){window.audioStarts.push(document.querySelector('#reply').textContent);window.audioRates.push(this.playbackRate.value);return start.apply(this,args);};
-   const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.src.includes('20%20Break')||this.src.includes('20 Break')){window.musicStartedAt=document.querySelector('#reply').textContent;window.musicCalledAt=performance.now();}return play.call(this);};
+   const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.src.startsWith('blob:')||this.src.includes('20%20Break')||this.src.includes('20 Break')){window.musicStartedAt=document.querySelector('#reply').textContent;window.musicCalledAt=performance.now();}return play.call(this);};
    navigator.mediaDevices.getUserMedia=async()=>{window.permissionAt=performance.now();events.push(['permission',document.querySelector('#reply').textContent]);if(window.permissionDenied)throw Error('denied');return {getTracks:()=>[{stop(){}}]};};
    new MutationObserver(()=>{if(!window.completedAt&&document.querySelector('#reply')?.textContent==='REQUEST: ACCESS TO MASTER CONTROL PROGRAM.')window.completedAt=performance.now();if(!window.firstTypedAt&&document.querySelector('#reply')?.textContent.startsWith('R'))window.firstTypedAt=performance.now();}).observe(document,{subtree:true,childList:true,characterData:true});
    window.SpeechRecognition=class{constructor(){window.recognition=this;}start(){events.push(['listen']);}abort(){this.onend?.();}};
@@ -46,7 +46,7 @@ try{
    assert.deepEqual(await page.evaluate(()=>generationScreens),['',''],'responses stay hidden while speech generates');
   }
   assert((await page.evaluate(()=>audioStarts)).includes('IDENTIFY USER AND ACCESS CODE.'),'greeting text is present at audio start');
-  assert.equal(await page.evaluate(()=>window.musicStartedAt),'','music begins before the first character');
+  assert.equal(await page.evaluate(()=>window.musicStartedAt),'CONNECTING TO CORE...','connecting message remains until typing starts');
   assert(await page.evaluate(()=>firstTypedAt-musicCalledAt>=950),'music is cued at least a second before typing');
   assert((await page.evaluate(()=>audioRates)).every(rate=>rate===1),'processed cached audio plays at 1x without another pitch pass');
   assert.equal(await page.evaluate(()=>liveAudioContexts),1,'music and speech share one live output engine');

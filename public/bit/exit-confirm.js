@@ -1,5 +1,5 @@
 // Shared by the main game and the isolated BIT page.
-window.createExitConfirm = function ({onConfirm, onCancel}) {
+window.createExitConfirm = function ({onConfirm, onCancel, muted=()=>false}) {
   const style=document.createElement('style');
   style.textContent=`
     #exit-confirm{background:transparent;color:#159ddd;border:0;padding:28px;text-align:left;font:var(--terminal-font-size,22px)/1.12 FilmTerminal,VT323,monospace;letter-spacing:.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566;max-width:calc(100vw - 40px)}
@@ -22,7 +22,23 @@ window.createExitConfirm = function ({onConfirm, onCancel}) {
     button.addEventListener('focus',()=>select(button));
     button.addEventListener('pointerenter',()=>button.focus());
   }
-  const close=confirm=>{if(!dialog.open)return;dialog.close();(confirm?onConfirm:onCancel)();};
+  let feedbackContext,confirmTimer;
+  const prepareFeedback=()=>{try{feedbackContext??=new AudioContext();void feedbackContext.resume().catch(()=>{});}catch{}};
+  const close=confirm=>{
+    if(!dialog.open)return;
+    if(confirm&&!muted()){
+      prepareFeedback();
+      if(feedbackContext){const c=feedbackContext,now=c.currentTime,tone=c.createOscillator(),gain=c.createGain();
+        tone.frequency.setValueAtTime(980,now);tone.frequency.setValueAtTime(1470,now+.085);
+        gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(.08,now+.002);gain.gain.exponentialRampToValueAtTime(.0001,now+.18);
+        tone.connect(gain);gain.connect(c.destination);tone.start();tone.stop(now+.19);tone.onended=()=>{tone.disconnect();gain.disconnect();};
+      }
+    }
+    dialog.close();
+    // Give immediate feedback time to play before full-document navigation or
+    // a synchronous scene reset can tear down or stall this document.
+    if(confirm)confirmTimer=setTimeout(onConfirm,200);else onCancel();
+  };
   dialog.querySelector('[data-cancel]').onclick=()=>close(false);
   dialog.querySelector('[data-confirm]').onclick=()=>close(true);
   dialog.addEventListener('cancel',event=>{event.preventDefault();close(false);});
@@ -40,5 +56,5 @@ window.createExitConfirm = function ({onConfirm, onCancel}) {
     if(event.code==='Escape'){event.preventDefault();if(!event.repeat)close(false);}
   };
   window.addEventListener('keydown',keydown,true);
-  return {get open(){return dialog.open;},show(){if(!dialog.open){dialog.showModal();dialog.querySelector('[data-cancel]').focus();}},dispose(){window.removeEventListener('keydown',keydown,true);dialog.remove();style.remove();}};
+  return {get open(){return dialog.open;},show(){prepareFeedback();if(!dialog.open){dialog.showModal();dialog.querySelector('[data-cancel]').focus();}},dispose(){clearTimeout(confirmTimer);void feedbackContext?.close().catch(()=>{});window.removeEventListener('keydown',keydown,true);dialog.remove();style.remove();}};
 };

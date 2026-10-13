@@ -1,8 +1,11 @@
 // Keep MCP's document/worker alive between visits to avoid rebuilding GPU sessions.
-export function createMcpPanel({onClose}){
+export function createMcpPanel({onClose,onLaunch}){
  let frame,active=false;
  const receive=event=>{
   if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
+  if(active&&event.data?.type==='mcp-launch'&&event.data.game==='cycles'){
+   active=false;void onLaunch('cycles',frame).finally(()=>{frame.hidden=true;frame.style.opacity='1';});
+  }
   if(event.data?.type==='mcp-home'){
    active=false;frame.hidden=true;onClose();
   }

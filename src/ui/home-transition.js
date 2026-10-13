@@ -30,6 +30,14 @@ export function createHomeTransition(){
   }
   return {
     get active(){return active;},
+    beginDirect(element){
+      active=true;waitingForScene=true;startedAt=performance.now();
+      // Keep the MCP face over the viewport until the first game frame exists.
+      curtain=document.createElement('div');curtain.id='home-transition';
+      curtain.dataset.backgroundDuration=String(HOME_TRANSITION.otherTextMs);
+      document.body.append(curtain);document.body.classList.add('home-opening');
+      animate(element,[{opacity:1},{opacity:0}],{duration:HOME_TRANSITION.selectedTextMs,easing:'ease-in-out'});
+    },
     async begin(button,{waitForScene=false,preparedScene=false,coverUntilSceneReady=false,keepCovered=false}={}){
       active=true;waitingForScene=waitForScene;startedAt=performance.now();
       const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -83,6 +91,7 @@ export function createHomeTransition(){
         const timing=animation.effect.getTiming();
         if(timing.duration>0&&animation.effect.target.id==='home-selected-label')animation.effect.updateTiming({delay:remainingFirst});
         animation.currentTime=0;animation.play();
+        if(animation.effect.target.id==='mcp-panel')animation.effect.target.contentWindow.postMessage({type:'mcp-transition-start'},location.origin);
       }
     },
     async finish(){

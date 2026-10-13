@@ -19,7 +19,7 @@ export async function mcpRoute(request,env,ctx,{send,boundedJson,clientHash,fetc
   if(!reservation.ok)throw new Error();const result=await reservation.json();
   if(!result.ok)return send(429,{error:'MCP BUSY — TRY AGAIN',retryAfter:result.retryAfter});
   lease=result.lease;
-  return send(200,speech?await mcpSpeech({text:messages,key:env.FAL_KEY,signal:AbortSignal.timeout(MCP_SPEECH.timeoutMs),fetchImpl}):await mcpCompletion({messages,url,key,model,signal:AbortSignal.timeout(45000),fetchImpl}));
+  return send(200,speech?await mcpSpeech({text:messages,key:env.FAL_KEY,signal:AbortSignal.timeout(MCP_SPEECH.timeoutMs),fetchImpl}):await mcpCompletion({messages,url,key,model,searchKey:env.BRAVE_SEARCH_API_KEY,signal:AbortSignal.timeout(45000),fetchImpl}));
  }catch(error){const failure=speech?{status:502,message:'MCP CLONED VOICE UNAVAILABLE'}:mcpError(error);return send(failure.status,{error:failure.message});}
  finally{if(lease)ctx.waitUntil(budget.fetch('https://budget/release',{method:'POST',body:JSON.stringify({lease})}).catch(()=>{}));}
 }

@@ -43,3 +43,25 @@ test('local MCP refreshes credentials between requests without rebuilding middle
  }
  await send();key='replacement-key';await send();assert.deepEqual(seen,['old-key','replacement-key']);
 });
+
+test('MCP game tool is restricted to cycles and keeps announcement separate from action',async()=>{
+ let body;const result=await mcpCompletion({...mcpConfig({MCP_API_KEY:'test'}),messages:mcpMessages({messages:[{role:'user',content:'I am unauthorized.'}]}),fetchImpl:async(_,options)=>{body=JSON.parse(options.body);return Response.json({candidates:[{content:{parts:[{functionCall:{name:'send_to_light_cycles',args:{message:'Unauthorized user.\nReport to the Game Grid.\n'}}}]}}]});}});
+ assert.deepEqual(result,{reply:'Unauthorized user.\nReport to the Game Grid.',action:{type:'launch_game',game:'cycles'}});
+ assert.deepEqual(body.tools[0].functionDeclarations.map(t=>t.name),['send_to_light_cycles']);
+ assert.match(MCP_SYSTEM,/newline character after every sentence/);
+});
+
+test('MCP Brave search stays server-side, preserves thought signatures and bounds results',async()=>{
+ const requests=[];const result=await mcpCompletion({...mcpConfig({MCP_API_KEY:'gemini-test'}),searchKey:'brave-test',messages:mcpMessages({messages:[{role:'user',content:'What is new?'}]}),fetchImpl:async(url,options)=>{
+  requests.push({url,options});
+  if(url.startsWith('https://api.search.brave.com/'))return Response.json({web:{results:[{title:'News',url:'https://example.com',description:'A factual result.'}]}});
+  if(requests.length===1)return Response.json({candidates:[{content:{role:'model',parts:[{functionCall:{name:'web_search',args:{query:'TRON news'}},thoughtSignature:'keep-this'}]}}]});
+  return Response.json({candidates:[{content:{parts:[{text:'Here is the news.\n'}]}}]});
+ }});
+ assert.equal(result.reply,'Here is the news.');assert.equal(requests.length,3);
+ assert.equal(requests[1].options.headers['X-Subscription-Token'],'brave-test');
+ assert(!requests[0].options.body.includes('brave-test'));
+ const next=JSON.parse(requests[2].options.body);assert.equal(next.contents.at(-2).parts[0].thoughtSignature,'keep-this');
+ assert.equal(next.contents.at(-1).parts[0].functionResponse.response.results[0].title,'News');
+ assert(!next.tools[0].functionDeclarations.some(t=>t.name==='web_search'));
+});
