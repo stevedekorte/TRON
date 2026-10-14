@@ -311,7 +311,8 @@ export function createGameApp() {
     $('sound').setAttribute('aria-label', sound.muted ? 'Unmute sound' : 'Mute sound');
   }
   function fail(message) {
-    $('error-message').textContent = message;
+    $('error-message').textContent = /(?:importing a module script failed|failed to fetch dynamically imported module|loading chunk|module script|preload.*(?:css|module))/i.test(message)
+      ? 'PROGRAM FILES COULD NOT LOAD. RELOAD TO CHECK FOR AN UPDATE.' : message;
     setMode('error');
   }
 

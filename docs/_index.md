@@ -6,6 +6,12 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Module-load recovery — October 14
+
+- [x] Route the error screen's Reload action through the uncached `update.html` recovery page so an old entry document is not simply reloaded from its existing service-worker cache. Identify module-loading failures with an uppercase update instruction.
+- [x] Let the recovery page return home after first-time service-worker activation as well as replacement of an existing worker. Preserve the normal game's policy of waiting until the home screen to activate background updates.
+- [x] `npm run build` and `node tests/pwa-update.mjs` pass on macOS/headless Chrome. Browser regressions cover an old cached entry updating into a playable game, a deliberately missing multiplayer module, failed first cache installation, the actual Reload click visiting the update page, and return to a usable program menu. Fresh production multiplayer also passed with advancing snapshots and no page errors; the user confirmed the original tab works again. The precise failing request in the user's Safari tab was not captured.
+
 ## Repository organization and video removal — October 14
 
 - [x] Implement [organization stages 1–6](organization/index.html): focused shared simulation modules, discovered unit tests, grouped browser/tool scripts with CLI compatibility, canonical runtime/source/reference directories, asset catalog and explicit production packaging.

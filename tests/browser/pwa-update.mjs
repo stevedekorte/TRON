@@ -3,13 +3,15 @@ import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
-let updated=false;
+let updated=false,brokenModule=false,updateVisits=0;
 const root=resolve('dist'),scope='/fun/TRON/';
 const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.wasm':'application/wasm'};
 const server=createServer(async(req,res)=>{
  try{
   const path=new URL(req.url,'http://localhost').pathname;
   if(!path.startsWith(scope)){res.writeHead(404).end();return;}
+  if(path===scope+'update.html')updateVisits++;
+  if(brokenModule&&/\/client-[^/]+\.js$/.test(path)){res.writeHead(404).end();return;}
   const file=resolve(root,decodeURIComponent(path.slice(scope.length)||'index.html'));
   if(!file.startsWith(root+'/')){res.writeHead(403).end();return;}
   let data=await readFile(file);
@@ -31,6 +33,23 @@ try{
  assert.equal(await page.title(),'ENCOM TERMINAL');
  await page.waitForFunction(()=>!document.querySelector('#start').disabled);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
- await page.keyboard.press('KeyC');await page.locator('#controls-help').waitFor({state:'visible'});
+ console.log('Old cached build updates and starts the game.');
+ await page.close();
+ const recovery=await browser.newPage({reducedMotion:'reduce'});recovery.setDefaultTimeout(60000);
+ recovery.on('pageerror',e=>console.log('Recovery page error:',e.message));
+ recovery.on('framenavigated',f=>{if(f===recovery.mainFrame())console.log('Recovery navigation:',f.url());});
+ brokenModule=true;await recovery.goto(url);
+ await recovery.waitForFunction(()=>!document.querySelector('#start-multiplayer').disabled);
+ await recovery.locator('#start-multiplayer').click();
+ await recovery.locator('#error').waitFor({state:'visible'});
+ assert.match(await recovery.locator('#error-message').innerText(),/PROGRAM FILES COULD NOT LOAD/);
+ console.log('Missing multiplayer module displays the recovery action.');
+ brokenModule=false;const visits=updateVisits;
+ await Promise.all([recovery.waitForURL(url+'update.html',{waitUntil:'commit'}),recovery.locator('#error button').click()]);
+ await recovery.waitForURL(url);
+ await recovery.waitForFunction(()=>!document.querySelector('#start-multiplayer')?.disabled&&!!document.querySelector('#start-multiplayer'));
+ assert(updateVisits>visits,'Reload must visit the uncached update page');
+ assert.equal(new URL(recovery.url()).pathname,scope);
+ console.log('Missing multiplayer module recovers through the update page, including a failed first service-worker installation.');
  console.log('Update page replaces an old cache-first worker and cached HTML with the current playable build.');
 }finally{await browser.close();await new Promise(r=>server.close(r));}

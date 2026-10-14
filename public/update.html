@@ -24,12 +24,12 @@ const status=document.querySelector('#status');
 try{
  if(!('serviceWorker' in navigator)){location.replace('./');}
  else{
-  let activating=false;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(activating)location.replace('./');});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{location.replace('./');});
   const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
-  const apply=()=>{if(registration.waiting){activating=true;registration.waiting.postMessage({type:'ACTIVATE_UPDATE'});return true;}return false;};
+  const apply=()=>{if(registration.waiting){registration.waiting.postMessage({type:'ACTIVATE_UPDATE'});return true;}return false;};
   registration.addEventListener('updatefound',()=>registration.installing?.addEventListener('statechange',()=>{
    if(!apply()&&registration.installing?.state==='redundant')status.textContent='UPDATE COULD NOT FINISH. RELOAD TO RETRY.';
+   if(registration.active?.state==='activated'&&!registration.installing&&!registration.waiting)location.replace('./');
   }));
   await registration.update();
   if(!apply()&&!registration.installing){status.textContent='ENCOM TERMINAL IS UP TO DATE.';location.replace('./');}
