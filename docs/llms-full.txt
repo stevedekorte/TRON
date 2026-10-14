@@ -19,6 +19,11 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Multiplayer waiting roster — October 14
+
+- [x] Show one hollow gray circle with a black/white human stripe per waiting player, linked by gray lines and followed by a chevron toward the active teams. Position the queue independently to preserve the centered active roster; hide it when the queue is empty.
+- [x] `node tests/cycle-roster.mjs` passes in headless Chrome on macOS: three/one/zero waiting players, unchanged active-circle coordinates, hollow gray styling, stripes/connectors, restart and hiding. Inspected the rendered roster capture. Long queues may extend beyond the left edge on narrow screens.
+
 ## Content-addressed media and incremental offline updates — October 14
 
 - [x] Extend existing Vite-hashed models/music to 65 public media files: audio, fonts, images/icons and BIT models use `{name}-{sha256-prefix}.{extension}` in production. Keep logical development paths and old production aliases. Build `asset-manifest.json`, resolve dynamic audio/model requests through the manifest, and rewrite copied BIT documents/scripts without modifying Vite's already-hashed chunks.

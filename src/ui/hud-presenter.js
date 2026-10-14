@@ -107,7 +107,7 @@ export class HudPresenter {
     }
     document.body.classList.toggle('playing-cycle',cycleMode);
     document.body.classList.toggle('playing-multiplayer',cycleMode&&!!run.multiplayer);
-    this.cycleRoster.update(race,cycleMode&&!run.arenaWaiting&&rig.cycleOpening===null);
+    this.cycleRoster.update(race,cycleMode&&!run.arenaWaiting&&rig.cycleOpening===null,run.multiplayer?.waiting??0);
     const cycleControls=$('cycle-controls');
     const result=cycleMode&&race.phase==='result';
     const resultText=$('cycle-result');

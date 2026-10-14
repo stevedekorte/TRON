@@ -2,10 +2,11 @@ import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
 
 export class CycleRoster{
  constructor(element){this.element=element;this.signature='';}
- update(race,visible){
+ update(race,visible,waiting=0){
   this.element.hidden=!visible;if(!visible||!race)return;
   const cycles=[...race.cycles].sort((a,b)=>a.team-b.team||a.id-b.id);
-  const signature=cycles.map(c=>`${c.id}:${c.team}:${+c.alive}:${!!c.human}:${c.id===race.playerId}:${race.localPlayerId}`).join('|');
+  const queueCount=visible?Math.max(0,Math.floor(waiting||0)):0;
+  const signature=queueCount+':'+cycles.map(c=>`${c.id}:${c.team}:${+c.alive}:${!!c.human}:${c.id===race.playerId}:${race.localPlayerId}`).join('|');
   if(signature===this.signature)return;this.signature=signature;
   const groups=new Map();
   for(const cycle of cycles){
@@ -20,6 +21,13 @@ export class CycleRoster{
    icon.setAttribute('role','img');icon.setAttribute('aria-label',label);icon.title=label;
    group.append(icon);
   }
-  this.element.replaceChildren(...groups.values());
+  const queue=document.createElement('div');queue.className='cycle-waiting-queue';queue.hidden=queueCount===0;queue.setAttribute('role','group');queue.setAttribute('aria-label',`${queueCount} players waiting to enter`);
+  const icons=document.createElement('div');icons.className='cycle-team-icons';
+  for(let i=0;i<queueCount;i++){
+   const icon=document.createElement('span');icon.className='cycle-roster-icon eliminated human';icon.setAttribute('role','img');icon.setAttribute('aria-label',`Waiting player ${i+1}`);icons.append(icon);
+  }
+  const arrow=document.createElement('span');arrow.className='cycle-queue-arrow';arrow.setAttribute('aria-hidden','true');
+  queue.append(icons,arrow);
+  this.element.replaceChildren(...groups.values(),...(queueCount?[queue]:[]));
  }
 }
