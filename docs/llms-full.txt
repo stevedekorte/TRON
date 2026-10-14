@@ -2093,6 +2093,34 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Initialize one live Web Audio output before the MCP introduction and route both background music and speech through it, eliminating late output-context creation/rerouting at first speech. Cached speech also avoids live effect-graph construction. Headless Chrome verified one live context, no music pause during greeting/reply, synchronized display and 1x playback for preprocessed audio. Device-specific audible continuity still needs user listening confirmation.
 
+## Multiplayer countdown audio — October 14
+
+- [x] Add a short 660 Hz beep for each received countdown second and a longer 990 Hz launch tone on the transition to racing. Follow the same rounded server timer as the HUD; repeated snapshots and backward timer corrections cannot repeat a beep, and missed seconds do not produce a catch-up burst. Joining an already-running match does not play a launch cue.
+- [x] Route the synthesized tones through the existing master volume/mute, consume muted ticks without replaying them on unmute, and dispose nodes on exit/reset. Single-player remains unchanged.
+- [x] Verification: all 10 multiplayer authority/audio unit checks pass, covering countdown synchronization, mute, late joins, envelope duration and node cleanup. Production build and Chrome multiplayer lifecycle checks pass; a Chrome audio probe observes eight 660 Hz ticks followed by exactly one 990 Hz launch tone. Subjective volume/timbre remains for user audition.
+
+## Solo multiplayer restart — October 14
+
+- [x] Return requests a fresh multiplayer round when exactly one human is connected, including after that player is eliminated. Show RETURN / NEW MATCH only in that case. Other connected humans, including spectators, prevent restart.
+- [x] The server checks the sender, connected-human count and current round before accepting the request. Duplicate/stale round requests are ignored, and the normal new-round path restores seats, AI, trails and countdown.
+- [x] Validation: multiplayer authority/audio unit tests cover sole-player restart, eliminated players, spectators blocking restart, unknown senders and duplicate/stale requests.
+
+## Multiplayer spectator reserve stability — October 14
+
+- [x] Preserve reserve-reward object identity across equivalent network snapshots. Previously, each decoded snapshot retriggered the HUD refill animation, making a followed AI cycle's turbo/brake meters repeatedly snap back. Number actual reward events so identical consecutive rewards still animate separately.
+- [x] Validation: 13 multiplayer authority/audio/HUD checks pass, including 40 repeated snapshots with no new reward, a genuinely new reward with the same values, and completion of the HUD animation. Chrome's isolated-arena multiplayer test passes solo Return restart and rejection with other humans connected, plus normal two-client rendering. Full suite: 517 tests pass; production build passes.
+
+## Multiplayer roster stripe refinement — October 14
+
+- [x] Match each black/white human-player stripe to the roster circle's 2 px border thickness. Extend the stripes over the border to the circle's outer edge, with rounded clipping that keeps them inside the circle. Preserve team connectors and hollow eliminated icons.
+- [x] Chrome roster check passes; inspected the rendered human stripes and eliminated circles.
+
+## Solo multiplayer Return follow-up — October 14
+
+- [x] Diagnose the unchanged localhost server: a sole-client WebSocket restart request was ignored by the old in-memory code. Restart the Vite server on port 5173 to load the new server-side handler.
+- [x] An accepted solo restart immediately initializes racing and trails with zero countdown when the new round has no waiting queue. Support main Return and keypad Enter; retain authoritative rejection when another human is connected.
+- [x] Multiplayer authority/audio unit checks pass, including immediate racing, trail initialization, stale/duplicate requests and queue protection. Chrome on the restarted port 5173 server verifies main Return and keypad Enter immediately restart a solo round while shared matches reject Return. Production build passes.
+
 
 ---
 

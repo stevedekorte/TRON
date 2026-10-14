@@ -1,3 +1,4 @@
+import {MultiplayerCountdown} from './multiplayer-countdown.js';
 const SURFACE_HIT_SOUND=Object.freeze({referenceDistanceMeters:18,maximumDistanceMeters:12000,rolloff:1.2});
 import {CycleOpeningAudio, CYCLE_ENTRY_CUES} from './cycle-opening.js';
 import { CycleVoices } from './cycle-voices.js';
@@ -141,6 +142,7 @@ export class Sound {
       source: this.source.bind(this),
     });
     this.cycleOpeningAudio = new CycleOpeningAudio(c, this.master, this.samples);
+    this.multiplayerCountdown = new MultiplayerCountdown(c, this.master);
     this.cycleVoices = new CycleVoices(c, this.master, this.samples);
     this.loading = this.loadSamples();
   }
@@ -291,6 +293,7 @@ export class Sound {
       l.setPosition(ear.x, ear.y, -ear.s);
       l.setOrientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
     }
+    this.multiplayerCountdown.update(run.multiplayer?.connected?run.cycleRace:null,playing&&!this.muted);
     this.cycleVoices.update(run.cycleRace,playing,ear,this.cycleOpeningSeconds!==null&&this.cycleOpeningSeconds!==undefined);
     this.recognizerVoices.update(cycleMode ? {recognizers:run.recognizers.filter(e=>e.role==='arena-patrol')} : run, ear);
     if (run.impact > 0.2 && (!this.lastImpact || run.time - this.lastImpact > 0.25)) {
@@ -586,6 +589,7 @@ export class Sound {
   }
   reset() {
     this.cycleOpeningAudio?.reset();
+    this.multiplayerCountdown?.reset();
     this.musicDirector.reset();
     this.cycleVoices?.reset();
     this.turretServo?.reset();
@@ -605,6 +609,7 @@ export class Sound {
     this.turretServo?.dispose();
     this.recognizerVoices?.dispose();
     this.cycleOpeningAudio?.reset();
+    this.multiplayerCountdown?.reset();
     this.cycleVoices?.dispose();
     this.musicDirector.dispose();
     this.context?.close();

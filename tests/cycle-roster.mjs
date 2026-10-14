@@ -5,7 +5,7 @@ try{
  const page=await browser.newPage({viewport:{width:1280,height:800}});
  await page.route('**/roster-check',r=>r.fulfill({contentType:'text/html',body:'<link rel="stylesheet" href="/src/ui/style.css?direct"><body class="playing-cycle"><div id="cycle-roster"></div></body>'}));
  await page.goto('http://127.0.0.1:5173/roster-check');
- await page.evaluate(async()=>{const {CycleRoster}=await import('/src/ui/cycle-roster.js');window.roster=new CycleRoster(document.getElementById('cycle-roster'));window.race={cycles:Array.from({length:12},(_,id)=>({id,team:Math.floor(id/3),alive:true}))};roster.update(race,true);});
+ await page.evaluate(async()=>{const {CycleRoster}=await import('/src/ui/cycle-roster.js');window.roster=new CycleRoster(document.getElementById('cycle-roster'));window.race={cycles:Array.from({length:12},(_,id)=>({id,team:Math.floor(id/3),alive:true,human:[0,4,8].includes(id),operator:`USER ${id}`}))};roster.update(race,true);});
  assert.equal(await page.locator('.cycle-roster-icon').count(),12);assert.equal(await page.locator('.cycle-team-icons').count(),4);
  await page.evaluate(()=>{race.cycles[4].alive=false;roster.update(race,true)});
  const dead=page.locator('[data-cycle-id="4"]');assert.match(await dead.getAttribute('aria-label'),/BLUE.*eliminated/);assert.deepEqual(await dead.evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.borderTopColor,s.opacity];}),['rgba(0, 0, 0, 0)','rgb(72, 186, 255)','1']);

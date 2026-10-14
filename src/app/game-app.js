@@ -425,6 +425,9 @@ export function createGameApp() {
     if(!multiplayer&&event.code==='Tab'&&cycleTuning&&run.playerVehicle==='cycle'&&['running','paused'].includes(mode)){
       event.preventDefault();if(!event.repeat)cycleTuning.show();return;
     }
+    if(multiplayer&&['Enter','NumpadEnter'].includes(event.code)&&mode==='running'){
+      event.preventDefault();if(!event.repeat&&multiplayer.restart())inputController.clear();return;
+    }
     if(!multiplayer&&event.code==='Enter'&&!event.repeat&&run.playerVehicle==='cycle'&&session.restartCycleMatch()){
       event.preventDefault();inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;
       if(mode==='paused')resume();return;

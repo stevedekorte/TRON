@@ -39,6 +39,10 @@ export class MultiplayerClient{
   });
  }
  ping(){if(this.socket?.readyState===1)this.socket.send(JSON.stringify({type:'ping',sent:performance.now()}));}
+ restart(){
+  if(!this.state||this.closed||this.disconnected||this.socket?.readyState!==1||this.state.clients.length!==1||performance.now()-this.received>2000)return false;
+  this.socket.send(JSON.stringify({type:'restart',round:this.state.race.round}));return true;
+ }
  estimatedTick(){return this.state.tick+Math.floor(((performance.now()-this.received)+this.rtt/2)*MP.tickHz/1000);}
  input(command){
   if(!this.state||this.closed||this.disconnected||this.socket.readyState!==1)return;
@@ -76,7 +80,12 @@ export class MultiplayerClient{
   // Audio/effects own per-race and per-cycle lifetimes. Network snapshots
   // replace values, not those identities, until a new match actually starts.
   if(previous.round===race.round){
-   race.cycles=race.cycles.map(b=>Object.assign(previous.cycles[b.id]??{},b));
+   race.cycles=race.cycles.map(b=>{
+    const old=previous.cycles[b.id];
+    // A serialized copy of the same reward is not a new HUD animation.
+    if(b.reserveReward&&old?.reserveReward&&['revision','turboFrom','brakeFrom','target'].every(key=>b.reserveReward[key]===old.reserveReward[key]))b.reserveReward=old.reserveReward;
+    return Object.assign(old??{},b);
+   });
    Object.assign(previous,race);run.cycleRace=previous;
   }else run.cycleRace=race;
   run.time=race.time;run.playerVehicle='cycle';run.arenaWaiting=false;run.cycleEntryRequested=false;

@@ -16,6 +16,7 @@ export class ArenaHub{
    peer.seen=now;
    if(message?.type==='ping'&&Number.isFinite(message.sent))this.send(peer,{type:'pong',sent:message.sent,tick:this.room.tick});
    else if(message?.type==='input')this.room.input(id,message);
+   else if(message?.type==='restart')this.room.restart(id,message.round);
   });
   const remove=()=>{this.peers.delete(id);this.room?.leave(id);if(!this.peers.size){clearInterval(this.timer);this.timer=null;this.room=null;this.previous=null;}};
   socket.addEventListener('close',remove);socket.addEventListener('error',()=>{socket.close();remove();});

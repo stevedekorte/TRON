@@ -53,6 +53,13 @@ export class CycleRoom{
   this.queue=[...this.shuffle(survivors.map(c=>c.id)),...this.queue.filter(id=>!survivors.some(c=>c.id===id))];
   this.fillSeats();
  }
+ restart(id,round){
+  // Count every connected human, including spectators: nobody may reset a shared match.
+  if(this.clients.size!==1||!this.clients.has(id)||round!==this.race.round)return false;
+  this.nextRound();
+  if(!this.queue.length){this.race.remaining=0;updateCycleRace(this.race,0);}
+  return true;
+ }
  input(id,message){
   const c=this.clients.get(id);
   if(!c||message.round!==this.race.round||!Number.isSafeInteger(message.seq)||message.seq<=c.seq||

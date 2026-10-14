@@ -125,6 +125,7 @@ export class HudPresenter {
         race.phase==='countdown'?`MATCH STARTS IN ${Math.ceil(race.remaining)} · ${LIGHT_CYCLES.teamNames[race.cycles[race.playerId].team]} TEAM`:
         race.phase==='result'?'SURVIVORS KEEP THEIR SEATS · NEXT MATCH SOON':`MULTIPLAYER · ${mp.players} USERS · ${mp.waiting} WAITING · ${mp.ping} MS`;
     }
+    if(run.multiplayer?.connected&&run.multiplayer.players===1)cycleControls.textContent+=' · RETURN / NEW MATCH';
     const promptKey=cycleMode?`cycle:${race.round}`:'clu';
     if(this.promptRun!==run||this.promptKey!==promptKey){this.promptRun=run;this.promptKey=promptKey;this.promptSeconds=0;}
     const playing=mode==='running'&&!run.arenaWaiting&&!dead&&!run.crushed&&!result&&rig.cycleOpening===null;

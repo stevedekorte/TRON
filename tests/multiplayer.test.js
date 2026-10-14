@@ -54,3 +54,21 @@ test('team size stays at three as the countdown population grows',()=>{
  }
  assert.equal(r.race.teamCount,4);assert.equal(r.queue.length,2);
 });
+
+test('only the sole connected human can restart the authoritative match',()=>{
+ const room=new CycleRoom();room.join('solo');room.race.remaining=0;room.step();
+ const round=room.race.round;
+ assert.equal(room.restart('unknown',round),false);
+ assert.equal(room.restart('solo',round-1),false);
+ assert.equal(room.restart('solo',round),true);
+ assert.equal(room.race.round,round+1);assert.equal(room.race.phase,'racing');
+ assert.equal(room.race.remaining,0);assert(room.race.trails.length>0,'immediate start initializes trails');
+ assert.equal(room.restart('solo',round),false,'duplicate request cannot restart again');
+ room.race.remaining=0;room.step();room.join('spectator');
+ assert.equal(room.clients.get('spectator').seat,null);
+ assert.equal(room.restart('solo',room.race.round),false,'spectators count as other humans');
+ room.leave('spectator');
+ const bike=room.race.cycles[room.clients.get('solo').seat];bike.alive=false;
+ assert.equal(room.restart('solo',room.race.round),true,'eliminated sole player can restart');
+ assert(room.race.cycles[room.clients.get('solo').seat].alive);
+});
