@@ -118,7 +118,10 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
   <footer id="footer"><span>A DIGITAL FRONTIER STUDY</span><a href="./docs/index.html" target="_blank" rel="noopener">PROJECT NOTES ↗</a><span>DESKTOP / KEYBOARD + MOUSE</span></footer>
   <aside id="tuning" hidden><h3>Development tuning</h3><label>Enemy AI <select id="enemy-ai"><option value="classic">Classic</option><option value="local">Tactical — local</option><option value="jev">Tactical + Jev</option></select></label><label><input id="ai-small-encounter" type="checkbox"> Small tactical encounter (2 aircraft, 1 tank)</label><button id="apply-ai">Apply AI and restart</button><p id="ai-status">Classic</p><details><summary>Latest AI decision</summary><pre id="ai-decision"></pre></details><pre id="perception"></pre><div id="sliders"></div><button id="reset-tuning">Reset defaults</button><button id="export-tuning">Copy settings</button></aside>
   <script type="module" src="/src/main.js"></script>
-  <!-- Cloudflare Web Analytics (dekorte.com) -->
-  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "34961f34a36c46ba998af2f06a76183e"}'></script>
+  <!-- Cloudflare Web Analytics (dekorte.com); skipped in browsers opted out with ?analytics=off (same loader as colvmn) -->
+  <template data-colvmn-analytics>
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "34961f34a36c46ba998af2f06a76183e"}'></script>
+  </template>
+  <script>(function(){var k="colvmn:no-analytics",me=document.currentScript;try{var m=/[?&]analytics=(off|on)\b/.exec(location.search);if(m){if(m[1]==="off")localStorage.setItem(k,"1");else localStorage.removeItem(k);console.info("analytics "+m[1]+" for this browser")}if(localStorage.getItem(k))return}catch(e){}var t=me.previousElementSibling;t.content.childNodes.forEach(function(n){var c;if(n.nodeName==="SCRIPT"){c=document.createElement("script");for(var i=0;i<n.attributes.length;i++)c.setAttribute(n.attributes[i].name,n.attributes[i].value);if(!n.hasAttribute("async"))c.async=false;c.text=n.text}else c=document.importNode(n,true);me.parentNode.insertBefore(c,me)})})();</script>
 </body>
 </html>
