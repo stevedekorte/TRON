@@ -23,3 +23,11 @@ const report={files:output.length,bytes:output.reduce((n,f)=>n+f.bytes,0),assets
 await mkdir('test-results',{recursive:true});
 await writeFile('test-results/asset-build.json',JSON.stringify(report,null,2)+'\n');
 console.log(`Asset build audit: ${report.files} files, ${(report.bytes/1024/1024).toFixed(1)} MiB; all shipped binaries catalogued, aliases identical, no reference footage/editable masters.`);
+
+const media=JSON.parse(await readFile('dist/asset-manifest.json','utf8'));
+for(const [logical,hashed] of Object.entries(media)){
+ const bytes=await readFile('dist/'+hashed),digest=createHash('sha256').update(bytes).digest('hex').slice(0,16);
+ if(!hashed.includes('-'+digest+'.'))throw Error('Asset filename does not match content: '+hashed);
+ if(!bytes.equals(await readFile('public/'+logical)))throw Error('Hashed asset differs from source: '+logical);
+}
+console.log(`Verified ${Object.keys(media).length} immutable public-media filenames.`);

@@ -1,3 +1,4 @@
+import {publicAssetUrl} from '../assets/public-url.js';
 // Warm BIT's separate document and dependencies without executing it, requesting
 // microphone access, or calling JEV. Its own page still creates its audio context.
 export async function preloadBitResources(){
@@ -6,9 +7,11 @@ export async function preloadBitResources(){
  if(!page.ok)throw Error(`BIT terminal: HTTP ${page.status}`);
  const document=new DOMParser().parseFromString(await page.text(),'text/html');
  const paths=[...document.querySelectorAll('script[src],img[src]')].map(e=>e.getAttribute('src'));
- paths.push('../fonts/VT323-Regular.ttf',...['bit_idle_1','bit_idle_2','bit_yes','bit_no'].map(n=>`resources/entities/Bit/models/${n}.obj`),...['yes','no'].map(n=>`resources/entities/Bit/sounds/${n}.wav`));
+ paths.push('../assets/fonts/VT323-Regular.ttf',...['bit_idle_1','bit_idle_2','bit_yes','bit_no'].map(n=>`resources/entities/Bit/models/${n}.obj`),...['yes','no'].map(n=>`resources/entities/Bit/sounds/${n}.wav`));
  await Promise.all([...new Set(paths)].map(async path=>{
   const url=new URL(path,base);if(url.origin!==location.origin)return;
-  const response=await fetch(url,{cache:'force-cache'});if(!response.ok)throw Error(`BIT resource: HTTP ${response.status}`);await response.arrayBuffer();
+  const root=new URL(import.meta.env.BASE_URL,globalThis.document.baseURI);
+  const logical=url.pathname.slice(root.pathname.length);
+  const response=await fetch(publicAssetUrl(logical),{cache:'force-cache'});if(!response.ok)throw Error(`BIT resource: HTTP ${response.status}`);await response.arrayBuffer();
  }));
 }

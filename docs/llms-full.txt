@@ -19,6 +19,15 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Content-addressed media and incremental offline updates — October 14
+
+- [x] Extend existing Vite-hashed models/music to 65 public media files: audio, fonts, images/icons and BIT models use `{name}-{sha256-prefix}.{extension}` in production. Keep logical development paths and old production aliases. Build `asset-manifest.json`, resolve dynamic audio/model requests through the manifest, and rewrite copied BIT documents/scripts without modifying Vite's already-hashed chunks.
+- [x] Precache only hashed media URLs. Record per-file SHA-256 metadata and copy matching cached responses into a new release cache; download only missing or changed files. Migrate older caches without metadata by verifying their stored bytes once. Preserve the working cache if installation fails, and remove old caches only on activation.
+- [x] Remove version-query audio requests from current callers. Resolve older `?v=` audio aliases to the hashed cached response, including byte-range requests, without intercepting API URLs. Fix BIT's font-preload path.
+- [x] Validation on macOS/headless Chrome: 536 unit checks pass; five cache regressions cover unchanged/changed files, legacy migration, versioned ranges and failed updates. `node tests/browser/pwa-incremental.mjs` uses the actual production cache and changes one script: only `bit/config.js` downloads, while all media is reused and the active cache survives until activation. `node tests/pwa.mjs` and `node tests/pwa-update.mjs` pass offline play, hashed install icons/fonts, ranged audio, non-interrupting updates, older-cache recovery and missing-module recovery. Async browser assertions now poll for completed worker installation rather than accepting a pending promise.
+- [x] Production build audits verify every emitted public-media filename against its actual content and original source. Offline cache remains approximately 89.7 MiB; compatibility copies remain deployed but are excluded from precaching.
+- [ ] Faster game initialization remains separate: the cached-load profile measured about 5.8 seconds dominated by simulation setup, scene construction, model preparation and shader compilation. This change reduces network traffic across releases, not that CPU/GPU work.
+
 ## Module-load recovery — October 14
 
 - [x] Route the error screen's Reload action through the uncached `update.html` recovery page so an old entry document is not simply reloaded from its existing service-worker cache. Identify module-loading failures with an uppercase update instruction.

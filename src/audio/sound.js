@@ -1,3 +1,4 @@
+import {publicAssetUrl} from '../assets/public-url.js';
 import {MultiplayerCountdown} from './multiplayer-countdown.js';
 const SURFACE_HIT_SOUND=Object.freeze({referenceDistanceMeters:18,maximumDistanceMeters:12000,rolloff:1.2});
 import {CycleOpeningAudio, CYCLE_ENTRY_CUES} from './cycle-opening.js';
@@ -155,18 +156,7 @@ export class Sound {
               ? endOfLineUrl
               : name === 'clu-cannon'
                 ? cluCannonUrl
-              : import.meta.env.BASE_URL +
-                  'assets/audio/' +
-                  name +
-                  '.wav' +
-                  (name === 'tank-drive'
-                    ? '?v=5'
-                    : name === 'cannon' ||
-                        name === 'recognizer-flight' ||
-                        name === 'recognizer-explosion' ||
-                        name.startsWith('terminal-key-')
-                      ? '?v=2'
-                      : ''),
+              : publicAssetUrl('assets/audio/'+name+'.wav'),
           );
           if (!response.ok) throw new Error('HTTP ' + response.status);
           const bytes = await response.arrayBuffer();
@@ -194,7 +184,7 @@ export class Sound {
     if(!this.context)return Promise.resolve();
     return this.cycleLoading ??= Promise.all(['materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
       try {
-        const response=await fetch(import.meta.env.BASE_URL+'assets/audio/cycle-'+name+'.wav'+(name==='drive-cabin'?'?v=4':['drive','turn','explosion'].includes(name)?'?v=2':''));
+        const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+'.wav'));
         if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.context.decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;

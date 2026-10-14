@@ -16,7 +16,7 @@ const server=createServer(async(req,res)=>{
   if(!file.startsWith(root+'/')){res.writeHead(403).end();return;}
   let data=await readFile(file);
   if(!updated&&file.endsWith('/index.html'))data=Buffer.from('<html><body>OLD CACHED BUILD<script>navigator.serviceWorker.register("./sw.js")</script></body></html>');
-  if(!updated&&file.endsWith('/sw.js'))data=Buffer.from(data.toString().replace(/self.addEventListener\('message',event=>\{[\s\S]*?\n\}\);/,'').replace(/const CACHE = ([^;]+);/,'const CACHE = $1 + "-old";'));
+  if(!updated&&file.endsWith('/sw.js'))data=Buffer.from(data.toString().replace(/await cache\.put\(METADATA,[^\n]+\n/,'').replace(/self.addEventListener\('message',event=>\{[\s\S]*?\n\}\);/,'').replace(/const CACHE = ([^;]+);/,'const CACHE = $1 + "-old";'));
   res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream','Cache-Control':'no-store'}).end(data);
  }catch{res.writeHead(404).end();}
 });

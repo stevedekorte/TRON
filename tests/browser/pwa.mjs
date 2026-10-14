@@ -1,4 +1,4 @@
-import {chromium} from '@playwright/test';
+import {chromium,expect} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile,mkdtemp,rm} from 'node:fs/promises';
@@ -25,6 +25,7 @@ const context=await chromium.launchPersistentContext(profile,{channel:process.en
 try{
  const page=await context.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ page.on('response',r=>{if(r.status()>=400&&new URL(r.url()).pathname.startsWith(scope+'assets/'))errors.push(`${r.status()} ${r.url()}`);});
  await page.goto(url);
  await page.waitForFunction(()=>!document.querySelector('#start').disabled,null,{timeout:60000});
  await page.evaluate(()=>navigator.serviceWorker.ready);
@@ -36,7 +37,7 @@ try{
  assert.equal(new URL(manifest.data.start_url,manifest.href).href,url);
  assert.equal(manifest.data.display,'standalone');
  for(const icon of manifest.data.icons){
-  assert.match(icon.src,/encom-e-[a-f0-9]{12}-(192|512)\.png$/);
+  assert.match(icon.src,/encom-e-[a-f0-9]{12}-(192|512)-[a-f0-9]{16}\.png$/);
   assert.equal(await page.evaluate(async src=>{
    const img=new Image();img.src=src;await img.decode();return `${img.naturalWidth}x${img.naturalHeight}`;
   },new URL(icon.src,manifest.href).href),icon.sizes);
@@ -47,7 +48,7 @@ try{
  await page.waitForFunction(()=>!document.querySelector('#start').disabled,null,{timeout:60000});
  await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
  const range=await page.evaluate(async()=>{
-  const r=await fetch('./assets/audio/cannon.wav',{headers:{Range:'bytes=0-31'}});
+  const r=await fetch('./assets/audio/cannon.wav?v=2',{headers:{Range:'bytes=0-31'}});
   return {status:r.status,length:(await r.arrayBuffer()).byteLength,range:r.headers.get('Content-Range')};
  });
  assert.equal(range.status,206);assert.equal(range.length,32);assert.match(range.range,/^bytes 0-31\//);
@@ -63,10 +64,10 @@ try{
  // A downloaded update must wait rather than replace a running game.
  await context.setOffline(false);update=true;
  await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
- await page.waitForFunction(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting);
+ await expect.poll(()=>page.evaluate(async()=>(await navigator.serviceWorker.getRegistration()).waiting?.state==='installed'),{timeout:60000}).toBe(true);
  assert(await page.evaluate(()=>document.body.classList.contains('playing')));
  await page.keyboard.press('Escape');await page.locator('#exit-confirm [data-confirm]').click();
- await page.waitForFunction(async()=>!(await navigator.serviceWorker.getRegistration()).waiting);
+ await expect.poll(()=>page.evaluate(async()=>!(await navigator.serviceWorker.getRegistration()).waiting),{timeout:60000}).toBe(true);
  await page.waitForFunction(()=>!!document.querySelector('#start-credits')&&!document.querySelector('#start-credits').disabled);
  console.log('PWA: valid installability, scoped manifest/icons, offline tank and cycle starts, ranged audio, and non-interrupting updates passed.');
 }finally{await context.close();await new Promise(r=>server.close(r));await rm(profile,{recursive:true,force:true});}
