@@ -117,7 +117,7 @@ export class MultiplayerClient{
   run.won=false;run.crushed=false;run.speed=0;run.gunner=false;run.turretYaw=0;run.aimPitch=0;
   if(previous.round!==race.round){run.cycleFollowId=null;run.inspection=false;}
   run.cycleSpectating=waiting;
-  run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,players:this.state.clients.length,ping:Math.round(this.rtt),round:race.round};
+  run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,unseatedWaiting:this.state.clients.filter(c=>c.seat===null&&c.queue>0).length,players:this.state.clients.length,ping:Math.round(this.rtt),round:race.round};
   Object.assign(run,cyclePlayerPose(race));return true;
  }
  close(){this.closed=true;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];this.remotePlayback?.reset();}

@@ -21,7 +21,7 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 
 ## Multiplayer waiting roster — October 14
 
-- [x] Show one hollow gray circle with a black/white human stripe per waiting player, linked by gray lines and followed by a chevron toward the active teams. Position the queue independently to preserve the centered active roster; hide it when the queue is empty.
+- [x] Show one hollow gray circle with a black/white human stripe per waiting player without a seat (eliminated seated players remain only in the colored roster), linked by gray lines and followed by a chevron toward the active teams. Position the queue independently to preserve the centered active roster; hide it when the queue is empty.
 - [x] `node tests/cycle-roster.mjs` passes in headless Chrome on macOS: three/one/zero waiting players, unchanged active-circle coordinates, hollow gray styling, stripes/connectors, restart and hiding. Inspected the rendered roster capture. Long queues may extend beyond the left edge on narrow screens.
 
 ## Content-addressed media and incremental offline updates — October 14
