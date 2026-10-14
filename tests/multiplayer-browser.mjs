@@ -2,11 +2,18 @@ import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import WebSocket from 'ws';
 const browser=await chromium.launch({channel:'chrome',headless:true});
-const sockets=[];
+const sockets=[],deliveryTimers=new Set();
 const base=process.env.TRON_URL||'http://127.0.0.1:5173/';
 const socketUrl=new URL('/api/multiplayer?v=1',base);socketUrl.protocol=socketUrl.protocol==='https:'?'wss:':'ws:';
 try{
  const context=await browser.newContext({viewport:{width:1100,height:750},reducedMotion:'reduce'}),errors=[],requests=[];
+ if(process.env.TRON_MP_JITTER==='1')await context.routeWebSocket('**/api/multiplayer*',socket=>{
+  const server=socket.connectToServer();let sequence=0,lastDue=0;
+  server.onMessage(message=>{
+   const delay=[20,50,15,45,25,40][sequence++%6],due=Math.max(lastDue+1,Date.now()+delay);lastDue=due;
+   const timer=setTimeout(()=>{deliveryTimers.delete(timer);socket.send(message);},Math.max(0,due-Date.now()));deliveryTimers.add(timer);
+  });
+ });
  await context.route('**/api/jev/**',r=>r.fulfill({status:503,body:'{}'}));
  const packets=[];
  const page=await context.newPage();
@@ -57,4 +64,4 @@ try{
  assert(packets.some(p=>p.protocol===2&&p.compact&&!p.full),'browser receives compact field deltas');
  assert(packets.every(p=>!JSON.stringify(p).includes('reactionTiming')),'AI internals stay on the server');
  assert.deepEqual(errors,[]);console.log('Two rendered clients share a 12-cycle arena; 14 connections, spectator queue, no cloud request, no eager MP client, and no local match reset.');
-}finally{for(const s of sockets)s.close();await browser.close();}
+}finally{for(const timer of deliveryTimers)clearTimeout(timer);for(const s of sockets)s.close();await browser.close();}

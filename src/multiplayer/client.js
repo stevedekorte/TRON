@@ -1,3 +1,4 @@
+import {RemotePlayback,presentRemoteCycles} from './remote-playback.js';
 import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
 import {MP} from '../../shared/multiplayer/config.js';
 import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../game/light-cycles.js';
@@ -16,7 +17,7 @@ export class MultiplayerClient{
  constructor({url,onStatus=()=>{}}={}){
   const base=url||import.meta.env.VITE_MULTIPLAYER_URL||(import.meta.env.DEV?location.origin:import.meta.env.VITE_JEV_API_BASE||location.origin);
   this.url=new URL('/api/multiplayer',base);this.url.protocol=this.url.protocol==='https:'?'wss:':this.url.protocol==='http:'?'ws:':this.url.protocol;this.url.searchParams.set('v',MP.protocol);
-  this.onStatus=onStatus;this.seq=0;this.pending=[];this.rtt=0;this.closed=false;this.lastSent=0;this.control={turbo:false,brake:false};
+  this.remotePlayback=new RemotePlayback();this.onStatus=onStatus;this.seq=0;this.pending=[];this.rtt=0;this.closed=false;this.lastSent=0;this.control={turbo:false,brake:false};
  }
  connect(){
   return new Promise((resolve,reject)=>{
@@ -33,7 +34,7 @@ export class MultiplayerClient{
     this.resyncPending=false;
     const me=data.clients.find(c=>c.id===this.id);if(!me)return;
     if(this.state?.race.round!==data.race.round){this.pending=[];this.control={turbo:false,brake:false};this.lastSent=0;}
-    this.pending=this.pending.filter(p=>p.seq>me.ack);this.state=data;this.me=me;this.received=performance.now();
+    this.pending=this.pending.filter(p=>p.seq>me.ack);this.state=data;this.me=me;this.received=performance.now();this.remotePlayback.push(data,this.received);
     this.onStatus('connected');clearTimeout(timeout);resolve(this);
    };
    this.socket.onerror=()=>{clearTimeout(timeout);reject(Error('MULTIPLAYER CONNECTION UNAVAILABLE'));};
@@ -59,6 +60,8 @@ export class MultiplayerClient{
  }
  apply(run){
   if(!this.state)return false;
+  this.remotePlayback??=new RemotePlayback();
+  this.remotePlayback.push(this.state,this.received);
   const previous=run.cycleRace,site=previous.site,race={closedArena:true,arenaPaused:false,breaches:[],accumulator:0,...this.state.race,site,
    cycles:this.state.race.cycles.map(b=>({...b,previousX:b.x,previousZ:b.z,progress:1,continuousArena:true})),trails:this.state.race.trails.slice(),
    occupied:previous.occupied,outerOccupied:{},pendingTurns:[],playerId:this.me.seat??0,localPlayerId:this.me.seat};
@@ -68,11 +71,10 @@ export class MultiplayerClient{
    const ticks=Math.max(0,Math.min(MP.maxFutureTicks,this.estimatedRenderTick()+MP.inputLeadTicks-this.state.tick));
    const wholeTicks=Math.floor(ticks),fractionSeconds=(ticks-wholeTicks)/MP.tickHz;
    for(const b of race.cycles){
-    if(!b.alive)continue;
-    const own=b.id===this.me.seat;
+    if(!b.alive||b.id!==this.me.seat)continue;
     let control={turbo:!!b.reserveTurboRequested,brake:!!b.reserveBrakeRequested};
     for(let step=1;step<=wholeTicks;step++){
-     if(own)for(const p of this.pending)if(Math.max(this.state.tick+1,p.tick)===this.state.tick+step){
+     for(const p of this.pending)if(Math.max(this.state.tick+1,p.tick)===this.state.tick+step){
       control=p;if(p.turn){b.dir=(b.dir+p.turn+4)%4;b.turns++;race.trails.push({bikeId:b.id,team:b.team,dir:b.dir,x1:b.x,z1:b.z,x2:b.x,z2:b.z});b.segment=race.trails.length-1;}
      }
      move(b,1/MP.tickHz,control);
@@ -84,6 +86,7 @@ export class MultiplayerClient{
     b.previousX=b.x;b.previousZ=b.z;b.progress=1;b.continuousArena=true;
    }
   }
+  if(race.phase==='racing'&&!stale&&!this.disconnected)presentRemoteCycles(race,this.remotePlayback.sample(performance.now()),this.me.seat);
   // Audio/effects own per-race and per-cycle lifetimes. Network snapshots
   // replace values, not those identities, until a new match actually starts.
   if(previous.round===race.round){
@@ -103,5 +106,5 @@ export class MultiplayerClient{
   run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,players:this.state.clients.length,ping:Math.round(this.rtt),round:race.round};
   Object.assign(run,cyclePlayerPose(race));return true;
  }
- close(){this.closed=true;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];}
+ close(){this.closed=true;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];this.remotePlayback?.reset();}
 }

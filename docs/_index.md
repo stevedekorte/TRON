@@ -6,11 +6,19 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Remote cycle playback under packet jitter — October 14
+
+- [x] Replace remote forward prediction with a bounded snapshot history and continuous monotonic playback clock. Packet arrival adjusts playback speed by at most 10%, rather than resetting the time origin. Use a named 75 ms presentation buffer; the tested 50 ms buffer occasionally ran dry under 15–50 ms delivery jitter. Local input prediction, server timing and collision authority are unchanged.
+- [x] Interpolate remote positions along confirmed trail corners, trim their displayed trails to the same pose and remap active segment indices. Keep current authoritative HUD/reward data and deaths; never resurrect a dead cycle to play an old pose. Hold at the latest confirmed point during network stalls; clear history on new rounds and disconnect disposal.
+- [x] `node --test tests/multiplayer-playback.test.js tests/multiplayer.test.js tests/multiplayer-audio.test.js`: 21 checks pass. At 144 rendered frames/sec with alternating 15–50 ms snapshot delivery delays, the straight-line normal-speed test reduces worst frame-step error from 1.344 m to 0.0267 m, with no backward/held frames after warm-up. Also check multiple corners, trail attachment, local isolation, immutable snapshots, history bounds, stalls and round reset.
+- [x] `TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs` passes in headless Chrome on macOS with two rendered clients, twelve cycles, fourteen connections and jittered WebSocket delivery. Inspect the normal-renderer capture. `npx vite build` and `git diff --check` pass; existing build warnings remain.
+- [ ] Real-player motion and close-cutoff review. The buffer adds approximately 75 ms behind received state (plus network transit); it improves presentation at a latency cost. Longer stalls can still hold remote motion. This follow-up is the next authorized October 14 client release. Full release checks: `npm test` passes 525 tests and `npm run build` passes; production publication and browser verification are pending at this source revision.
+
 ## Multiplayer production release — October 14
 
 - [x] Validate compact snapshots, fractional-tick presentation and retained eliminated-human roster stripes: `npm test` passes 522 tests; `npm run build` and `npm run worker:check` pass. Headless Chrome on macOS passed the two-rendered-client multiplayer check in the preceding change.
 - [x] Deploy the compatible Worker first: version `b669337a-c12e-4c6d-8bdc-81fc946f58ec`. Protocol 1 remains available for cached clients.
-- [ ] Publish the matching client through the dekorte.com GitHub Pages workflow and verify production snapshots, menu entry and solo restart. Release verification is pending at this source revision.
+- [x] Publish TRON `e4612e7` through dekorte.com `8991c03`; GitHub Pages run `38602487215` succeeded. Production protocol 1 and 2 probes passed. Headless Chrome on macOS decoded 50 compact snapshots in a twelve-cycle arena, entered from the menu and verified solo Return skips countdown, with no page errors. The first game-entry check timed out at 60 seconds; a diagnostic retry with a 90-second limit passed. Sustained real-player smoothness remains unmeasured.
 
 ## Multiplayer motion between simulation ticks — October 14
 
