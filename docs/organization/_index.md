@@ -6,7 +6,7 @@ subtitle: Clear ownership for code, assets, references and generated output
 
 ## Scope
 
-This is a plan, not authorization to move or delete assets. Preserve gameplay, existing public URLs, attribution, offline behavior and the current deployment process. Migrate one category per reviewed commit; avoid mixing folder moves with simulation or visual changes. The existing refactoring document covers object ownership; this plan covers repository structure and asset lifecycles.
+Implementation authorized October 14, including deletion of video references and removal from Git history. Preserve gameplay, existing public URLs, attribution, offline behavior and the current deployment process. Migrate one category per reviewed commit; avoid mixing folder moves with simulation or visual changes. The existing refactoring document covers object ownership; this plan covers repository structure and asset lifecycles.
 
 ## Current friction
 
@@ -58,3 +58,17 @@ For each stage, record moved paths, compatibility aliases, commands, browser/har
 ## First recommended slice
 
 Start with the asset manifest and directory READMEs, without moving any runtime files. This gives us a trustworthy map and catches accidentally shipped source/reference material before a broader rename. Keep generated documentation beside Markdown for now because colvmn and the documentation copy scripts already depend on that arrangement.
+
+## Implementation — October 14
+
+Stages 1–6 are implemented. Tests now live in `tests/unit` and `tests/browser`; tools live in `tools/assets`, `tools/build` and `tools/validation`. Previous CLI paths forward to the new modules. The authority imports its browser-free simulation/configuration from `shared/simulation`; existing source paths remain forwarding modules.
+
+Runtime imports live in `assets/runtime`, outside Vite public, to preserve content-hashed output filenames. Static URLs use `public/assets`. Original model inputs live in `assets/source`, and still-image references in `references`. All 100 existing user reference renames matched identical content before relocation. Untracked source collections remain untracked and are excluded from the committed catalog.
+
+`assets/catalog.json` records provenance, hashes, conversion tools and unresolved attribution. `assets/path-map.json` retains old asset URLs through development middleware, production aliases and service-worker alias resolution. Production copies only authored/generated documentation and explicitly linked media, rather than recursively shipping source collections. The POV-Ray model license remains included.
+
+At the user's request, all 16 local reference videos were deleted, video extensions are ignored case-insensitively, and video paths were removed from Git history. Extraction scripts retain expected ignored input paths for externally supplied footage; those inputs are no longer bundled. Existing audio derivatives remain unchanged. Hosted caches/LFS retention is outside the rewritten branch history.
+
+Validation on macOS/headless Chromium: 531 unit checks, Worker dry run, PWA offline/range/update checks, two-client multiplayer under delivery jitter, and `/fun/TRON/` production-path smoke checks passed. Initial production output was 1,805,603,712 bytes; the reorganized build is approximately 289 MiB, with approximately 89.7 MiB precached. Final release validation is recorded in the implementation plan. Automated checks do not establish subjective driving or sound quality.
+
+Stage 7 remains deferred: retain compatibility paths for this release until deployed cached clients and links have been reviewed. Never restore a pre-purge commit as a rollback: it would reintroduce video history. Use the rewritten history or revert code changes on the cleaned branch.

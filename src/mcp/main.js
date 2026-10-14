@@ -93,7 +93,7 @@ $('load-voice').onclick=loadVoice;
 $('voice-sample').onclick=async()=>{
  if(busy)return;stopListening();setBusy(true);const token=++epoch;
  try{await audioContext.resume();
-  const response=await fetch(new URL('audio/mcp-clone-preview-deeper.wav',document.baseURI));if(!response.ok)throw new Error('VOICE SAMPLE UNAVAILABLE');
+  const response=await fetch(new URL('assets/audio/mcp-clone-preview-deeper.wav',document.baseURI));if(!response.ok)throw new Error('VOICE SAMPLE UNAVAILABLE');
   const buffer=await audioContext.decodeAudioData(await response.arrayBuffer());
   if(token!==epoch)return;$('reply').textContent='Welcome, program. Your connection to the Grid is now under my control.';
   await playSamples({samples:buffer.getChannelData(0),sampleRate:buffer.sampleRate},token,{processed:true});

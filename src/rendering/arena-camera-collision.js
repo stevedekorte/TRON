@@ -1,5 +1,5 @@
 import {Vector3} from 'three';
-import {ARENA_WALL} from '../game/arena-breaches.js';
+import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 import {breachVolumes} from './arena-breaches.js';
 import {CAMERA_CLEARANCE,clipCameraSegment} from './camera-collision.js';
 

@@ -1,7 +1,7 @@
 import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import cloudUrl from '../../docs/models/cloud.glb?url';
+import cloudUrl from '../../assets/runtime/models/cloud.glb?url';
 import {CARRIER} from '../game/carrier.js';
 import {seededRandom} from '../game/random.js';
 

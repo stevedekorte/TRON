@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { LIGHT_CYCLES as C, cycleTrailState } from '../game/light-cycles.js';
-import {cycleTrailHeadTrim} from '../game/cycle-trails.js';
+import { LIGHT_CYCLES as C, cycleTrailState } from '../../shared/simulation/config/light-cycles.js';
+import {cycleTrailHeadTrim} from '../../shared/simulation/config/cycle-trails.js';
 export const CYCLE_WALL_STYLE=Object.freeze({
   colors:[0xde8308,0x167dd8,0xc92727,0x159d4b], thicknessMeters:.18,
   instancesPerTeam:5820,

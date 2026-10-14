@@ -1,7 +1,7 @@
 import {Vector3,MathUtils} from 'three';
-import {cyclePlayerPose} from '../simulation/light-cycles.js';
+import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 import {config} from '../game/config.js';
-import {ARENA_WALL} from '../game/arena-breaches.js';
+import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 import {CAMERA_CLEARANCE,constrainCamera} from './camera-collision.js';
 import {cycleCameraWorld,cycleCameraAnchor} from './arena-camera-collision.js';
 export const CYCLE_RESULT_CAMERA=Object.freeze({transitionSeconds:2.5,orbitRadiansPerSecond:.16,distanceMeters:10,heightMeters:4,lookHeightMeters:1});

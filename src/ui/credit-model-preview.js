@@ -17,9 +17,9 @@ const models=[
  ['LOCAL MAZE AND LEVEL WORK','maze',null],
  ['ARABINOWITZ','tank',null],
  ['SPRINGSOCIETY','boss',null],
- ['SHRIKER1','recognizer',new URL('../../docs/models/tron_1982_recognizer.glb',import.meta.url).href],
- ['3D MODEL: TRON CARRIER','carrier',new URL('../../docs/models/tron_1982_carrier.glb',import.meta.url).href],
- ['3D MODEL: TRON SUNSHIP','sailer',new URL('../../docs/models/tron_1982_solar_sailer.glb',import.meta.url).href],
+ ['SHRIKER1','recognizer',new URL('../../assets/runtime/models/tron_1982_recognizer.glb',import.meta.url).href],
+ ['3D MODEL: TRON CARRIER','carrier',new URL('../../assets/runtime/models/tron_1982_carrier.glb',import.meta.url).href],
+ ['3D MODEL: TRON SUNSHIP','sailer',new URL('../../assets/runtime/models/tron_1982_solar_sailer.glb',import.meta.url).href],
  ['DANIEL PRETI','arena',null],
  ['CARL N. HOFF','cycle',null],
 ];

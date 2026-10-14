@@ -19,13 +19,28 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Repository organization and video removal — October 14
+
+- [x] Implement [organization stages 1–6](organization/index.html): focused shared simulation modules, discovered unit tests, grouped browser/tool scripts with CLI compatibility, canonical runtime/source/reference directories, asset catalog and explicit production packaging.
+- [x] Remove reference videos entirely and ignore video extensions. Rewrite video paths out of Git history; retain runtime audio and still images. Extraction inputs must be supplied separately.
+- [x] Verify 531 unit checks, Worker dry run, PWA offline/update behavior, multiplayer browser lifecycle with jitter, and production subdirectory paths on macOS/headless Chromium.
+- [ ] Deploy and verify the reorganized release. Retire compatibility paths only after deployed-client cache review.
+
+## Immediate multiplayer turns near fixed walls — October 14
+
+- [x] Remove the eight-tick input lead from outgoing commands and local motion prediction. The authority validates timestamp freshness but applies accepted commands on its next 120 Hz tick, including valid future-dated commands from cached clients. Preserve sequence checks, turn-rate limits and authoritative collisions; do not backdate impacts.
+- [x] Retain a local fractional keypress tick for pending-input replay. Apply the turn at the currently displayed position in the same frame, finalize the preceding trail at that corner and continue the new segment. Only integer timestamps are sent on the wire. Remote playback remains buffered at 75 ms.
+- [x] `npm test`: 528 checks pass. Fixed-wall regressions approach an existing arena boundary with 1.8 m of collision-shape clearance at 38.4 and 96 m/s. Immediate scheduling survives at zero and two ticks (16.7 ms) of simulated input transit; the former eight-tick schedule crashes. At six ticks (50 ms) transit, both approaches are already too late. With two ticks of transit, accepted corner displacement is 0.64 m normally and 1.6 m at turbo. These are deterministic simulation checks, not measured real-network latency.
+- [x] Local prediction tests cover zero/80 ms RTT estimates, fractional keypress times, same-frame direction changes without position jumps, joined trail corners and no repeated turns across frames. `npm run build`, `npm run worker:check` and `git diff --check` pass. Restarted local Vite on port 5173 so its authority loads the new handler. `TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs` passes in headless Chrome on macOS with two rendered clients, twelve cycles and fourteen connections.
+- [ ] Real-player fixed-wall feel and realistic network-transit review; bounded rollback remains unimplemented. Local change, not deployed.
+
 ## Remote cycle playback under packet jitter — October 14
 
 - [x] Replace remote forward prediction with a bounded snapshot history and continuous monotonic playback clock. Packet arrival adjusts playback speed by at most 10%, rather than resetting the time origin. Use a named 75 ms presentation buffer; the tested 50 ms buffer occasionally ran dry under 15–50 ms delivery jitter. Local input prediction, server timing and collision authority are unchanged.
 - [x] Interpolate remote positions along confirmed trail corners, trim their displayed trails to the same pose and remap active segment indices. Keep current authoritative HUD/reward data and deaths; never resurrect a dead cycle to play an old pose. Hold at the latest confirmed point during network stalls; clear history on new rounds and disconnect disposal.
 - [x] `node --test tests/multiplayer-playback.test.js tests/multiplayer.test.js tests/multiplayer-audio.test.js`: 21 checks pass. At 144 rendered frames/sec with alternating 15–50 ms snapshot delivery delays, the straight-line normal-speed test reduces worst frame-step error from 1.344 m to 0.0267 m, with no backward/held frames after warm-up. Also check multiple corners, trail attachment, local isolation, immutable snapshots, history bounds, stalls and round reset.
 - [x] `TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs` passes in headless Chrome on macOS with two rendered clients, twelve cycles, fourteen connections and jittered WebSocket delivery. Inspect the normal-renderer capture. `npx vite build` and `git diff --check` pass; existing build warnings remain.
-- [ ] Real-player motion and close-cutoff review. The buffer adds approximately 75 ms behind received state (plus network transit); it improves presentation at a latency cost. Longer stalls can still hold remote motion. This follow-up is the next authorized October 14 client release. Full release checks: `npm test` passes 525 tests and `npm run build` passes; production publication and browser verification are pending at this source revision.
+- [ ] Real-player motion and close-cutoff review. The buffer adds approximately 75 ms behind received state (plus network transit); it improves presentation at a latency cost. Longer stalls can still hold remote motion. Deployed TRON `b9b1948` through dekorte.com `c5a52e0`, Pages run `38608501930`. Full release checks: `npm test` passes 525 tests and `npm run build` passes. Production Chrome verified the published 75 ms playback code, 53 decoded snapshots, a six-cycle arena and immediate solo Return restart, with no page errors. The existing server was unchanged.
 
 ## Multiplayer production release — October 14
 
@@ -3768,7 +3783,7 @@ The user-selected design is one public, server-authoritative arena, reached thro
 
 The local Vite server hosts the room at `/api/multiplayer`. Production support is prepared as one Cloudflare Durable Object named `public-arena-v1`, using the existing Worker and `MULTIPLAYER_ARENA` binding. The authoritative Worker is deployed and a production-origin WebSocket check confirms advancing snapshots and the three-cycle team cap. The static client has also been published; the protocol 2 client update was published in the October 14 release. Run `npm run dev`, choose the multiplayer menu, and open another browser window to join the same room. Single-player does not load the multiplayer client or start a multiplayer network loop.
 
-The referee runs the shared simulation at 120 Hz and sends trail-delta snapshots at 20 Hz. Inputs are sequenced and scheduled eight ticks ahead (about 67 ms), with bounded timestamp acceptance. Clients extrapolate motion and predict their pending turns; collision and elimination remain authoritative. There is no rollback yet. A late command takes effect on a future server tick rather than rewriting a collision. This removes browser-host authority advantage but does not make differing network latency equal.
+The referee runs the shared simulation at 120 Hz and sends trail-delta snapshots at 20 Hz. The deployed baseline schedules sequenced inputs eight ticks ahead (about 67 ms). The October 14 local follow-up below removes that lead and applies accepted inputs on the next authority tick, retaining bounded timestamp acceptance. Clients extrapolate motion and predict their pending turns; collision and elimination remain authoritative. There is no rollback yet. A late command takes effect on a future server tick rather than rewriting a collision. This removes browser-host authority advantage but does not make differing network latency equal.
 
 Human cycles carry a thick diagonal stripe, first half black and second half white, on the colored shell. Their roster circles mirror it; your circle has an extra outline. Eliminated circles retain their team outline with transparent interiors. Custom stripe patterns are a possible later addition.
 
@@ -3861,7 +3876,15 @@ Protocol 2 transmits only presentation state and changes to that state. Coordina
 
 Straight-line choppiness can occur without low rendering FPS: the old client restarted its extrapolation clock at each snapshot arrival, converting network jitter into position corrections. It also applied the local input lead to opponents whose future controls were unknown. Remote presentation now uses a continuous clock and a 75 ms snapshot buffer, interpolating through confirmed trail corners while keeping bike and trail endpoints together. The clock adjusts its rate within 10% to maintain the buffer and holds at the latest confirmed pose if updates stop. Local prediction remains immediate on its existing timeline; authoritative deaths and HUD state are not delayed.
 
-The jitter regression at 144 Hz reduces worst normal-speed straight-line frame-step error from 1.344 m to 0.0267 m under the tested 15–50 ms delivery delays. A 50 ms buffer ran dry in that test. Jittered two-client Chrome checks and the build pass. These results do not establish real-player fairness or subjective smoothness: the remote presentation buffer adds delay, and long network stalls can still hold motion. The user authorized deployment of this follow-up. All 525 unit tests and the production build pass; publication and live verification are pending at this source revision.
+The jitter regression at 144 Hz reduces worst normal-speed straight-line frame-step error from 1.344 m to 0.0267 m under the tested 15–50 ms delivery delays. A 50 ms buffer ran dry in that test. Jittered two-client Chrome checks and the build pass. These results do not establish real-player fairness or subjective smoothness: the remote presentation buffer adds delay, and long network stalls can still hold motion. Deployed October 14: TRON `b9b1948`, dekorte.com `c5a52e0`, Pages run `38608501930`. All 525 unit tests and the production build pass. Production Chrome confirmed the new playback code, 53 compact snapshots and solo restart with no page errors; the existing server is unchanged.
+
+## Fixed-wall turn responsiveness — October 14 local follow-up
+
+The next local change removes the fixed eight-tick lead for local presentation and input packets. Input timestamps still establish freshness, but no longer delay an accepted command: the server applies it on its next 120 Hz tick. Clients record a fractional keypress time privately, predict the turn at their displayed position immediately, and replay it until acknowledged. The preceding trail ends at the predicted corner. Remote cycles retain their separate 75 ms playback buffer.
+
+With 1.8 m of clearance to the existing arena wall's collision boundary, tests at normal speed (38.4 m/s) and turbo (96 m/s) survive zero/two-tick input transit under next-tick handling, whereas the old eight-tick schedule crashes. Two ticks of transit move the accepted turn 0.64/1.6 m from the keypress position. Six ticks of transit (50 ms) is too late at that clearance for either approach. All 528 unit tests, production build and Worker dry run pass. These are controlled simulation results, not a guarantee of precise turning at arbitrary network latency.
+
+No collision rollback or provisional death system is included. Inputs received after confirmed impact cannot restore the player. This follow-up requires both a server and client deployment; it is currently local only.
 
 
 ---
@@ -3877,7 +3900,7 @@ subtitle: Clear ownership for code, assets, references and generated output
 
 ## Scope
 
-This is a plan, not authorization to move or delete assets. Preserve gameplay, existing public URLs, attribution, offline behavior and the current deployment process. Migrate one category per reviewed commit; avoid mixing folder moves with simulation or visual changes. The existing refactoring document covers object ownership; this plan covers repository structure and asset lifecycles.
+Implementation authorized October 14, including deletion of video references and removal from Git history. Preserve gameplay, existing public URLs, attribution, offline behavior and the current deployment process. Migrate one category per reviewed commit; avoid mixing folder moves with simulation or visual changes. The existing refactoring document covers object ownership; this plan covers repository structure and asset lifecycles.
 
 ## Current friction
 
@@ -3929,6 +3952,20 @@ For each stage, record moved paths, compatibility aliases, commands, browser/har
 ## First recommended slice
 
 Start with the asset manifest and directory READMEs, without moving any runtime files. This gives us a trustworthy map and catches accidentally shipped source/reference material before a broader rename. Keep generated documentation beside Markdown for now because colvmn and the documentation copy scripts already depend on that arrangement.
+
+## Implementation — October 14
+
+Stages 1–6 are implemented. Tests now live in `tests/unit` and `tests/browser`; tools live in `tools/assets`, `tools/build` and `tools/validation`. Previous CLI paths forward to the new modules. The authority imports its browser-free simulation/configuration from `shared/simulation`; existing source paths remain forwarding modules.
+
+Runtime imports live in `assets/runtime`, outside Vite public, to preserve content-hashed output filenames. Static URLs use `public/assets`. Original model inputs live in `assets/source`, and still-image references in `references`. All 100 existing user reference renames matched identical content before relocation. Untracked source collections remain untracked and are excluded from the committed catalog.
+
+`assets/catalog.json` records provenance, hashes, conversion tools and unresolved attribution. `assets/path-map.json` retains old asset URLs through development middleware, production aliases and service-worker alias resolution. Production copies only authored/generated documentation and explicitly linked media, rather than recursively shipping source collections. The POV-Ray model license remains included.
+
+At the user's request, all 16 local reference videos were deleted, video extensions are ignored case-insensitively, and video paths were removed from Git history. Extraction scripts retain expected ignored input paths for externally supplied footage; those inputs are no longer bundled. Existing audio derivatives remain unchanged. Hosted caches/LFS retention is outside the rewritten branch history.
+
+Validation on macOS/headless Chromium: 531 unit checks, Worker dry run, PWA offline/range/update checks, two-client multiplayer under delivery jitter, and `/fun/TRON/` production-path smoke checks passed. Initial production output was 1,805,603,712 bytes; the reorganized build is approximately 289 MiB, with approximately 89.7 MiB precached. Final release validation is recorded in the implementation plan. Automated checks do not establish subjective driving or sound quality.
+
+Stage 7 remains deferred: retain compatibility paths for this release until deployed cached clients and links have been reviewed. Never restore a pre-purge commit as a rollback: it would reintroduce video history. Use the rewritten history or revert code changes on the cleaned branch.
 
 
 ---
@@ -4488,11 +4525,11 @@ Sark and MCP.mp4, 52.75–54.25 s. Filtered mixed soundtrack, stretched to about
 
 **Archived startup candidate; replaced by materialization cue** · Cycle startup
 
-Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
 
-<audio controls preload="none" aria-label="Light cycle startup" src="../../public/audio/cycle-startup.wav"></audio>
+<audio controls preload="none" aria-label="Light cycle startup" src="../../public/assets/audio/cycle-startup.wav"></audio>
 
-[Open audio file](../../public/audio/cycle-startup.wav)
+[Open audio file](../../public/assets/audio/cycle-startup.wav)
 
 [Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
@@ -4500,11 +4537,11 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 **Film-mix candidate; wired into gameplay** · Cycle launch
 
-Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
 
-<audio controls preload="none" aria-label="Light cycle launch" src="../../public/audio/cycle-launch.wav"></audio>
+<audio controls preload="none" aria-label="Light cycle launch" src="../../public/assets/audio/cycle-launch.wav"></audio>
 
-[Open audio file](../../public/audio/cycle-launch.wav)
+[Open audio file](../../public/assets/audio/cycle-launch.wav)
 
 [Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
@@ -4512,11 +4549,11 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 **Film-mix candidate; wired into gameplay** · Cycle driving loop
 
-Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:47–0:48; 0.1-second seam crossfade.
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:47–0:48; 0.1-second seam crossfade.
 
-<audio controls preload="none" aria-label="Light cycle driving loop" src="../../public/audio/cycle-drive.wav"></audio>
+<audio controls preload="none" aria-label="Light cycle driving loop" src="../../public/assets/audio/cycle-drive.wav"></audio>
 
-[Open audio file](../../public/audio/cycle-drive.wav)
+[Open audio file](../../public/assets/audio/cycle-drive.wav)
 
 [Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
@@ -4524,11 +4561,11 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 **Film-mix candidate; wired into gameplay** · Cycle turn
 
-Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:51–0:52; 12 ms edge fades.
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:51–0:52; 12 ms edge fades.
 
-<audio controls preload="none" aria-label="Light cycle turn" src="../../public/audio/cycle-turn.wav"></audio>
+<audio controls preload="none" aria-label="Light cycle turn" src="../../public/assets/audio/cycle-turn.wav"></audio>
 
-[Open audio file](../../public/audio/cycle-turn.wav)
+[Open audio file](../../public/assets/audio/cycle-turn.wav)
 
 [Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
@@ -4536,11 +4573,11 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 **Film-mix candidate; wired into gameplay** · Cycle explosion
 
-Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. Extended to two seconds (1:15.85–1:17.85), 1.15 seconds longer than the initial extract.
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. Extended to two seconds (1:15.85–1:17.85), 1.15 seconds longer than the initial extract.
 
-<audio controls preload="none" aria-label="Light cycle explosion" src="../../public/audio/cycle-explosion.wav"></audio>
+<audio controls preload="none" aria-label="Light cycle explosion" src="../../public/assets/audio/cycle-explosion.wav"></audio>
 
-[Open audio file](../../public/audio/cycle-explosion.wav)
+[Open audio file](../../public/assets/audio/cycle-explosion.wav)
 
 [Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
@@ -4548,11 +4585,11 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 **Film-mix candidate; wired into gameplay** · Cycle trail deactivation
 
-Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
+Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.
 
-<audio controls preload="none" aria-label="Light cycle trail deactivation" src="../../public/audio/cycle-wall-down.wav"></audio>
+<audio controls preload="none" aria-label="Light cycle trail deactivation" src="../../public/assets/audio/cycle-wall-down.wav"></audio>
 
-[Open audio file](../../public/audio/cycle-wall-down.wav)
+[Open audio file](../../public/assets/audio/cycle-wall-down.wav)
 
 [Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
@@ -4562,9 +4599,9 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 Restored film waveform after the synthesized drone was rejected as harsh and irritating. Uses 1:36.7–1:37.8 of the user-selected 1:36–1:38 interval, with a 0.2-second equal-power crossfade and stereo-linked RMS leveling. Finished loop: 0.9 seconds. The recording’s pitch variation remains unresolved; volume smoothing does not fix it. Other cycles retain 0:47–0:48.
 
-<audio controls preload="none" aria-label="Light cycle player cabin loop" src="../../public/audio/cycle-drive-cabin.wav"></audio>
+<audio controls preload="none" aria-label="Light cycle player cabin loop" src="../../public/assets/audio/cycle-drive-cabin.wav"></audio>
 
-[Open audio file](../../public/audio/cycle-drive-cabin.wav)
+[Open audio file](../../public/assets/audio/cycle-drive-cabin.wav)
 
 [Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
@@ -4574,9 +4611,9 @@ Restored film waveform after the synthesized drone was rejected as harsh and irr
 
 Single materialization beat from 26.7–27.4 seconds in the supplied film clip; avoids repeating the full intercut team sequence. One team cue accompanies the 0.3-second reveal and its tail carries into launch. Film-mix candidate; auditory review pending. Reproduce with scripts/extract-cycle-sfx.py.
 
-<audio controls preload="none" aria-label="Light cycle materialization" src="../../public/audio/cycle-materialize.wav"></audio>
+<audio controls preload="none" aria-label="Light cycle materialization" src="../../public/assets/audio/cycle-materialize.wav"></audio>
 
-[Open audio file](../../public/audio/cycle-materialize.wav)
+[Open audio file](../../public/assets/audio/cycle-materialize.wav)
 
 [Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 

@@ -1,5 +1,5 @@
 import {cachedMusicUrl} from './music-cache.js';
-import musicUrl from '../../docs/assets/music/Tron/20 Break In (For Strings, Flutes And Celesta - Bonus).mp3?url';
+import musicUrl from '../../assets/runtime/audio/music/Tron/20 Break In (For Strings, Flutes And Celesta - Bonus).mp3?url';
 export const MCP_ACCESS_TEXT='REQUEST: ACCESS TO MASTER CONTROL PROGRAM.';
 const TIMING={startMs:1000,completedHoldMs:1500,keyMinMs:35,keyVariationMs:95,wordPauseMs:90,linePauseMs:420};
 /** Human-paced access request; owned timers are cancelled when the page leaves. */
@@ -27,7 +27,7 @@ export function typeMcpAccess(element,onComplete,{audioContext}={}){
    timer=setTimeout(()=>{if(!cancelled)onComplete?.();},TIMING.completedHoldMs);
   }
  };
- const beep=new Audio(new URL('audio/mcp-access-beep.wav',document.baseURI));
+ const beep=new Audio(new URL('assets/audio/mcp-access-beep.wav',document.baseURI));
  beep.preload='auto';
  // Begin the one-second lead from actual playback, not from the fetch request.
  void beep.play().catch(error=>console.warn('MCP access beep unavailable:',error.message)).then(()=>{

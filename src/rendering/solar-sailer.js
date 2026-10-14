@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import modelUrl from '../../docs/models/tron_1982_solar_sailer.glb?url';
+import modelUrl from '../../assets/runtime/models/tron_1982_solar_sailer.glb?url';
 import { SOLAR_SAILER, solarSailerPose } from '../game/solar-sailer.js';
 
 export const SAILER_STYLE=Object.freeze({sailOpacity:.48,starLongRadiusMeters:4.5,starShortRadiusMeters:2.4,starHalfWidthMeters:.16,tipLightRadiusMeters:.14});

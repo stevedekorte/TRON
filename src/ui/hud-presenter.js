@@ -1,5 +1,5 @@
 import {CycleRoster} from './cycle-roster.js';
-import {LIGHT_CYCLES} from '../game/light-cycles.js';
+import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
 import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {Vector3} from 'three';
 import {assistedRecognizerTarget,ASSIST_MARKER} from '../rendering/assist-target.js';

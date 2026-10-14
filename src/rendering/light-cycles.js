@@ -13,9 +13,9 @@ import { repairCycleSurface, repairCycleHubs, refineCycleRearWheel, refineCycleW
 import { LightCycleWalls } from './light-cycle-walls.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import goldUrl from '../../docs/models/preti_light_cycle_gold.glb?url';
-import blueUrl from '../../docs/models/preti_light_cycle_blue.glb?url';
-import { LIGHT_CYCLES as C, cycleFraction } from '../game/light-cycles.js';
+import goldUrl from '../../assets/runtime/models/preti_light_cycle_gold.glb?url';
+import blueUrl from '../../assets/runtime/models/preti_light_cycle_blue.glb?url';
+import { LIGHT_CYCLES as C, cycleFraction } from '../../shared/simulation/config/light-cycles.js';
 export const CYCLE_SELF_SHADOW=Object.freeze({size:1024,prefix:'cycleShadow',darkness:.65,maxCrafts:6,filterEdges:'soft',depthBias:.002});
 export const CYCLE_MODEL_STYLE=Object.freeze({blueBody:0x086ac4,blueTrim:0x084b92,redBody:0xff1010,redTrim:0xff4840,ambientScale:.35});
 export async function loadLightCycles({refineWheels=true}={}){

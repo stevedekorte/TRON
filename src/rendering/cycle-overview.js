@@ -1,7 +1,7 @@
 import {Vector3,MathUtils} from 'three';
-import {ARENA_WALL} from '../game/arena-breaches.js';
+import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 import {config} from '../game/config.js';
-import {cyclePlayerPose} from '../simulation/light-cycles.js';
+import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 import {ARENA_CAMERA_WALL_HEIGHT} from './arena-camera-collision.js';
 
 export const CYCLE_OVERVIEW=Object.freeze({durationSeconds:3,wallClearanceMeters:6,rimInsetMeters:1,liftFraction:.45,trackingResponsePerSecond:5,lookHeightMeters:1});

@@ -1,4 +1,4 @@
-@font-face{font-family:FilmTerminal;src:url('/fonts/MCPDotMatrix-Regular.ttf') format('truetype');font-display:swap}
+@font-face{font-family:FilmTerminal;src:url('/assets/fonts/MCPDotMatrix-Regular.ttf') format('truetype');font-display:swap}
 :root{color-scheme:dark;--terminal-font-size:clamp(18px,1.3vw,24px);--mcp-blue:#2864cf;--mcp-dim:#143267;font:var(--terminal-font-size)/1.5 FilmTerminal,monospace;color:var(--mcp-blue);background:#010207}
 *{box-sizing:border-box}body{margin:0;text-transform:uppercase}main{height:100dvh;display:flex;flex-direction:column;overflow:auto}
 #face,#face-fallback{position:relative;top:0;left:0;width:100%;height:auto;aspect-ratio:1972/896;flex:none;display:block}
@@ -35,7 +35,7 @@ body.mcp-terminal #reply{margin:0;max-width:58ch}
 #encom-panel{
  position:fixed;right:4vw;bottom:4vw;width:clamp(119px,13.3vw,266px);
  aspect-ratio:840/460;pointer-events:none;filter:brightness(.6);
- background-image:url('../../docs/references/videos/MCP/Neon ENCOM Retro Interface Badge.png');
+ background-image:url('../../assets/runtime/images/Neon ENCOM Retro Interface Badge.png');
  background-size:199.05% 204.57%;
  background-position:50.48% 44.70%;
  background-repeat:no-repeat;animation:mcp-panel-reveal 4s ease-in-out both;

@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {styleArena} from './arena-style.js';
-import {ARENA_WALL} from '../game/arena-breaches.js';
+import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 // Clip a polygon by a half-space n·p <= d. Runs only when a wall is breached.
 function clip(poly,n,d,inside){
  const out=[];

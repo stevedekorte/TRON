@@ -8,7 +8,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const glow = (color) => new THREE.MeshBasicMaterial({ color });
 
 // The downloaded source remains unmodified; Vite emits it as a local build asset.
-const tankUrl = new URL('../../docs/models/tank_-_tron_1982.glb', import.meta.url).href;
+const tankUrl = new URL('../../assets/runtime/models/tank_-_tron_1982.glb', import.meta.url).href;
 
 export async function createTank() {
   const {scene} = await new GLTFLoader().loadAsync(tankUrl);
@@ -87,7 +87,7 @@ export async function createTank() {
   return {root,turret,barrel,flash,tracks:[],turboTrim,source:'arabinowitz'};
 }
 
-const recognizerUrl = new URL('../../docs/models/tron_1982_recognizer.glb', import.meta.url).href;
+const recognizerUrl = new URL('../../assets/runtime/models/tron_1982_recognizer.glb', import.meta.url).href;
 
 export async function loadRecognizer() {
   const {scene} = await new GLTFLoader().loadAsync(recognizerUrl);

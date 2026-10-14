@@ -1,16 +1,16 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MCP voice comparison</title>
-<style>@font-face{font-family:Terminal;src:url('./fonts/InterfaceRaster-Regular.ttf')}body{background:#020204;color:#8ac8e8;font:18px/1.6 Terminal,monospace;max-width:860px;margin:5vh auto;padding:24px}h1{font-size:1.4em}h2{font-size:1em;color:#c7d5f5}section{margin:2em 0}audio{width:100%}button,select{font:inherit;background:#101f2d;color:#b9eaff;border:1px solid #4e7894;padding:.5em}p{max-width:75ch}a{color:#8ac8e8}.note{color:#8a9ca6;font-size:.85em}</style>
+<style>@font-face{font-family:Terminal;src:url('./assets/fonts/InterfaceRaster-Regular.ttf')}body{background:#020204;color:#8ac8e8;font:18px/1.6 Terminal,monospace;max-width:860px;margin:5vh auto;padding:24px}h1{font-size:1.4em}h2{font-size:1em;color:#c7d5f5}section{margin:2em 0}audio{width:100%}button,select{font:inherit;background:#101f2d;color:#b9eaff;border:1px solid #4e7894;padding:.5em}p{max-width:75ch}a{color:#8ac8e8}.note{color:#8a9ca6;font-size:.85em}</style>
 <h1>MCP — SAME DIALOGUE COMPARISON</h1>
 <p>“That's right. He pushed me in the real world. Somebody pushes me, I push back. So I brought him down here.”</p>
 <p>All four clips have matched playback loudness. Compare the voice's weight, the ends of words, and the sound left in the pauses.</p>
 <label for="version">Compare the film with </label><select id="version"><option value="matched">FILM-PITCH CLONE + ROOM</option><option value="deeper">DEEPER CLONE + ROOM</option><option value="dry">UNTREATED CLONE</option></select> <button id="compare">PLAY ORIGINAL, THEN CLONE</button> <button id="stop">STOP</button>
 <p id="status" role="status"></p>
-<section><h2>1 — ORIGINAL FILM MCP</h2><audio id="original" controls preload="none" src="audio/mcp-match/original.wav"></audio></section>
-<section><h2>2 — UNTREATED CLONE</h2><audio id="dry" controls preload="none" src="audio/mcp-match/dry.wav"></audio></section>
-<section><h2>3 — FILM-PITCH CLONE + ROOM</h2><audio id="matched" controls preload="none" src="audio/mcp-match/matched.wav"></audio></section>
-<section><h2>4 — DEEPER CLONE + SAME ROOM</h2><audio id="deeper" controls preload="none" src="audio/mcp-match/deeper.wav"></audio></section>
+<section><h2>1 — ORIGINAL FILM MCP</h2><audio id="original" controls preload="none" src="assets/audio/mcp-match/original.wav"></audio></section>
+<section><h2>2 — UNTREATED CLONE</h2><audio id="dry" controls preload="none" src="assets/audio/mcp-match/dry.wav"></audio></section>
+<section><h2>3 — FILM-PITCH CLONE + ROOM</h2><audio id="matched" controls preload="none" src="assets/audio/mcp-match/matched.wav"></audio></section>
+<section><h2>4 — DEEPER CLONE + SAME ROOM</h2><audio id="deeper" controls preload="none" src="assets/audio/mcp-match/deeper.wav"></audio></section>
 <p class="note">The film-pitch version follows measured voiced pitch; the deeper option preserves the 8% pitch reduction you liked. Reverb was adjusted across 28 settings using two phrase-ending pauses as a guide. Music left in the reference and different word timing limit that measurement; the listening comparison is the final judgment. Whisper transcribed the clone's “push back” as “pushed back.”</p>
-<p class="note">Original: TRON (1982), Walt Disney Productions, user-supplied excerpt. Cloned rendition: Chatterbox, generated locally. <a href="audio/mcp-match/comparison.json">Settings and measurements</a> · <a href="mcp.html">Return to MCP</a></p>
+<p class="note">Original: TRON (1982), Walt Disney Productions, user-supplied excerpt. Cloned rendition: Chatterbox, generated locally. <a href="assets/audio/mcp-match/comparison.json">Settings and measurements</a> · <a href="mcp.html">Return to MCP</a></p>
 <script>
 const clips=[...document.querySelectorAll('audio')],status=document.getElementById('status');let next=null;
 function stop(){next=null;for(const a of clips){a.pause();a.currentTime=0;}status.textContent='';}

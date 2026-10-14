@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import faceUrl from '../../docs/references/images/MCP/MCP.png?url';
+import faceUrl from '../../assets/runtime/images/MCP.png?url';
 // Landmarks refer to the supplied film frame after trimming its black border.
 export const FACE={aspect:1972/896,columns:128,rows:80,mouthY:.125,mouthWidth:.28,jawTravel:.024};
 export async function createMcpFace(canvas,{cover=false}={}){

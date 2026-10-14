@@ -3,6 +3,7 @@ const PREFIX = `tron-game:${self.registration.scope}:`;
 const CACHE = PREFIX + '__REVISION__';
 const URLS = __PRECACHE__.map(path => new URL(path, self.registration.scope).href);
 const ASSETS = new Set(URLS);
+const ALIASES = new Map(Object.entries(__ASSET_ALIASES__).map(([old,current])=>[new URL(old,self.registration.scope).href,new URL(current,self.registration.scope).href]));
 self.addEventListener('install', event => {
   // Wait until the home screen or explicit update page requests activation.
   event.waitUntil((async () => {
@@ -55,7 +56,7 @@ self.addEventListener('fetch', event => {
   const root = new URL(self.registration.scope);
   // Query flags select game modes; they still use the same entry document.
   const entry = request.mode === 'navigate' && (url.pathname === root.pathname || url.pathname === root.pathname + 'index.html');
-  const key = entry ? new URL('index.html', root).href : url.href;
+  const key = entry ? new URL('index.html', root).href : ALIASES.get(url.href)??url.href;
   if (ASSETS.has(key)) event.respondWith(cachedResponse(request, key));
   // Unlisted URLs (including API calls and docs) remain network requests.
 });

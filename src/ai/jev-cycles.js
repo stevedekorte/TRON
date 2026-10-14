@@ -1,5 +1,5 @@
-import {LIGHT_CYCLES as C,CYCLE_JEV as J,CYCLE_DIRECTIONS as DIR} from '../game/light-cycles.js';
-import {cycleCellFree} from '../simulation/light-cycles.js';
+import {LIGHT_CYCLES as C,CYCLE_JEV as J,CYCLE_DIRECTIONS as DIR} from '../../shared/simulation/config/light-cycles.js';
+import {cycleCellFree} from '../../shared/simulation/light-cycles.js';
 import {configFor} from '../game/config.js';
 
 // Low-frequency destinations guide local steering; no network wait in the simulation.

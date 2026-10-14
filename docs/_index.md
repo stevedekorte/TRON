@@ -6,13 +6,28 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Repository organization and video removal — October 14
+
+- [x] Implement [organization stages 1–6](organization/index.html): focused shared simulation modules, discovered unit tests, grouped browser/tool scripts with CLI compatibility, canonical runtime/source/reference directories, asset catalog and explicit production packaging.
+- [x] Remove reference videos entirely and ignore video extensions. Rewrite video paths out of Git history; retain runtime audio and still images. Extraction inputs must be supplied separately.
+- [x] Verify 531 unit checks, Worker dry run, PWA offline/update behavior, multiplayer browser lifecycle with jitter, and production subdirectory paths on macOS/headless Chromium.
+- [ ] Deploy and verify the reorganized release. Retire compatibility paths only after deployed-client cache review.
+
+## Immediate multiplayer turns near fixed walls — October 14
+
+- [x] Remove the eight-tick input lead from outgoing commands and local motion prediction. The authority validates timestamp freshness but applies accepted commands on its next 120 Hz tick, including valid future-dated commands from cached clients. Preserve sequence checks, turn-rate limits and authoritative collisions; do not backdate impacts.
+- [x] Retain a local fractional keypress tick for pending-input replay. Apply the turn at the currently displayed position in the same frame, finalize the preceding trail at that corner and continue the new segment. Only integer timestamps are sent on the wire. Remote playback remains buffered at 75 ms.
+- [x] `npm test`: 528 checks pass. Fixed-wall regressions approach an existing arena boundary with 1.8 m of collision-shape clearance at 38.4 and 96 m/s. Immediate scheduling survives at zero and two ticks (16.7 ms) of simulated input transit; the former eight-tick schedule crashes. At six ticks (50 ms) transit, both approaches are already too late. With two ticks of transit, accepted corner displacement is 0.64 m normally and 1.6 m at turbo. These are deterministic simulation checks, not measured real-network latency.
+- [x] Local prediction tests cover zero/80 ms RTT estimates, fractional keypress times, same-frame direction changes without position jumps, joined trail corners and no repeated turns across frames. `npm run build`, `npm run worker:check` and `git diff --check` pass. Restarted local Vite on port 5173 so its authority loads the new handler. `TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs` passes in headless Chrome on macOS with two rendered clients, twelve cycles and fourteen connections.
+- [ ] Real-player fixed-wall feel and realistic network-transit review; bounded rollback remains unimplemented. Local change, not deployed.
+
 ## Remote cycle playback under packet jitter — October 14
 
 - [x] Replace remote forward prediction with a bounded snapshot history and continuous monotonic playback clock. Packet arrival adjusts playback speed by at most 10%, rather than resetting the time origin. Use a named 75 ms presentation buffer; the tested 50 ms buffer occasionally ran dry under 15–50 ms delivery jitter. Local input prediction, server timing and collision authority are unchanged.
 - [x] Interpolate remote positions along confirmed trail corners, trim their displayed trails to the same pose and remap active segment indices. Keep current authoritative HUD/reward data and deaths; never resurrect a dead cycle to play an old pose. Hold at the latest confirmed point during network stalls; clear history on new rounds and disconnect disposal.
 - [x] `node --test tests/multiplayer-playback.test.js tests/multiplayer.test.js tests/multiplayer-audio.test.js`: 21 checks pass. At 144 rendered frames/sec with alternating 15–50 ms snapshot delivery delays, the straight-line normal-speed test reduces worst frame-step error from 1.344 m to 0.0267 m, with no backward/held frames after warm-up. Also check multiple corners, trail attachment, local isolation, immutable snapshots, history bounds, stalls and round reset.
 - [x] `TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs` passes in headless Chrome on macOS with two rendered clients, twelve cycles, fourteen connections and jittered WebSocket delivery. Inspect the normal-renderer capture. `npx vite build` and `git diff --check` pass; existing build warnings remain.
-- [ ] Real-player motion and close-cutoff review. The buffer adds approximately 75 ms behind received state (plus network transit); it improves presentation at a latency cost. Longer stalls can still hold remote motion. This follow-up is the next authorized October 14 client release. Full release checks: `npm test` passes 525 tests and `npm run build` passes; production publication and browser verification are pending at this source revision.
+- [ ] Real-player motion and close-cutoff review. The buffer adds approximately 75 ms behind received state (plus network transit); it improves presentation at a latency cost. Longer stalls can still hold remote motion. Deployed TRON `b9b1948` through dekorte.com `c5a52e0`, Pages run `38608501930`. Full release checks: `npm test` passes 525 tests and `npm run build` passes. Production Chrome verified the published 75 ms playback code, 53 decoded snapshots, a six-cycle arena and immediate solo Return restart, with no page errors. The existing server was unchanged.
 
 ## Multiplayer production release — October 14
 

@@ -12,7 +12,7 @@
   <meta property="og:title" content="ENCOM TERMINAL">
   <meta property="og:description" content="Enter the grid. Play CLU, race light cycles, and talk to BIT in this browser tribute to TRON (1982).">
   <meta property="og:url" content="https://dekorte.com/fun/TRON/">
-  <meta property="og:image" content="https://dekorte.com/fun/TRON/images/encom-social-preview.jpg">
+  <meta property="og:image" content="https://dekorte.com/fun/TRON/assets/images/encom-social-preview.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1080">
   <meta property="og:image:height" content="720">
@@ -20,7 +20,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ENCOM TERMINAL">
   <meta name="twitter:description" content="Enter the grid. Play CLU, race light cycles, and talk to BIT in this browser tribute to TRON (1982).">
-  <meta name="twitter:image" content="https://dekorte.com/fun/TRON/images/encom-social-preview.jpg">
+  <meta name="twitter:image" content="https://dekorte.com/fun/TRON/assets/images/encom-social-preview.jpg">
   <meta name="twitter:image:alt" content="A blue light cycle leaves a glowing trail across the grid inside the TRON arena.">
   <script>
     // Run while parsing HTML, before any stylesheets, modules or game assets.
@@ -30,15 +30,15 @@
   <script defer src="./bit/exit-confirm.js"></script>
   <style>html,body{margin:0;background:#000;color:#9eb6ce}body{visibility:hidden}</style>
   <style>
-    @font-face{font-family:MobileTerminal;src:url('./fonts/InterfaceRaster-Regular.ttf') format('truetype');font-display:swap}
+    @font-face{font-family:MobileTerminal;src:url('./assets/fonts/InterfaceRaster-Regular.ttf') format('truetype');font-display:swap}
     #mobile-terminal-message{display:none}
     html.mobile-terminal,html.mobile-terminal body{background:#020204;visibility:visible}
     html.mobile-terminal body>*:not(#mobile-terminal-message){display:none!important}
     html.mobile-terminal #mobile-terminal-message{display:block;position:absolute;left:7vw;top:28vh;width:86vw;margin:0;color:#159ddd;font:400 clamp(14px,2.6vw,24px)/1.4 MobileTerminal,monospace;letter-spacing:.025em;text-shadow:0 0 3px #0a91db}
   </style>
-  <link rel="icon" type="image/svg+xml" href="./icons/encom-e-727c3ea9d1f1.svg">
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/encom-e-727c3ea9d1f1.svg">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon" href="./icons/encom-e-727c3ea9d1f1-180.png">
+  <link rel="apple-touch-icon" href="./assets/icons/encom-e-727c3ea9d1f1-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
@@ -55,7 +55,7 @@
     <section class="intro" id="loading" role="status" aria-live="polite">
       <div class="terminal-content"><h1 class="terminal-copy complete">ENCOM REMOTE ACCESS
 DIALING HOST<span class="loading-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span><span class="terminal-cursor" aria-hidden="true"></span></h1></div>
-      <img class="terminal-encom" src="/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
+      <img class="terminal-encom" src="/assets/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
     </section>
     <section class="intro" id="intro" hidden>
       <div class="terminal-content">
@@ -75,7 +75,7 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
           </div>
         </div>
       </div>
-      <img class="terminal-encom" src="/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
+      <img class="terminal-encom" src="/assets/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
     </section>
     <section id="paused" class="standby" role="status" tabindex="-1" hidden>ANY KEY TO RESUME</section>
     <section id="error" class="result" hidden><div class="eyebrow">CONNECTION FAILED</div><h2>UNABLE TO ENTER.</h2><p id="error-message"></p><button class="primary" onclick="location.reload()">RELOAD</button></section>

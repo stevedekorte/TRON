@@ -1,4 +1,4 @@
-import {ROAD_CYCLE,ROAD_CYCLE_FIELDS,migrateRoadCycleTuning} from '../game/cycle-road.js';
+import {ROAD_CYCLE,ROAD_CYCLE_FIELDS,migrateRoadCycleTuning} from '../../shared/simulation/config/cycle-road.js';
 const STORAGE_KEY='tron-cycle-road-tuning-v1';
 /** Modal owns its DOM/listeners; simulation settings stay with GameSession. */
 export class CycleTuning {

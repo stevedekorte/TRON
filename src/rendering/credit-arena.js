@@ -1,6 +1,6 @@
 import {Group} from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import modelUrl from '../../docs/models/preti_light_cycle_arena.glb?url';
+import modelUrl from '../../assets/runtime/models/preti_light_cycle_arena.glb?url';
 import {createArenaFloor} from './arena-floor.js';
 import {styleArena} from './arena-style.js';
 

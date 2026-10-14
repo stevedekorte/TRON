@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {LIGHT_CYCLES as C} from '../game/light-cycles.js';
+import {LIGHT_CYCLES as C} from '../../shared/simulation/config/light-cycles.js';
 export const TIRE_TRACE=Object.freeze({lifetimeSeconds:8,spacingMeters:.45,widthMeters:.13,opacity:.06,
  rearContactMeters:1.23,surfaceOffsetMeters:.015,maxJumpMeters:25,capacity:8192,edgeEnvelope:3});
 /** Bounded visual history only: these marks never enter trail collision state. */

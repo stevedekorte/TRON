@@ -1,4 +1,4 @@
-import { arenaSite } from '../levels/arena.js';
+import { arenaSite } from '../../shared/simulation/levels/arena.js';
 import { config, RECOGNIZER_SCALE } from './config.js';
 export const ARENA_PATROL = Object.freeze({
   wallCenterHalfExtentMeters: 450,

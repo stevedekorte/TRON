@@ -1,4 +1,4 @@
-import {LIGHT_CYCLES,cycleFraction} from '../game/light-cycles.js';
+import {LIGHT_CYCLES,cycleFraction} from '../../shared/simulation/config/light-cycles.js';
 /** One fixed step of visual interpolation, shared by bikes, trails and camera.
  * Collision state remains untouched; deaths/results display their impact pose. */
 export function interpolateCycleRace(race,alpha){

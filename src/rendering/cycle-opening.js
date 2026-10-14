@@ -1,6 +1,6 @@
 import {VectorKeyframeTrack, NumberKeyframeTrack, InterpolateSmooth, Vector3, MathUtils} from 'three';
-import {LIGHT_CYCLES} from '../game/light-cycles.js';
-import {ARENA_WALL} from '../game/arena-breaches.js';
+import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
+import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 // Preserve the supplied clip's 00:00–00:16 move, then hold its endpoint
 // for the gold team's materialization before cutting to the player camera.
 export const CYCLE_OPENING=Object.freeze({startSeconds:1,durationSeconds:16,travelSeconds:16,formationSeconds:2.75/1.5,launchHoldSeconds:.6,raceReleaseFraction:1,lookDistanceMeters:100,minimumHeightMeters:4});

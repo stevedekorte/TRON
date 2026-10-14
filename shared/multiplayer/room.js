@@ -1,5 +1,5 @@
 import {MP} from './config.js';
-import {resetCycleRound,updateCycleRace} from '../../src/simulation/light-cycles.js';
+import {resetCycleRound,updateCycleRace} from '../simulation/light-cycles.js';
 
 // Transport-independent authority. Only this object decides seats, movement and deaths.
 export class CycleRoom{
@@ -68,8 +68,9 @@ export class CycleRoom{
   c.seq=message.seq;
   if(c.seat===null||!this.race.cycles[c.seat]?.alive||this.race.phase!=='racing'){c.ack=message.seq;return false;}
   if(c.inputs.length>=16)return false;
-  // No client can backdate a collision. Late inputs apply on the next tick.
-  const at=Math.max(this.tick+1,message.tick,c.inputs.at(-1)?.at??0);
+  // Timestamps validate freshness; they do not postpone a received command.
+  // Apply on the next authority tick, without backdating collisions.
+  const at=this.tick+1;
   c.inputs.push({...message,at});return true;
  }
  step(){

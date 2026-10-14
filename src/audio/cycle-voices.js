@@ -1,5 +1,5 @@
 import { stereoEmitter, doppler } from './spatial.js';
-import { LIGHT_CYCLES as C, CYCLE_DIRECTIONS, cycleFraction } from '../game/light-cycles.js';
+import { LIGHT_CYCLES as C, CYCLE_DIRECTIONS, cycleFraction } from '../../shared/simulation/config/light-cycles.js';
 export const CYCLE_SOUND = Object.freeze({
   stereoHalfWidthMeters: .3, pitchResponseSeconds: .1,
   referenceDistanceMeters: 14, maximumDistanceMeters: 1400,

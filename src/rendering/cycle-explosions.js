@@ -1,5 +1,5 @@
 import * as T from 'three';
-import { LIGHT_CYCLES as C } from '../game/light-cycles.js';
+import { LIGHT_CYCLES as C } from '../../shared/simulation/config/light-cycles.js';
 
 export const CYCLE_EXPLOSION = Object.freeze({
   framesPerSecond:24, rayFrames:9, lifetimeFrames:24,

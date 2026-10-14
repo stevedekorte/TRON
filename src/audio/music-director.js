@@ -9,15 +9,15 @@ import {
   MAZE_MUSIC,
   MUSIC_CUES,
 } from './music-selection.js';
-import afterglowUrl from '../../docs/assets/music/Tron/13 Tower Music - Let Us Pray/5 afterglow.mp3?url';
-import enterBeamUrl from '../../docs/assets/music/Tron/13 Tower Music - Let Us Pray/4 enter beam.mp3?url';
-import approachingUrl from '../../docs/assets/music/Tron/13 Tower Music - Let Us Pray/2 approacing beam.mp3?url';
-import spottedUrl from '../../docs/assets/music/Tron/13 Tower Music - Let Us Pray/3 spotted beam.mp3?url';
-import explorationUrl from '../../docs/assets/music/Tron/13 Tower Music - Let Us Pray/1 maze exploration.mp3?url';
-import endMusicUrl from '../../docs/assets/music/Tron/02 Only Solutions.mp3?url';
-import musicUrl from "../../docs/assets/music/Tron/03 We've Got Company Clips/1 recognized 1.mp3?url";
+import afterglowUrl from '../../assets/runtime/audio/music/Tron/13 Tower Music - Let Us Pray/5 afterglow.mp3?url';
+import enterBeamUrl from '../../assets/runtime/audio/music/Tron/13 Tower Music - Let Us Pray/4 enter beam.mp3?url';
+import approachingUrl from '../../assets/runtime/audio/music/Tron/13 Tower Music - Let Us Pray/2 approacing beam.mp3?url';
+import spottedUrl from '../../assets/runtime/audio/music/Tron/13 Tower Music - Let Us Pray/3 spotted beam.mp3?url';
+import explorationUrl from '../../assets/runtime/audio/music/Tron/13 Tower Music - Let Us Pray/1 maze exploration.mp3?url';
+import endMusicUrl from '../../assets/runtime/audio/music/Tron/02 Only Solutions.mp3?url';
+import musicUrl from "../../assets/runtime/audio/music/Tron/03 We've Got Company Clips/1 recognized 1.mp3?url";
 const musicClips = Object.entries(
-  import.meta.glob("../../docs/assets/music/Tron/03 We've Got Company Clips/*.mp3", {
+  import.meta.glob("../../assets/runtime/audio/music/Tron/03 We've Got Company Clips/*.mp3", {
     eager: true,
     query: '?url',
     import: 'default',

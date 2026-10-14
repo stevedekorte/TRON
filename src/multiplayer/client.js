@@ -1,8 +1,8 @@
 import {RemotePlayback,presentRemoteCycles} from './remote-playback.js';
 import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
 import {MP} from '../../shared/multiplayer/config.js';
-import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../game/light-cycles.js';
-import {cyclePlayerPose} from '../simulation/light-cycles.js';
+import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../../shared/simulation/config/light-cycles.js';
+import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 
 // Predict motion only. Collisions, eliminations, seats and trail history remain server-owned.
 function move(b,seconds,control){
@@ -53,9 +53,10 @@ export class MultiplayerClient{
   const control={turbo:!!command.cycleTurbo,brake:!!command.cycleSlow},turn=Math.sign(command.cycleTurn||0);
   const now=performance.now();if(!turn&&control.turbo===this.control.turbo&&control.brake===this.control.brake&&now-this.lastSent<250)return;
   this.control=control;this.lastSent=now;
-  const packet={type:'input',round:this.state.race.round,seq:++this.seq,tick:this.estimatedTick()+MP.inputLeadTicks,turn,...control};
+  const predictionTick=this.estimatedRenderTick();
+  const packet={type:'input',round:this.state.race.round,seq:++this.seq,tick:Math.floor(predictionTick),turn,...control};
   this.socket.send(JSON.stringify(packet));
-  if(this.me.seat!==null&&this.state.race.phase==='racing'&&this.state.race.cycles[this.me.seat]?.alive)this.pending.push(packet);
+  if(this.me.seat!==null&&this.state.race.phase==='racing'&&this.state.race.cycles[this.me.seat]?.alive)this.pending.push({...packet,predictionTick});
   if(this.pending.length>32)this.pending.shift();
  }
  apply(run){
@@ -68,20 +69,33 @@ export class MultiplayerClient{
   const waiting=this.me.seat===null||!race.cycles[this.me.seat]?.alive;
   const stale=performance.now()-this.received>2000;
   if(race.phase==='racing'&&!stale&&!this.disconnected){
-   const ticks=Math.max(0,Math.min(MP.maxFutureTicks,this.estimatedRenderTick()+MP.inputLeadTicks-this.state.tick));
-   const wholeTicks=Math.floor(ticks),fractionSeconds=(ticks-wholeTicks)/MP.tickHz;
+   const ticks=Math.max(0,Math.min(MP.maxFutureTicks,this.estimatedRenderTick()-this.state.tick));
+   const targetTick=this.state.tick+ticks;
    for(const b of race.cycles){
     if(!b.alive||b.id!==this.me.seat)continue;
     let control={turbo:!!b.reserveTurboRequested,brake:!!b.reserveBrakeRequested};
-    for(let step=1;step<=wholeTicks;step++){
-     for(const p of this.pending)if(Math.max(this.state.tick+1,p.tick)===this.state.tick+step){
-      control=p;if(p.turn){b.dir=(b.dir+p.turn+4)%4;b.turns++;race.trails.push({bikeId:b.id,team:b.team,dir:b.dir,x1:b.x,z1:b.z,x2:b.x,z2:b.z});b.segment=race.trails.length-1;}
+    let cursor=this.state.tick;
+    const advance=to=>{
+     while(cursor<to){
+      const end=Math.min(to,Math.floor(cursor)+1);
+      move(b,(end-cursor)/MP.tickHz,control);cursor=end;
      }
-     move(b,1/MP.tickHz,control);
+    };
+    for(const p of this.pending){
+     // Preserve the fractional keypress time locally; wire ticks stay integer.
+     // Replay each unacknowledged event exactly once on top of this snapshot.
+     const at=Math.max(cursor,p.predictionTick??p.tick);
+     if(at>targetTick)break;
+     advance(at);control=p;
+     if(p.turn){
+      const tail=race.trails[b.segment];
+      if(tail)race.trails[b.segment]={...tail,x2:b.x,z2:b.z};
+      b.dir=(b.dir+p.turn+4)%4;b.turns++;
+      race.trails.push({bikeId:b.id,team:b.team,dir:b.dir,x1:b.x,z1:b.z,x2:b.x,z2:b.z});b.segment=race.trails.length-1;
+     }
+     move(b,0,control);
     }
-    // Render the remainder of the timestep instead of holding a tick-quantized
-    // pose. Pending turns still apply only at their integer simulation ticks.
-    if(fractionSeconds>0)move(b,fractionSeconds,control);
+    advance(targetTick);
     const tail=race.trails[b.segment];if(tail)race.trails[b.segment]={...tail,x2:b.x,z2:b.z};
     b.previousX=b.x;b.previousZ=b.z;b.progress=1;b.continuousArena=true;
    }

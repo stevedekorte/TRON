@@ -1,4 +1,4 @@
-import {LIGHT_CYCLES} from '../game/light-cycles.js';
+import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
 
 export class CycleRoster{
  constructor(element){this.element=element;this.signature='';}

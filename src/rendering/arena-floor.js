@@ -1,4 +1,4 @@
-import {ARENA_WALL} from '../game/arena-breaches.js';
+import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 import { ARENA_GRID,fitArenaGridSpacing } from '../levels/arena-grid.js';
 import * as THREE from 'three';
 import {GROUND_GRID_AA_SCALE} from '../levels/ground-grid.js';

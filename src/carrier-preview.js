@@ -1,5 +1,5 @@
 import * as T from 'three';
-import carrierUrl from '../docs/models/tron_1982_carrier.glb?url';
+import carrierUrl from '../assets/runtime/models/tron_1982_carrier.glb?url';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const renderer=new T.WebGLRenderer({antialias:true});

@@ -9,7 +9,7 @@ import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
 import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
 import {CYCLE_OPENING,CYCLE_DEATH_HOLD_SECONDS} from '../rendering/camera-rig.js';
 import { LoadingTimings } from './loading-timings.js';
-import { CYCLE_TESTING } from '../game/light-cycles.js';
+import { CYCLE_TESTING } from '../../shared/simulation/config/light-cycles.js';
 import {CycleTuning} from '../ui/cycle-tuning.js';
 import {disposeSceneResources} from '../rendering/scene-resources.js';
 import { SOLAR_SAILER, SOLAR_SAILER_DEFAULTS } from '../game/solar-sailer.js';

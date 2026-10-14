@@ -5,13 +5,13 @@ import { View } from './rendering/view.js';
 import { loadVehicles } from './rendering/models.js';
 import { createRun } from './simulation/run.js';
 const { cellCenter } = world;
-const refs = import.meta.glob('../docs/references/images/*.png', {
+const refs = import.meta.glob('../references/film/images/**/*.png', {
   eager: true,
   query: '?url',
   import: 'default',
 });
 const reference = (name) => {
-  const url = refs['../docs/references/images/' + name + '.png'];
+  const url = Object.entries(refs).find(([path])=>path.endsWith('/'+name+'.png'))?.[1];
   if (!url) throw new Error('Missing reference image: ' + name);
   return url;
 };

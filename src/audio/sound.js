@@ -6,8 +6,8 @@ import { MusicDirector } from './music-director.js';
 import { RecognizerVoices } from './recognizer-voices.js';
 import { DEFAULT_WORLD, worldFor } from '../levels/scenario.js';
 import { TELEPORT_SOUND, teleportSamples } from './teleport.js';
-import endOfLineUrl from '../../docs/references/dialog/END OF LINE.mp3?url';
-import cluCannonUrl from '../../docs/references/sounds/clue fire.mp3?url';
+import endOfLineUrl from '../../assets/runtime/audio/END OF LINE.mp3?url';
+import cluCannonUrl from '../../assets/runtime/audio/clue fire.mp3?url';
 import { createTurretServo } from './turret-servo.js';
 import { TANK_EXPLOSION, tankExplosionSamples } from './tank-explosion.js';
 import { RECOGNIZER_STARTS, recognizerStarts } from '../game/recognizer-roster.js';
@@ -156,7 +156,7 @@ export class Sound {
               : name === 'clu-cannon'
                 ? cluCannonUrl
               : import.meta.env.BASE_URL +
-                  'audio/' +
+                  'assets/audio/' +
                   name +
                   '.wav' +
                   (name === 'tank-drive'
@@ -194,7 +194,7 @@ export class Sound {
     if(!this.context)return Promise.resolve();
     return this.cycleLoading ??= Promise.all(['materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
       try {
-        const response=await fetch(import.meta.env.BASE_URL+'audio/cycle-'+name+'.wav'+(name==='drive-cabin'?'?v=4':['drive','turn','explosion'].includes(name)?'?v=2':''));
+        const response=await fetch(import.meta.env.BASE_URL+'assets/audio/cycle-'+name+'.wav'+(name==='drive-cabin'?'?v=4':['drive','turn','explosion'].includes(name)?'?v=2':''));
         if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.context.decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;

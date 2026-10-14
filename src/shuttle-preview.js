@@ -14,7 +14,7 @@ const variant=new URLSearchParams(location.search).get('model')||'meshy-preserve
 const meshy=['meshy','meshy-isolated','meshy-detail','meshy-clean','meshy-preserved'].includes(variant);
 let model;
 if(meshy){
- const loaded=await new GLTFLoader().loadAsync(`./docs/models/carrier-shuttle/${['meshy-clean','meshy-preserved'].includes(variant)?'meshy-isolated':variant}/${new URLSearchParams(location.search).has('raw')?'shuttle-original':'shuttle'}.glb`);
+ const loaded=await new GLTFLoader().loadAsync(`./assets/source/models/carrier-shuttle/${['meshy-clean','meshy-preserved'].includes(variant)?'meshy-isolated':variant}/${new URLSearchParams(location.search).has('raw')?'shuttle-original':'shuttle'}.glb`);
  model=new T.Group();model.name='Meshy shuttle candidate';
  const asset=loaded.scene;
  if(['meshy-clean','meshy-preserved'].includes(variant))asset.traverse(o=>{

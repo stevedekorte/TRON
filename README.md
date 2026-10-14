@@ -231,7 +231,7 @@ Select **BIT** from the terminal to open the integrated program in `public/bit`.
 
 Bit uses the same private, budgeted Jev relay as the game. Both local and Worker protocols accept `{controller: "bit", question: "..."}` with a 1,000-character limit and fixed yes/no/unsure choices. Deploy the updated Worker alongside the client to enable public answers. Browser speech recognition and AI answers need network access; static Bit assets are available offline. `node tests/bit.mjs` tests entry, mocked speech/answers, repeat entry and Escape without live AI charges.
 
-New film-reference videos under `docs/references/videos` use Git LFS. Run `git lfs install` and `git lfs pull` after cloning to download those references; they are not required to run the game.
+Video references were removed from the working tree and Git history. Video files are ignored at every path, including uppercase extensions. Extraction tools require separately supplied inputs under ignored `.local/reference-videos/`; no footage is bundled. Do not merge old pre-cleanup clones into the rewritten history.
 
 
 ### Encrypted JEV credential
@@ -276,3 +276,7 @@ LIGHT CYCLES MULTIPLAYER uses one authoritative WebSocket arena. `npm run dev` h
 Production uses the existing Worker, its `MULTIPLAYER_ARENA` Durable Object binding and v2 migration in `wrangler.jsonc`. Deploy the Worker before the static client. `VITE_MULTIPLAYER_URL` can override the public server URL; otherwise production uses `VITE_JEV_API_BASE`. Set `MULTIPLAYER_ENABLED=false` to disable new connections. Empty rooms stop their simulation; active rooms consume server resources and need cost monitoring. There is no paid subscription provisioned by this change.
 
 `node --test tests/multiplayer.test.js` checks authority and queue rules; `node tests/multiplayer-browser.mjs` checks two rendered clients and additional wire clients. No rollback or reconnect identity yet; real-network cutoff fairness remains a playtest requirement. See `docs/multiplayer/_index.md` for details.
+
+## Repository layout
+
+See [the organization plan](docs/organization/_index.md) and `assets/catalog.json` for ownership and provenance. Runtime imports are in `assets/runtime`, static served media in `public/assets`, source models in `assets/source`, and still references in `references`. Unit tests live in `tests/unit`, browser checks in `tests/browser`, and build/validation/conversion commands in `tools`. Previous CLI locations and runtime URLs remain compatible during cache migration.

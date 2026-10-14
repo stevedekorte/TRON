@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Update ENCOM Terminal</title>
-<link rel="preload" href="./fonts/InterfaceRaster-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="./assets/fonts/InterfaceRaster-Regular.ttf" as="font" type="font/ttf" crossorigin>
 <style>
-@font-face{font-family:FilmTerminal;src:url('./fonts/InterfaceRaster-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:FilmTerminal;src:url('./assets/fonts/InterfaceRaster-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
 :root{color-scheme:dark;--terminal-font-size:min(1.5vw,2.15vh)}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:#020204;color:#159ddd;font:400 var(--terminal-font-size)/1.12 FilmTerminal,monospace;letter-spacing:.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566}
@@ -18,7 +18,7 @@ a:hover{color:#a6e2ff}
 @media(prefers-reduced-motion:reduce){a::before{animation:none}}
 </style></head>
 <body><main><p id="status" role="status" aria-live="polite">UPDATING ENCOM TERMINAL...</p><a href="./">RETURN TO ENCOM TERMINAL</a></main>
-<img class="encom" src="./images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
+<img class="encom" src="./assets/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
 <script type="module">
 const status=document.querySelector('#status');
 try{

@@ -1,10 +1,10 @@
-import {LIGHT_CYCLES} from '../game/light-cycles.js';
-import {ROAD_CYCLE} from '../game/cycle-road.js';
+import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
+import {ROAD_CYCLE} from '../../shared/simulation/config/cycle-road.js';
 import {CycleResultCamera} from './cycle-result-camera.js';
 import {CluDeathCamera} from './clu-death-camera.js';
-import {ARENA_WALL} from '../game/arena-breaches.js';
+import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 import {updateCycleOverview} from './cycle-overview.js';
-import {cyclePlayerPose} from '../simulation/light-cycles.js';
+import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 import { FreeCamera } from './free-camera.js';
 import * as THREE from 'three';
 import { BeamCamera } from './beam-camera.js';

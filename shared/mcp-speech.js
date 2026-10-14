@@ -1,4 +1,4 @@
-export const MCP_SPEECH={endpoint:'https://fal.run/fal-ai/chatterbox/text-to-speech/turbo',reference:'https://dekorte.com/fun/TRON/audio/mcp-reference.wav',temperature:.7,timeoutMs:90000,maxCharacters:1000};
+export const MCP_SPEECH={endpoint:'https://fal.run/fal-ai/chatterbox/text-to-speech/turbo',reference:'https://dekorte.com/fun/TRON/assets/audio/mcp-reference.wav',temperature:.7,timeoutMs:90000,maxCharacters:1000};
 export function speechText(body){
  if(typeof body?.text!=='string'||!body.text.trim()||body.text.length>MCP_SPEECH.maxCharacters)throw Error('Invalid speech text');
  return body.text.trim();

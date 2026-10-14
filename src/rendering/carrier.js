@@ -1,7 +1,7 @@
 import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import carrierUrl from '../../docs/models/tron_1982_carrier.glb?url';
+import carrierUrl from '../../assets/runtime/models/tron_1982_carrier.glb?url';
 import {CARRIER,carrierFor} from '../game/carrier.js';
 export async function loadCarrier(){
  const {scene:root}=await new GLTFLoader().loadAsync(carrierUrl);

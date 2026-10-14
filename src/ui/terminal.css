@@ -1,4 +1,4 @@
-@font-face{font-family:FilmTerminal;src:url('/fonts/InterfaceRaster-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:FilmTerminal;src:url('/assets/fonts/InterfaceRaster-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
 :root{--terminal-font-size:min(1.5vw,2.15vh)}
 body.terminal{background:#020204;--terminal-left:20.4vw;--terminal-top:27.5vh}
 body.terminal .masthead,body.terminal #footer,body.terminal #game{visibility:hidden}

@@ -1,7 +1,7 @@
 import { updateCycleArenaPatrol } from './arena-patrol.js';
-import {ROAD_CYCLE,validateRoadCycle} from '../game/cycle-road.js';
-import {LIGHT_CYCLES,CYCLE_TESTING} from '../game/light-cycles.js';
-import { attachCycleWorld, configureCycleMatch, createCycleRace, updateCycleRace, resetCycleRound, cyclePlayerPose } from './light-cycles.js';
+import {ROAD_CYCLE,validateRoadCycle} from '../../shared/simulation/config/cycle-road.js';
+import {LIGHT_CYCLES,CYCLE_TESTING} from '../../shared/simulation/config/light-cycles.js';
+import { attachCycleWorld, configureCycleMatch, createCycleRace, updateCycleRace, resetCycleRound, cyclePlayerPose } from '../../shared/simulation/light-cycles.js';
 import { config, CLU_HEALTH, attachSettings } from '../game/config.js';
 import { FLIGHT } from './flight.js';
 import { HEARING } from '../game/hearing.js';

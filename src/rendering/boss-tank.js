@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {BOSS_TANK as B} from '../game/boss-tank.js';
-const url=new URL('../../docs/models/extra/double_turret_clu_light_tank.glb',import.meta.url).href;
+const url=new URL('../../assets/runtime/models/extra/double_turret_clu_light_tank.glb',import.meta.url).href;
 export async function createBossTank(){
  const {scene}=await new GLTFLoader().loadAsync(url);scene.updateMatrixWorld(true);
  const root=new THREE.Group(),turret=new THREE.Group(),barrel=new THREE.Group(),flash=new THREE.Group();

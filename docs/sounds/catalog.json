@@ -149,7 +149,7 @@
       "source": "../references/videos/1982 tron clu scene.mp4",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/tank-drive.wav",
-      "disk": "public/audio/tank-drive.wav"
+      "disk": "public/assets/audio/tank-drive.wav"
     },
     {
       "id": "recognizer-flight",
@@ -162,7 +162,7 @@
       "source": "../references/videos/1982 tron clu scene.m4a",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/recognizer-flight.wav",
-      "disk": "public/audio/recognizer-flight.wav"
+      "disk": "public/assets/audio/recognizer-flight.wav"
     },
     {
       "id": "recognizer-approach",
@@ -175,7 +175,7 @@
       "source": "../references/videos/1982 tron clu scene.m4a",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/recognizer-approach.wav",
-      "disk": "public/audio/recognizer-approach.wav"
+      "disk": "public/assets/audio/recognizer-approach.wav"
     },
     {
       "id": "clu-cannon",
@@ -188,7 +188,7 @@
       "source": "../references/sounds/clue%20fire.mp3",
       "license": "User-supplied reference for this project; redistribution rights not established",
       "playback": "../references/sounds/clue%20fire.mp3",
-      "disk": "docs/references/sounds/clue fire.mp3"
+      "disk": "assets/runtime/audio/clue fire.mp3"
     },
     {
       "id": "cannon",
@@ -201,7 +201,7 @@
       "source": "../references/videos/1982 tron clu scene.mp4",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/cannon.wav",
-      "disk": "public/audio/cannon.wav"
+      "disk": "public/assets/audio/cannon.wav"
     },
     {
       "id": "recognizer-explosion",
@@ -214,7 +214,7 @@
       "source": "../references/videos/1982 tron clu scene.m4a",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/recognizer-explosion.wav",
-      "disk": "public/audio/recognizer-explosion.wav"
+      "disk": "public/assets/audio/recognizer-explosion.wav"
     },
     {
       "id": "terminal-key-1",
@@ -227,7 +227,7 @@
       "source": "../references/videos/1982 tron clu scene.mp4",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/terminal-key-1.wav",
-      "disk": "public/audio/terminal-key-1.wav"
+      "disk": "public/assets/audio/terminal-key-1.wav"
     },
     {
       "id": "terminal-key-2",
@@ -240,7 +240,7 @@
       "source": "../references/videos/1982 tron clu scene.mp4",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/terminal-key-2.wav",
-      "disk": "public/audio/terminal-key-2.wav"
+      "disk": "public/assets/audio/terminal-key-2.wav"
     },
     {
       "id": "terminal-key-3",
@@ -253,7 +253,7 @@
       "source": "../references/videos/1982 tron clu scene.mp4",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/terminal-key-3.wav",
-      "disk": "public/audio/terminal-key-3.wav"
+      "disk": "public/assets/audio/terminal-key-3.wav"
     },
     {
       "id": "terminal-key-4",
@@ -266,7 +266,7 @@
       "source": "../references/videos/1982 tron clu scene.mp4",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/terminal-key-4.wav",
-      "disk": "public/audio/terminal-key-4.wav"
+      "disk": "public/assets/audio/terminal-key-4.wav"
     },
     {
       "id": "carrier-rumble",
@@ -279,7 +279,7 @@
       "source": "../references/videos/carrier%20and%20solar%20sailer.mp4",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/carrier-rumble.wav",
-      "disk": "public/audio/carrier-rumble.wav"
+      "disk": "public/assets/audio/carrier-rumble.wav"
     },
     {
       "id": "cleanup-original",
@@ -292,7 +292,7 @@
       "source": "../references/sounds/Recognizer%20Explosion.m4a",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/studies/recognizer-explosion-original.wav",
-      "disk": "public/audio/studies/recognizer-explosion-original.wav"
+      "disk": "public/assets/audio/studies/recognizer-explosion-original.wav"
     },
     {
       "id": "cleanup-balanced",
@@ -305,7 +305,7 @@
       "source": "../references/sounds/Recognizer%20Explosion.m4a",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/studies/recognizer-explosion-balanced.wav",
-      "disk": "public/audio/studies/recognizer-explosion-balanced.wav"
+      "disk": "public/assets/audio/studies/recognizer-explosion-balanced.wav"
     },
     {
       "id": "cleanup-strong",
@@ -318,7 +318,7 @@
       "source": "../references/sounds/Recognizer%20Explosion.m4a",
       "license": "User-supplied film reference; personal project",
       "playback": "../../audio/studies/recognizer-explosion-strong.wav",
-      "disk": "public/audio/studies/recognizer-explosion-strong.wav"
+      "disk": "public/assets/audio/studies/recognizer-explosion-strong.wav"
     },
     {
       "id": "CRT059908",
@@ -433,7 +433,7 @@
       "source": "https://github.com/stevedekorte/TRON/blob/main/src/audio/recognizer-hit.js",
       "license": "Original project sound",
       "playback": "../../audio/recognizer-hit.wav",
-      "disk": "public/audio/recognizer-hit.wav"
+      "disk": "public/assets/audio/recognizer-hit.wav"
     },
     {
       "id": "tank-explosion-original",
@@ -446,7 +446,7 @@
       "source": "../../src/audio/tank-explosion.js",
       "license": "Original project sound",
       "playback": "../../audio/tank-explosion.wav",
-      "disk": "public/audio/tank-explosion.wav"
+      "disk": "public/assets/audio/tank-explosion.wav"
     },
     {
       "id": "carrier-drone",
@@ -458,7 +458,7 @@
       "author": "Project synthesis",
       "license": "Project-generated audio",
       "playback": "../../audio/carrier-drone.wav",
-      "disk": "public/audio/carrier-drone.wav"
+      "disk": "public/assets/audio/carrier-drone.wav"
     },
     {
       "group": "Current game sounds",
@@ -466,7 +466,7 @@
       "status": "Film-derived adaptation; listening review pending",
       "use": "CLU data transfer surround",
       "notes": "Sark and MCP.mp4, 52.75\u201354.25 s. Filtered mixed soundtrack, stretched to about three seconds with soft fades. Opening cue reverses the extract. Rebuild: scripts/extract-transfer-sfx.py. Residual soundtrack may remain.",
-      "disk": "public/audio/data-ring-close.wav",
+      "disk": "public/assets/audio/data-ring-close.wav",
       "playback": "../../audio/data-ring-close.wav",
       "source": "../references/videos/Sark%20and%20MCP.mp4",
       "author": "TRON (1982) film soundtrack / Disney",
@@ -478,7 +478,7 @@
       "status": "Film-derived adaptation; listening review pending",
       "use": "CLU data transfer surround",
       "notes": "Sark and MCP.mp4, 52.75\u201354.25 s. Filtered mixed soundtrack, stretched to about three seconds with soft fades. Opening cue reverses the extract. Rebuild: scripts/extract-transfer-sfx.py. Residual soundtrack may remain.",
-      "disk": "public/audio/data-ring-open.wav",
+      "disk": "public/assets/audio/data-ring-open.wav",
       "playback": "../../audio/data-ring-open.wav",
       "source": "../references/videos/Sark%20and%20MCP.mp4",
       "author": "TRON (1982) film soundtrack / Disney",
@@ -495,7 +495,7 @@
       "source": "../references/videos/Carrier%20derezed.mp4",
       "license": "Film-derived reference; no standalone redistribution license supplied",
       "playback": "../../audio/carrier-derez.wav",
-      "disk": "public/audio/carrier-derez.wav"
+      "disk": "public/assets/audio/carrier-derez.wav"
     },
     {
       "id": "carrier-derez-loop",
@@ -508,16 +508,16 @@
       "source": "../references/videos/Carrier%20derezed.mp4",
       "license": "Film-derived reference; no standalone redistribution license supplied",
       "playback": "../../audio/carrier-derez-loop.wav",
-      "disk": "public/audio/carrier-derez-loop.wav"
+      "disk": "public/assets/audio/carrier-derez-loop.wav"
     },
     {
       "title": "Light cycle startup",
       "group": "Current game sounds",
       "status": "Archived startup candidate; replaced by materialization cue",
       "use": "Cycle startup",
-      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
-      "disk": "public/audio/cycle-startup.wav",
-      "playback": "../../public/audio/cycle-startup.wav",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
+      "disk": "public/assets/audio/cycle-startup.wav",
+      "playback": "../../public/assets/audio/cycle-startup.wav",
       "source": "../references/videos/TRON%20light%20cycles.mp4",
       "author": "TRON (1982), Walt Disney Productions",
       "license": "Film reference; no redistribution license supplied"
@@ -527,9 +527,9 @@
       "group": "Current game sounds",
       "status": "Film-mix candidate; wired into gameplay",
       "use": "Cycle launch",
-      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
-      "disk": "public/audio/cycle-launch.wav",
-      "playback": "../../public/audio/cycle-launch.wav",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
+      "disk": "public/assets/audio/cycle-launch.wav",
+      "playback": "../../public/assets/audio/cycle-launch.wav",
       "source": "../references/videos/TRON%20light%20cycles.mp4",
       "author": "TRON (1982), Walt Disney Productions",
       "license": "Film reference; no redistribution license supplied"
@@ -539,9 +539,9 @@
       "group": "Current game sounds",
       "status": "Film-mix candidate; wired into gameplay",
       "use": "Cycle driving loop",
-      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:47\u20130:48; 0.1-second seam crossfade.",
-      "disk": "public/audio/cycle-drive.wav",
-      "playback": "../../public/audio/cycle-drive.wav",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:47\u20130:48; 0.1-second seam crossfade.",
+      "disk": "public/assets/audio/cycle-drive.wav",
+      "playback": "../../public/assets/audio/cycle-drive.wav",
       "source": "../references/videos/TRON%20light%20cycles.mp4",
       "author": "TRON (1982), Walt Disney Productions",
       "license": "Film reference; no redistribution license supplied"
@@ -551,9 +551,9 @@
       "group": "Current game sounds",
       "status": "Film-mix candidate; wired into gameplay",
       "use": "Cycle turn",
-      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:51\u20130:52; 12 ms edge fades.",
-      "disk": "public/audio/cycle-turn.wav",
-      "playback": "../../public/audio/cycle-turn.wav",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. User-selected source interval: 0:51\u20130:52; 12 ms edge fades.",
+      "disk": "public/assets/audio/cycle-turn.wav",
+      "playback": "../../public/assets/audio/cycle-turn.wav",
       "source": "../references/videos/TRON%20light%20cycles.mp4",
       "author": "TRON (1982), Walt Disney Productions",
       "license": "Film reference; no redistribution license supplied"
@@ -563,9 +563,9 @@
       "group": "Current game sounds",
       "status": "Film-mix candidate; wired into gameplay",
       "use": "Cycle explosion",
-      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. Extended to two seconds (1:15.85\u20131:17.85), 1.15 seconds longer than the initial extract.",
-      "disk": "public/audio/cycle-explosion.wav",
-      "playback": "../../public/audio/cycle-explosion.wav",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack. Extended to two seconds (1:15.85\u20131:17.85), 1.15 seconds longer than the initial extract.",
+      "disk": "public/assets/audio/cycle-explosion.wav",
+      "playback": "../../public/assets/audio/cycle-explosion.wav",
       "source": "../references/videos/TRON%20light%20cycles.mp4",
       "author": "TRON (1982), Walt Disney Productions",
       "license": "Film reference; no redistribution license supplied"
@@ -575,9 +575,9 @@
       "group": "Current game sounds",
       "status": "Film-mix candidate; wired into gameplay",
       "use": "Cycle trail deactivation",
-      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
-      "disk": "public/audio/cycle-wall-down.wav",
-      "playback": "../../public/audio/cycle-wall-down.wav",
+      "notes": "Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sfx.py. Picture-selected timing; auditory fidelity review pending. Source times and filters: public/assets/audio/cycle-source.json. Stereo PCM, edge fades; driving loop crossfaded. May retain background soundtrack.",
+      "disk": "public/assets/audio/cycle-wall-down.wav",
+      "playback": "../../public/assets/audio/cycle-wall-down.wav",
       "source": "../references/videos/TRON%20light%20cycles.mp4",
       "author": "TRON (1982), Walt Disney Productions",
       "license": "Film reference; no redistribution license supplied"
@@ -588,8 +588,8 @@
       "status": "Film-mix candidate; wired into gameplay",
       "use": "Player cycle driving",
       "notes": "Restored film waveform after the synthesized drone was rejected as harsh and irritating. Uses 1:36.7\u20131:37.8 of the user-selected 1:36\u20131:38 interval, with a 0.2-second equal-power crossfade and stereo-linked RMS leveling. Finished loop: 0.9 seconds. The recording\u2019s pitch variation remains unresolved; volume smoothing does not fix it. Other cycles retain 0:47\u20130:48.",
-      "disk": "public/audio/cycle-drive-cabin.wav",
-      "playback": "../../public/audio/cycle-drive-cabin.wav",
+      "disk": "public/assets/audio/cycle-drive-cabin.wav",
+      "playback": "../../public/assets/audio/cycle-drive-cabin.wav",
       "source": "../references/videos/TRON%20light%20cycles.mp4",
       "author": "TRON (1982), Walt Disney Productions",
       "license": "Film reference; no redistribution license supplied"
@@ -600,8 +600,8 @@
       "status": "Film-mix candidate; wired into gameplay",
       "use": "Fast cycle reveal before launch",
       "notes": "Single materialization beat from 26.7\u201327.4 seconds in the supplied film clip; avoids repeating the full intercut team sequence. One team cue accompanies the 0.3-second reveal and its tail carries into launch. Film-mix candidate; auditory review pending. Reproduce with scripts/extract-cycle-sfx.py.",
-      "disk": "public/audio/cycle-materialize.wav",
-      "playback": "../../public/audio/cycle-materialize.wav",
+      "disk": "public/assets/audio/cycle-materialize.wav",
+      "playback": "../../public/assets/audio/cycle-materialize.wav",
       "source": "../references/videos/TRON%20light%20cycles.mp4",
       "author": "TRON (1982), Walt Disney Productions",
       "license": "Film reference; no redistribution license supplied"
