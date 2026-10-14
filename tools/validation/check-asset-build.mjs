@@ -1,4 +1,4 @@
-import {readFile,readdir,writeFile,stat} from 'node:fs/promises';
+import {readFile,readdir,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 const catalog=JSON.parse(await readFile('assets/catalog.json','utf8'));
 const byHash=new Map();for(const asset of catalog.assets){const group=byHash.get(asset.sha256)??[];group.push(asset);byHash.set(asset.sha256,group);}
@@ -8,7 +8,7 @@ await walk('dist');
 const output=[];
 for(const file of files){
  const path=file.slice(5),data=await readFile(file),sha256=createHash('sha256').update(data).digest('hex');
- if(/\.(?:mp4|m4v|mov|dae|uasset|umap|blend|psd)$/i.test(path))throw Error('Source/reference master leaked into production: '+path);
+ if(/\.(?:mp4|m4v|mov|webm|avi|mkv|mpg|mpeg|wmv|flv|3gp|ogv|dae|uasset|umap|blend|psd)$/i.test(path))throw Error('Source/reference master leaked into production: '+path);
  if(path.startsWith('credentials/')||path.startsWith('.local/'))throw Error('Private directory leaked: '+path);
  const sources=byHash.get(sha256);
  if(!sources&&!path.endsWith('/LICENSE')&&!/\.(?:html|js|css|map|md|txt|json|xml|webmanifest|svg|wasm)$/i.test(path))throw Error('Uncatalogued shipped binary: '+path);
@@ -20,5 +20,6 @@ for(const [old,current] of Object.entries(aliases))if(old.startsWith('public/')|
  const a=await readFile(deployed),b=await readFile(current);if(!a.equals(b))throw Error('Compatibility asset differs: '+old);
 }
 const report={files:output.length,bytes:output.reduce((n,f)=>n+f.bytes,0),assets:output};
+await mkdir('test-results',{recursive:true});
 await writeFile('test-results/asset-build.json',JSON.stringify(report,null,2)+'\n');
 console.log(`Asset build audit: ${report.files} files, ${(report.bytes/1024/1024).toFixed(1)} MiB; all shipped binaries catalogued, aliases identical, no reference footage/editable masters.`);
