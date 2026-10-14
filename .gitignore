@@ -20,3 +20,21 @@ TRON.key
 
 # Local rolling JEV spend ledger (no credentials).
 .local/
+
+# Interpreter intermediates are never source assets.
+__pycache__/
+*.pyc
+
+# Reference footage and captured videos must never enter Git.
+*.[mM][pP]4
+*.[mM]4[vV]
+*.[mM][oO][vV]
+*.[wW][eE][bB][mM]
+*.[aA][vV][iI]
+*.[mM][kK][vV]
+*.[mM][pP][gG]
+*.[mM][pP][eE][gG]
+*.[wW][mM][vV]
+*.[fF][lL][vV]
+*.3[gG][pP]
+*.[oO][gG][vV]
