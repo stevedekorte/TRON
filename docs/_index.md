@@ -6,6 +6,24 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Multiplayer production release — October 14
+
+- [x] Validate compact snapshots, fractional-tick presentation and retained eliminated-human roster stripes: `npm test` passes 522 tests; `npm run build` and `npm run worker:check` pass. Headless Chrome on macOS passed the two-rendered-client multiplayer check in the preceding change.
+- [x] Deploy the compatible Worker first: version `b669337a-c12e-4c6d-8bdc-81fc946f58ec`. Protocol 1 remains available for cached clients.
+- [ ] Publish the matching client through the dekorte.com GitHub Pages workflow and verify production snapshots, menu entry and solo restart. Release verification is pending at this source revision.
+
+## Multiplayer motion between simulation ticks — October 14
+
+- [x] Remove whole-tick quantization from multiplayer presentation prediction. Keep integer ticks for input scheduling and pending turns, and advance the fractional remainder for bikes, attached trail endpoints and the following camera. Preserve server simulation and collision timing.
+- [x] `node --test tests/multiplayer.test.js tests/multiplayer-audio.test.js`: 18 tests pass, including 2 ms presentation steps, no early future turn, unchanged authoritative state, trail endpoint alignment and stale-state bounds. `npx vite build` passes with existing script/font/chunk warnings. `node tests/multiplayer-browser.mjs` passes in headless Chrome on macOS: two rendered clients, twelve cycles, fourteen connections, queue and restart lifecycle checks, no browser errors.
+- [ ] Measure live frame pacing and snapshot correction jumps. Snapshot arrival still resets the prediction baseline; this change addresses quantized motion, not all potential multiplayer stutter. Subjective smoothness requires playtesting. Included in the October 14 production release below.
+
+## Multiplayer low-latency hosting plan — October 14
+
+- [x] Record the selected [multiplayer migration plan](multiplayer/index.html): compact-protocol production baseline, existing WebSocket authority on a measured Google Cloud VM, then loss-tolerant WebTransport with WebSocket fallback and a same-server comparison.
+- [x] Preserve 120 Hz simulation; specify reliable trail/input recovery, explicit sequence acknowledgments, baseline repair, shared motion prediction and bounded tick validation. Mark the earlier browser-host proposal as historical.
+- [ ] Measure production latency/jitter and costs, validate packet loss/reordering and browser fallback, then stage an explicitly authorized rollout. Protocol 2 is included in the October 14 release; no VM or WebTransport service has been provisioned. Documentation changes do not constitute deployment approval.
+
 ## Multiplayer focus, team sizes and HUD — October 13
 
 - [x] Disable automatic blur/visibility pause and any-key resume in multiplayer. Clear held inputs and send neutral controls while unfocused; preserve Escape confirmation and single-player pause behavior.
@@ -45,7 +63,7 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 - [x] Separate materialization color coverage from cockpit opacity so entering first person fades the cycle transparently without changing its colors.
 - [x] Validation: 23 JEV/protocol/Worker unit tests passed; production build passed; headless Chrome on macOS passed the first-person entry/exit and hidden-player check. Tactical effectiveness still needs live play assessment.
 
-Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compares timing, authority, hosting cost and staged acceptance checks. A local server-authoritative prototype now implements the public twelve-cycle arena; production and real-network playtesting remain pending.
+Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compares timing, authority, hosting cost and staged acceptance checks. The public server-authoritative arena is deployed; compact protocol 2 remains local, and real-network latency testing and the staged hosting migration remain pending.
 
 ## MCP transfer reliability and panel activity — October 13
 
@@ -2107,3 +2125,15 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Diagnose the unchanged localhost server: a sole-client WebSocket restart request was ignored by the old in-memory code. Restart the Vite server on port 5173 to load the new server-side handler.
 - [x] An accepted solo restart immediately initializes racing and trails with zero countdown when the new round has no waiting queue. Support main Return and keypad Enter; retain authoritative rejection when another human is connected.
 - [x] Multiplayer authority/audio unit checks pass, including immediate racing, trail initialization, stale/duplicate requests and queue protection. Chrome on the restarted port 5173 server verifies main Return and keypad Enter immediately restart a solo round while shared matches reject Return. Production build passes.
+
+## Eliminated human roster stripes — October 14
+
+- [x] Retain the black/white human stripes after elimination, over the transparent circle interior and team-color border. Chrome roster checks pass; visually inspected the hollow striped icon.
+
+## Compact multiplayer snapshots — October 14
+
+- [x] Introduce protocol 2 with whitelisted presentation fields, submillimeter coordinate quantization, field-level cycle/trail changes, roster updates only when changed, and crash updates only when changed. Keep collision and AI simulation at full precision on the server. Initial/new-round snapshots are complete; deltas identify their baseline and clients request a full resync on a mismatch.
+- [x] Keep protocol 1 supported for cached clients during deployment. Share encoded messages among clients with the same baseline and preserve separate late-join baselines. Applied human turns and reserve-control changes trigger a snapshot immediately instead of waiting for the next 20 Hz update. Prediction clones only moving trail tips rather than every trail object each frame.
+- [x] Reproducible five-second measurements (`node scripts/measure-multiplayer-bandwidth.mjs`, same snapshots, uncompressed JSON): six cycles/one human falls from 111,015 to 12,779 bytes/sec (88.5%); twelve cycles/twelve humans falls from 197,499 to 13,360 bytes/sec (93.2%). These measure bandwidth, not real-network latency or perceived smoothness.
+- [x] Validation: full suite passes 520 tests; 17 focused multiplayer checks include a subsequently added mixed-version/late-join/resync regression. Chrome renders two compact clients alongside twelve legacy wire clients without errors; inspected normal-renderer capture. Production build and Worker dry run pass.
+- [ ] UDP-style transport: WebTransport datagrams or unreliable WebRTC data channels need a compatible server/gateway. Cloudflare Workers' documented protocol interfaces do not provide a direct WebTransport/WebRTC server endpoint. Retain WebSockets for this optimization; no hosting migration or deployment is included. See the multiplayer document for sources and tradeoffs.

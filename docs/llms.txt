@@ -21,7 +21,7 @@
 
 ## Multiplayer light cycles
 
-- [Multiplayer light cycles](/multiplayer/): Feasibility and a low cost implementation plan
+- [Multiplayer light cycles](/multiplayer/): Authoritative arena, bandwidth reduction, and staged low-latency hosting
 
 ## Project organization plan
 

@@ -1,14 +1,70 @@
 ---
 title: Multiplayer light cycles
 topTitle: TRON
-subtitle: Feasibility and a low cost implementation plan
+subtitle: Authoritative arena, bandwidth reduction, and staged low-latency hosting
 ---
 
-## Current local prototype — October 13
+## Selected low-latency hosting plan — October 14
+
+Adopt the staged migration below, based on the hosting proposal review. Keep the static client on GitHub Pages and AI services on the existing Cloudflare Worker. Target one Google Cloud VM for the authoritative public arena, first over WebSockets and then with WebTransport plus WebSocket fallback. Preserve the shared JavaScript simulation, public queue, AI vacancy filling and current gameplay. This is the implementation plan, not authorization to purchase infrastructure or publish a deployment.
+
+The current production arena uses the Cloudflare Durable Object. Protocol 2 bandwidth reductions are in the October 14 release: the compatible Worker is deployed and the matching static client publication is pending. The measured 93.2% reduction is a five-second twelve-cycle benchmark, not evidence of lower production latency. The historical browser-host/WebRTC proposal later on this page is superseded by this plan.
+
+### Stage 1 — Establish the compact-protocol baseline
+
+- [ ] Release protocol 2 through a separately authorized deployment: compatible Worker first, then static client; retain protocol 1 for cached clients and verify baseline repair.
+- [ ] Instrument round-trip time, jitter, snapshot age, server tick drift/catch-up, input-to-visible-turn latency, reconciliation distance/frequency, bytes per client and server CPU. Report median and tail values, distinguishing local predicted response from authoritative confirmation.
+- [ ] Record browser/version, hardware, player locations, region, player/spectator counts, protocol, input sequence and network conditions for reproducible comparisons. Test two humans and a full twelve-cycle arena with spectators.
+- [ ] Capture close cutoffs, turbo/braking, simultaneous turns and deaths in real two-person play. Set acceptable latency and correction thresholds from those observations before selecting a new transport.
+
+### Stage 2 — Move the existing WebSocket authority to a VM
+
+- [ ] Extract a reusable server host around the existing room/hub; keep simulation at **120 Hz** and normal snapshots at **20 Hz**, with urgent updates for applied control changes. Do not change simulation timestep or collision behavior as part of hosting migration.
+- [ ] Benchmark candidate Google Cloud regions near actual players. Run the same recorded encounters over WebSockets on the VM and the Durable Object to distinguish hosting/scheduling gains from transport gains.
+- [ ] Select a VM from measured worst-case tick time and sustained load, including all twelve cycles and the configured spectator limit. Do not assume a cheap shared-core instance gives consistent CPU scheduling.
+- [ ] Set up TLS, automatic process restart, health checks, bounded connections/queues, monitoring and certificate renewal. Use a DNS-only arena record for direct access; allow TCP 443 and, for the next stage, UDP 443. Account for the origin being directly reachable.
+- [ ] Keep queue/round state in memory initially. A server restart resets the arena; clients reconnect with backoff and rejoin as new participants. Do not promise seat recovery without implementing reconnect identity.
+- [ ] Retain the existing production endpoint as a configurable rollback destination. Migrate between rounds; never let two servers independently referee the same match.
+
+The proposed $25–60/month is a provisional base infrastructure budget, not a total-cost guarantee. Estimate VM, IPv4, disk, outbound bandwidth, logging and monitoring from measured player/spectator hours before provisioning. See [Compute pricing](https://cloud.google.com/products/compute/pricing/general-purpose) and [network pricing](https://cloud.google.com/vpc/network-pricing). No assumed future Cloudflare UDP release is a dependency.
+
+### Stage 3 — Add a loss-tolerant WebTransport adapter
+
+Keep the same authoritative room and simulation for both transports. Prove a maintained server implementation can host the shared JavaScript authority before committing to a transport library. Negotiate protocol capabilities and fall back to WebSockets when WebTransport is unsupported or UDP is blocked.
+
+| Information | Delivery requirement |
+| --- | --- |
+| Replaceable motion state | Unreliable datagrams, independently decodable or based on an explicitly acknowledged baseline; discard stale updates |
+| Turn/control inputs | Sequenced, bounded repetition and acknowledgments; retry until acknowledged or explicitly expired/rejected |
+| Trail creation/removal | Reliable sequenced events, or repeated acknowledged events with equivalent recovery guarantees |
+| Join, queue, round boundaries, confirmed deaths and scores | Reliable stream with round/event IDs and duplicate protection |
+| Initial state and repairs | Reliable complete snapshots, with event/baseline IDs to coordinate subsequent updates |
+
+- [ ] Replace the current previous-snapshot delta dependency before using datagrams. A lost packet must not invalidate all subsequent state. Add periodic keyframes/checksums and bounded full-state repair; never permanently lose collision geometry with a dropped trail update.
+- [ ] Respect negotiated datagram size limits. Split or route larger recovery/history payloads through reliable streams rather than sending oversized datagrams. Bound backpressure and drop obsolete motion updates.
+- [ ] Define input send cadence, retry deadline and rejection behavior. Acknowledge the highest consecutively resolved sequence, or use selective acknowledgments for gaps; highest-received sequence alone is unsafe under reordering. Deduplicate repeated inputs and prevent a later command from silently discarding an earlier turn.
+- [ ] Synchronize server tick estimates and validate client timestamps within bounded windows. Keep the existing eight-tick input lead as a comparison baseline, then tune from measured jitter; a fixed 60 ms delay is not a fairness guarantee. Late inputs do not rewrite confirmed collisions without a separately designed rollback system.
+- [ ] Restore authoritative local state and replay pending inputs for prediction. Reuse shared motion rules for speed, turbo, braking and acceleration; opponents do not move at constant speed. Reconcile predicted trails as well as positions and preserve authoritative eliminations/reward events.
+- [ ] Define ordering across streams and datagrams using round/tick/event IDs. Handle death-before-position, round changes, delayed trail events and repairs without resurrecting a cycle, duplicating rewards or mixing rounds.
+
+WebTransport provides unreliable datagrams and reliable streams; it does not remove geographic delay. Keep fallback for older browsers and blocked UDP. See [WebTransport datagrams](https://developer.mozilla.org/en-US/docs/Web/API/WebTransport/datagrams). The current [Workers protocol documentation](https://developers.cloudflare.com/workers/reference/protocols/) and [Containers architecture](https://developers.cloudflare.com/containers/concepts/architecture/) do not provide the direct inbound UDP game-server endpoint this plan needs; HTTP/3 support alone is not a WebTransport service.
+
+### Stage 4 — Compare, validate and roll out
+
+- [ ] Compare WebSocket and WebTransport on the **same VM, region and simulation**, using identical encounters and player counts. Report latency tails, corrections, bandwidth, CPU and tick drift; do not infer improvements solely from lower byte counts.
+- [ ] Test 20/50/100/150/250 ms round trips, variable jitter, 0/1/3% packet loss, burst loss, duplication and reordering. Verify recovery when an input, trail event, baseline or round boundary is delayed or lost.
+- [ ] Cover Chromium, Safari and Firefox, including unsupported WebTransport, blocked UDP, connection interruption, transport fallback, server restart, late join, solo Return restart and overflow queues. A reconnect must not create duplicate participants or simulation loops.
+- [ ] Replay recorded inputs to verify unchanged authoritative collision outcomes. Test simultaneous cutoffs, turbo/braking and trail disappearance. Confirm bounded memory, queues and bandwidth under sustained twelve-cycle/spectator load.
+- [ ] Record real two-person play and inspect visual corrections and apparent deaths; retain acceptable rendering performance and keep single-player independent of multiplayer networking.
+- [ ] Enable WebTransport only if it improves the agreed latency/correction thresholds without correctness regressions. Publish measured costs and unresolved limitations; retain WebSocket fallback and a tested endpoint rollback path.
+
+Planning validation: this update documents the selected architecture and acceptance gates only. VM, WebTransport, network-impairment and migration checks above remain unrun. Regenerate the HTML and indexes with `node docs/colvmn/static-gen.js docs`.
+
+## Existing authoritative implementation — October 13
 
 The user-selected design is one public, server-authoritative arena, reached through LIGHT CYCLES MULTIPLAYER. Six, nine or twelve cycles compete, with at most three cycles per team. Humans occupy available seats and AI fills the rest; additional humans spectate in a FIFO waiting queue. Surviving humans keep their seats, eliminated humans rejoin the back of the queue, and disconnects release seats. Teams are randomized between matches, with two, three or four teams; enough teams are added to seat up to twelve humans. Countdown expansion preserves the scheduled start time.
 
-The local Vite server hosts the room at `/api/multiplayer`. Production support is prepared as one Cloudflare Durable Object named `public-arena-v1`, using the existing Worker and `MULTIPLAYER_ARENA` binding. The authoritative Worker is deployed and a production-origin WebSocket check confirms advancing snapshots and the three-cycle team cap. The static client is being published with this release. Run `npm run dev`, choose the multiplayer menu, and open another browser window to join the same room. Single-player does not load the multiplayer client or start a multiplayer network loop.
+The local Vite server hosts the room at `/api/multiplayer`. Production support is prepared as one Cloudflare Durable Object named `public-arena-v1`, using the existing Worker and `MULTIPLAYER_ARENA` binding. The authoritative Worker is deployed and a production-origin WebSocket check confirms advancing snapshots and the three-cycle team cap. The static client has also been published; the protocol 2 client update is being published in the October 14 release. Run `npm run dev`, choose the multiplayer menu, and open another browser window to join the same room. Single-player does not load the multiplayer client or start a multiplayer network loop.
 
 The referee runs the shared simulation at 120 Hz and sends trail-delta snapshots at 20 Hz. Inputs are sequenced and scheduled eight ticks ahead (about 67 ms), with bounded timestamp acceptance. Clients extrapolate motion and predict their pending turns; collision and elimination remain authoritative. There is no rollback yet. A late command takes effect on a future server tick rather than rewriting a collision. This removes browser-host authority advantage but does not make differing network latency equal.
 
@@ -38,7 +94,11 @@ Those distances use actual elapsed delay, not automatically the displayed ping. 
 
 Local steering should respond immediately through prediction. Remote steering will sometimes need correction. The difficult case is a late turn that creates a wall across another player's already-predicted path. Reconciliation must include trail geometry and collision outcomes, not just vehicle positions.
 
-## Architecture choices
+## Historical browser-host proposal — superseded
+
+The remaining architecture comparison, prototype, budget and acceptance sections describe the earlier browser-host option. They are retained for reference and are not the selected migration steps.
+
+### Architecture choices
 
 | Approach | Strength | Main cost or limitation |
 | --- | --- | --- |
@@ -51,7 +111,7 @@ Start with host authority, not full peer consensus. The host simulates all playe
 
 Lockstep needs identical simulation results for identical inputs, and waiting for missing inputs can cause stalls. A fixed timestep alone does not prove determinism across browsers. See Glenn Fiedler's [deterministic lockstep explanation](https://gafferongames.com/post/deterministic_lockstep/).
 
-## First playable prototype
+### First playable prototype
 
 1. Extract a headless arena session around the existing 120 Hz simulation. Preserve swept collision behavior, seeded randomness and stable cycle IDs. Version the simulation and arena data so incompatible clients cannot join.
 2. Add private join codes and a two-human room. The host owns any bots. Keep JEV requests asynchronous and outside the synchronization path; record accepted bot decisions if replay needs them.
@@ -64,7 +124,7 @@ Use a reliable control channel for room state, starts and confirmed outcomes. A 
 
 The first prototype should end the room cleanly if its host leaves or suspends. Host migration, spectators, public matchmaking and competitive anti-cheat can wait. A malicious browser host remains trusted in this design; private casual rooms are the appropriate initial scope. Direct peer connections can expose network addresses to peers; relay-only mode trades that exposure for relay traffic.
 
-## Hosting and budget
+### Hosting and budget
 
 Use an isolated room/signaling endpoint alongside the existing Worker, with short room expiry and limited joins. Keep only ephemeral room metadata; do not persist every game tick. Issue short-lived TURN credentials on the server, never a permanent service key in the client. Rate-limit room creation and cap simultaneous rooms and relay usage independently of the existing AI endpoints.
 
@@ -76,7 +136,7 @@ Illustrative calculation: 100 room-hours consume 46,080 GB-seconds. Four clients
 
 The cheapest practical first version should mostly pay for signaling and occasional relay traffic, with simulation on the host. Set application admission limits before any public launch; billing alerts alone do not enforce a spending ceiling.
 
-## Acceptance gates
+### Acceptance gates
 
 - [ ] Replay identical recorded inputs and compare complete state hashes, including trails, random state and confirmed deaths. Test Chromium, Safari and Firefox; if deterministic replay diverges, use authoritative state restoration rather than assuming lockstep safety.
 - [ ] Test 20, 50, 100, 150 and 250 ms round trips, variable jitter, and 0%, 1% and 3% packet loss, in both direct and relayed connections.
@@ -86,3 +146,11 @@ The cheapest practical first version should mostly pay for signaling and occasio
 - [ ] Decide an acceptable latency band from playtests. If even nearby play produces frequent unfair-looking deaths, try a small equal input delay and compare, or move authority to a nearby server before adding more players.
 
 Expand to four humans only after two-player cutoffs feel convincing. The goal is satisfying casual play at low cost, not a promise that intercontinental close-contact racing can feel identical to local play.
+
+## Snapshot bandwidth and transport follow-up — October 14
+
+Protocol 2 transmits only presentation state and changes to that state. Coordinates are rounded to 0.0001 grid cells (0.48 mm); authority and collision calculations remain full precision. AI planning state, collision grids and render history stay server-side. The initial snapshot and new rounds are complete; later snapshots carry cycle/trail field patches, a baseline tick, and changed roster/crash data. Baseline mismatch requests a complete repair. Protocol 1 remains available for older cached clients; deploy the Worker before the client.
+
+`node scripts/measure-multiplayer-bandwidth.mjs` compares both formats on the same five-second simulation. With twelve cycles, protocol 1 averages 197,499 bytes/sec per player and protocol 2 averages 13,360 bytes/sec, a 93.2% reduction before compression. Six cycles with one human drop 88.5%. Event-driven updates after applied human control changes supplement the usual 20 Hz updates. These are bandwidth results, not a measured reduction in live latency.
+
+[WebTransport](https://developer.mozilla.org/en-US/docs/Web/API/WebTransport_API) provides unreliable datagrams suited to replaceable position updates, with reliable streams for turns and game events. [WebRTC data channels](https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel) can also be unordered with limited retransmission. Both require a compatible peer/server; they are not raw UDP sockets exposed to browser JavaScript. The current [Cloudflare Workers protocol list](https://developers.cloudflare.com/workers/reference/protocols/) documents HTTP, WebSockets and TCP interfaces, but no direct WebTransport or WebRTC game-server API. HTTP/3 support alone does not supply the WebTransport session/datagram API. A future change would need a suitable separately hosted authoritative server or transport gateway, reliable event delivery, obsolete-update dropping, and WebSocket fallback. It may reduce stalls from retransmission under packet loss; it will not remove propagation latency. No new hosting has been provisioned.

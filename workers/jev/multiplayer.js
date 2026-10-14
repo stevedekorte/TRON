@@ -4,8 +4,9 @@ import {MP} from '../../shared/multiplayer/config.js';
 export class MultiplayerArena{
  constructor(){this.hub=new ArenaHub();}
  async fetch(request){
-  if(request.headers.get('Upgrade')?.toLowerCase()!=='websocket'||new URL(request.url).searchParams.get('v')!==String(MP.protocol))return new Response('WebSocket protocol required',{status:400});
-  const [client,server]=Object.values(new WebSocketPair());server.accept();this.hub.add(server);
+  const protocol=Number(new URL(request.url).searchParams.get('v'));
+  if(request.headers.get('Upgrade')?.toLowerCase()!=='websocket'||![MP.protocol,MP.legacyProtocol].includes(protocol))return new Response('WebSocket protocol required',{status:400});
+  const [client,server]=Object.values(new WebSocketPair());server.accept();this.hub.add(server,protocol);
   return new Response(null,{status:101,webSocket:client});
  }
 }

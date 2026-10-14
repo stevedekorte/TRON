@@ -72,3 +72,91 @@ test('only the sole connected human can restart the authoritative match',()=>{
  assert.equal(room.restart('solo',room.race.round),true,'eliminated sole player can restart');
  assert(room.race.cycles[room.clients.get('solo').seat].alive);
 });
+
+test('compact deltas reconstruct turns, deaths, rewards, joins and trail truncation',async()=>{
+ const {projectState,compactSnapshot,decodeSnapshot}=await import('../shared/multiplayer/snapshots.js');
+ const room=new CycleRoom();join(room,12);racing(room);
+ let previous=null,decoded=null,legacyBytes=0,compactBytes=0;
+ for(let i=0;i<600;i++){
+  if(i===30){room.race.cycles[1].reserveReward={revision:1,turboFrom:.2,brakeFrom:.4,target:1};}
+  if(i===60)kill(room,room.clients.get('u0'));
+  if(i===90){room.join('late');room.leave('u2');}
+  if(i===120)room.race.trails.splice(0,1);
+  room.step();if(room.tick%6)continue;
+  const raw=room.state(),state=projectState(raw),wire=compactSnapshot(state,previous);
+  decoded=decodeSnapshot(JSON.parse(JSON.stringify(wire)),decoded);
+  assert.deepEqual(decoded.race,state.race);assert.deepEqual(decoded.clients,state.clients);
+  assert(!JSON.stringify(wire).includes('reactionTiming'));assert(!JSON.stringify(wire).includes('renderPrevious'));
+  assert(!JSON.stringify(wire).includes('occupied'));
+  legacyBytes+=Buffer.byteLength(JSON.stringify(wireState(raw,room.lastRaw)));compactBytes+=Buffer.byteLength(JSON.stringify(wire));
+  previous=state;room.lastRaw=raw;
+ }
+ assert(compactBytes<legacyBytes*.35,`expected >65% reduction; ${compactBytes}/${legacyBytes}`);
+ room.nextRound();const state=projectState(room.state()),full=compactSnapshot(state,previous);
+ assert(full.full);assert.deepEqual(decodeSnapshot(full,decoded).race,state.race);
+});
+
+test('compact stream validates its baseline and preserves optional-field removal',async()=>{
+ const {projectState,compactSnapshot,decodeSnapshot}=await import('../shared/multiplayer/snapshots.js');
+ const room=new CycleRoom();join(room,1);racing(room);
+ const b=room.race.cycles.find(b=>!b.human);b.reserveReward={revision:1,turboFrom:0,brakeFrom:0,target:1};
+ const a=projectState(room.state());delete b.reserveReward;room.step();const next=projectState(room.state()),delta=compactSnapshot(next,a);
+ assert.equal(decodeSnapshot(delta,null),null);
+ assert.equal(decodeSnapshot(delta,{...a,tick:a.tick+1}),null);
+ assert.equal(decodeSnapshot(delta,{...a,race:{...a.race,round:a.race.round+1}}),null);
+ assert(!('reserveReward' in decodeSnapshot(delta,a).race.cycles[b.id]));
+ const client=decodeSnapshot(compactSnapshot(a,null),null);assert(client.full);
+});
+
+test('applied turns and reserve input changes request an immediate authoritative snapshot',()=>{
+ const room=new CycleRoom();join(room,1);racing(room);
+ const tick=room.tick;room.input('u0',{round:room.race.round,seq:1,tick:tick+1,turn:1,turbo:false,brake:false});
+ room.step();assert(room.urgentSnapshot);assert.notEqual(room.tick%MP.snapshotTicks,0);
+});
+
+test('compact and legacy peers share the arena; late-join baselines remain independent',async()=>{
+ const {ArenaHub}=await import('../shared/multiplayer/hub.js');
+ const {decodeSnapshot}=await import('../shared/multiplayer/snapshots.js');
+ function socket(){return {messages:[],listeners:{},send(raw){this.messages.push(JSON.parse(raw));},addEventListener(type,fn){this.listeners[type]=fn;},close(){if(!this.closed){this.closed=true;this.listeners.close?.();}}};}
+ const hub=new ArenaHub(),a=socket(),b=socket(),legacy=socket();
+ try{
+  hub.add(a,MP.protocol);hub.add(b,MP.protocol);hub.add(legacy,MP.legacyProtocol);
+  hub.last=performance.now()-70;hub.pump();
+  for(const peer of [a,b]){
+   let state=null;for(const message of peer.messages)if(message.type==='state'){state=decodeSnapshot(message,state);assert(state);}
+   assert.equal(state.clients.length,3);assert.equal(state.protocol,MP.protocol);
+  }
+  assert.equal(legacy.messages[0].protocol,MP.legacyProtocol);
+  assert.equal(legacy.messages.at(-1).protocol,MP.legacyProtocol);
+  assert.equal(legacy.messages.at(-1).clients.length,3);
+  assert(Array.isArray(legacy.messages.at(-1).race.cycles));
+  a.listeners.message({data:JSON.stringify({type:'resync'})});
+  assert.equal(a.messages.at(-1).full,true);assert(decodeSnapshot(a.messages.at(-1),null));
+ }finally{hub.dispose();}
+});
+
+
+test('MP presentation moves between ticks without applying a future turn early',async t=>{
+ const {MultiplayerClient}=await import('../src/multiplayer/client.js');
+ const {LIGHT_CYCLES:C}=await import('../src/game/light-cycles.js');
+ const room=new CycleRoom();join(room,1);racing(room);
+ const state=room.state(),me=state.clients[0],source=state.race.cycles[me.seat];
+ source.speedMultiplier=1;source.reserveTurboRequested=false;source.reserveBrakeRequested=false;
+ let now=1000;t.mock.method(performance,'now',()=>now);
+ const client=Object.create(MultiplayerClient.prototype);
+ Object.assign(client,{state,me,received:now,rtt:0,pending:[]});
+ const run={cycleRace:{round:-1,site:{x:0,s:0}}};
+ const pose=()=>{client.apply(run);return {...run.cycleRace.cycles[me.seat]};};
+ const sourceBefore=structuredClone(source),initial=pose();
+ for(let frame=1;frame<=8;frame++){
+  now=1000+frame*2;const b=pose();
+  const distance=Math.hypot(b.x-initial.x,b.z-initial.z)*C.cellMeters;
+  assert(Math.abs(distance-C.speedMetersPerSecond*frame*.002)<1e-9,'every 2 ms frame advances smoothly');
+  const tail=run.cycleRace.trails[b.segment];assert.equal(tail.x2,b.x);assert.equal(tail.z2,b.z);
+ }
+ client.pending=[{seq:1,tick:state.tick+MP.inputLeadTicks+1,turn:1,turbo:false,brake:false}];
+ now=1000+1000/MP.tickHz-.01;assert.equal(pose().dir,source.dir,'fractional prediction must not apply turn early');
+ now=1000+1000/MP.tickHz+.01;const turned=pose();assert.equal(turned.dir,(source.dir+1)%4);
+ assert.deepEqual(source,sourceBefore,'presentation does not mutate authority');
+ now=5000;const stopped=pose();assert.equal(stopped.x,source.x);assert.equal(stopped.z,source.z,'stale state is not extrapolated');
+});

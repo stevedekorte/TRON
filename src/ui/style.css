@@ -126,7 +126,7 @@ body.terminal #cycle-result{display:none}
 /* Match roster: each cycle retains its team color after elimination. */
 #cycle-roster{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:flex;gap:clamp(10px,2vw,22px);pointer-events:none}
 #cycle-roster[hidden]{display:none}
-/* Connect only the gaps, so eliminated circles remain fully transparent inside. */
+/* Connect only the gaps; eliminated circles retain their human stripes over a transparent fill. */
 .cycle-team-icons{--cycle-roster-gap:12px;display:flex;gap:var(--cycle-roster-gap)}
 .cycle-roster-icon{--roster-border:2px;position:relative;display:block;box-sizing:border-box;width:18px;height:18px;border:var(--roster-border) solid currentColor;border-radius:50%;background:currentColor}
 .cycle-roster-icon:not(:last-child)::after{content:"";position:absolute;left:calc(100% + 2px);top:50%;transform:translateY(-50%);width:var(--cycle-roster-gap);height:2px;background:currentColor}
@@ -141,7 +141,6 @@ body.playing-cycle #controls-prompt,body.playing-cycle #cycle-controls{top:58px;
 }
 
 .cycle-roster-icon.human::before{content:"";position:absolute;inset:calc(-1 * var(--roster-border));border-radius:50%;background:linear-gradient(135deg,transparent calc(50% - var(--roster-border)),#050505 calc(50% - var(--roster-border)),#050505 50%,#fff 50%,#fff calc(50% + var(--roster-border)),transparent calc(50% + var(--roster-border)))}
-.cycle-roster-icon.human.eliminated::before{display:none}
 .cycle-roster-icon.local-player{outline:1px solid #fff;outline-offset:3px}
 
 body.playing-multiplayer #controls-prompt{top:82px}

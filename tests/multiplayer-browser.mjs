@@ -8,7 +8,9 @@ const socketUrl=new URL('/api/multiplayer?v=1',base);socketUrl.protocol=socketUr
 try{
  const context=await browser.newContext({viewport:{width:1100,height:750},reducedMotion:'reduce'}),errors=[],requests=[];
  await context.route('**/api/jev/**',r=>r.fulfill({status:503,body:'{}'}));
- const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.log('PAGE ERROR',e.message);});page.on('request',r=>requests.push(r.url()));page.on('console',m=>{if(m.type()==='error'&&/shader|WebGL|THREE/.test(m.text()))errors.push(m.text());});
+ const packets=[];
+ const page=await context.newPage();
+ page.on('websocket',socket=>socket.on('framereceived',({payload})=>{try{const message=JSON.parse(String(payload));if(message.type==='state')packets.push(message);}catch{}}));page.on('pageerror',e=>{errors.push(e.message);console.log('PAGE ERROR',e.message);});page.on('request',r=>requests.push(r.url()));page.on('console',m=>{if(m.type()==='error'&&/shader|WebGL|THREE/.test(m.text()))errors.push(m.text());});
  await page.goto(base);await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-multiplayer').disabled);
  assert(!requests.some(url=>url.includes('/src/multiplayer/')),'no multiplayer client loaded at home');
  assert(!requests.some(url=>url.includes('cloud.glb')),'grid cloud is not downloaded');
@@ -52,5 +54,7 @@ try{
  await page.screenshot({path:'test-results/multiplayer-normal.png'});
  assert(await page.locator('.cycle-roster-icon.human').count()>0,'human players have roster stripes');
  assert.equal(await page.locator('.human-cycle-marker').count(),0,'no floating human markers');
+ assert(packets.some(p=>p.protocol===2&&p.compact&&!p.full),'browser receives compact field deltas');
+ assert(packets.every(p=>!JSON.stringify(p).includes('reactionTiming')),'AI internals stay on the server');
  assert.deepEqual(errors,[]);console.log('Two rendered clients share a 12-cycle arena; 14 connections, spectator queue, no cloud request, no eager MP client, and no local match reset.');
 }finally{for(const s of sockets)s.close();await browser.close();}

@@ -84,6 +84,7 @@ export class CycleRoom{
    let turn=0;
    while(c.inputs.length&&c.inputs[0].at<=this.tick){
     const m=c.inputs.shift();c.ack=m.seq;c.lastInputTick=this.tick;
+    if(m.turn||c.control.turbo!==m.turbo||c.control.brake!==m.brake)this.urgentSnapshot=true;
     c.control={turbo:m.turbo,brake:m.brake};
     if(m.turn&&!turn&&this.tick-c.lastTurnTick>=MP.turnIntervalTicks){turn=m.turn;c.lastTurnTick=this.tick;}
    }

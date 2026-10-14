@@ -1,3 +1,4 @@
+import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
 import {MP} from '../../shared/multiplayer/config.js';
 import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../game/light-cycles.js';
 import {cyclePlayerPose} from '../simulation/light-cycles.js';
@@ -27,8 +28,9 @@ export class MultiplayerClient{
     if(data.type==='welcome'){if(data.protocol!==MP.protocol){this.close();reject(Error('MULTIPLAYER VERSION MISMATCH'));}this.id=data.id;return;}
     if(data.type==='pong'){this.rtt=Math.max(0,performance.now()-data.sent);return;}
     if(data.type!=='state'||data.protocol!==MP.protocol||!this.id)return;
-    if(!data.full&&(!this.state||this.state.race.round!==data.race.round))return;
-    if(!data.full){const trails=this.state.race.trails.slice(0,data.trailLength);for(const [i,t] of data.trailChanges)trails[i]=t;data.race.trails=trails;}
+    data=decodeSnapshot(data,this.state);
+    if(!data){if(!this.resyncPending){this.resyncPending=true;this.socket.send(JSON.stringify({type:'resync'}));}return;}
+    this.resyncPending=false;
     const me=data.clients.find(c=>c.id===this.id);if(!me)return;
     if(this.state?.race.round!==data.race.round){this.pending=[];this.control={turbo:false,brake:false};this.lastSent=0;}
     this.pending=this.pending.filter(p=>p.seq>me.ack);this.state=data;this.me=me;this.received=performance.now();
@@ -43,7 +45,8 @@ export class MultiplayerClient{
   if(!this.state||this.closed||this.disconnected||this.socket?.readyState!==1||this.state.clients.length!==1||performance.now()-this.received>2000)return false;
   this.socket.send(JSON.stringify({type:'restart',round:this.state.race.round}));return true;
  }
- estimatedTick(){return this.state.tick+Math.floor(((performance.now()-this.received)+this.rtt/2)*MP.tickHz/1000);}
+ estimatedRenderTick(){return this.state.tick+((performance.now()-this.received)+this.rtt/2)*MP.tickHz/1000;}
+ estimatedTick(){return Math.floor(this.estimatedRenderTick());}
  input(command){
   if(!this.state||this.closed||this.disconnected||this.socket.readyState!==1)return;
   const control={turbo:!!command.cycleTurbo,brake:!!command.cycleSlow},turn=Math.sign(command.cycleTurn||0);
@@ -56,24 +59,28 @@ export class MultiplayerClient{
  }
  apply(run){
   if(!this.state)return false;
-  const previous=run.cycleRace,site=previous.site,race={...this.state.race,site,
-   cycles:this.state.race.cycles.map(b=>({...b})),trails:this.state.race.trails.map(t=>({...t})),
+  const previous=run.cycleRace,site=previous.site,race={closedArena:true,arenaPaused:false,breaches:[],accumulator:0,...this.state.race,site,
+   cycles:this.state.race.cycles.map(b=>({...b,previousX:b.x,previousZ:b.z,progress:1,continuousArena:true})),trails:this.state.race.trails.slice(),
    occupied:previous.occupied,outerOccupied:{},pendingTurns:[],playerId:this.me.seat??0,localPlayerId:this.me.seat};
   const waiting=this.me.seat===null||!race.cycles[this.me.seat]?.alive;
   const stale=performance.now()-this.received>2000;
   if(race.phase==='racing'&&!stale&&!this.disconnected){
-   const ticks=Math.max(0,Math.min(MP.maxFutureTicks,this.estimatedTick()+MP.inputLeadTicks-this.state.tick));
+   const ticks=Math.max(0,Math.min(MP.maxFutureTicks,this.estimatedRenderTick()+MP.inputLeadTicks-this.state.tick));
+   const wholeTicks=Math.floor(ticks),fractionSeconds=(ticks-wholeTicks)/MP.tickHz;
    for(const b of race.cycles){
     if(!b.alive)continue;
     const own=b.id===this.me.seat;
     let control={turbo:!!b.reserveTurboRequested,brake:!!b.reserveBrakeRequested};
-    for(let step=1;step<=ticks;step++){
+    for(let step=1;step<=wholeTicks;step++){
      if(own)for(const p of this.pending)if(Math.max(this.state.tick+1,p.tick)===this.state.tick+step){
       control=p;if(p.turn){b.dir=(b.dir+p.turn+4)%4;b.turns++;race.trails.push({bikeId:b.id,team:b.team,dir:b.dir,x1:b.x,z1:b.z,x2:b.x,z2:b.z});b.segment=race.trails.length-1;}
      }
      move(b,1/MP.tickHz,control);
     }
-    const tail=race.trails[b.segment];if(tail){tail.x2=b.x;tail.z2=b.z;}
+    // Render the remainder of the timestep instead of holding a tick-quantized
+    // pose. Pending turns still apply only at their integer simulation ticks.
+    if(fractionSeconds>0)move(b,fractionSeconds,control);
+    const tail=race.trails[b.segment];if(tail)race.trails[b.segment]={...tail,x2:b.x,z2:b.z};
     b.previousX=b.x;b.previousZ=b.z;b.progress=1;b.continuousArena=true;
    }
   }
@@ -84,6 +91,7 @@ export class MultiplayerClient{
     const old=previous.cycles[b.id];
     // A serialized copy of the same reward is not a new HUD animation.
     if(b.reserveReward&&old?.reserveReward&&['revision','turboFrom','brakeFrom','target'].every(key=>b.reserveReward[key]===old.reserveReward[key]))b.reserveReward=old.reserveReward;
+    if(old)for(const key of ['human','operator','reserveReward'])if(!(key in b))delete old[key];
     return Object.assign(old??{},b);
    });
    Object.assign(previous,race);run.cycleRace=previous;
