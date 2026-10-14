@@ -1,3 +1,4 @@
+import {usesBoundedAI} from '../../shared/simulation/cycle-ai/controller.js';
 import {LIGHT_CYCLES as C,CYCLE_JEV as J,CYCLE_DIRECTIONS as DIR} from '../../shared/simulation/config/light-cycles.js';
 import {cycleCellFree} from '../../shared/simulation/light-cycles.js';
 import {configFor} from '../game/config.js';
@@ -5,7 +6,7 @@ import {configFor} from '../game/config.js';
 // Low-frequency destinations guide local steering; no network wait in the simulation.
 export function selectCycleParticipant(run){
  const race=run.cycleRace;
- if(!race||race.phase!=='racing'||race.arenaPaused)return null;
+ if(!race||usesBoundedAI(race)||race.phase!=='racing'||race.arenaPaused)return null;
  const bikes=race.cycles.filter(b=>b.alive&&!b.escaped&&b.id!==race.playerId)
   .sort((a,b)=>(a.jevRequestedAt??-Infinity)-(b.jevRequestedAt??-Infinity));
  const bike=bikes.find(b=>race.time-(b.jevRequestedAt??-Infinity)>=J.replanSeconds);

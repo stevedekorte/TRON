@@ -1,9 +1,9 @@
 import {MP} from './config.js';
 // Presentation contract only. Never serialize AI planning, collision grids or render history.
-const CYCLE_FIELDS=['id','team','x','z','dir','alive','turns','speedMultiplier','turboCharge','boosting','brakeCharge','braking','segment','expiredTrailMeters','human','operator','reserveTurboRequested','reserveBrakeRequested','reserveReward'];
+const CYCLE_FIELDS=['id','team','x','z','dir','alive','turns','speedMultiplier','turboCharge','boosting','brakeCharge','braking','segment','expiredTrailMeters','human','operator','reserveTurboRequested','reserveBrakeRequested','reserveReward','wallEliminations'];
 const TRAIL_FIELDS=['bikeId','team','dir','x1','z1','x2','z2','dyingAt','initial','startsRun','joining'];
-const CRASH_FIELDS=['id','x','z','dir','team','time'];
-const RACE_FIELDS=['round','phase','time','remaining','elapsed','winner','teamCount','cyclesPerTeam','scores'];
+const CRASH_FIELDS=['id','x','z','dir','team','time','silent'];
+const RACE_FIELDS=['round','phase','time','remaining','elapsed','winner','teamCount','cyclesPerTeam','scores','breaches','closedArena','derezOnEscape'];
 // 0.0001 grid cells = 0.48 mm. Simulation/collision remain full precision on the server.
 const quantize=value=>typeof value==='number'?Math.round(value*10000)/10000:value;
 const pick=(object,fields)=>Object.fromEntries(fields.filter(key=>object[key]!==undefined).map(key=>[key,quantize(object[key])]));

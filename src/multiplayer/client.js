@@ -63,7 +63,7 @@ export class MultiplayerClient{
   if(!this.state)return false;
   this.remotePlayback??=new RemotePlayback();
   this.remotePlayback.push(this.state,this.received);
-  const previous=run.cycleRace,site=previous.site,race={closedArena:true,arenaPaused:false,breaches:[],accumulator:0,...this.state.race,site,
+  const previous=run.cycleRace,site=previous.site,race={closedArena:false,derezOnEscape:true,arenaPaused:false,breaches:[],accumulator:0,...this.state.race,site,
    cycles:this.state.race.cycles.map(b=>({...b,previousX:b.x,previousZ:b.z,progress:1,continuousArena:true})),trails:this.state.race.trails.slice(),
    occupied:previous.occupied,outerOccupied:{},pendingTurns:[],playerId:this.me.seat??0,localPlayerId:this.me.seat};
   const waiting=this.me.seat===null||!race.cycles[this.me.seat]?.alive;
@@ -108,7 +108,7 @@ export class MultiplayerClient{
     const old=previous.cycles[b.id];
     // A serialized copy of the same reward is not a new HUD animation.
     if(b.reserveReward&&old?.reserveReward&&['revision','turboFrom','brakeFrom','target'].every(key=>b.reserveReward[key]===old.reserveReward[key]))b.reserveReward=old.reserveReward;
-    if(old)for(const key of ['human','operator','reserveReward'])if(!(key in b))delete old[key];
+    if(old)for(const key of ['human','operator','reserveReward','wallEliminations'])if(!(key in b))delete old[key];
     return Object.assign(old??{},b);
    });
    Object.assign(previous,race);run.cycleRace=previous;

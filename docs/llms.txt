@@ -6,6 +6,10 @@
 
 - [Assets](/assets/): Model, sound, and dependency inventory
 
+## Fast, compelling cycle AI
+
+- [Fast, compelling cycle AI](/cycle-ai/): Bounded JavaScript tactics, resource planning, and measured evolution
+
 ## Project history
 
 - [Project history](/history/): Original milestones and earlier development notes

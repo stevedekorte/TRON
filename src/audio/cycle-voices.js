@@ -82,7 +82,7 @@ export class CycleVoices {
       const age=r.time-crash.time;
       if(!this.crashes.has(crash.id)){
         this.crashes.add(crash.id);
-        if(age<.25)this.voice('explosion',CYCLE_SOUND.explosionGain,position);
+        if(age<.25&&!crash.silent)this.voice('explosion',CYCLE_SOUND.explosionGain,position);
       }
       if(age>=C.trailHoldSeconds&&!this.walls.has(crash.id)){
         this.walls.add(crash.id);

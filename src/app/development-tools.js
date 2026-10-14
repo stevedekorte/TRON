@@ -1,3 +1,5 @@
+import {cycleAIDebug,resetCycleAI} from '../../shared/simulation/cycle-ai/controller.js';
+import {validatePolicy} from '../../shared/simulation/cycle-ai/config.js';
 import { config } from '../game/config.js';
 import { FLIGHT } from '../simulation/flight.js';
 export function createDevelopmentTools({
@@ -11,6 +13,14 @@ export function createDevelopmentTools({
   frameTimes,
 }) {
   return {
+    get cycleAI(){return cycleAIDebug(session.run.cycleRace);},
+    configureCycleAI({mode='bounded',policy,measure=false}={}){
+      if(session.run.multiplayer)throw new Error('Multiplayer AI belongs to the authority');
+      if(!['classic','bounded'].includes(mode))throw new Error('Invalid cycle AI mode');
+      const race=session.run.cycleRace;if(!race)return;
+      if(policy)race.aiPolicy=validatePolicy(policy);
+      race.aiMode=mode;race.aiMeasure=measure;resetCycleAI(race);
+    },
     setCycleRenderer:mode=>getView().setCycleRenderer(mode),
     sampleCycleRenderer:(dt,active=true)=>getView().monitorCycleRenderer(dt,active),
     get state() {

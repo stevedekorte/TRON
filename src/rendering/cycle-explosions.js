@@ -43,7 +43,7 @@ export class CycleExplosions {
   }
   update(r){
     for(const effect of this.effects){
-      const crash=r?.crashes.find(c=>c.id===effect.id),age=crash?r.time-crash.time:Infinity;
+      const crash=r?.crashes.find(c=>c.id===effect.id&&!c.silent),age=crash?r.time-crash.time:Infinity;
       const frame=explosionFrame(age);effect.group.visible=frame>=0&&frame<E.lifetimeFrames;
       if(!effect.group.visible)continue;
       const t=frame/E.framesPerSecond,id=effect.id;

@@ -6,6 +6,19 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## JavaScript cycle AI plan — October 14
+
+- [x] Write the [fast, compelling cycle AI plan](cycle-ai/index.html), prioritizing bounded runtime cost above tactical sophistication. Cover cutoffs/containment, joint turn and reserve planning, competent seeded variation, offline win-rate evolution and an optional tiny neural scorer.
+- [x] Implement the first bounded shared JavaScript controller, joint turn/turbo/brake scoring, cutoff/containment incentives, continuous safety queries, deterministic near-best variation and development tuning. Retain classic/open-road control and isolate human seats. Cycle JEV requests are skipped for the new mode.
+- [x] Add seeded baseline/stress/comparison tools, versioned offline policy evolution and an optional tiny neural scorer. No evolved/neural policy is promoted. Reference M2 Max measurements: dense twelve-bot AI p99 about 0.49 ms in Node and 0.4 ms in Chrome; new team wins 9/12 spawn-rotated mixed matches, a small correlated sample. Detailed commands, runtime limits and evidence are on the plan page.
+- [ ] Complete slower-device/server measurements, advanced coordinated maneuvers, statistically supported policy promotion and real-player review. This change is local; no deployment requested.
+
+## Cycle roster wall eliminations — October 14
+
+- [x] Track each opposing cycle eliminated by a cycle's trail and show a 3 px dot in the victim's team color beneath the wall owner's roster circle. Center each row, wrap at five dots and preserve roster placement. Retain awards after owner death; exclude self/friendly crashes and duplicate victim credit; clear on new rounds.
+- [x] Include the optional award list in full and compact multiplayer snapshots. Remove the redundant USERS and WAITING totals from the active multiplayer status line; retain latency and the spectator's own queue position.
+- [x] Headless Chrome roster checks pass for colors, centered wrapped rows, unchanged active-roster position and round reset; rendered capture inspected. Twenty-one focused collision/reward/multiplayer tests pass, including full/delta snapshot awards and reset. Implementation is local pending a requested deployment.
+
 ## Multiplayer waiting roster — October 14
 
 - [x] Show one plain hollow gray circle per waiting player without a seat (eliminated seated players remain only in the colored roster), linked by gray lines and followed by a chevron toward the active teams. Position the queue independently to preserve the centered active roster; hide it when the queue is empty.
@@ -2181,3 +2194,9 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Reproducible five-second measurements (`node scripts/measure-multiplayer-bandwidth.mjs`, same snapshots, uncompressed JSON): six cycles/one human falls from 111,015 to 12,779 bytes/sec (88.5%); twelve cycles/twelve humans falls from 197,499 to 13,360 bytes/sec (93.2%). These measure bandwidth, not real-network latency or perceived smoothness.
 - [x] Validation: full suite passes 520 tests; 17 focused multiplayer checks include a subsequently added mixed-version/late-join/resync regression. Chrome renders two compact clients alongside twelve legacy wire clients without errors; inspected normal-renderer capture. Production build and Worker dry run pass.
 - [ ] UDP-style transport: WebTransport datagrams or unreliable WebRTC data channels need a compatible server/gateway. Cloudflare Workers' documented protocol interfaces do not provide a direct WebTransport/WebRTC server endpoint. Retain WebSockets for this optimization; no hosting migration or deployment is included. See the multiplayer document for sources and tradeoffs.
+
+## Multiplayer arena breaches — October 14
+
+- [x] Enable impact-created arena breaches in multiplayer, synchronize openings in full and compact snapshots, and restore intact walls each match. No opening is pre-created.
+- [x] Cycles crossing the outer edge silently derez, stop counting as survivors, and enter the normal next-match queue. No explosion effect or explosion sound; trail cleanup remains active. Keep bounded AI enabled after breaches appear.
+- [x] Validation: 27 focused multiplayer/breach/AI unit tests pass; Chrome arena breach geometry checks verify an opening and restored walls; production build passes. Local implementation only, not deployed.

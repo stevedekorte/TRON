@@ -49,6 +49,7 @@ test('opponent trail crash refills its living owner once; friendly crashes empty
   Object.assign(victim,{x:0,z:-1,dir:2,team});
   tickCycleRace(r,()=>2,[victim]);
   assert(!victim.alive);
+  assert.deepEqual(owner.wallEliminations,team===1?[{id:victim.id,team}]:undefined);
   assert.equal(owner.turboCharge,team===1?1:0);
   assert.equal(owner.brakeCharge,team===1?1:0);
   const reward=owner.reserveReward;

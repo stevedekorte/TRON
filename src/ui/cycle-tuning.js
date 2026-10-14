@@ -1,3 +1,5 @@
+import {DEFAULT_POLICY,POLICY_BOUNDS,validatePolicy} from '../../shared/simulation/cycle-ai/config.js';
+import {resetCycleAI} from '../../shared/simulation/cycle-ai/controller.js';
 import {ROAD_CYCLE,ROAD_CYCLE_FIELDS,migrateRoadCycleTuning} from '../../shared/simulation/config/cycle-road.js';
 const STORAGE_KEY='tron-cycle-road-tuning-v1';
 /** Modal owns its DOM/listeners; simulation settings stay with GameSession. */
@@ -31,6 +33,21 @@ export class CycleTuning {
    }
    fields.append(section);
   }
+  if(import.meta.env.DEV){
+   const section=document.createElement('details'),heading=document.createElement('summary');heading.textContent='Arena AI · local testing';section.append(heading);
+   const note=document.createElement('p');note.textContent='Behavior weights only. Safety and runtime limits are fixed. Multiplayer AI is controlled by the server.';section.append(note);
+   this.aiControls=new Map();
+   for(const [key,[min,max]] of Object.entries(POLICY_BOUNDS)){
+    const label=document.createElement('label');label.className='cycle-tuning-row';const title=document.createElement('span');title.textContent=key;
+    const input=document.createElement('input');Object.assign(input,{type:'number',min,max,step:.01});input.setAttribute('aria-label',`AI ${key}`);label.append(title,input);section.append(label);this.aiControls.set(key,input);
+    this.listen(input,'change',()=>{
+     const race=session.run.cycleRace;if(!race||session.run.multiplayer)return;
+     try{race.aiPolicy=validatePolicy({...DEFAULT_POLICY,...race.aiPolicy,[key]:Number(input.value)});race.aiMode='bounded';resetCycleAI(race);this.status.textContent='AI policy updated for this arena';}catch(error){this.status.textContent=error.message;}
+     this.sync();
+    });
+   }
+   fields.append(section);
+  }
   this.listen(dialog.querySelector('[data-close]'),'click',()=>dialog.close());
   this.listen(dialog,'close',()=>{this.onClose?.();});
   this.listen(dialog.querySelector('[data-reset]'),'click',()=>{session.configure('roadCycle',ROAD_CYCLE);this.sync();this.save();this.status.textContent='Defaults restored';});
@@ -42,7 +59,9 @@ export class CycleTuning {
  listen(target,event,handler){target.addEventListener(event,handler);this.listeners.push(()=>target.removeEventListener(event,handler));}
  get open(){return this.dialog.open;}
  show(){if(this.open)return;this.sync();this.status.textContent='';this.onOpen?.();this.dialog.showModal();this.dialog.querySelector('[data-close]').focus();}
- sync(){for(const [key,{range,number}] of this.controls){range.value=number.value=this.session.settings.roadCycle[key];}}
+ sync(){
+  for(const [key,input] of this.aiControls??[]){input.value=(this.session.run.cycleRace?.aiPolicy??DEFAULT_POLICY)[key];input.disabled=!!this.session.run.multiplayer;}
+  for(const [key,{range,number}] of this.controls){range.value=number.value=this.session.settings.roadCycle[key];}}
  save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(this.session.settings.roadCycle));}catch{}}
  dispose(){this.onClose=null;for(const remove of this.listeners)remove();this.dialog.remove();}
 }

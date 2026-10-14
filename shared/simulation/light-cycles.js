@@ -1,3 +1,5 @@
+import {planCycleAI,usesBoundedAI,resetCycleAI} from './cycle-ai/controller.js';
+import {nextCycleSpeed} from './cycle-ai/speed.js';
 import {rewardCycleWallOwner} from './cycle-reserve-reward.js';
 import {cycleReactionProfile,sampleCycleReaction} from './cycle-reaction.js';
 import {cycleReactionClearance} from './cycle-ai-clearance.js';
@@ -49,6 +51,7 @@ export function configureCycleMatch(r,matchIndex){
  r.cyclesPerTeam=matchIndex===0?3:1+Math.floor(random(r)*3);
 }
 export function resetCycleRound(r){
+  resetCycleAI(r);
   r.continuousTrails=false;r.arenaPaused=false;r.attemptResolved=false;r.pendingTurns=[];r.round++;r.phase='countdown';r.remaining=C.countdownSeconds;r.elapsed=0;r.accumulator=0;r.winner=null;
   r.occupied=new Uint8Array(side*side);r.outerOccupied={};r.breaches??=[];r.trails=[];r.crashes=[];
   if((r.startWithBreach??CYCLE_TESTING.startWithBreach)&&r.playerId!==undefined&&!r.breaches.some(b=>b.axis==='z'&&b.sign===-1&&b.along===0))r.breaches.push({axis:'z',sign:-1,along:0,id:r.breaches.length,time:r.time});
@@ -232,13 +235,18 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={},
   while(remaining>1e-9&&r.phase==='racing'){
     const alive=r.cycles.filter(b=>b.alive&&!b.escaped);
     let slice=Math.min(remaining,C.speedStepSeconds);
+    const boundedAI=usesBoundedAI(r);
+    if(boundedAI){
+      const commands=planCycleAI(r,r.elapsed-remaining+slice);
+      for(const b of alive){const command=commands.get(b.id);if(command&&!b.human&&b.aiController!=='classic'&&b.id!==r.playerId&&command.turn)turnContinuousCycle(r,b,command.turn);}
+    }
     for(const b of alive){
       let wantsTurbo=turbo,wantsBrake=slow;
       if(humanInputs&&b.human){
         const control=humanInputs.get(b.id);wantsTurbo=!!control?.turbo;wantsBrake=!!control?.brake;
       }else if(b.id!==r.playerId){
         b.nextReactionAt??=0;
-        if(r.elapsed>=b.nextReactionAt){
+        if((!boundedAI||b.aiController==='classic')&&r.elapsed>=b.nextReactionAt){
           b.reactionDelaySeconds=sampleCycleReaction(b,()=>random(r));
           const dir=chooseCycleDirection(r,b),delta=(dir-b.dir+4)%4;
           if(delta===1||delta===3)turnContinuousCycle(r,b,delta===1?1:-1);
@@ -266,7 +274,7 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={},
       b.renderTravel+=slice*b.travelRate;
       if(b.braking){b.brakeCharge=Math.max(0,b.brakeCharge-slice/C.brakeDurationSeconds);if(b.brakeCharge<1e-9)b.brakeCharge=0;}
       else if(!b.reserveBrakeRequested)b.brakeCharge=Math.min(1,b.brakeCharge+slice/C.brakeRechargeSeconds);
-      b.speedMultiplier=(b.speedMultiplier??1)+(b.targetSpeedMultiplier-(b.speedMultiplier??1))*(1-Math.exp(-(b.targetSpeedMultiplier>(b.speedMultiplier??1)&&b.boosting?C.turboResponsePerSecond:C.speedResponsePerSecond)*slice));
+      b.speedMultiplier=nextCycleSpeed(b.speedMultiplier??1,b.targetSpeedMultiplier,b.boosting,slice);
       if(b.boosting){b.turboCharge=Math.max(0,b.turboCharge-slice/C.turboDurationSeconds);if(b.turboCharge<1e-9)b.turboCharge=0;}
       else if(!b.reserveTurboRequested||b.reserveBrakeRequested)b.turboCharge=Math.min(1,b.turboCharge+slice/C.turboRechargeSeconds);
     }

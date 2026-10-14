@@ -6,7 +6,7 @@ export class CycleRoom{
  constructor({seed=1982}={}){
   this.seed=seed>>>0;this.tick=0;this.clients=new Map();this.queue=[];this.serial=0;
   this.race={site:{x:0,s:0},seed:this.seed,round:0,scores:[0,0,0,0],time:0,
-   closedArena:true,startWithBreach:false,hideMiddleOpponent:false};
+   closedArena:false,derezOnEscape:true,aiMode:'bounded',startWithBreach:false,hideMiddleOpponent:false};
   this.nextRound();
  }
  random(){this.seed=(Math.imul(this.seed,1664525)+1013904223)>>>0;return this.seed/4294967296;}
