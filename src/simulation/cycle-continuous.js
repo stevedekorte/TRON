@@ -120,7 +120,7 @@ export function advanceContinuousCycles(r,alive,dt,world){
   }
   if(hit){
    b.alive=false;r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:r.time});
-   if(hit.wall)r.breaches.push({...wallImpact(hit.x*C.cellMeters,hit.z*C.cellMeters),id:r.breaches.length,time:r.time});
+   if(hit.wall&&!r.closedArena)r.breaches.push({...wallImpact(hit.x*C.cellMeters,hit.z*C.cellMeters),id:r.breaches.length,time:r.time});
    if(hit.owner!==undefined&&hit.owner!==b.id)trailHits.push({...hit,victim:b});
    continue;
   }

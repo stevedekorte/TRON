@@ -268,3 +268,11 @@ Cloned speech drives the mouth from the actual playback waveform. Browser-voice 
 MCP now distinguishes model transfer, atomic device-cache writes, and GPU initialization. Returning visits reuse saved weights but still initialize the speech engine. Hiding the page keeps voice loading active; Stop or leaving MCP cancels it. Gemini defaults to its native generateContent route with bounded retries for temporary failures; custom OpenAI-compatible `MCP_CHAT_URL` endpoints remain supported.
 
 Adaptive game antialiasing targets 60 FPS by default. It adjusts supported MSAA and pixel ratio, preserves SMAA, and waits for sustained performance before changing quality. Rejected higher levels remain blocked until page reload, preventing oscillation. The development panel exposes the frame-rate target and adaptation switch.
+
+### Public multiplayer arena
+
+LIGHT CYCLES MULTIPLAYER uses one authoritative WebSocket arena. `npm run dev` hosts `/api/multiplayer` locally. Open another window to join the same arena. Teams have at most three cycles, with two to four teams; AI fills vacancies. Surviving humans keep seats, eliminated humans queue behind existing spectators, and twelve humans is the active limit. The match continues while a browser is unfocused.
+
+Production uses the existing Worker, its `MULTIPLAYER_ARENA` Durable Object binding and v2 migration in `wrangler.jsonc`. Deploy the Worker before the static client. `VITE_MULTIPLAYER_URL` can override the public server URL; otherwise production uses `VITE_JEV_API_BASE`. Set `MULTIPLAYER_ENABLED=false` to disable new connections. Empty rooms stop their simulation; active rooms consume server resources and need cost monitoring. There is no paid subscription provisioned by this change.
+
+`node --test tests/multiplayer.test.js` checks authority and queue rules; `node tests/multiplayer-browser.mjs` checks two rendered clients and additional wire clients. No rollback or reconnect identity yet; real-network cutoff fairness remains a playtest requirement. See `docs/multiplayer/_index.md` for details.

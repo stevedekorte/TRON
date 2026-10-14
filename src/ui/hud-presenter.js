@@ -106,6 +106,7 @@ export class HudPresenter {
       }
     }
     document.body.classList.toggle('playing-cycle',cycleMode);
+    document.body.classList.toggle('playing-multiplayer',cycleMode&&!!run.multiplayer);
     this.cycleRoster.update(race,cycleMode&&!run.arenaWaiting&&rig.cycleOpening===null);
     const cycleControls=$('cycle-controls');
     const result=cycleMode&&race.phase==='result';
@@ -116,6 +117,14 @@ export class HudPresenter {
     const dead=cycleMode&&!race.cycles[race.playerId].alive;
     cycleControls.hidden=!run.arenaWaiting&&(!dead||result);
     cycleControls.textContent=run.arenaWaiting?'LOADING CYCLE ARENA...':dead?'CYCLE DETROYED - ARROW KEYS TO FOLLOW - ENTER TO RESTART':'MATCH COMPLETE · RETURN / NEW MATCH';
+    if(run.multiplayer){
+      const mp=run.multiplayer;
+      cycleControls.hidden=false;
+      cycleControls.textContent=!mp.connected?'CONNECTION LOST — ESC / RETURN HOME':
+        run.cycleSpectating?`WAITING${mp.queue?' · QUEUE '+mp.queue:''} · ARROWS / SPECTATE`:
+        race.phase==='countdown'?`MATCH STARTS IN ${Math.ceil(race.remaining)} · ${LIGHT_CYCLES.teamNames[race.cycles[race.playerId].team]} TEAM`:
+        race.phase==='result'?'SURVIVORS KEEP THEIR SEATS · NEXT MATCH SOON':`MULTIPLAYER · ${mp.players} USERS · ${mp.waiting} WAITING · ${mp.ping} MS`;
+    }
     const promptKey=cycleMode?`cycle:${race.round}`:'clu';
     if(this.promptRun!==run||this.promptKey!==promptKey){this.promptRun=run;this.promptKey=promptKey;this.promptSeconds=0;}
     const playing=mode==='running'&&!run.arenaWaiting&&!dead&&!run.crushed&&!result&&rig.cycleOpening===null;
@@ -152,7 +161,7 @@ export class HudPresenter {
     $('autoplay-toggle').setAttribute('aria-pressed', String(autoplay.enabled));
     const jevStats = jev.stats.value,
       statsNode = $('jev-stats');
-    statsNode.hidden=!CLU_AUTOPLAY_ENABLED&&!cycleMode;
+    statsNode.hidden=!!run.multiplayer||(!CLU_AUTOPLAY_ENABLED&&!cycleMode);
     statsNode.children[0].textContent = `N / JEV ${config.aiMode==='jev'?'ON':'OFF'} · ${jevStats.requests} REQUESTS · ${jevStats.requestsPerSecond.toFixed(1)}/s`;
     statsNode.children[1].textContent = `${jevStats.estimatedRequests ? '~' : ''}$${jevStats.costUsd.toFixed(5)} USD`;
 
@@ -167,7 +176,7 @@ export class HudPresenter {
       console.warn('JEV unavailable:',jev.warning.detail);
     }
     this.jevWasUnavailable=unavailable;
-    this.warnings.set('jev',unavailable&&(cycleMode||now<this.jevNoticeUntil)
+    this.warnings.set('jev',!run.multiplayer&&unavailable&&(cycleMode||now<this.jevNoticeUntil)
       ?{level:'warning',label:'JEV UNAVAILABLE',detail:cycleMode?'LOCAL AI ACTIVE':'',transient:!cycleMode}:null);
     const watchedCycleId=result?rig.cycleResultCamera.shot?.id:run.cycleSpectating?(run.cycleFollowId??view.cameraRig.cycleOverview?.trackedId??race?.playerId):race?.playerId;
     const cycleBike=cycleMode?(race.cycles.find(b=>b.id===watchedCycleId)??race.cycles[race.playerId]):null;

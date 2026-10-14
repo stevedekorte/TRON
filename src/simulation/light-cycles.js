@@ -196,7 +196,7 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
   const teams=[...new Set(r.cycles.filter(b=>b.alive).map(b=>b.team))];
   if(teams.length<2){r.phase='result';r.remaining=C.restartSeconds;r.winner=teams[0]??null;if(r.winner!==null)r.scores[r.winner]++;}
 }
-export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={}){
+export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={},humanInputs=null){
   if(!r||r.phase==='idle')return;
   const player=r.cycles[r.playerId];if(player?.escaped)setRoadSpeedControl(player,roadInput,r.roadConfig);
   for(const b of r.cycles){
@@ -222,6 +222,7 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
     return;
   }
   for(const b of r.cycles)if(b.alive&&!b.escaped)continuousCycle(r,b);
+  if(humanInputs)for(const b of r.cycles){const control=humanInputs.get(b.id);if(b.alive&&control?.turn)turnContinuousCycle(r,b,control.turn);}
   if(player?.alive&&!player.escaped&&r.pendingTurns.length)turnContinuousCycle(r,player,r.pendingTurns.shift());
   r.elapsed+=dt;r.accumulator+=dt;
   const interval=C.cellMeters/C.speedMetersPerSecond;
@@ -233,7 +234,9 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={})
     let slice=Math.min(remaining,C.speedStepSeconds);
     for(const b of alive){
       let wantsTurbo=turbo,wantsBrake=slow;
-      if(b.id!==r.playerId){
+      if(humanInputs&&b.human){
+        const control=humanInputs.get(b.id);wantsTurbo=!!control?.turbo;wantsBrake=!!control?.brake;
+      }else if(b.id!==r.playerId){
         b.nextReactionAt??=0;
         if(r.elapsed>=b.nextReactionAt){
           b.reactionDelaySeconds=sampleCycleReaction(b,()=>random(r));

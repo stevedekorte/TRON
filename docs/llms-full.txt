@@ -1,6 +1,6 @@
 # TRON — Full Documentation
 
-Multiplayer proposal: Multiplayer light cycles compares timing, authority, hosting cost and staged acceptance checks. Implementation remains proposed.
+Multiplayer proposal: Multiplayer light cycles compares timing, authority, hosting cost and staged acceptance checks. A local server-authoritative prototype now implements the public twelve-cycle arena; production and real-network playtesting remain pending.
 
 See also: /llms.txt (curated index) and /sitemap.xml.
 
@@ -18,6 +18,24 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 ---
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
+
+## Multiplayer focus, team sizes and HUD — October 13
+
+- [x] Disable automatic blur/visibility pause and any-key resume in multiplayer. Clear held inputs and send neutral controls while unfocused; preserve Escape confirmation and single-player pause behavior.
+- [x] Cap teams at three cycles. Use two to four teams, expanding during countdown when more humans join without delaying launch; up to twelve humans can play.
+- [x] Preserve race and cycle object identities between multiplayer snapshots so engine loops and launch cues do not restart every frame. An audio regression verifies continuous engine ownership and a real reset on the next round.
+- [x] Put C / CONTROLS below multiplayer status rather than on the same line.
+- [x] All 511 unit tests plus the multiplayer audio regression, production build and Worker dry run pass. Headless Chrome verifies no blur pause, three-cycle teams and non-overlapping controls/status, plus both renderers.
+
+## Multiplayer local prototype and human stripes — October 13
+
+- [x] Add LIGHT CYCLES MULTIPLAYER with one authoritative twelve-cycle room, AI vacancy filling, randomized teams, FIFO spectators and individual survivor seat retention.
+- [x] Share fixed-step simulation with the server; sequence and bound inputs, stream trail deltas, predict client motion, and leave collision outcomes with the server. Stop empty rooms and keep multiplayer code out of the single-player loading path.
+- [x] Mark human cycles with a thick diagonal half-black, half-white stripe in both renderers and the roster; remove provisional dots and floating markers. Preserve transparent eliminated roster interiors.
+- [x] Remove grid clouds from gameplay loading and extended model credits; retain archived asset provenance.
+- [x] Validation: 510 unit tests pass, build and Worker dry run pass. Headless Chrome on macOS verifies two rendered clients with fourteen total connections, queue overflow, shared state, no local match reset and no cloud asset request. Both ray-cast and fallback stripe shaders compile without browser errors; inspected both racing captures.
+- [x] Authoritative Worker deployed and production-origin WebSocket snapshots verified; static client release follows.
+- [ ] Real-world latency/cutoff playtests. No rollback, reconnect identity or measured hosting budget yet. See [multiplayer](multiplayer/index.html).
 
 ## Wheel reflections after player death — October 13
 
@@ -40,7 +58,7 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 - [x] Separate materialization color coverage from cockpit opacity so entering first person fades the cycle transparently without changing its colors.
 - [x] Validation: 23 JEV/protocol/Worker unit tests passed; production build passed; headless Chrome on macOS passed the first-person entry/exit and hidden-player check. Tactical effectiveness still needs live play assessment.
 
-Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compares timing, authority, hosting cost and staged acceptance checks. Implementation remains proposed.
+Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compares timing, authority, hosting cost and staged acceptance checks. A local server-authoritative prototype now implements the public twelve-cycle arena; production and real-network playtesting remain pending.
 
 ## MCP transfer reliability and panel activity — October 13
 
@@ -48,6 +66,8 @@ Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compare
 - [x] Animate the six existing ENCOM badge lamps while listening, awaiting Gemini or generating speech. Stop the animation for playback, cancellation and errors; reduced motion uses a steady brightness change.
 - [x] Remove completed cycle-smoothing, soundtrack-cue and mobile-warning items from TODO.md; retain partially completed projects and clarify the remaining spoken dialogue clip.
 - [x] Validation: real Gemini initially returned only a promise, then returned the actual cycles action and END OF LINE with the revised prompt. MCP unit checks and production build pass. Headless Chrome passes STT/LLM/TTS lamp states, face/audio timing, one-second hold and direct game transfer. Inspected the enlarged badge capture.
+
+Project cleanup proposal: [Project organization plan](organization/index.html). Inventory and migration stages only; no folder moves have been performed.
 
 ## Project documents
 
@@ -2267,6 +2287,10 @@ this typeface, with one shared size and normal/dim blue text colors.
 
 The game and `raycast-cycle.html` study adapt **Carl N. Hoff's** solid-geometry light cycle from [Jason Cox's POV-Ray scene](https://github.com/jasonacox/lightcycle-povray). Unmodified source, repository MIT license (Jason Cox, 2019), provenance and adaptation notes are retained in `docs/models/povray-lightcycle/`. The browser shader transcribes the model's 54 primitives and Boolean operations, changes coordinates/scale, and substitutes experiment lighting and the game's grid. It does not import the original scene's reflective floor, animation or trails. A submillimeter surface-priority tolerance stabilizes the window/roof boundary in GPU float precision. The CSG model is the default cycle renderer and credit preview; the original mesh remains the fallback. The CSG intersection kernel is project-authored; Three.js supplies WebGL and post-processing.
 
+## Retired grid cloud asset
+
+The grid cloud is no longer loaded or shown in the game or credits. The retained study files were extracted from [Tron 1982 by jvouillon](https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), centered and converted to game coordinates. This records provenance for the archived asset.
+
 
 ---
 
@@ -3616,9 +3640,31 @@ topTitle: TRON
 subtitle: Feasibility and a low cost implementation plan
 ---
 
-Multiplayer light cycles looks feasible for nearby players with good connections, but close cutoffs make latency unusually visible. Start with private two-player rooms, a browser host, and WebRTC. Keep the existing local game independent. Use a small signaling service and add TURN relay access for connections that cannot connect directly. This minimizes hosting work and lets us measure whether the play feels fair before building public matchmaking.
+## Current local prototype — October 13
 
-This is a proposed plan, not an implemented feature or a commitment to paid infrastructure. Pricing references were checked October 13, 2026.
+The user-selected design is one public, server-authoritative arena, reached through LIGHT CYCLES MULTIPLAYER. Six, nine or twelve cycles compete, with at most three cycles per team. Humans occupy available seats and AI fills the rest; additional humans spectate in a FIFO waiting queue. Surviving humans keep their seats, eliminated humans rejoin the back of the queue, and disconnects release seats. Teams are randomized between matches, with two, three or four teams; enough teams are added to seat up to twelve humans. Countdown expansion preserves the scheduled start time.
+
+The local Vite server hosts the room at `/api/multiplayer`. Production support is prepared as one Cloudflare Durable Object named `public-arena-v1`, using the existing Worker and `MULTIPLAYER_ARENA` binding. The authoritative Worker is deployed and a production-origin WebSocket check confirms advancing snapshots and the three-cycle team cap. The static client is being published with this release. Run `npm run dev`, choose the multiplayer menu, and open another browser window to join the same room. Single-player does not load the multiplayer client or start a multiplayer network loop.
+
+The referee runs the shared simulation at 120 Hz and sends trail-delta snapshots at 20 Hz. Inputs are sequenced and scheduled eight ticks ahead (about 67 ms), with bounded timestamp acceptance. Clients extrapolate motion and predict their pending turns; collision and elimination remain authoritative. There is no rollback yet. A late command takes effect on a future server tick rather than rewriting a collision. This removes browser-host authority advantage but does not make differing network latency equal.
+
+Human cycles carry a thick diagonal stripe, first half black and second half white, on the colored shell. Their roster circles mirror it; your circle has an extra outline. Eliminated circles retain their team outline with transparent interiors. Custom stripe patterns are a possible later addition.
+
+The room stops when empty. Active rounds are bounded to three minutes or 2,048 trail segments, connections to 64, input messages to 512 bytes and 80 per second, with idle and slow-connection limits. An active simulation keeps its server instance awake: exact hosting cost needs measurement. No paid service was purchased. The deployment flag `MULTIPLAYER_ENABLED` can disable access.
+
+Multiplayer does not pause when the window loses focus; held controls clear and input resumes immediately on focus. Escape still opens the return-home confirmation. The controls hint sits below multiplayer status.
+
+### Verification and remaining work
+
+- [x] Seven room tests cover capacity, queues, survivor priority, disconnected seats, team variation, input sequence/timing validation, trail deltas and control timeout.
+- [x] Full simulation suite: 511 tests pass, plus a dedicated multiplayer audio regression. Production build and Worker dry run pass.
+- [x] Headless Chrome on macOS: two rendered clients and twelve additional WebSocket clients share one twelve-cycle arena; overflow waits, local Return cannot reset the match, and single-player/home does not eagerly load the multiplayer client. Both renderers compile the human stripe without shader errors; inspected their captures.
+- [ ] Real two-person play, delayed/jittery connections and close cutoff fairness.
+- [x] Authoritative Worker deployed; live production-origin WebSocket snapshots verified.
+- [ ] Measured server CPU/bandwidth costs, abuse protection beyond basic connection/input limits, and sustained load.
+- [ ] Reconnect identity and seat recovery. Currently a new connection is a new participant; browser tabs are separate players and server restart resets the room.
+
+The earlier browser-host proposal below is retained as an architecture comparison, not the selected implementation. Its private rooms, WebRTC and rollback milestones have not been implemented. Pricing references in that proposal were checked October 13, 2026.
 
 ## Why timing matters
 
@@ -3676,6 +3722,73 @@ The cheapest practical first version should mostly pay for signaling and occasio
 - [ ] Decide an acceptable latency band from playtests. If even nearby play produces frequent unfair-looking deaths, try a small equal input delay and compare, or move authority to a nearby server before adding more players.
 
 Expand to four humans only after two-player cutoffs feel convincing. The goal is satisfying casual play at low cost, not a promise that intercontinental close-contact racing can feel identical to local play.
+
+
+---
+
+<!-- Page: organization -->
+Source: /organization/
+
+---
+title: Project organization plan
+topTitle: TRON
+subtitle: Clear ownership for code, assets, references and generated output
+---
+
+## Scope
+
+This is a plan, not authorization to move or delete assets. Preserve gameplay, existing public URLs, attribution, offline behavior and the current deployment process. Migrate one category per reviewed commit; avoid mixing folder moves with simulation or visual changes. The existing refactoring document covers object ownership; this plan covers repository structure and asset lifecycles.
+
+## Current friction
+
+- Runtime code already has useful boundaries in `src/simulation`, `src/rendering`, `src/audio`, `src/ui` and `src/app`. Keep these rather than introducing an engine framework.
+- `src/game` mixes configuration and gameplay helpers. Multiplayer server code imports shared simulation from `src`, so the browser/server dependency boundary is less obvious than its actual responsibilities.
+- `public` contains shipped audio, fonts and icons, while `docs/assets`, `docs/models` and `docs/references` contain a mixture of inputs, models, film references and supporting documentation. Some documentation assets are actual runtime dependencies.
+- Preview HTML entry points and their source modules live at the root and under different source folders. Tests and scripts form broad flat lists; the package test command enumerates many individual files.
+- Generated documentation HTML and indexes are committed beside authored Markdown. `dist` and `test-results` are ignored; other generated/intermediate assets need an explicit ownership map.
+- Reference folders have ongoing user reorganizations. Inventory those working changes before any migration; do not infer that a missing file should be deleted from history or replaced.
+
+## Proposed layout
+
+| Location | Responsibility |
+| --- | --- |
+| `src/app/` | Browser startup, scene selection, lifecycle and input orchestration |
+| `src/simulation/`, `src/game/`, `src/levels/` | Keep current layout initially; mark browser-free modules, then consider moving genuinely shared rules/configuration together into `shared/simulation/` |
+| `src/rendering/`, `src/audio/`, `src/ui/` | Presentation only; no server or provider dependencies |
+| `src/mcp/`, `src/multiplayer/` | Browser feature adapters and transport clients |
+| `shared/` | Wire contracts, validation and headless authority; document allowed imports |
+| `server/`, `workers/` | Local Node adapters and production Cloudflare adapters |
+| `public/assets/{audio,models,fonts,images}/` | Shipped URL-addressable assets; adopt only with URL compatibility and cache migration |
+| `assets/source/{models,audio,fonts,images}/` | Editable upstream inputs, conversion metadata and licenses; not copied into production by default |
+| `references/{film,design}/` | Visual/sound study material, clearly separate from shipped assets; local-only heavyweight material remains outside normal deployment |
+| `tools/{assets,validation,build}/` | Conversion, inspection and build tools; retain script wrappers while commands migrate |
+| `tests/{unit,browser,fixtures}/` | Fast invariants, real-browser lifecycle checks and reproducible fixtures |
+| `docs/` | Authored plans, source/license catalogs and validation reports, plus the current colvmn generated outputs |
+| `dist/`, `test-results/`, `.local/` | Ignored reproducible output and local state |
+
+Do not move `docs/colvmn`: it is an upstream submodule. Keep root Vite entry points until preview-route compatibility is explicitly tested. Leave encrypted credentials and ignored secret handling in place during structural work; never copy secrets into an asset inventory or public documentation.
+
+## Asset catalog
+
+Create one machine-readable manifest with a stable asset ID, category, source path, runtime URL, author, source URL, license/use constraints, credit ID, transformations, conversion command, output hash and deployment policy. Distinguish original source, approved runtime derivative, reference-only material and retired asset. Film-derived content must retain its actual provenance rather than being labeled open source.
+
+Generate inventory/credit reports from the manifest only after reconciling it with current credits. An unused import search is not proof an asset is unused: inspect runtime fetches, CSS URLs, HTML, Worker requests, preview tools, PWA precache and IndexedDB keys. Keep original model backups until the user explicitly approves removing them.
+
+## Migration stages and acceptance
+
+1. **Inventory only.** List tracked/untracked assets, file sizes, duplicates by hash, import/fetch references and shipping rules. Record `npm run build` output size and the precache inventory. Acceptance: every shipped asset has a source and credit record; unresolved provenance stays visible.
+2. **Document boundaries.** Add concise directory READMEs, mark generated outputs, and document browser-free shared modules. Acceptance: Node authority imports no DOM, WebGL, browser globals or provider keys; existing tests/build still pass.
+3. **Organize tests and tooling.** Move one family at a time and update package scripts/import paths. Use deliberate test discovery that excludes browser scripts from unit runs. Acceptance: test count and coverage remain unchanged, CLI wrappers still work, and artifact paths remain reproducible.
+4. **Separate references and source assets.** Resolve the user's in-progress reference moves first; move with Git history intact. Update catalog and converters together. Acceptance: source derivation works from documented inputs; production copy rules omit reference footage and editable masters.
+5. **Organize runtime assets.** Move one asset category, retaining old URLs temporarily where necessary. Update hashed imports, fetches, preview pages, subdirectory base paths, IndexedDB versions and PWA cache manifests. Acceptance: no new 404s at `/fun/TRON/`, warm/offline loading works, and previously cached clients recover without losing unrelated data.
+6. **Tighten shared code boundaries.** Move the minimum browser-free simulation/configuration needed by both server and client. Avoid a monolithic shared utilities folder. Acceptance: authoritative replay/unit checks, local multiplayer and Worker dry run pass; single-player still loads no multiplayer transport.
+7. **Retire compatibility paths.** Remove only after deployed-client cache behavior and links are verified. Keep source/license history. Acceptance: production smoke checks, credits, documentation links and cache upgrades pass; rollback instructions identify the prior release.
+
+For each stage, record moved paths, compatibility aliases, commands, browser/hardware, screenshots where relevant and remaining defects in the implementation plan. Deploy separately from unrelated behavior changes. Do not assume a successful build proves audio, camera feel, rendering or multiplayer latency are unchanged.
+
+## First recommended slice
+
+Start with the asset manifest and directory READMEs, without moving any runtime files. This gives us a trustworthy map and catches accidentally shipped source/reference material before a broader rename. Keep generated documentation beside Markdown for now because colvmn and the documentation copy scripts already depend on that arrangement.
 
 
 ---

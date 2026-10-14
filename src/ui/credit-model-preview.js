@@ -20,7 +20,6 @@ const models=[
  ['SHRIKER1','recognizer',new URL('../../docs/models/tron_1982_recognizer.glb',import.meta.url).href],
  ['3D MODEL: TRON CARRIER','carrier',new URL('../../docs/models/tron_1982_carrier.glb',import.meta.url).href],
  ['3D MODEL: TRON SUNSHIP','sailer',new URL('../../docs/models/tron_1982_solar_sailer.glb',import.meta.url).href],
- ['JVOUILLON','cloud',new URL('../../docs/models/cloud.glb',import.meta.url).href],
  ['DANIEL PRETI','arena',null],
  ['CARL N. HOFF','cycle',null],
 ];

@@ -4,9 +4,31 @@ topTitle: TRON
 subtitle: Feasibility and a low cost implementation plan
 ---
 
-Multiplayer light cycles looks feasible for nearby players with good connections, but close cutoffs make latency unusually visible. Start with private two-player rooms, a browser host, and WebRTC. Keep the existing local game independent. Use a small signaling service and add TURN relay access for connections that cannot connect directly. This minimizes hosting work and lets us measure whether the play feels fair before building public matchmaking.
+## Current local prototype — October 13
 
-This is a proposed plan, not an implemented feature or a commitment to paid infrastructure. Pricing references were checked October 13, 2026.
+The user-selected design is one public, server-authoritative arena, reached through LIGHT CYCLES MULTIPLAYER. Six, nine or twelve cycles compete, with at most three cycles per team. Humans occupy available seats and AI fills the rest; additional humans spectate in a FIFO waiting queue. Surviving humans keep their seats, eliminated humans rejoin the back of the queue, and disconnects release seats. Teams are randomized between matches, with two, three or four teams; enough teams are added to seat up to twelve humans. Countdown expansion preserves the scheduled start time.
+
+The local Vite server hosts the room at `/api/multiplayer`. Production support is prepared as one Cloudflare Durable Object named `public-arena-v1`, using the existing Worker and `MULTIPLAYER_ARENA` binding. The authoritative Worker is deployed and a production-origin WebSocket check confirms advancing snapshots and the three-cycle team cap. The static client is being published with this release. Run `npm run dev`, choose the multiplayer menu, and open another browser window to join the same room. Single-player does not load the multiplayer client or start a multiplayer network loop.
+
+The referee runs the shared simulation at 120 Hz and sends trail-delta snapshots at 20 Hz. Inputs are sequenced and scheduled eight ticks ahead (about 67 ms), with bounded timestamp acceptance. Clients extrapolate motion and predict their pending turns; collision and elimination remain authoritative. There is no rollback yet. A late command takes effect on a future server tick rather than rewriting a collision. This removes browser-host authority advantage but does not make differing network latency equal.
+
+Human cycles carry a thick diagonal stripe, first half black and second half white, on the colored shell. Their roster circles mirror it; your circle has an extra outline. Eliminated circles retain their team outline with transparent interiors. Custom stripe patterns are a possible later addition.
+
+The room stops when empty. Active rounds are bounded to three minutes or 2,048 trail segments, connections to 64, input messages to 512 bytes and 80 per second, with idle and slow-connection limits. An active simulation keeps its server instance awake: exact hosting cost needs measurement. No paid service was purchased. The deployment flag `MULTIPLAYER_ENABLED` can disable access.
+
+Multiplayer does not pause when the window loses focus; held controls clear and input resumes immediately on focus. Escape still opens the return-home confirmation. The controls hint sits below multiplayer status.
+
+### Verification and remaining work
+
+- [x] Seven room tests cover capacity, queues, survivor priority, disconnected seats, team variation, input sequence/timing validation, trail deltas and control timeout.
+- [x] Full simulation suite: 511 tests pass, plus a dedicated multiplayer audio regression. Production build and Worker dry run pass.
+- [x] Headless Chrome on macOS: two rendered clients and twelve additional WebSocket clients share one twelve-cycle arena; overflow waits, local Return cannot reset the match, and single-player/home does not eagerly load the multiplayer client. Both renderers compile the human stripe without shader errors; inspected their captures.
+- [ ] Real two-person play, delayed/jittery connections and close cutoff fairness.
+- [x] Authoritative Worker deployed; live production-origin WebSocket snapshots verified.
+- [ ] Measured server CPU/bandwidth costs, abuse protection beyond basic connection/input limits, and sustained load.
+- [ ] Reconnect identity and seat recovery. Currently a new connection is a new participant; browser tabs are separate players and server restart resets the room.
+
+The earlier browser-host proposal below is retained as an architecture comparison, not the selected implementation. Its private rooms, WebRTC and rollback milestones have not been implemented. Pricing references in that proposal were checked October 13, 2026.
 
 ## Why timing matters
 

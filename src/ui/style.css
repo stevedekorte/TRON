@@ -139,3 +139,9 @@ body.playing-cycle #controls-prompt,body.playing-cycle #cycle-controls{top:58px;
   box-shadow:0 0 7px #fff,0 0 18px #6edbff;
   transition:none;
 }
+
+.cycle-roster-icon.human::before{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,transparent 27%,#050505 27%,#050505 50%,#fff 50%,#fff 73%,transparent 73%)}
+.cycle-roster-icon.human.eliminated::before{display:none}
+.cycle-roster-icon.local-player{outline:1px solid #fff;outline-offset:3px}
+
+body.playing-multiplayer #controls-prompt{top:82px}

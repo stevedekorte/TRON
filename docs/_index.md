@@ -6,6 +6,24 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Multiplayer focus, team sizes and HUD — October 13
+
+- [x] Disable automatic blur/visibility pause and any-key resume in multiplayer. Clear held inputs and send neutral controls while unfocused; preserve Escape confirmation and single-player pause behavior.
+- [x] Cap teams at three cycles. Use two to four teams, expanding during countdown when more humans join without delaying launch; up to twelve humans can play.
+- [x] Preserve race and cycle object identities between multiplayer snapshots so engine loops and launch cues do not restart every frame. An audio regression verifies continuous engine ownership and a real reset on the next round.
+- [x] Put C / CONTROLS below multiplayer status rather than on the same line.
+- [x] All 511 unit tests plus the multiplayer audio regression, production build and Worker dry run pass. Headless Chrome verifies no blur pause, three-cycle teams and non-overlapping controls/status, plus both renderers.
+
+## Multiplayer local prototype and human stripes — October 13
+
+- [x] Add LIGHT CYCLES MULTIPLAYER with one authoritative twelve-cycle room, AI vacancy filling, randomized teams, FIFO spectators and individual survivor seat retention.
+- [x] Share fixed-step simulation with the server; sequence and bound inputs, stream trail deltas, predict client motion, and leave collision outcomes with the server. Stop empty rooms and keep multiplayer code out of the single-player loading path.
+- [x] Mark human cycles with a thick diagonal half-black, half-white stripe in both renderers and the roster; remove provisional dots and floating markers. Preserve transparent eliminated roster interiors.
+- [x] Remove grid clouds from gameplay loading and extended model credits; retain archived asset provenance.
+- [x] Validation: 510 unit tests pass, build and Worker dry run pass. Headless Chrome on macOS verifies two rendered clients with fourteen total connections, queue overflow, shared state, no local match reset and no cloud asset request. Both ray-cast and fallback stripe shaders compile without browser errors; inspected both racing captures.
+- [x] Authoritative Worker deployed and production-origin WebSocket snapshots verified; static client release follows.
+- [ ] Real-world latency/cutoff playtests. No rollback, reconnect identity or measured hosting budget yet. See [multiplayer](multiplayer/index.html).
+
 ## Wheel reflections after player death — October 13
 
 - [x] Preserve each cycle’s reflection clock across AI random-state changes; reset only on a new round or simulation time rewind. Surviving cycles continue their speed-dependent flicker after the player dies.
@@ -27,7 +45,7 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 - [x] Separate materialization color coverage from cockpit opacity so entering first person fades the cycle transparently without changing its colors.
 - [x] Validation: 23 JEV/protocol/Worker unit tests passed; production build passed; headless Chrome on macOS passed the first-person entry/exit and hidden-player check. Tactical effectiveness still needs live play assessment.
 
-Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compares timing, authority, hosting cost and staged acceptance checks. Implementation remains proposed.
+Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compares timing, authority, hosting cost and staged acceptance checks. A local server-authoritative prototype now implements the public twelve-cycle arena; production and real-network playtesting remain pending.
 
 ## MCP transfer reliability and panel activity — October 13
 
@@ -35,6 +53,8 @@ Multiplayer proposal: [Multiplayer light cycles](multiplayer/index.html) compare
 - [x] Animate the six existing ENCOM badge lamps while listening, awaiting Gemini or generating speech. Stop the animation for playback, cancellation and errors; reduced motion uses a steady brightness change.
 - [x] Remove completed cycle-smoothing, soundtrack-cue and mobile-warning items from TODO.md; retain partially completed projects and clarify the remaining spoken dialogue clip.
 - [x] Validation: real Gemini initially returned only a promise, then returned the actual cycles action and END OF LINE with the revised prompt. MCP unit checks and production build pass. Headless Chrome passes STT/LLM/TTS lamp states, face/audio timing, one-second hold and direct game transfer. Inspected the enlarged badge capture.
+
+Project cleanup proposal: [Project organization plan](organization/index.html). Inventory and migration stages only; no folder moves have been performed.
 
 ## Project documents
 

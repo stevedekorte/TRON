@@ -1,3 +1,4 @@
+export {MultiplayerArena} from './multiplayer.js';
 import {mcpRoute} from './mcp.js';
 import {errorBody} from '../../shared/jev-errors.js';
 import {jevQuestion} from '../../shared/jev-protocol.js';
@@ -25,6 +26,10 @@ export function createWorker(fetchImpl=fetch){return {async fetch(request,env,ct
  if(!origin||!allowed.includes(origin))return send(403,{error:'Origin rejected'});
  Object.assign(headers,{'Access-Control-Allow-Origin':origin,'Access-Control-Expose-Headers':'Retry-After'});
  const path=new URL(request.url).pathname;
+ if(path==='/api/multiplayer'){
+  if(env.MULTIPLAYER_ENABLED!=='true'||!env.MULTIPLAYER_ARENA)return send(503,{error:'Multiplayer unavailable'});
+  return env.MULTIPLAYER_ARENA.get(env.MULTIPLAYER_ARENA.idFromName('public-arena-v1')).fetch(request);
+ }
  if(!['/api/jev/decision','/api/jev/status','/api/mcp/chat','/api/mcp/status','/api/mcp/voice-status','/api/mcp/speech'].includes(path))return send(404,{error:'Not found'});
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'86400'}});
  if(path.startsWith('/api/mcp/'))return mcpRoute(request,env,ctx,{send,boundedJson,clientHash,fetchImpl});

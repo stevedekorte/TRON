@@ -23,6 +23,10 @@
 
 - [Multiplayer light cycles](/multiplayer/): Feasibility and a low cost implementation plan
 
+## Project organization plan
+
+- [Project organization plan](/organization/): Clear ownership for code, assets, references and generated output
+
 ## Refactoring review and design
 
 - [Refactoring review and design](/refactoring/): Explicit ownership, reproducible worlds and composed controllers

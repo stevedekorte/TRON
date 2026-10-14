@@ -31,7 +31,6 @@ import victoryText from '../../docs/victory.txt?raw';
 import creditsText from '../../docs/credits.txt?raw';
 import extendedCreditsText from '../../docs/credits_display.txt?raw';
 import { debrisPhysicsReady } from '../simulation/debris-physics.js';
-import { loadCloud } from '../rendering/cloud-layer.js';
 import { saveScreenshot } from '../ui/screenshot.js';
 import { loadCarrier } from '../rendering/carrier.js';
 import { loadVehicles } from '../rendering/models.js';
@@ -50,7 +49,8 @@ export function createGameApp() {
   const { world: map } = scenario;
   const cycleStart = new URLSearchParams(location.search).get('cycleStart');
   const testCycleStart = cycleStart === '1';
-  let selectedGame = 'cycles';
+  let selectedGame = 'cycles', multiplayer=null;
+  const cycleGame=()=>selectedGame==='cycles'||selectedGame==='multiplayer';
   const $ = (id) => document.getElementById(id);
   const inputController = new InputController();
   const loop = new GameLoop({ frame, backgroundAllowed: () => autoplay.enabled });
@@ -208,7 +208,7 @@ export function createGameApp() {
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
       if(directOverlay)homeTransition.beginDirect(directOverlay);
       else {sound.terminalTone('access');
-      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||selectedGame==='cycles',preparedScene:selectedGame==='space'||selectedGame==='cycles',coverUntilSceneReady:selectedGame==='cycles',keepCovered:['mcp','credits','bit'].includes(selectedGame)});}
+      await homeTransition.begin(document.querySelector('#game-menu [aria-pressed="true"]'),{waitForScene:selectedGame==='space'||cycleGame(),preparedScene:selectedGame==='space'||cycleGame(),coverUntilSceneReady:cycleGame(),keepCovered:['mcp','credits','bit'].includes(selectedGame)});}
       if(disposed)return;
     }
     if(mode==='ready'&&selectedGame==='credits'){
@@ -226,7 +226,7 @@ export function createGameApp() {
     }
     if (mode === 'entering') return;
     const fromTerminal = mode === 'ready',
-      opening = fromTerminal && !(selectedGame === 'cycles' && run.cycleRace);
+      opening = fromTerminal && !(cycleGame() && run.cycleRace);
     // Request both context and media playback before yielding the Return gesture.
     let audioReady;
     try {
@@ -258,7 +258,15 @@ export function createGameApp() {
     const freshHomeRun=homeSelection&&run.time===0&&!run.crushed&&!run.won;
     if(!freshHomeRun)run = loadingTimings.sync('New game simulation reset',()=>session.reset(browserRunSeed(location)));
     run.speed = config.maxSpeed;
-    if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({entranceFormation:!testCycleStart,startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
+    if(selectedGame==='multiplayer'){
+      try{
+        const [{MultiplayerClient}]=await Promise.all([import('../multiplayer/client.js'),loadArenaInBackground()]);
+        multiplayer?.close();multiplayer=new MultiplayerClient();await multiplayer.connect();
+        if(disposed){multiplayer.close();return;}
+        multiplayer.apply(run);run.projectiles=[];run.transferActive=false;inputController.clear();
+        view.reset();view.cameraRig.opening=null;view.cameraRig.cycleOpening=null;
+      }catch(error){multiplayer?.close();multiplayer=null;homeTransition.clear();fail(error.message+' — RETURN HOME AND TRY AGAIN.');return;}
+    }else if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({entranceFormation:!testCycleStart,startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
     else startPursuit(run);
     loadArenaInBackground();
     run.cruiseThrottle = true;
@@ -383,6 +391,7 @@ export function createGameApp() {
       if(!event.repeat){pause();if(cycleTuning?.open)cycleTuning.dialog.close();$('paused').hidden=true;exitConfirm.show();}
       return;
     }
+    if(mode==='error'&&selectedGame==='multiplayer'&&event.code==='Escape'){event.preventDefault();returnToProgramSelection();return;}
     if (mode === 'loading') return;
     if(mode==='entering'&&!openingTransition){event.preventDefault();if(!event.repeat)beginCluGame();return;}
     if(creditsVisible()){
@@ -413,10 +422,10 @@ export function createGameApp() {
       event.preventDefault();if(!event.repeat)followCycle(event.code==='ArrowLeft'?-1:1);return;
     }
     if(cycleTuning?.open)return;
-    if(event.code==='Tab'&&cycleTuning&&run.playerVehicle==='cycle'&&['running','paused'].includes(mode)){
+    if(!multiplayer&&event.code==='Tab'&&cycleTuning&&run.playerVehicle==='cycle'&&['running','paused'].includes(mode)){
       event.preventDefault();if(!event.repeat)cycleTuning.show();return;
     }
-    if(event.code==='Enter'&&!event.repeat&&run.playerVehicle==='cycle'&&session.restartCycleMatch()){
+    if(!multiplayer&&event.code==='Enter'&&!event.repeat&&run.playerVehicle==='cycle'&&session.restartCycleMatch()){
       event.preventDefault();inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;
       if(mode==='paused')resume();return;
     }
@@ -478,6 +487,7 @@ export function createGameApp() {
     if (mode === 'ready') sound.unlock().catch(() => {});
     if (mode === 'paused') {
       event.preventDefault();
+      if(multiplayer)return;
       if (!event.repeat) {
         resume();
         if (event.code === 'KeyW') run.cruiseThrottle = event.shiftKey;
@@ -613,6 +623,7 @@ export function createGameApp() {
   }
   function syncCycleSpectator() {
     if(run.playerVehicle!=='cycle')return;
+    if(multiplayer){if(run.cycleSpectating&&run.cycleFollowId!=null&&!run.cycleRace.cycles[run.cycleFollowId]?.alive)followCycle();return;}
     const dead=!run.cycleRace.cycles[run.cycleRace.playerId].alive;
     if(run.cycleSpectating&&(!dead||run.won||run.crushed)){
       if(view.cameraRig.freeCamera.active)view.cameraRig.freeCamera.exit();
@@ -779,7 +790,7 @@ export function createGameApp() {
     inputController.mouseFire = false;
     inputController.fireQueued = false;
     clearMouseAim();
-    if (!autoplay.enabled) pause();
+    if (!autoplay.enabled&&!multiplayer) pause();
   });
   listen(window, 'focus', () => {
     windowFocused = true;
@@ -790,7 +801,7 @@ export function createGameApp() {
       inputController.mouseFire = false;
       inputController.fireQueued = false;
       clearMouseAim();
-      if (!autoplay.enabled) pause();
+      if (!autoplay.enabled&&!multiplayer) pause();
     }
     if (view && !disposed) {
       loop.reschedule();
@@ -819,6 +830,7 @@ export function createGameApp() {
     return mode==='ready'&&(endingStage==='credits'||document.body.classList.contains('detached'));
   }
   function returnToProgramSelection(){
+    multiplayer?.close();multiplayer=null;
     sound.reset();tribute.reset();victoryPrinter.reset();accessPrinter.reset();
     jev.resetScheduling();autoplay.reset();inputController.clear();releaseMouse();
     run=session.reset(browserRunSeed(location));view.reset();view.cameraRig.opening=null;
@@ -927,7 +939,7 @@ export function createGameApp() {
     cycleRendererControl.update();
     if(mode==='running'&&(run.playerVehicle!=='cycle'||run.cycleRace?.arenaPaused)&&run.time>=SOLAR_SAILER.backgroundLoadSeconds)loadSolarInBackground();
     if (run.crushed && run.mouseAim) clearMouseAim();
-    if (!autoplay.enabled && (document.hidden || !windowFocused)) pause();
+    if (!autoplay.enabled && !multiplayer && (document.hidden || !windowFocused)) pause();
     if (mode === 'running') idleTime = keys.size || inputController.mouseFire ? 0 : idleTime + dt;
     if (mode === 'entering') {
       if(openingTransition){
@@ -957,7 +969,11 @@ export function createGameApp() {
         document.body.classList.remove('cycle-intro');
       }
     }
-    if (mode === 'running'||mode==='entering'&&openingTransition) {
+    if(multiplayer){
+      const command=mode==='running'&&windowFocused&&!document.hidden&&!run.cycleSpectating?inputController.command(run,{mouseLook:false,mouseTarget:null}):{};
+      multiplayer.input(command);inputController.consume();session.previous={...run};multiplayer.apply(run);
+    }
+    if (!multiplayer&&(mode === 'running'||mode==='entering'&&openingTransition)) {
       if (frameTimes.length >= 3600) frameTimes.shift();
       if (dt > 0) frameTimes.push(dt * 1000);
       loop.advance(
@@ -994,15 +1010,15 @@ export function createGameApp() {
         simulationStepSeconds(run),
       );
     }
-    jev.update(run, !run.arenaWaiting && !run.won && mode === 'running', autoplay);
-    if (!autoplay.enabled && (document.hidden || !windowFocused)) pause();
+    jev.update(run, !multiplayer && !run.arenaWaiting && !run.won && mode === 'running', autoplay);
+    if (!autoplay.enabled && !multiplayer && (document.hidden || !windowFocused)) pause();
     if (view && mode !== 'error') {syncCycleSpectator();updateDeathTerminal(dt);}
     if (view && mode !== 'error') {
       view.cameraRig.freeCamera.update(dt, keys);
       if (!document.hidden && !(mode==='ready'&&endingStage==='victory')) {
         view.monitorCycleRenderer(dt,run.playerVehicle==='cycle'&&mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting&&run.cycleRace?.phase==='racing');
         view.updateAntialiasing(dt,mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.opening===null&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting);
-        view.render(run, session.previous, mode === 'running' ? loop.alpha : 1, dt, mode);
+        view.render(run, session.previous, mode === 'running'&&!multiplayer ? loop.alpha : 1, dt, mode);
         if((mode==='running'||mode==='entering'&&openingTransition)&&!run.arenaWaiting&&!document.body.classList.contains('cycle-loading'))homeTransition.sceneReady();
       }
       sound.cycleOpeningSeconds=view.cameraRig.cycleOpening===null?null:view.cameraRig.cycleOpening*CYCLE_OPENING.durationSeconds;
@@ -1037,14 +1053,13 @@ export function createGameApp() {
           'This game needs WebGL 2. Try a current desktop browser with hardware acceleration enabled.',
         );
       performance.mark('tron:assets-start');
-      const [[tank, recognizer, boss], carrier, cloud] = await Promise.all([
+      const [[tank, recognizer, boss], carrier] = await Promise.all([
         loadingTimings.async('Tank + Recognizer models (fetch, decode, adapt)',()=>loadVehicles()),
         loadingTimings.async('Carrier model (fetch, decode, adapt)',()=>loadCarrier()),
-        loadingTimings.async('Cloud model (fetch, decode, adapt)',()=>loadCloud()),
       ]);
       performance.mark('tron:assets-ready');
       const physics = loadingTimings.sync('Create debris physics world',()=>new DebrisPhysics(map.nearbyWalls));
-      view = loadingTimings.sync('Build rendering world / meshes / shadows',()=>new View($('game'), tank, recognizer, carrier, cloud, map, physics, null, boss));
+      view = loadingTimings.sync('Build rendering world / meshes / shadows',()=>new View($('game'), tank, recognizer, carrier, null, map, physics, null, boss));
       performance.mark('tron:world-ready');
       session.arenaReady=!run.cycleRace;
       session.attachDebris(physics, view.breakups);
@@ -1073,6 +1088,7 @@ export function createGameApp() {
       performance.mark('tron:first-frame');
       $('start').disabled = false;
       $('start-cycles').disabled = false;
+      $('start-multiplayer').disabled = false;
       $('start-bit').disabled = false;
       $('start-mcp').disabled = false;
       $('start-credits').disabled = false;
@@ -1238,6 +1254,7 @@ export function createGameApp() {
   }
 
   function dispose() {
+    multiplayer?.close();
     mcpPanel.dispose();
     homeTransition.clear();
     if (disposed) return;

@@ -15,7 +15,6 @@ import { createTeleporters } from './teleporters.js';
 import { vehicleTeleportPad } from '../simulation/teleporters.js';
 import { Materialization } from './materialization.js';
 import { Horizon } from './horizon.js';
-import { CloudLayer } from './cloud-layer.js';
 import { CarrierShadows } from './carrier-shadows.js';
 import { MazeShadows } from './maze-shadows.js';
 import { RecognizerShadows } from './recognizer-shadows.js';
@@ -122,7 +121,7 @@ export class View {
       carrier.userData.rez.updateTransit(0, carrierFor(map).speed);
       this.scene.add(carrier);
     }
-    this.clouds = cloud ? new CloudLayer(cloud, this.scene, map) : null;
+    this.clouds = null;
     this.tank = tank;
     this.scene.add(this.tank.root);
     this.muzzleFlash = createMuzzleFlash();

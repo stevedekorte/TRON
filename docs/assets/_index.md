@@ -185,3 +185,7 @@ this typeface, with one shared size and normal/dim blue text colors.
 ## POV-Ray light-cycle experiment — October 12
 
 The game and `raycast-cycle.html` study adapt **Carl N. Hoff's** solid-geometry light cycle from [Jason Cox's POV-Ray scene](https://github.com/jasonacox/lightcycle-povray). Unmodified source, repository MIT license (Jason Cox, 2019), provenance and adaptation notes are retained in `docs/models/povray-lightcycle/`. The browser shader transcribes the model's 54 primitives and Boolean operations, changes coordinates/scale, and substitutes experiment lighting and the game's grid. It does not import the original scene's reflective floor, animation or trails. A submillimeter surface-priority tolerance stabilizes the window/roof boundary in GPU float precision. The CSG model is the default cycle renderer and credit preview; the original mesh remains the fallback. The CSG intersection kernel is project-authored; Three.js supplies WebGL and post-processing.
+
+## Retired grid cloud asset
+
+The grid cloud is no longer loaded or shown in the game or credits. The retained study files were extracted from [Tron 1982 by jvouillon](https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), centered and converted to game coordinates. This records provenance for the archived asset.

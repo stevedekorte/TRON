@@ -1,3 +1,4 @@
+import {installHumanStripe} from './cycle-human-stripe.js';
 import {refineCycleFrontWheel} from './cycle-front-wheel.js';
 import {advanceWheelReflection} from './cycle-wheel-reflections.js';
 import {repairCycleRearSeams,repairCyclePanelWinding} from './cycle-rear-seams.js';
@@ -49,7 +50,7 @@ export class LightCycleRaceView {
   constructor(models,arena,floorReceivers=[],{arenaFloor,groundFloor}={}){
     this.arenaFloor=arenaFloor;this.groundFloor=groundFloor;
     this.root=new THREE.Group();this.root.name='Light cycle competition';arena.add(this.root);
-    this.bikes=Array.from({length:C.maxCycles},(_,id)=>{const root=models[0].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;c.userData.originalCycleColor=m.color?.clone();materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);return root;});
+    this.bikes=Array.from({length:C.maxCycles},(_,id)=>{const root=models[0].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;c.userData.originalCycleColor=m.color?.clone();materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);installHumanStripe(root);return root;});
     this.materializations=this.bikes.map(root=>new CarrierMaterialization(root,{axis:'z',reverse:false,isLiveMaterial:()=>false}));
     this.materializations.forEach((rez,id)=>rez.lineMaterial.color.setHex(C.colors[Math.floor(id/3)]));
     const receivers=[...floorReceivers];
@@ -68,7 +69,7 @@ export class LightCycleRaceView {
     this.root.visible=!!r&&r.phase!=='idle';if(!this.root.visible){this.tireTraces.update(null);return;}
     for(const mesh of this.bikes)mesh.visible=false;
     const fraction=r.phase==='racing'?r.accumulator/(C.cellMeters/C.speedMetersPerSecond):1;
-    for(const b of r.cycles){const fraction=cycleFraction(r,b);const mesh=this.bikes[b.id];mesh.visible=b.alive;
+    for(const b of r.cycles){const fraction=cycleFraction(r,b);const mesh=this.bikes[b.id];mesh.visible=b.alive;mesh.userData.human=!!b.human;mesh.userData.humanStripe.value=b.human?1:0;
       if(mesh.userData.team!==b.team){
         mesh.userData.team=b.team;
         const palette=[null,[CYCLE_MODEL_STYLE.blueBody,CYCLE_MODEL_STYLE.blueTrim],[CYCLE_MODEL_STYLE.redBody,CYCLE_MODEL_STYLE.redTrim],[0x178c42,0x46bd65]][b.team];

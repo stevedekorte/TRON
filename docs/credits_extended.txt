@@ -69,16 +69,6 @@ JIHS
   and Peter Lloyd for the original film design.
   Source: user-supplied TurboSquid model and readme.
 
-jvouillon
-  Tron 1982
-  https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88
-  Used for the drifting grid cloud, extracted from the larger scene,
-  centered and converted to the game's coordinate system.
-  An arena-only extraction is also retained as a study asset; the active
-  game arena uses Daniel Preti's model below.
-  Creative Commons Attribution 4.0 International (CC BY 4.0).
-  https://creativecommons.org/licenses/by/4.0/
-
 Daniel Preti
   TRON 1982 — Games Grid Lightcycles
   Used for the light cycle arena architecture and its gold and blue cycles.

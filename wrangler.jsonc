@@ -9,6 +9,7 @@
     "TYPESAFE_MODEL": "jev-latest",
     "JEV_ENABLED": "true",
     "MCP_ENABLED": "true",
+    "MULTIPLAYER_ENABLED": "true",
     "MCP_MODEL": "gemini-3.8-flash",
     "DAILY_REQUESTS": "unlimited",
     "DAILY_INPUT_BYTES": "unlimited",
@@ -16,8 +17,8 @@
     "IP_MINUTE_REQUESTS": "unlimited"
   },
   "durable_objects": {
-    "bindings": [{"name": "JEV_BUDGET", "class_name": "JevBudget"}]
+    "bindings": [{"name": "JEV_BUDGET", "class_name": "JevBudget"}, {"name":"MULTIPLAYER_ARENA", "class_name":"MultiplayerArena"}]
   },
-  "migrations": [{"tag": "v1", "new_sqlite_classes": ["JevBudget"]}],
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["JevBudget"]}, {"tag":"v2", "new_sqlite_classes":["MultiplayerArena"]}],
   "observability": {"enabled": false}
 }
