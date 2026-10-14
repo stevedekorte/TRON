@@ -11,7 +11,8 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 - [x] Implement [organization stages 1–6](organization/index.html): focused shared simulation modules, discovered unit tests, grouped browser/tool scripts with CLI compatibility, canonical runtime/source/reference directories, asset catalog and explicit production packaging.
 - [x] Remove reference videos entirely and ignore video extensions. Rewrite video paths out of Git history; retain runtime audio and still images. Extraction inputs must be supplied separately.
 - [x] Verify 531 unit checks, Worker dry run, PWA offline/update behavior, multiplayer browser lifecycle with jitter, and production subdirectory paths on macOS/headless Chromium.
-- [ ] Deploy and verify the reorganized release. Retire compatibility paths only after deployed-client cache review.
+- [x] Deploy TRON `de3453e` through dekorte.com `b3e161d`, Pages run `38617728189`. Worker version `0352103a-89e1-4d2b-880c-3bb9be2c2c41`. Production Chromium check: menu entry, 48 decoded snapshots, 12 cycles, solo Return skips countdown, no page errors; canonical/legacy cannon audio bytes match. Protocols 1 and 2 each delivered validated snapshots. Initial clean CI build exposed a missing audit-output directory; fixed and verified without a preexisting directory.
+- [ ] Retire compatibility paths only after deployed-client cache review. Real-player feel remains unverified.
 
 ## Immediate multiplayer turns near fixed walls — October 14
 
@@ -19,7 +20,7 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 - [x] Retain a local fractional keypress tick for pending-input replay. Apply the turn at the currently displayed position in the same frame, finalize the preceding trail at that corner and continue the new segment. Only integer timestamps are sent on the wire. Remote playback remains buffered at 75 ms.
 - [x] `npm test`: 528 checks pass. Fixed-wall regressions approach an existing arena boundary with 1.8 m of collision-shape clearance at 38.4 and 96 m/s. Immediate scheduling survives at zero and two ticks (16.7 ms) of simulated input transit; the former eight-tick schedule crashes. At six ticks (50 ms) transit, both approaches are already too late. With two ticks of transit, accepted corner displacement is 0.64 m normally and 1.6 m at turbo. These are deterministic simulation checks, not measured real-network latency.
 - [x] Local prediction tests cover zero/80 ms RTT estimates, fractional keypress times, same-frame direction changes without position jumps, joined trail corners and no repeated turns across frames. `npm run build`, `npm run worker:check` and `git diff --check` pass. Restarted local Vite on port 5173 so its authority loads the new handler. `TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs` passes in headless Chrome on macOS with two rendered clients, twelve cycles and fourteen connections.
-- [ ] Real-player fixed-wall feel and realistic network-transit review; bounded rollback remains unimplemented. Local change, not deployed.
+- [ ] Real-player fixed-wall feel and realistic network-transit review; bounded rollback remains unimplemented. Included in the October 14 reorganized production release above.
 
 ## Remote cycle playback under packet jitter — October 14
 
