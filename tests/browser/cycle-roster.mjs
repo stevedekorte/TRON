@@ -17,8 +17,8 @@ try{
  assert.equal(await page.locator('.cycle-waiting-queue .cycle-roster-icon').count(),3);
  assert.deepEqual(await page.locator('[data-cycle-id="0"]').boundingBox(),before);
  const waiting=page.locator('.cycle-waiting-queue .cycle-roster-icon').first();
- assert.deepEqual(await waiting.evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.borderTopColor];}),['rgba(0, 0, 0, 0)','rgb(128, 128, 128)']);
- assert.match(await waiting.evaluate(el=>getComputedStyle(el,'::before').backgroundImage),/linear-gradient/);
+ assert.deepEqual(await waiting.evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.borderTopColor];}),['rgba(0, 0, 0, 0)','rgb(64, 64, 64)']);
+ assert.equal(await waiting.evaluate(el=>getComputedStyle(el,'::before').content),'none');
  assert.equal(await waiting.evaluate(el=>getComputedStyle(el,'::after').width),'12px');
  const queueBounds=await page.locator('.cycle-waiting-queue').boundingBox();assert.ok(queueBounds.x+queueBounds.width<before.x);
  await page.screenshot({path:'test-results/cycle-roster.png'});

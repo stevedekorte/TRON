@@ -145,7 +145,7 @@ body.playing-cycle #controls-prompt,body.playing-cycle #cycle-controls{top:58px;
 
 body.playing-multiplayer #controls-prompt{top:82px}
 
-.cycle-waiting-queue{position:absolute;right:calc(100% + clamp(10px,2vw,22px));top:0;display:flex;align-items:center;gap:16px;color:#808080}
+.cycle-waiting-queue{position:absolute;right:calc(100% + clamp(10px,2vw,22px));top:0;display:flex;align-items:center;gap:16px;color:#404040}
 .cycle-waiting-queue[hidden]{display:none}
 .cycle-waiting-queue .cycle-roster-icon{flex:none}
 .cycle-queue-arrow{display:block;width:8px;height:8px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(45deg);flex:none}

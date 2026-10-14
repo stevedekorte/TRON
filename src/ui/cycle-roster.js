@@ -24,7 +24,7 @@ export class CycleRoster{
   const queue=document.createElement('div');queue.className='cycle-waiting-queue';queue.hidden=queueCount===0;queue.setAttribute('role','group');queue.setAttribute('aria-label',`${queueCount} players waiting to enter`);
   const icons=document.createElement('div');icons.className='cycle-team-icons';
   for(let i=0;i<queueCount;i++){
-   const icon=document.createElement('span');icon.className='cycle-roster-icon eliminated human';icon.setAttribute('role','img');icon.setAttribute('aria-label',`Waiting player ${i+1}`);icons.append(icon);
+   const icon=document.createElement('span');icon.className='cycle-roster-icon eliminated';icon.setAttribute('role','img');icon.setAttribute('aria-label',`Waiting player ${i+1}`);icons.append(icon);
   }
   const arrow=document.createElement('span');arrow.className='cycle-queue-arrow';arrow.setAttribute('aria-hidden','true');
   queue.append(icons,arrow);
