@@ -2,7 +2,7 @@ SPACE PARANOIDS — EXTENDED CREDITS
 ================================
 
 A free, unofficial fan homage to the talent and vision behind TRON (1982).
-TRON and its characters, vehicles, designs, film imagery and soundtrack
+TRON and its characters, vehicles, designs, film imagery, soundtrack and sound effects
 belong to their respective rights holders, including Disney.
 
 Created by Steve Dekorte in collaboration with OpenAI Codex.
@@ -29,6 +29,16 @@ Journey
   From the TRON (1982) original motion picture soundtrack.
   Used for the ending and credits.
   https://music.apple.com/us/album/tron-original-motion-picture-soundtrack/1443890451
+
+ORIGINAL FILM SOUND EFFECTS
+---------------------------
+
+Frank Serafine / Serafine FX Studios
+  Sound Effects Design and Synthesis for TRON (1982).
+  Gameplay uses locally edited samples from the film sound effects.
+  Credit source: BFI programme notes, compiled by Sight and Sound
+  and the BFI Documentation Unit.
+  https://bfidatadigipres.github.io/pdf/2023-07-15-tron.pdf
 
 3D MODEL ARTISTS
 ---------------
@@ -100,6 +110,14 @@ Maze and level geometry
 
 Model credits record provenance and modifications. The models retain their
 respective source terms; they are not covered by the software licenses below.
+
+BIT PROGRAM
+-----------
+
+ControllingTransmission
+  BIT program, models, animation and sounds; originally created for GDC 2018.
+  Software: MIT License.
+  The BIT character is owned by Disney and is from TRON (1982).
 
 FONT
 ----

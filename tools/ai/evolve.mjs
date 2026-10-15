@@ -1,3 +1,4 @@
+import {APPROACH} from './approach.mjs';
 import {AI_FITNESS,matchFitness,compareFitness} from './fitness.mjs';
 // Offline only. Produces a candidate artifact; never changes the live policy.
 import {writeFile,mkdir} from 'node:fs/promises';
@@ -16,7 +17,9 @@ function evaluate(policy,seeds,opponents){
  let wins=0,draws=0,losses=0,aiP99=0,tickP99=0,wallEliminations=0,trapAssists=0,confinements=0,points=0;
  for(const seed of seeds)for(let seat=0;seat<4;seat++){
   const policies=Array.from({length:4},(_,i)=>opponents[(seed+i)%opponents.length]);policies[seat]=policy;
-  const result=match({seed,mode:'bounded',policies,seconds,measure:true});aiP99=Math.max(aiP99,result.aiMs.p99);tickP99=Math.max(tickP99,result.tickMs.p99);
+  const result=match({seed,mode:'bounded',policies,seconds,approach:true});
+  // Separate pass: reward graph allocation/GC must not contaminate live timing.
+  const timing=match({seed,mode:'bounded',policies,seconds,measure:true});aiP99=Math.max(aiP99,timing.aiMs.p99);tickP99=Math.max(tickP99,timing.tickMs.p99);
   wallEliminations+=result.wallEliminations[seat];trapAssists+=result.trapAssists[seat];confinements+=result.confinements[seat];points+=matchFitness(result,seat);
   if(result.winner===seat)wins++;else if(result.winner===null||result.winner===undefined)draws++;else losses++;
  }
@@ -32,7 +35,7 @@ for(let generation=0;generation<generations;generation++){
  records.push(scores.map(({policy,result})=>({id:policy.id,...result})));console.log(JSON.stringify({generation,results:records.at(-1)}));
 }
 const heldOut=evaluate(champion,Array.from({length:smoke?1:32},(_,i)=>90000+i),[DEFAULT_POLICY,...history]);
-const output={version:1,policy:{...champion,...(champion.network?{network:{version:1,weights:Array.from(champion.network.weights)}}:{})},training:{seed:44123,seconds,fitnessWeights:AI_FITNESS,ranking:"timing, aggression-and-win fitness, then win rate",records},heldOut,
+const output={version:1,policy:{...champion,...(champion.network?{network:{version:1,weights:Array.from(champion.network.weights)}}:{})},training:{seed:44123,seconds,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,ranking:"timing, aggression-and-win fitness, then win rate",records},heldOut,
  promoted:false,eligibleForReview:!smoke&&heldOut.passesTiming&&heldOut.winRateLower95>.25,
  note:'Not auto-promoted. Requires scenario regressions, held-out matched baseline comparison, browser performance and human gameplay review. Draws are not wins.'};
 await mkdir('test-results',{recursive:true});

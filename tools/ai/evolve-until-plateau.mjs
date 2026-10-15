@@ -1,7 +1,8 @@
+import {APPROACH} from './approach.mjs';
 // Start from the frozen playtested policy. Stop on a predeclared validation plateau.
 import {Worker} from 'node:worker_threads';
 import {writeFile,mkdir} from 'node:fs/promises';
-import {PLAYTESTED_POLICY} from '../../shared/simulation/cycle-ai/policies/aggression-v1.js';
+import {PLAYTESTED_POLICY} from '../../shared/simulation/cycle-ai/policies/aggression-v2.js';
 import {BASELINE_POLICY as DEFAULT_POLICY,POLICY_BOUNDS,validatePolicy} from '../../shared/simulation/cycle-ai/config.js';
 import {AI_FITNESS} from './fitness.mjs';
 import {match} from './benchmark.mjs';
@@ -37,14 +38,14 @@ while(stale<options.patience){
  if(accepted){champion=chosen.policy;validation=challenger;history.push(champion);stale=0;}else stale++;
  records.push({generation,scores,challenger,timing:check,gain,improvedSeeds,accepted,stale,champion:champion.id});
  console.log(JSON.stringify({generation,champion:champion.id,gain,improvedSeeds,accepted,stale,validation:{...validation,rows:undefined}}));
- await writeFile(`test-results/${artifact}-checkpoint.json`,JSON.stringify({options,fitnessWeights:AI_FITNESS,initial,initialValidation,champion,validation,records,stale},null,2));
+ await writeFile(`test-results/${artifact}-checkpoint.json`,JSON.stringify({options,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,initial,initialValidation,champion,validation,records,stale},null,2));
  generation++;
 }
 const finalSeeds=Array.from({length:options.finalSeeds},(_,i)=>options.seedOffset+100000+i);
 const results=await pool([champion,initial,DEFAULT_POLICY],p=>evaluate(p,finalSeeds,[DEFAULT_POLICY],`final:${p.id}`));
 const finalTiming=timing(champion),[candidate,previousTrial,baseline]=results;
 const trialUpdated=champion.id!==initial.id&&finalTiming.passes&&candidate.fitness>previousTrial.fitness+options.minGain;
-const output={version:1,options,fitnessWeights:AI_FITNESS,initial,initialValidation,policy:champion,validation,records,heldOut:{candidate,previousTrial,baseline},timing:finalTiming,stale,generations:generation,trialUpdated,promoted:false,
+const output={version:1,options,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,initial,initialValidation,policy:champion,validation,records,heldOut:{candidate,previousTrial,baseline},timing:finalTiming,stale,generations:generation,trialUpdated,promoted:false,
  note:'Observed plateau: three consecutive generations without >=0.02 validation fitness improvement across at least three of four seed groups and a runtime pass. Fixed validation is selection data, not held-out proof. Final seeds are used once. No production promotion.'};
 await writeFile(`test-results/${artifact}.json`,JSON.stringify(output,null,2));
 if(trialUpdated)await writeFile('test-results/cycle-ai-trained.json',JSON.stringify(output,null,2));

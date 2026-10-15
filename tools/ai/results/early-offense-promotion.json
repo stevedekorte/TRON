@@ -1,0 +1,224 @@
+{
+  "selectedPolicy": {
+    "version": 1,
+    "id": "approach-340000-0-0",
+    "space": 0.7,
+    "clearance": 0.5710767524503172,
+    "cutoff": 1.6172238771803673,
+    "pressure": 0.3472025061398745,
+    "allyPenalty": 1.027476475341245,
+    "reserveCost": 0.08986003088857979,
+    "reserveFloor": 0.18521312844008211,
+    "straightBonus": 0.09796467728912829,
+    "switchCost": 0.06432283084141091,
+    "leadSeconds": 0.15562226661108436,
+    "variation": 0.010922345181461424
+  },
+  "previousDeployedPolicy": "aggression-1-0 (preserved in shared/simulation/cycle-ai/policies/aggression-v1.js)",
+  "fitnessWeights": {
+    "version": 2,
+    "winPoints": 1,
+    "fastWinBonusPoints": 0.5,
+    "enemyWallPoints": 1,
+    "trapAssistPoints": 1,
+    "earlyEliminationBonusPoints": 1,
+    "confinementPoints": 0,
+    "approachPoints": 0.15
+  },
+  "approachConfig": {
+    "version": 1,
+    "sampleSeconds": 1,
+    "gridStepMeters": 2.4,
+    "nearMeters": 20,
+    "farMeters": 120,
+    "pairCap": 1,
+    "teamCap": 1
+  },
+  "comparisons": [
+    {
+      "seeds": [
+        430000,
+        430001,
+        430002,
+        430003,
+        430004,
+        430005
+      ],
+      "selected": {
+        "wins": 3,
+        "draws": 13,
+        "losses": 8,
+        "matches": 24,
+        "winRate": 0.125,
+        "wallEliminations": 10,
+        "trapAssists": 6,
+        "confinements": 32.833333333333336,
+        "offensePoints": 25.105694444444445,
+        "approach": 2.3368531987983787,
+        "fastWinBonus": 0.2943055555555556,
+        "fitness": 1.1979386658258233
+      },
+      "deployed": {
+        "wins": 2,
+        "draws": 16,
+        "losses": 6,
+        "matches": 24,
+        "winRate": 0.08333333333333333,
+        "wallEliminations": 8,
+        "trapAssists": 4,
+        "confinements": 19,
+        "offensePoints": 18.95041666666667,
+        "approach": 2.3519260728664793,
+        "fastWinBonus": 0.14027777777777778,
+        "fitness": 0.8934784731406006
+      }
+    },
+    {
+      "seeds": [
+        440000,
+        440001,
+        440002,
+        440003,
+        440004,
+        440005,
+        440006,
+        440007
+      ],
+      "selected": {
+        "wins": 4,
+        "draws": 17,
+        "losses": 11,
+        "matches": 32,
+        "winRate": 0.125,
+        "wallEliminations": 9,
+        "trapAssists": 9,
+        "confinements": 37.83333333333333,
+        "offensePoints": 29.274027777777782,
+        "approach": 3.2363762932668805,
+        "fastWinBonus": 0.2482638888888889,
+        "fitness": 1.062742128458022
+      },
+      "deployed": {
+        "wins": 4,
+        "draws": 16,
+        "losses": 12,
+        "matches": 32,
+        "winRate": 0.125,
+        "wallEliminations": 7,
+        "trapAssists": 4,
+        "confinements": 29,
+        "offensePoints": 16.184305555555557,
+        "approach": 3.4893736043014787,
+        "fastWinBonus": 0.39784722222222224,
+        "fitness": 0.6595487130757188
+      },
+      "rejectedMutation": {
+        "wins": 2,
+        "draws": 10,
+        "losses": 20,
+        "matches": 32,
+        "winRate": 0.0625,
+        "wallEliminations": 7,
+        "trapAssists": 11,
+        "confinements": 26,
+        "offensePoints": 28.608402777777773,
+        "approach": 3.0158356158381694,
+        "fastWinBonus": 0.330625,
+        "fitness": 0.9809813475047969
+      }
+    }
+  ],
+  "timing": {
+    "aiMs": {
+      "p95": 0.10054199997102842,
+      "p99": 0.18383399996673688,
+      "max": 0.9746249999734573
+    },
+    "tickMs": {
+      "p50": 0.09820800001034513,
+      "p95": 0.1863749999902211,
+      "p99": 0.27908300003036857,
+      "max": 8.063207999977749
+    },
+    "passes": true
+  },
+  "browser": {
+    "state": {
+      "debug": {
+        "tick": 122,
+        "totalMilliseconds": 8.599998950958252,
+        "totals": {
+          "overtakePlans": 0,
+          "cutoffPlans": 0,
+          "turboPlans": 0,
+          "brakePlans": 0,
+          "guardTicks": 0
+        },
+        "plans": 0,
+        "guards": 0,
+        "segmentTests": 9,
+        "overflow": false,
+        "bots": [
+          {
+            "id": 0,
+            "policyId": "approach-340000-0-0",
+            "reason": "space",
+            "dir": 2,
+            "pedal": 0,
+            "decisions": 10
+          },
+          {
+            "id": 2,
+            "policyId": "approach-340000-0-0",
+            "reason": "space",
+            "dir": 2,
+            "pedal": 0,
+            "decisions": 10
+          },
+          {
+            "id": 3,
+            "policyId": "approach-340000-0-0",
+            "reason": "space",
+            "dir": 0,
+            "pedal": 0,
+            "decisions": 10
+          },
+          {
+            "id": 4,
+            "policyId": "approach-340000-0-0",
+            "reason": "space",
+            "dir": 0,
+            "pedal": 0,
+            "decisions": 10
+          },
+          {
+            "id": 5,
+            "policyId": "approach-340000-0-0",
+            "reason": "space",
+            "dir": 0,
+            "pedal": 0,
+            "decisions": 10
+          }
+        ]
+      },
+      "metrics": {
+        "milliseconds": 0.09999990463256836,
+        "plans": 0,
+        "segmentTests": 9
+      }
+    },
+    "frameAI": {
+      "frames": 481,
+      "p99": 0.40000009536743164,
+      "max": 0.9999995231628418
+    },
+    "report": {
+      "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+      "p95": 0.3000001907348633,
+      "p99": 0.40000009536743164,
+      "max": 0.7999997138977051
+    },
+    "errors": []
+  },
+  "note": "Four team-seat rotations per seed are correlated. Selected earlier candidate for stronger kills/wins balance. Human play review remains useful; no claim of universal superiority."
+}

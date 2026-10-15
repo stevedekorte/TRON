@@ -1,5 +1,36 @@
 // Offline evaluation only: never adds work to a live simulation tick.
-export const AI_FITNESS=Object.freeze({winPoints:1,fastWinBonusPoints:.5,enemyWallPoints:.5,trapAssistPoints:.35,confinementPoints:.1});
+export const AI_FITNESS=Object.freeze({version:2,winPoints:1,fastWinBonusPoints:.5,enemyWallPoints:1,trapAssistPoints:1,earlyEliminationBonusPoints:1,confinementPoints:0,approachPoints:.15});
+// Observe confirmed deaths offline; no timestamps or scoring work added to live AI.
+export class OffenseEvents{
+ constructor(){this.seen=new Set();this.events=[];}
+ sample(race,seconds){
+  for(const victim of race.cycles){
+   if(victim.alive||victim.escaped||this.seen.has(victim.id))continue;
+   this.seen.add(victim.id);
+   const eligible=owner=>owner.id!==victim.id&&owner.team!==victim.team;
+   const direct=race.cycles.filter(owner=>eligible(owner)&&owner.wallEliminations?.some(hit=>hit.id===victim.id));
+   const assists=race.cycles.filter(owner=>eligible(owner)&&owner.trapAssists?.some(hit=>hit.id===victim.id)&&!direct.includes(owner));
+   const credits=[];
+   // One victim, one pool: direct owner(s) and trappers share it, never two kills.
+   for(const [owners,kind] of [[direct,'wall'],[assists,'trap']])for(const owner of owners)
+    credits.push({team:owner.team,kind,share:(direct.length&&assists.length ? .5 : 1)/owners.length});
+   if(credits.length)this.events.push({victimId:victim.id,seconds,credits});
+  }
+ }
+}
+export function offensePoints(result,team,weights=AI_FITNESS){
+ if(!Array.isArray(result.offenseEvents))return (result.wallEliminations?.[team]??0)*weights.enemyWallPoints+(result.trapAssists?.[team]??0)*weights.trapAssistPoints;
+ const victims=new Set();let points=0;
+ for(const event of result.offenseEvents){
+  if(victims.has(event.victimId))continue;victims.add(event.victimId);
+  const early=Number.isFinite(event.seconds)&&event.seconds>=0&&Number.isFinite(result.matchLimitSeconds)&&result.matchLimitSeconds>0
+   ?Math.max(0,1-event.seconds/result.matchLimitSeconds):0;
+  const total=event.credits.reduce((sum,c)=>sum+Math.max(0,c.share),0);
+  for(const credit of event.credits)if(credit.team===team)
+   points+=Math.max(0,credit.share)/Math.max(1,total)*((credit.kind==='wall'?weights.enemyWallPoints:weights.trapAssistPoints)+(weights.earlyEliminationBonusPoints??0)*early);
+ }
+ return points;
+}
 export function fastWinBonus(result,team,weights=AI_FITNESS){
  // Missing legacy timing earns no bonus; only a confirmed winner qualifies.
  if(team==null||result.winner!==team||!Number.isFinite(result.seconds)||result.seconds<0||!Number.isFinite(result.matchLimitSeconds)||result.matchLimitSeconds<=0)return 0;
@@ -27,7 +58,7 @@ export function trapRewardsByTeam(race){
  return {trapAssists:assists,confinements};
 }
 export function matchFitness(result,team,weights=AI_FITNESS){
- return (result.winner===team?weights.winPoints:0)+fastWinBonus(result,team,weights)+(result.wallEliminations?.[team]??0)*weights.enemyWallPoints+(result.trapAssists?.[team]??0)*weights.trapAssistPoints+(result.confinements?.[team]??0)*weights.confinementPoints;
+ return (result.winner===team?weights.winPoints:0)+fastWinBonus(result,team,weights)+offensePoints(result,team,weights)+(result.confinements?.[team]??0)*weights.confinementPoints+Math.max(0,Math.min(1,result.approach?.[team]??0))*(weights.approachPoints??0);
 }
 // Runtime is the hard gate; successful aggression and wins jointly rank policies.
 export function compareFitness(a,b){

@@ -100,7 +100,7 @@ test('solo arena and MP authority use the playtested evolved policy by default',
  const solo=arena(1982,'bounded');planCycleAI(solo);
  const room=new CycleRoom();room.join('human');room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();room.step();
  for(const race of [solo,room.race]){const bots=cycleAIDebug(race).bots;assert(bots.length);assert(bots.every(b=>b.policyId===DEFAULT_POLICY.id));}
- assert.equal(DEFAULT_POLICY.id,'aggression-1-0');
+ assert.equal(DEFAULT_POLICY.id,'approach-340000-0-0');
 });
 
 test('fewer than half of seeded turn reactions fit within one bike length at brake, cruise and turbo speeds',async()=>{

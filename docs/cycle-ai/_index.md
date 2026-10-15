@@ -4,6 +4,12 @@ topTitle: TRON
 subtitle: Bounded JavaScript tactics, resource planning, and measured evolution
 ---
 
+## Obstacle-aware training reward — October 15
+
+The offline trainers now include bounded approach credit based on navigable route distance, not Euclidean proximity. See the [current plan](../) for deployment state, checks and limitations. `tools/ai/approach.mjs` samples a swept-disc route graph once per simulated second, using the same active trail segments as collision. It credits the AI's own progress toward a frozen target, checks that the opponent is still reachable, and excludes passive closing and disconnected regions. A per-pair progress high-water mark limits repeated approach/retreat credit; initial enemy-pair normalization prevents team-size/death artifacts. The maximum approach bonus remains 0.15. Fitness version 2 now assigns one base point plus up to one early-confirmation point per eliminated enemy, shared between direct wall owners and successful trappers. Unfinished confinements no longer earn fitness. See the current plan for the bounded evolution results and limitations.
+
+This is offline instrumentation only: it does not add pathfinding to the live controller or change the deployed policy. The 2.4 m graph is a conservative route estimate; it can miss narrow passages and does not predict future trails or enforce heading/turn dynamics. No Euclidean fallback is used. Training outputs record the reward configuration. All 583 unit tests and a four-seat tournament smoke pass; a subsequent two-generation run and fresh-seed comparison are recorded in the current plan. Its candidate improved trap assists and combined fitness but not direct kills, and remains unpromoted.
+
 ## Implemented locally — October 14
 
 The first bounded controller is implemented and enabled by default for multiplayer and the initially unbreached standalone arena. It is plain shared JavaScript: no service requests, inference library or background training. The previous controller remains available with `race.aiMode = 'classic'`; exterior/open-arena behavior stays on the existing controller unless explicitly overridden for development. No production deployment is part of this implementation request.
