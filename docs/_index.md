@@ -6,11 +6,22 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Cycle formation body colors — October 15
+
+- [x] Use the cycle body color for materialization wireframes: copy the actual body material in the mesh renderer and use the existing body-color uniform for contours, grid and halo in the analytic renderer. Preserve line intensity, coverage, halo attenuation, fade stages and solid-body glow timing.
+- [x] Production build and Chrome materialization shader/lifecycle check pass; capture all four team colors and inspect blue/red wire stages. Publish with the verified multiplayer prediction-clock correction below. These are client-only changes; the existing multiplayer Worker remains compatible.
+
+## Multiplayer follow-camera packet jitter — October 15
+
+- [x] Reproduce backward local follow-target motion under 20–50 ms variable snapshot delivery. Remote cycles already use monotonic buffered playback, but the local prediction/camera clock reset from each packet arrival and RTT sample. Keep a continuous prediction clock, correcting its rate by at most ±10% over a 0.25-second correction interval; reset on round changes. Preserve immediate fractional input prediction, authoritative collision state and the existing 75 ms remote buffer.
+- [x] At 144 Hz rendering, the regression reproduces up to 0.885 m backward travel with the old clock; the new clock has no backward steps and at most 0.0267 m deviation from the nominal per-frame distance. Also exercise an RTT change, new-round reset, immediate input, joined trails and no early future turn. Correct an older test's artificial backward wall-clock jump so its future input occurs after preceding frames.
+- [x] 564 unit tests and production build pass. Headless Chrome on macOS passes the two-rendered-client multiplayer lifecycle test with injected packet delays (`TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs`). Runtime/browser tests do not establish subjective production smoothness. Local fix only; not deployed. Long stalls, speed changes and authoritative input reconciliation can still require position corrections.
+
 ## Evolved AI and trap attribution release — October 15
 
 - [x] Release checks: 563 unit tests, production build/asset audit, Worker dry run, and headless Chrome roster, MCP game-launch and two-client multiplayer checks pass on macOS. Publish the playtested `aggression-1-0` policy for solo/MP, persistent trap-assist attribution and hollow roster dots, and MCP closing-sentence fade. Later training found no qualifying improvement; retain the playtested weights.
 - [x] Deploy compatible multiplayer Worker `3f4f21f1-73fa-43c5-ba0d-c383a16eecdb`. Optional trap-assist snapshot data preserves the existing protocol. Training and research artifacts remain offline; no automatic training runs in production.
-- [ ] Publish the matching website revision and verify the production multiplayer connection. Historical local-only notes below describe their state when written.
+- [x] Publish TRON `9863ee0` through website `e090204`; Pages run `38754625290` succeeded. Production Chrome entered multiplayer, decoded 55 snapshots with no page errors, and verified solo Return restarts immediately without countdown. Historical local-only notes below describe their state when written. This completion record was added after deployment.
 
 ## JavaScript cycle AI plan — October 14
 

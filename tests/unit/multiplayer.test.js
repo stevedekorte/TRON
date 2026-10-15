@@ -154,9 +154,9 @@ test('MP presentation moves between ticks without applying a future turn early',
   assert(Math.abs(distance-C.speedMetersPerSecond*frame*.002)<1e-9,'every 2 ms frame advances smoothly');
   const tail=run.cycleRace.trails[b.segment];assert.equal(tail.x2,b.x);assert.equal(tail.z2,b.z);
  }
- client.pending=[{seq:1,tick:state.tick+MP.inputLeadTicks+1,turn:1,turbo:false,brake:false}];
- now=1000+1000/MP.tickHz-.01;assert.equal(pose().dir,source.dir,'fractional prediction must not apply turn early');
- now=1000+1000/MP.tickHz+.01;const turned=pose();assert.equal(turned.dir,(source.dir+1)%4);
+ client.pending=[{seq:1,tick:state.tick+MP.inputLeadTicks+3,turn:1,turbo:false,brake:false}];
+ now=1000+3000/MP.tickHz-.01;assert.equal(pose().dir,source.dir,'fractional prediction must not apply turn early');
+ now=1000+3000/MP.tickHz+.01;const turned=pose();assert.equal(turned.dir,(source.dir+1)%4);
  assert.deepEqual(source,sourceBefore,'presentation does not mutate authority');
  now=5000;const stopped=pose();assert.equal(stopped.x,source.x);assert.equal(stopped.z,source.z,'stale state is not extrapolated');
 });

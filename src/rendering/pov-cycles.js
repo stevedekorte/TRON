@@ -7,7 +7,7 @@ import {cycleSceneGLSL,CYCLE_EDGE_CONFIG,CYCLE_LIGHTING_CONFIG} from '../experim
 import {POV_CYCLE_SCALE} from '../experiments/pov-cycle-model.js';
 import {CYCLE_WHEEL_REFLECTIONS as WHEEL_GLINT} from './cycle-wheel-reflections.js';
 const EDGE_FILTER={radiusPixels:1.2,creaseStart:.18,creaseFull:.65,strength:.8,paintStrength:.22};
-export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.003,contourRadiusPixels:.65,haloRadiusPixels:1.8,haloStrength:.16,lineIntensity:2.2,contourColor:0xd0dc9a,gridColor:0x75b5b7,haloColor:0x39bccc,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
+export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.003,contourRadiusPixels:.65,haloRadiusPixels:1.8,haloStrength:.16,lineIntensity:2.2,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
 const COLORS=[0xe6bd14,0x086ac4,0xff1010,0x178c42];
 const vertexShader=`varying vec3 localSurface;void main(){localSurface=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
 const fragmentShader=cycleSceneGLSL+humanStripeGLSL+`
@@ -87,10 +87,8 @@ void main(){
  if(h.material==4)color=max(color,materialColor(3)*${CYCLE_LIGHTING_CONFIG.windowReturnFill});
  color=edgeMapReady?filteredEdges(color,normal,h.material):cycleEdgeHighlights(color,normal,normalize(cameraPosition-worldPoint),h.material);
  color=mix(color,vec3(.82,.89,1.)*${WHEEL_GLINT.intensity},wheelReflection(localPoint,h.n,h.material)*rezSolid);
- vec3 contourColor=vec3(${new T.Color(CYCLE_REZ.contourColor).toArray().join(',')});
- vec3 gridColor=vec3(${new T.Color(CYCLE_REZ.gridColor).toArray().join(',')});
- vec3 haloColor=vec3(${new T.Color(CYCLE_REZ.haloColor).toArray().join(',')});
- vec3 wireColor=(contourColor*contour+gridColor*grid+haloColor*halo)/max(contour+grid+halo,.001)*${CYCLE_REZ.lineIntensity};
+ // Preserve the body hue; coverage, halo strength and stage opacity control brightness.
+ vec3 wireColor=bodyColor*${CYCLE_REZ.lineIntensity};
  // The solid briefly blooms almost white, while glass stays dark.
  color+=mix(bodyColor,vec3(.88,1.,.8),.8)*rezGlow*${CYCLE_REZ.bodyGlowIntensity.toFixed(1)}*(h.material==2?.04:1.);
  color=mix(wireColor,color,rezSolid/max(formationAlpha,.001));

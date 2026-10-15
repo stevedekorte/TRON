@@ -52,7 +52,6 @@ export class LightCycleRaceView {
     this.root=new THREE.Group();this.root.name='Light cycle competition';arena.add(this.root);
     this.bikes=Array.from({length:C.maxCycles},(_,id)=>{const root=models[0].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;c.userData.originalCycleColor=m.color?.clone();materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);installHumanStripe(root);return root;});
     this.materializations=this.bikes.map(root=>new CarrierMaterialization(root,{axis:'z',reverse:false,isLiveMaterial:()=>false}));
-    this.materializations.forEach((rez,id)=>rez.lineMaterial.color.setHex(C.colors[Math.floor(id/3)]));
     const receivers=[...floorReceivers];
     const crafts=this.bikes.map(root=>{const casters=[];root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude){casters.push(o);receivers.push(o);}});return {root,casters,radius:2.6,distance:8};});
     this.shadows=new RecognizerShadows(crafts,receivers,0,CYCLE_SELF_SHADOW);
@@ -77,8 +76,8 @@ export class LightCycleRaceView {
           if(m.userData.originalCycleColor)m.color.copy(m.userData.originalCycleColor);
           if(palette&&m.name==='Color_D06')m.color.setHex(palette[0]);
           if(palette&&['_1','Color_L12'].includes(m.name))m.color.setHex(palette[1]);
+          if(m.name==='Color_D06')this.materializations[b.id].lineMaterial.color.copy(m.color);
         }});
-        this.materializations[b.id].lineMaterial.color.setHex(C.colors[b.team]);
       }
       const x=THREE.MathUtils.lerp(b.previousX,b.x,fraction)*C.cellMeters,z=THREE.MathUtils.lerp(b.previousZ,b.z,fraction)*C.cellMeters;
       const onArena=this.arenaFloor&&Math.abs(x)<=this.arenaFloor.geometry.parameters.width/2&&Math.abs(z)<=this.arenaFloor.geometry.parameters.height/2;

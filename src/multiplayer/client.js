@@ -4,6 +4,8 @@ import {MP} from '../../shared/multiplayer/config.js';
 import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../../shared/simulation/config/light-cycles.js';
 import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 
+export const PREDICTION_CLOCK=Object.freeze({maxRateAdjustment:.1,correctionSeconds:.25,maxFrameSeconds:.2});
+
 // Predict motion only. Collisions, eliminations, seats and trail history remain server-owned.
 function move(b,seconds,control){
  const [dx,dz]=DIR[b.dir];b.x+=dx*seconds*C.speedMetersPerSecond/C.cellMeters*b.speedMultiplier;b.z+=dz*seconds*C.speedMetersPerSecond/C.cellMeters*b.speedMultiplier;
@@ -46,7 +48,21 @@ export class MultiplayerClient{
   if(!this.state||this.closed||this.disconnected||this.socket?.readyState!==1||this.state.clients.length!==1||performance.now()-this.received>2000)return false;
   this.socket.send(JSON.stringify({type:'restart',round:this.state.race.round}));return true;
  }
- estimatedRenderTick(){return this.state.tick+((performance.now()-this.received)+this.rtt/2)*MP.tickHz/1000;}
+ estimatedRenderTick(){
+  const now=performance.now(),round=this.state.race.round;
+  const target=this.state.tick+((now-this.received)+this.rtt/2)*MP.tickHz/1000;
+  let clock=this.predictionClock;
+  if(!clock||clock.round!==round)clock=this.predictionClock={round,tick:target,now};
+  else{
+   const dt=Math.max(0,Math.min(PREDICTION_CLOCK.maxFrameSeconds,(now-clock.now)/1000));
+   const expected=clock.tick+dt*MP.tickHz;
+   const correction=(target-expected)/(MP.tickHz*PREDICTION_CLOCK.correctionSeconds);
+   const rate=1+Math.max(-PREDICTION_CLOCK.maxRateAdjustment,Math.min(PREDICTION_CLOCK.maxRateAdjustment,correction));
+   clock.tick+=dt*MP.tickHz*rate;clock.now=now;
+  }
+  // Packet jitter and RTT changes adjust the rate, never reset the camera's time.
+  return clock.tick;
+ }
  estimatedTick(){return Math.floor(this.estimatedRenderTick());}
  input(command){
   if(!this.state||this.closed||this.disconnected||this.socket.readyState!==1)return;

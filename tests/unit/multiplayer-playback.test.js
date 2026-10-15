@@ -2,6 +2,40 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {RemotePlayback,remotePose,presentRemoteCycles,REMOTE_PLAYBACK} from '../../src/multiplayer/remote-playback.js';
 import {MP} from '../../shared/multiplayer/config.js';
+import {MultiplayerClient} from '../../src/multiplayer/client.js';
+import {LIGHT_CYCLES as C} from '../../shared/simulation/config/light-cycles.js';
+
+test('followed local cycle does not pull the camera backward on jittery snapshots',t=>{
+ let now=0;t.mock.method(performance,'now',()=>now);
+ const client=Object.create(MultiplayerClient.prototype);
+ Object.assign(client,{rtt:80,pending:[],me:{seat:0},control:{turbo:false,brake:false}});
+ const run={cycleRace:{round:-1,site:{x:0,s:0}}},packets=[];
+ const speed=C.speedMetersPerSecond/C.cellMeters,delays=[20,50,15,45,25,40];
+ for(let i=0;i<50;i++){
+  const s=state(i*6);s.clients=[{seat:0}];s.race.cycles=[0,1].map(id=>bike({id,x:i*.05*speed,z:id*3,segment:id,speedMultiplier:1,turboCharge:1,brakeCharge:1}));
+  s.race.trails=s.race.cycles.map(b=>({bikeId:b.id,dir:1,x1:0,z1:b.z,x2:b.x,z2:b.z}));
+  packets.push({arrival:i*50+delays[i%delays.length],state:s});
+ }
+ let index=0,previous=null,oldPrevious=null,oldWorstBackward=0,worstStepError=0;
+ for(now=0;now<2400;now+=1000/144){
+  while(index<packets.length&&packets[index].arrival<=now){const p=packets[index++];client.state=p.state;client.received=p.arrival;}
+  if(!client.state)continue;
+  client.rtt=now<1000?80:120;
+  client.apply(run);const x=run.cycleRace.cycles[0].x;
+  const oldX=(client.state.tick/MP.tickHz+(now-client.received+client.rtt/2)/1000)*speed;
+  if(previous!==null&&now>250){
+   assert(x>previous,'the local follow target must not jump backward');
+   assert(x-previous<=speed/144*1.101,'packet arrivals must not lurch the camera forward');
+   oldWorstBackward=Math.max(oldWorstBackward,oldPrevious-oldX);
+   worstStepError=Math.max(worstStepError,Math.abs(x-previous-speed/144));
+  }
+  previous=x;oldPrevious=oldX;
+ }
+ // A round restart must reset time instead of carrying prediction into the new round.
+ client.state=state(1,2);client.received=now;
+ assert.equal(client.estimatedRenderTick(),1+client.rtt/2*MP.tickHz/1000);
+ console.log(JSON.stringify({followCameraJitter:{oldWorstBackwardMeters:oldWorstBackward*C.cellMeters,newWorstStepErrorMeters:worstStepError*C.cellMeters}}));
+});
 
 const bike=(overrides={})=>({id:0,alive:true,x:0,z:0,dir:1,turns:0,segment:0,...overrides});
 const state=(tick,round=1)=>({tick,race:{round,phase:'racing',cycles:[bike({x:tick/MP.tickHz*8})],trails:[{bikeId:0,dir:1,x1:0,z1:0,x2:tick/MP.tickHz*8,z2:0}]}});

@@ -25,7 +25,8 @@ try{
   const composer=new EffectComposer(renderer),bloom=new UnrealBloomPass(new T.Vector2(1000,700),.6,.5,.85),output=new OutputPass();
   composer.addPass(new RenderPass(scene,camera));composer.addPass(bloom);composer.addPass(output);
   window.setWheelReflection=(phase,strength)=>{source.userData.wheelReflection={phase,strength};};
-  window.capturePhase=progress=>{
+  window.capturePhase=(progress,team=0)=>{
+   source.userData.team=team;
    source.userData.cycleFormationProgress=progress;
    view.prepare();view.edges.render(renderer,view.root,camera);composer.render();
    const result={rayVisible:view.proxies[0].visible,meshHidden:!source.visible,solid:view.proxies[0].material.uniforms.rezSolid.value,sweep:view.proxies[0].material.uniforms.rezSweep.value,depthWrite:view.proxies[0].material.depthWrite};
@@ -38,6 +39,10 @@ try{
   const phase=await page.evaluate(p=>capturePhase(p),progress);
   assert(phase.rayVisible&&phase.meshHidden&&phase.restored);assert.equal(phase.solid,expected.solid);assert.equal(phase.sweep,expected.contours);assert.equal(phase.depthWrite,expected.solid===1);
   await page.screenshot({path:`test-results/cycle-ray-rez-${name}.png`});
+ }
+ for(const team of [1,2,3]){
+  await page.evaluate(team=>capturePhase(.6,team),team);
+  await page.screenshot({path:`test-results/cycle-ray-rez-team-${team}.png`});
  }
  await page.evaluate(()=>{setWheelReflection(.25,1);capturePhase(1);});
  const glint=await page.screenshot({path:'test-results/cycle-wheel-glint-on.png'});
