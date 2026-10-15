@@ -19,6 +19,14 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## First-match jitter and startup update recovery — October 15
+
+- [x] Reproduce clock lag after a two-second first-load rendering pause while snapshots continue. Local prediction and remote playback now re-anchor after a gap longer than their 0.2-second frame bound, instead of discarding elapsed time and advancing at snapshot boundaries while catching up. Normal frames retain continuous rate correction.
+- [x] Reproduce a separate local freeze/jump when high RTT drives prediction into its 200 ms extrapolation cap. Reserve two snapshot intervals below that cap (100 ms maximum RTT-derived presentation lead at current settings). Keep wire timestamps based on estimated authority time, independent of capped visual lead; immediate turns remain local and fractional. Extend input coverage to 500 ms RTT.
+- [x] Remove automatic home-screen service-worker activation/reload. Background updates wait until existing tabs close; explicit `update.html` recovery remains available. Chrome verifies a waiting update does not reload the menu and old-cache/missing-module recovery still works.
+- [x] 565 unit tests, production build, and isolated headless Chrome multiplayer lifecycle checks pass with 250 ms transit each way plus injected jitter. The first browser attempt shared the ordinary development server and timed out on sole-player restart; the isolated arena passed.
+- [ ] Publish and verify production. A 30-second public packet recording had 48.1 ms median, 64.1 ms p95 and 118.2 ms maximum packet gaps, no backward remote poses, and 32 held cycle-frames in 25,923 samples. A separately observed 1.7 m local jump was a race-start transition, not evidence of continuous driving jitter. Synthetic first-load/high-latency regressions reproduce concrete failure modes; user-device confirmation remains necessary.
+
 ## Cycle formation body colors — October 15
 
 - [x] Use the cycle body color for materialization wireframes: copy the actual body material in the mesh renderer and use the existing body-color uniform for contours, grid and halo in the analytic renderer. Preserve line intensity, coverage, halo attenuation, fade stages and solid-body glow timing.
@@ -28,7 +36,7 @@ Extended model and open-source acknowledgments: [Extended credits](credits_exten
 
 - [x] Reproduce backward local follow-target motion under 20–50 ms variable snapshot delivery. Remote cycles already use monotonic buffered playback, but the local prediction/camera clock reset from each packet arrival and RTT sample. Keep a continuous prediction clock, correcting its rate by at most ±10% over a 0.25-second correction interval; reset on round changes. Preserve immediate fractional input prediction, authoritative collision state and the existing 75 ms remote buffer.
 - [x] At 144 Hz rendering, the regression reproduces up to 0.885 m backward travel with the old clock; the new clock has no backward steps and at most 0.0267 m deviation from the nominal per-frame distance. Also exercise an RTT change, new-round reset, immediate input, joined trails and no early future turn. Correct an older test's artificial backward wall-clock jump so its future input occurs after preceding frames.
-- [x] 564 unit tests and production build pass. Headless Chrome on macOS passes the two-rendered-client multiplayer lifecycle test with injected packet delays (`TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs`). Runtime/browser tests do not establish subjective production smoothness. Local fix only; not deployed. Long stalls, speed changes and authoritative input reconciliation can still require position corrections.
+- [x] 564 unit tests and production build pass. Headless Chrome on macOS passes the two-rendered-client multiplayer lifecycle test with injected packet delays (`TRON_MP_JITTER=1 node tests/multiplayer-browser.mjs`). Runtime/browser tests do not establish subjective production smoothness. Deployed in TRON `e5f9d72` through website `59f21d0` (Pages run `38758748338`). Production Chrome received 68 snapshots with no page errors and verified immediate solo restart. Long stalls, speed changes and authoritative input reconciliation can still require position corrections.
 
 ## Evolved AI and trap attribution release — October 15
 

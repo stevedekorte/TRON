@@ -19,7 +19,9 @@ export class RemotePlayback{
  sample(now){
   const last=this.frames.at(-1);if(!last)return null;
   const target=last.state.tick+(now-last.now)*MP.tickHz/1000-REMOTE_PLAYBACK.bufferSeconds*MP.tickHz;
-  if(this.tick===null)this.tick=target;
+  // Loading/background pauses are not slow frames: restore the buffer on resume
+  // instead of spending seconds pinned to packet boundaries while catching up.
+  if(this.tick===null||now-this.lastNow>REMOTE_PLAYBACK.maxFrameSeconds*1000)this.tick=target;
   else{
    const dt=Math.max(0,Math.min(REMOTE_PLAYBACK.maxFrameSeconds,(now-this.lastNow)/1000));
    const expected=this.tick+dt*MP.tickHz;

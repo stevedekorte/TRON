@@ -48,7 +48,7 @@ test('fixed-wall approaches compare immediate scheduling with former eight-tick 
 });
 
 test('local keypress turns at its fractional position immediately, with a joined trail and no lead',t=>{
- for(const rtt of [0,80])for(const speed of [1,C.turboSpeedMultiplier]){
+ for(const rtt of [0,80,500])for(const speed of [1,C.turboSpeedMultiplier]){
   const {room}=nearWall(speed,12),state=room.state(),me=state.clients[0],source=state.race.cycles[me.seat];
   source.segment=0;state.race.trails=[{bikeId:source.id,team:source.team,dir:1,x1:source.x-2,z1:0,x2:source.x,z2:0}];
   let now=1000;t.mock.method(performance,'now',()=>now);

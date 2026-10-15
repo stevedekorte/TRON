@@ -9,8 +9,12 @@ try{
  const context=await browser.newContext({viewport:{width:1100,height:750},reducedMotion:'reduce'}),errors=[],requests=[];
  if(process.env.TRON_MP_JITTER==='1')await context.routeWebSocket('**/api/multiplayer*',socket=>{
   const server=socket.connectToServer();let sequence=0,lastDue=0;
+  const transit=Number(process.env.TRON_MP_LATENCY_MS||0);
+  if(transit)socket.onMessage(message=>{
+   const timer=setTimeout(()=>{deliveryTimers.delete(timer);server.send(message);},transit);deliveryTimers.add(timer);
+  });
   server.onMessage(message=>{
-   const delay=[20,50,15,45,25,40][sequence++%6],due=Math.max(lastDue+1,Date.now()+delay);lastDue=due;
+   const delay=transit+[20,50,15,45,25,40][sequence++%6],due=Math.max(lastDue+1,Date.now()+delay);lastDue=due;
    const timer=setTimeout(()=>{deliveryTimers.delete(timer);socket.send(message);},Math.max(0,due-Date.now()));deliveryTimers.add(timer);
   });
  });

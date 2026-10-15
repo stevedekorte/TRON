@@ -7,7 +7,7 @@ const HASHES = Object.fromEntries(Object.entries(__ASSET_HASHES__).map(([path,ha
 const METADATA = new URL('.cache-asset-hashes.json',self.registration.scope).href;
 const ALIASES = new Map(Object.entries(__ASSET_ALIASES__).map(([old,current])=>[new URL(old,self.registration.scope).href,new URL(current,self.registration.scope).href]));
 self.addEventListener('install', event => {
-  // Wait until the home screen or explicit update page requests activation.
+  // Activate after existing tabs close, or when the explicit update page requests it.
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     try {

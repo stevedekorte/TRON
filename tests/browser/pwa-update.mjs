@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
-let updated=false,brokenModule=false,updateVisits=0;
+let updated=false,brokenModule=false,updateVisits=0,newest=false;
 const root=resolve('dist'),scope='/fun/TRON/';
 const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.wasm':'application/wasm'};
 const server=createServer(async(req,res)=>{
@@ -17,6 +17,7 @@ const server=createServer(async(req,res)=>{
   let data=await readFile(file);
   if(!updated&&file.endsWith('/index.html'))data=Buffer.from('<html><body>OLD CACHED BUILD<script>navigator.serviceWorker.register("./sw.js")</script></body></html>');
   if(!updated&&file.endsWith('/sw.js'))data=Buffer.from(data.toString().replace(/await cache\.put\(METADATA,[^\n]+\n/,'').replace(/self.addEventListener\('message',event=>\{[\s\S]*?\n\}\);/,'').replace(/const CACHE = ([^;]+);/,'const CACHE = $1 + "-old";'));
+  if(newest&&file.endsWith('/sw.js'))data=Buffer.from(data.toString().replace(/const CACHE = ([^;]+);/,'const CACHE = $1 + "-next";'));
   res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream','Cache-Control':'no-store'}).end(data);
  }catch{res.writeHead(404).end();}
 });
@@ -51,5 +52,12 @@ try{
  assert(updateVisits>visits,'Reload must visit the uncached update page');
  assert.equal(new URL(recovery.url()).pathname,scope);
  console.log('Missing multiplayer module recovers through the update page, including a failed first service-worker installation.');
+ newest=true;
+ await recovery.evaluate(async()=>{window.updateNavigationMarker='menu-stays-open';const r=await navigator.serviceWorker.getRegistration();await r.update();});
+ await recovery.waitForFunction(async()=>!!(await navigator.serviceWorker.getRegistration())?.waiting,{},{timeout:60000});
+ await recovery.waitForTimeout(1500);
+ assert.equal(await recovery.evaluate(()=>window.updateNavigationMarker),'menu-stays-open','background update must not reload the menu');
+ assert(await recovery.evaluate(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting),'update stays waiting while app is open');
+ console.log('Background update waits without restarting the program menu.');
  console.log('Update page replaces an old cache-first worker and cached HTML with the current playable build.');
 }finally{await browser.close();await new Promise(r=>server.close(r));}

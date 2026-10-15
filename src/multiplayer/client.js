@@ -4,7 +4,7 @@ import {MP} from '../../shared/multiplayer/config.js';
 import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../../shared/simulation/config/light-cycles.js';
 import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 
-export const PREDICTION_CLOCK=Object.freeze({maxRateAdjustment:.1,correctionSeconds:.25,maxFrameSeconds:.2});
+export const PREDICTION_CLOCK=Object.freeze({maxRateAdjustment:.1,correctionSeconds:.25,maxFrameSeconds:.2,reserveSnapshots:2});
 
 // Predict motion only. Collisions, eliminations, seats and trail history remain server-owned.
 function move(b,seconds,control){
@@ -50,9 +50,14 @@ export class MultiplayerClient{
  }
  estimatedRenderTick(){
   const now=performance.now(),round=this.state.race.round;
-  const target=this.state.tick+((now-this.received)+this.rtt/2)*MP.tickHz/1000;
+  // Leave room for two ordinary snapshot intervals before the extrapolation cap.
+  // Otherwise a large RTT pins every frame to the cap, making the follow camera
+  // freeze and advance a whole packet's distance whenever another update arrives.
+  const maxLeadTicks=Math.max(0,MP.maxFutureTicks-PREDICTION_CLOCK.reserveSnapshots*MP.snapshotTicks);
+  const leadTicks=Math.min(this.rtt/2*MP.tickHz/1000,maxLeadTicks);
+  const target=this.state.tick+(now-this.received)*MP.tickHz/1000+leadTicks;
   let clock=this.predictionClock;
-  if(!clock||clock.round!==round)clock=this.predictionClock={round,tick:target,now};
+  if(!clock||clock.round!==round||now-clock.now>PREDICTION_CLOCK.maxFrameSeconds*1000)clock=this.predictionClock={round,tick:target,now};
   else{
    const dt=Math.max(0,Math.min(PREDICTION_CLOCK.maxFrameSeconds,(now-clock.now)/1000));
    const expected=clock.tick+dt*MP.tickHz;
@@ -63,14 +68,16 @@ export class MultiplayerClient{
   // Packet jitter and RTT changes adjust the rate, never reset the camera's time.
   return clock.tick;
  }
- estimatedTick(){return Math.floor(this.estimatedRenderTick());}
+ // Wire timestamps estimate authority time; presentation's capped lead must not
+ // make valid inputs appear too old on a high-latency connection.
+ estimatedTick(){return Math.floor(this.state.tick+(performance.now()-this.received+this.rtt/2)*MP.tickHz/1000);}
  input(command){
   if(!this.state||this.closed||this.disconnected||this.socket.readyState!==1)return;
   const control={turbo:!!command.cycleTurbo,brake:!!command.cycleSlow},turn=Math.sign(command.cycleTurn||0);
   const now=performance.now();if(!turn&&control.turbo===this.control.turbo&&control.brake===this.control.brake&&now-this.lastSent<250)return;
   this.control=control;this.lastSent=now;
   const predictionTick=this.estimatedRenderTick();
-  const packet={type:'input',round:this.state.race.round,seq:++this.seq,tick:Math.floor(predictionTick),turn,...control};
+  const packet={type:'input',round:this.state.race.round,seq:++this.seq,tick:this.estimatedTick(),turn,...control};
   this.socket.send(JSON.stringify(packet));
   if(this.me.seat!==null&&this.state.race.phase==='racing'&&this.state.race.cycles[this.me.seat]?.alive)this.pending.push({...packet,predictionTick});
   if(this.pending.length>32)this.pending.shift();
