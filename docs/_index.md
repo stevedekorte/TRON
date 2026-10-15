@@ -6,6 +6,18 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Reference organization by subject — October 15
+
+- [x] Reorganized local `docs/references` material into subject folders, merging image/video locations for cycles, CLU/tanks and Recognizers. Maze trace overlays now live under `mazes/`; generator and documentation-copy paths follow them. Updated reference-page links and added subject aliases for the archived film collection while retaining legacy URL mappings. Original files and the existing archived collection are preserved; Finder metadata from the old folders was moved to temporary storage. Verified all 19 reference-page local links, both built trace backgrounds, the organization invariants, production build/asset audit and Worker dry-run.
+
+
+## Tight spiral and pocket avoidance — October 15
+
+- [x] Shared solo/MP AI now checks recent turn handedness. After two same-direction turns, another turn that leaves less than 2.5 cycle lengths for the following corner is marked risky; wide loops and opposite-direction exits remain allowed. This is a bounded warning heuristic, not a guarantee against every self-trap.
+- [x] Replace occupancy-only room estimates with bounded swept-edge reachability after projecting 0.6 seconds of travel and the proposed own trail. Respect fractional walls, trail lifetime and emitter clearance. Prefer safe exits over proven small pockets; exhausted search budgets do not prove confinement. Cap each search at 512 segment tests and reserve 2,048 tests for safety checks. Reuse tactical results in the emergency guard instead of choosing right on equal-clearance ties; absent cached scores, prefer the target-facing direction when adequately clear. Existing reaction delays remain intact.
+- [x] Validation on Apple M2 Max / Node 22.22: all 592 unit tests pass, including both handednesses, wide-loop exceptions, fractional/expired trails, budget exhaustion, opponent-facing escape ties and a simulated narrow-pocket approach. `node tools/ai/stress.mjs`: 12 bots / 2,048 segments, AI p99 0.615 ms, maximum 0.952 ms, no overflow. Headless Chrome 155 (`node tests/browser/cycle-ai.mjs --trial`): rendered-frame AI p99 0.60 ms, dense AI p99 0.40 ms, no page errors. Inspected the rendered capture; this does not establish subjective play quality.
+- [x] Four paired 90-second-limit matches (seeds 1982–1985), using isolated baseline/current snapshots with self-wall death instrumentation: self-wall crashes 32 → 23, direct opponent wall kills 6 → 10. Per-match current self-wall totals 5/7/5/6. Small exploratory sample, not proof of general improvement; unavoidable and other self-traps remain. User reports the AI is becoming more interesting to play against. No new training or deployment is part of this change.
+
 ## Selected offense policy release — October 15
 
 - [x] Final bounded run: population 4, one generation, three training seeds, eight final seeds, 60-second horizon, two workers, seed offset 350000, initial `cycle-ai-early-offense-round1.json`. Saved `test-results/cycle-ai-early-offense-round2.json` plus checkpoint. The new mutation earned 2 wins / 7 direct kills / 11 trap assists in 32 final matches; previous candidate `approach-340000-0-0` earned 4 / 9 / 9; deployed `aggression-1-0` earned 4 / 7 / 4. Selected the previous candidate rather than the new mutation. Its combined two fresh-seed evaluations total 7 wins / 19 kills / 15 assists across 56 matches, versus deployed 6 / 15 / 8. These remain small, correlated seat samples; the second evaluation's paired fitness improved in four of eight groups, so gains are not uniform.

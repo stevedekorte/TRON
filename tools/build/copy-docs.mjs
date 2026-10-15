@@ -7,7 +7,7 @@ async function visit(dir){
   if(e.name==='colvmn')continue;
   const p=dir+'/'+e.name;
   if(e.isDirectory())await visit(p);
-  else if(['_index.md','index.html'].includes(e.name)||dir==='docs'&&/\.(txt|xml)$/.test(e.name)||dir==='docs/references'&&extname(p)==='.svg')pages.push(p);
+  else if(['_index.md','index.html'].includes(e.name)||dir==='docs'&&/\.(txt|xml)$/.test(e.name)||dir==='docs/references/mazes'&&extname(p)==='.svg')pages.push(p);
  }
 }
 await visit('docs');

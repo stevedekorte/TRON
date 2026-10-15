@@ -132,3 +132,64 @@ test('empty brake charge is neither a tactical candidate nor an emergency comman
  assert(!evaluateCandidate(q,b,0,-1,45,1,DEFAULT_POLICY,{},1).safe);
  b.z=-83.8;b.speedMultiplier=2.5;planCycleAI(r);assert.equal(b.aiBrake,false);
 });
+
+test('emergency clearance ties turn toward the opponent on either side, not always right',()=>{
+ for(const side of [-1,1]){
+  const r=fixture(),[b,enemy]=r.cycles;b.z=-83.8;
+  Object.assign(enemy,{x:side*20,z:-70});
+  // No scheduled tactical plan yet: exercise the emergency fallback itself.
+  const command=planCycleAI(r,1/120).get(b.id);
+  assert.equal(command.dir,side<0?3:1);assert.equal(command.turn,0,'reaction delay still applies');
+ }
+});
+
+function selfPocket(){
+ const r=fixture();r.cycles[1].x=-20;
+ // Own spiral returns beside its start, leaving a narrow mouth. Turning east
+ // lays a new trail through that mouth; turning west remains an escape.
+ r.trails=[[0,-2,6,-2],[6,-2,6,2],[6,2,0,2],[0,2,0,.5],[0,-2,0,-.5]]
+  .map(([x1,z1,x2,z2])=>({bikeId:0,x1,z1,x2,z2}));
+ return r;
+}
+test('projected own trail exposes the small pocket behind a narrow spiral mouth',()=>{
+ const r=selfPocket(),b=r.cycles[0],q=new ArenaQueries();q.rebuild(r);
+ assert(q.clearance(b,1)>5,'immediate forward room alone looks fine');
+ assert(q.space(b,1)<.3);assert(q.spaceClosed);assert(q.spaceCount<L.spaceMinExitCells);
+ assert.equal(q.space(b,3),1);assert(!q.spaceClosed);
+ const command=planCycleAI(r,0).get(b.id);
+ assert.equal(command.dir,3,'take the open exit instead of closing the spiral');
+ assert(command.candidates.some(c=>c.dir===1&&c.safe&&c.confined));
+});
+test('an opponent inside a self-made pocket does not override an available escape',()=>{
+ const r=selfPocket();r.cycles[1].x=4;r.cycles[1].z=1;
+ assert.equal(planCycleAI(r,0).get(0).dir,3);
+});
+test('space queries use actual fractional/expired trails and do not label budget exhaustion as a proven pocket',()=>{
+ const r=selfPocket(),q=new ArenaQueries(),b=r.cycles[0];
+ r.trails.forEach(t=>{t.z1+=.1;t.z2+=.1;});q.rebuild(r);q.space(b,1);assert(q.spaceClosed);
+ r.trails.forEach(t=>t.dyingAt=0);r.time=5;q.rebuild(r);
+ assert.equal(q.space(b,1),1);assert(!q.spaceClosed);
+ q.tests=L.segmentTestsPerTick-L.spaceSafetyReserveTests;
+ q.space(b,1,45);assert(!q.spaceClosed);assert(q.tests<=L.segmentTestsPerTick-L.spaceSafetyReserveTests);
+});
+test('a third same-handed corner warns about a tight fourth corner, while wide loops remain allowed',()=>{
+ for(const hand of [1,3])for(const gap of [1,10]){
+  const r=fixture(),b=r.cycles[0],sign=hand===1?1:-1;
+  Object.assign(b,{x:sign*8,z:gap,dir:2});
+  r.trails=[
+   {bikeId:0,dir:0,x1:0,z1:15,x2:0,z2:0},
+   {bikeId:0,dir:hand,x1:0,z1:0,x2:sign*8,z2:0},
+   {bikeId:0,dir:2,x1:sign*8,z1:0,x2:sign*8,z2:gap},
+  ];
+  const q=new ArenaQueries();q.rebuild(r);assert.equal(q.turnHandedness(b),hand);
+  q.space(b,(b.dir+hand)%4);assert.equal(q.spaceTightSpiral,gap===1);
+  q.space(b,(b.dir+4-hand)%4);assert(!q.spaceTightSpiral,'turning the other way breaks the spiral');
+ }
+});
+test('cycle turns away before its new wall closes a narrow pocket',()=>{
+ const r=selfPocket(),b=r.cycles[0];Object.assign(b,{x:-2,previousX:-2,dir:1});
+ Object.assign(r.cycles[1],{x:20,z:20,previousX:20,previousZ:20});
+ assert.notEqual(planCycleAI(r,0).get(0).dir,1);
+ for(let tick=0;tick<120;tick++)updateCycleRace(r,1/120);
+ assert(b.alive);assert(b.x<0,'stays outside its own pocket');
+});

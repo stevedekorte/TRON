@@ -3,9 +3,14 @@ title: References
 subtitle: Visual direction and source images
 ---
 
+## Reference folders
+
+Reference material is grouped by subject, with stills, clips and studies kept together: `cycles/`, `clu-and-tanks/`, `recognizers/`, `mazes/`, `carrier/`, `solar-sailer/`, `mcp/` and `terminals/`. Cycle markings and arena studies, Recognizer attacks and spotlights, and carrier escape-pod references have their own subject subfolders. New local screenshots live here; the previously archived collection remains under `references/film`, served through the subject paths recorded in `assets/path-map.json`. Older URLs remain compatibility aliases. Video files remain ignored by Git.
+
+
 ## Central labyrinth trace — September 23
 
-The user supplied [Big labyrinth](images/mazes/Big%20labyrinth.png) as the fifth maze blueprint. [Trace overlay](labyrinth-trace.svg) shows the extracted contours against the source. Blue regions become walls; dark regions remain open. The image yields 116 wall islands and three interior holes, simplified to a one-pixel contour tolerance, then scaled at 2.4 m/pixel with 54 m walls. This keeps the finer passages usable by tanks while preserving the circular court.
+The user supplied [Big labyrinth](mazes/Big%20labyrinth.png) as the fifth maze blueprint. [Trace overlay](mazes/labyrinth-trace.svg) shows the extracted contours against the source. Blue regions become walls; dark regions remain open. The image yields 116 wall islands and three interior holes, simplified to a one-pixel contour tolerance, then scaled at 2.4 m/pixel with 54 m walls. This keeps the finer passages usable by tanks while preserving the circular court.
 
 `src/levels/labyrinth-outlines.js` contains the committed contour data. To retrace the PNG, run `scripts/trace-labyrinth.py` in a Python environment with `opencv-python-headless`. Normal builds require no Python: `npm run docs` regenerates the SVG from committed outlines. Both blueprint mazes share `src/levels/outline-maze.js` for collision and triangulation.
 
@@ -31,7 +36,7 @@ The user-supplied Maze Blue Print.png is traced as 20 roof outlines, including c
 
 The roof uses triangulation of each complete outline. Driving uses the original polygon perimeter; projectile and sight rays use the same triangulated solid, preserving open notches. Both layouts share the existing tank, aircraft AI, materials and wall detailing.
 
-[Open the trace overlay](maze-trace.svg): pale yellow outlines show the hand trace against the source. Regenerate it with `node scripts/trace-blueprint.mjs`.
+[Open the trace overlay](mazes/maze-trace.svg): pale yellow outlines show the hand trace against the source. Regenerate it with `node scripts/trace-blueprint.mjs`.
 
 ## Inspected images
 
@@ -48,21 +53,21 @@ The user supplied 15 reference images, including the new Maze Details image, and
 
 | Frame | Visual evidence |
 | --- | --- |
-| [Maze Blue Print](images/Maze%20Blue%20Print.png) | Top-down source for the optional traced layout. |
-| [Maze Top 1](images/Maze%20Top%201.png) | Broad blue roofs, diagonal tips and dark channels. |
-| [Maze Top 2](images/Maze%20Top%202.png) | Additional maze forms and wall faces. |
-| [Maze Entrance 1](images/Maze%20Entrance%201.png) | Entry geometry and tank approach. |
-| [Maze Entrance 2](images/Maze%20Entrance%202.png) | Grid-to-corridor transition. |
-| [Maze Details](images/Maze%20Details.png) | Faint vertical seams, thin blue-gray edge highlights and stepped, angled ledges. |
-| [CLU Close Up](images/CLU%20Close%20Up.png) | Cannon, offset canopy, blue highlights and restrained red trim. |
-| [CLU POV](images/CLU%20POV.png) | Tank point of view and nearby geometry. |
-| [CLU Firing](images/CLU%20Firing.png) | Cannon firing reference. |
-| [CLU Persued](images/CLU%20Persued.png) | Pursuit and relative vehicle scale. |
-| [Inside Maze](images/Inside%20Maze.png) | Rear/side tank proportions against dark walls and blue floor. |
-| [CLU Wall Collision](images/CLU%20Wall%20Collision.png) | Tank and wall contact reference. |
-| [Recognizers Decend](images/Recognizers%20Decend.png) | Recognizer approach and underside. |
-| [Opening Shot 1](images/Opening%20Shot%201.png) | Terminal/opening reference. |
-| [Opening Shot 2](images/Opening%20Shot%202.png) | Terminal/opening reference. |
+| [Maze Blue Print](mazes/Maze%20Blue%20Print.png) | Top-down source for the optional traced layout. |
+| [Maze Top 1](mazes/Maze%20Top%201.png) | Broad blue roofs, diagonal tips and dark channels. |
+| [Maze Top 2](mazes/Maze%20Top%202.png) | Additional maze forms and wall faces. |
+| [Maze Entrance 1](mazes/Maze%20Entrance%201.png) | Entry geometry and tank approach. |
+| [Maze Entrance 2](mazes/Maze%20Entrance%202.png) | Grid-to-corridor transition. |
+| [Maze Details](mazes/Maze%20Details.png) | Faint vertical seams, thin blue-gray edge highlights and stepped, angled ledges. |
+| [CLU Close Up](clu-and-tanks/CLU%20Close%20Up.png) | Cannon, offset canopy, blue highlights and restrained red trim. |
+| [CLU POV](clu-and-tanks/CLU%20POV.png) | Tank point of view and nearby geometry. |
+| [CLU Firing](clu-and-tanks/CLU%20Firing.png) | Cannon firing reference. |
+| [CLU Persued](clu-and-tanks/CLU%20Persued.png) | Pursuit and relative vehicle scale. |
+| [Inside Maze](mazes/Inside%20Maze.png) | Rear/side tank proportions against dark walls and blue floor. |
+| [CLU Wall Collision](clu-and-tanks/CLU%20Wall%20Collision.png) | Tank and wall contact reference. |
+| [Recognizers Decend](recognizers/Recognizers%20Decend.png) | Recognizer approach and underside. |
+| [Opening Shot 1](terminals/Opening%20Shot%201.png) | Terminal/opening reference. |
+| [Opening Shot 2](terminals/Opening%20Shot%202.png) | Terminal/opening reference. |
 
 ## Applied changes
 
@@ -87,18 +92,18 @@ The user estimated upright Recognizer feet/legs at about 30 feet. The current ha
 
 ## Recognizer crush animation
 
-The four user-supplied frames in images/recognizer attack animation show the legs turning and sliding inward until the stems meet, with the feet facing outward. The model adapter separates the original GLB triangles at the shoulder seams and animates those parts. The 1.3-second fold and accelerated drop are inferred timing, since these stills do not provide frame timestamps. The existing source model retains its simpler wedge-shaped feet.
+The four user-supplied frames in recognizers/attack-animation show the legs turning and sliding inward until the stems meet, with the feet facing outward. The model adapter separates the original GLB triangles at the shoulder seams and animates those parts. The 1.3-second fold and accelerated drop are inferred timing, since these stills do not provide frame timestamps. The existing source model retains its simpler wedge-shaped feet.
 
 
 Recognizer breakup study: inspected the local video at 106–116 s, including three frames per second across impact and separation. Visible traits are brief warm-white/yellow flashes, large angular body/leg sections separating, tumbling fragments and falling pieces rather than a sustained fireball. Runtime effects use randomized partitions of the actual GLB surfaces; fracture boundaries are procedural and not an exact reconstruction of film geometry.
 
 ## Carrier final-shot study
 
-Source supplied by user: `videos/carrier and solar sailer.mp4`, 120.604 seconds, 640 × 290, 30 fps. `images/carrier-tail-study.jpg` samples 112–119.5 seconds at 2 fps, row-major; `images/carrier-beacon-study.jpg` samples 114–115.9 at 10 fps. Red point lights at curved supports and tower corners visibly vary; continuous red outlines remain lit. White hanging lamp pairs appear steady. Cyan/green brightness variation is ambiguous because the viewpoint moves and the objects recede.
+Source supplied by user: `carrier/carrier and solar sailer.mp4`, 120.604 seconds, 640 × 290, 30 fps. `carrier/carrier-tail-study.jpg` samples 112–119.5 seconds at 2 fps, row-major; `carrier/carrier-beacon-study.jpg` samples 114–115.9 at 10 fps. Red point lights at curved supports and tower corners visibly vary; continuous red outlines remain lit. White hanging lamp pairs appear steady. Cyan/green brightness variation is ambiguous because the viewpoint moves and the objects recede.
 
 Runtime approximation: only small red lamp meshes pulse, about one second per cycle with a 0.34-second envelope (short attack and release); three offset groups avoid synchronized flashing. This is a visual estimate, not a frame-exact recovered animation. White, cyan, green and outline materials remain steady pending clearer evidence.
 
 
 ### Recognizer spotlight stills
 
-User-supplied `images/Recognizer Spotlight/IMG_3514.jpeg` through `IMG_3520.jpeg` show a crown-mounted white/cyan core and diffuse blue-violet halo. IMG_3520 provides the clearest close-up of the front projector. The first procedural rendering uses these colors and soft boundaries. Sweep timing and search behavior are inferred; no video was available to measure them.
+User-supplied `recognizers/spotlight/IMG_3514.jpeg` through `IMG_3520.jpeg` show a crown-mounted white/cyan core and diffuse blue-violet halo. IMG_3520 provides the clearest close-up of the front projector. The first procedural rendering uses these colors and soft boundaries. Sweep timing and search behavior are inferred; no video was available to measure them.

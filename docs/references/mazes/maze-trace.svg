@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941"><image href="images/Maze%20Blue%20Print.png" width="1672" height="941"/><g fill="#ffe588" fill-opacity=".07" stroke="#ffe588" stroke-width="2" stroke-linejoin="round"><polygon points="253,154 337,92 337,36 579,36 579,84 425,84 425,154"><title>Wall 1</title></polygon>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941"><image href="Maze%20Blue%20Print.png" width="1672" height="941"/><g fill="#ffe588" fill-opacity=".07" stroke="#ffe588" stroke-width="2" stroke-linejoin="round"><polygon points="253,154 337,92 337,36 579,36 579,84 425,84 425,154"><title>Wall 1</title></polygon>
 <polygon points="471,111 641,111 641,155 471,155"><title>Wall 2</title></polygon>
 <polygon points="611,0 725,0 725,87 903,87 903,155 853,155 853,116 675,116 675,46 611,46"><title>Wall 3</title></polygon>
 <polygon points="768,0 819,0 819,36 1110,36 1110,67 1019,67 1019,114 1294,114 1342,155 959,155 959,67 768,67"><title>Wall 4</title></polygon>

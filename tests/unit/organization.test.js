@@ -8,7 +8,7 @@ test('multiplayer authority stays within browser-free shared modules',async()=>{
 test('asset aliases resolve without pointing outside controlled asset directories',async()=>{
  const paths=JSON.parse(await readFile('assets/path-map.json','utf8'));
  for(const [old,current] of Object.entries(paths)){
-  assert.match(old,/^(public|docs)\//);assert.match(current,/^(public\/assets|assets\/(runtime|source)|references)\//);
+  assert.match(old,/^(public|docs)\//);assert.match(current,/^(public\/assets|assets\/(runtime|source)|references|docs\/references\/(cycles|clu-and-tanks|recognizers|mazes))\//);
   assert(!current.split('/').includes('..'));assert((await stat(current)).isFile(),current);
  }
 });

@@ -1,5 +1,5 @@
 import {sampleTurnReactionSeconds} from './reaction.js';
-import {LIGHT_CYCLES as C} from '../config/light-cycles.js';
+import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../config/light-cycles.js';
 import {ArenaQueries} from './geometry.js';
 import {AI_LIMITS as L,DEFAULT_POLICY,validatePolicy} from './config.js';
 import {evaluateCandidate} from './evaluate.js';
@@ -39,27 +39,37 @@ export function planCycleAI(r,elapsed=r.elapsed??r.time){
   const danger=Math.min(clearance,traffic)<guardCells;
   if((ctx.tick+b.id)%L.planTicks===0&&state.lastDecisionTick!==ctx.tick&&ctx.plans<L.maxPlansPerTick){
    ctx.plans++;state.decisions++;state.lastDecisionTick=ctx.tick;let best=null,count=0;
+   const hand=q.turnHandedness(b);
    for(const dir of [b.dir,(b.dir+1)%4,(b.dir+3)%4]){
-    const clear=q.clearance(b,dir),space=q.space(b,dir);
+    const clear=q.clearance(b,dir),space=q.space(b,dir,clear,hand),spiralRisk=q.spaceTightSpiral,confined=q.spaceClosed||spiralRisk;
     for(const pedal of [0,1,-1]){
      const candidate=evaluateCandidate(q,b,dir,pedal,clear,space,state.policy,state.candidates[count++],state.targetId);
+     candidate.confined=confined;candidate.spiralRisk=spiralRisk;
      if(dir!==state.dir)candidate.score-=state.policy.switchCost;
-     if(candidate.safe&&(!best||candidate.score>best.score))best=candidate;
+     if(candidate.safe&&(!best||best.confined&&!candidate.confined||best.confined===candidate.confined&&candidate.score>best.score))best=candidate;
     }
    }
    if(best){
     const threshold=best.score-Math.min(L.nearBestTolerance,state.policy.variation);let eligible=0,choice=best;
-    for(let i=0;i<count;i++){const c=state.candidates[i];if(c.safe&&c.score>=threshold&&random(state)<1/++eligible)choice=c;}
+    for(let i=0;i<count;i++){const c=state.candidates[i];if(c.safe&&c.confined===best.confined&&c.score>=threshold&&random(state)<1/++eligible)choice=c;}
     state.dir=choice.dir;state.pedal=choice.pedal;state.reason=choice.reason;if(choice.overtake>0)ctx.totals.overtakePlans++;if(choice.cutoff>0)ctx.totals.cutoffPlans++;if(choice.pedal===1)ctx.totals.turboPlans++;if(choice.pedal===-1)ctx.totals.brakePlans++;
    }
   }
   if(danger){
-   ctx.guards++;ctx.totals.guardTicks++;state.pedal=(b.brakeCharge??1)>0?-1:0;state.reason='escape';let best=0,dir=b.dir;
+   ctx.guards++;ctx.totals.guardTicks++;state.pedal=(b.brakeCharge??1)>0?-1:0;state.reason='escape';let best=-Infinity,bestRoom=0,bestConfined=false,dir=b.dir;
+   const enemy=r.cycles.find(c=>c.id===state.targetId&&c.alive&&!c.escaped);
    for(const d of [b.dir,(b.dir+1)%4,(b.dir+3)%4]){
     const room=Math.min(q.clearance(b,d,guardCells+3),q.trafficClearance(b,d,L.guardSeconds+L.safetySeconds,Math.max(speed,C.speedMetersPerSecond)));
-    if(room>best){best=room;dir=d;}
+    if(room<=0)continue;
+    const cached=ctx.tick-(state.lastDecisionTick??-Infinity)<=L.planTicks?state.candidates.find(c=>c.dir===d&&c.pedal===0):null;
+    const [dx,dz]=DIR[d],toward=enemy?((enemy.x-b.x)*dx+(enemy.z-b.z)*dz)/Math.max(1,Math.hypot(enemy.x-b.x,enemy.z-b.z)):0;
+    // Adequate immediate clearance is a gate, not a right-turn tie breaker.
+    // Reuse bounded tactical work; never run extra floods on every guard tick.
+    const adequate=room>=guardCells,confined=!!cached?.confined,value=cached?.score??toward;
+    const better=adequate ? bestRoom<guardCells||(bestConfined!==confined?!confined:value>best) : bestRoom<guardCells&&room>bestRoom;
+    if(better){best=value;bestRoom=room;bestConfined=confined;dir=d;}
    }
-   state.dir=dir;if(dir!==b.dir&&best>=guardCells)state.pedal=0;
+   state.dir=dir;if(dir!==b.dir&&bestRoom>=guardCells)state.pedal=0;
   }
   const delta=(state.dir-b.dir+4)%4;
   if(delta===1||delta===3){
