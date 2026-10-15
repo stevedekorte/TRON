@@ -19,6 +19,19 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## AI reaction fairness and overtake setup — October 15
+
+- [x] The evolved controller previously bypassed the classic reaction profile: its emergency guard could turn on the next 120 Hz tick. Tactical and emergency turns now schedule a seeded, per-intention delay; changing the intended turn restarts the delay. Keep the six-tick turn cooldown. Human input remains immediate.
+- [x] Delay is `max(0.08 seconds, 0.65 × cycle-length travel time) + U(0,1) × cycle-length travel time`, sampled at the current speed and rounded up to simulation ticks. A 10,000-sample seeded check found 32.57% of braking-speed reactions, 12.28% at cruise and 0% at full turbo fit within one cycle length. This is a reaction-to-new-intention constraint, not a ban on preplanned close-clearance turns. At changing speed, traveled distance naturally differs from the sampling speed.
+- [x] Allow turbo to set up an overtake beside a nearby parallel enemy before a direct cutoff exists. Require actual forecasted ground gain, available charge/reserve, clearance and a safe exit. Reward progress toward the lead needed for a subsequent crossing, not mere proximity. Braking remains a timing/escape candidate; empty brake reserves cannot produce a braking request. Keep the same nine candidates and existing query/work caps.
+- [x] All 577 unit tests and production build pass. Three 60-second, 12-cycle smoke matches yielded five direct wall kills versus three with the reaction change alone. AI p99 was 0.141–0.262 ms and full-tick p99 0.211–0.427 ms; one cold full-tick maximum was 10.69 ms, similar to the reaction-only baseline's 10.68 ms. This small sample does not establish improved win rate or player enjoyment. Reproducible artifacts: `test-results/cycle-ai-reaction-smoke.jsonl` and `test-results/cycle-ai-overtake-smoke.jsonl`. These AI changes are local and have not been evolved or deployed.
+- [x] Headless Chrome 155 on macOS passed the solo AI browser check with no page errors: live-frame AI p99 0.70 ms, dense 12-cycle/2,048-trail fixture p99 0.50 ms. Inspected `test-results/cycle-ai-arena.png`; report is `test-results/cycle-ai-browser.json`. This checks rendering and execution, not subjective driving quality.
+- [ ] Next training proposal: mix 30–60-second interaction scenarios with full arena matches; add earlier confirmed kill/trap rewards, a modest no-offense outcome penalty, and bounded progress toward attack positions rather than per-frame proximity rewards. Count a victim once across direct/assist credit, retain performance gates, and evaluate unseen seeds plus human play. Existing training already limits matches to 180 seconds and rewards faster wins, but not earlier individual kills. Do not promote a policy solely for surviving longer or increasing proximity.
+
+## Production release — October 15
+
+- [x] Deployed TRON `ed06122` via website `7176923`, Pages run `38789514609`, and Worker version `06141c2d-3243-4d4d-8c4b-6799d21eece6`. All 574 release tests, production build and Worker dry-run passed. Public Chrome verified protocol 3, 106 decoded snapshots, camera readiness, materialization and solo restart into racing with no page errors. This includes spectator framing, five-second result hold, team formation, human wire slashes, solo materialization audio and the revised error panel. The subsequent AI changes above are not part of this release.
+
 ## Multiplayer materialization sound — October 15
 
 - [x] MP now plays the solo `cycle-entry-startup.wav` cue 0.3 seconds into materialization, at the same gain and matching playback offset. Do not replay the transport dialogue; stop the cue at the same formation/launch boundary as solo. Suppress the older generic cue that fired prematurely when the roster changed.

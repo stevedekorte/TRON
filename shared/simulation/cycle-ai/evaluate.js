@@ -13,7 +13,7 @@ export function evaluateCandidate(q,b,dir,pedal,clear,space,policy,out,targetId=
  const leg=Math.min(cells,Math.max(0,clear-required)),ex=b.x+dx*leg,ez=b.z+dz*leg;
  const exitLeft=q.clearance(b,(dir+3)%4,required+2,ex,ez),exitRight=q.clearance(b,(dir+1)%4,required+2,ex,ez);
  out.exit=Math.max(exitLeft,exitRight);out.safe&&=out.exit>required||clear>cells+required;
- let pressure=0,ally=0,attack=0;
+ let pressure=0,ally=0,attack=0,overtake=0;
  for(const other of q.race.cycles){
   if(!other.alive||other===b||other.escaped)continue;
   const [ox,oz]=DIR[other.dir],distance=Math.hypot(other.x-b.x,other.z-b.z)*C.cellMeters;
@@ -22,6 +22,18 @@ export function evaluateCandidate(q,b,dir,pedal,clear,space,policy,out,targetId=
   const otherSpeed=C.speedMetersPerSecond*(other.speedMultiplier??1);
   const tx=other.x+ox*otherSpeed*.8/C.cellMeters,tz=other.z+oz*otherSpeed*.8/C.cellMeters;
   if(other.id===targetId)pressure=(Math.hypot(b.x-tx,b.z-tz)-Math.hypot(ex-tx,ez-tz))/Math.max(1,leg);
+  // Set up a subsequent crossing: gain a safe lead beside a parallel enemy.
+  // Charge-limited speed forecasts determine whether this boost actually gains
+  // ground; simply being near an opponent is not enough to spend turbo.
+  if(pedal===1&&other.id===targetId&&dir===other.dir){
+   const along=((other.x-b.x)*dx+(other.z-b.z)*dz)*C.cellMeters;
+   const lateral=Math.abs((other.x-b.x)*dz-(other.z-b.z)*dx)*C.cellMeters;
+   const lead=C.lengthMeters+policy.leadSeconds*otherSpeed;
+   const gain=out.distance-otherSpeed*L.horizonSeconds;
+   if(along>-lead&&along<L.overtakeMaxGapMeters&&lateral>=L.overtakeMinLateralMeters&&lateral<=L.overtakeMaxLateralMeters&&gain>0){
+    overtake=L.overtakeSetupCredit*Math.min(1,gain/Math.max(C.lengthMeters,along+lead));
+   }
+  }
   // Candidate travels across the opponent's forward lane. Require room after
   // crossing for the rear emitter and a viable perpendicular escape.
   if(dx*ox+dz*oz===0){
@@ -42,12 +54,13 @@ export function evaluateCandidate(q,b,dir,pedal,clear,space,policy,out,targetId=
    }
   }
  }
- out.cutoff=attack;out.clearance=clear;out.space=space;out.pressure=pressure;out.ally=ally;
+ if(attack===0&&overtake>0)out.reason='overtake';
+ out.overtake=overtake;out.cutoff=attack;out.clearance=clear;out.space=space;out.pressure=pressure;out.ally=ally;
  const reserve=pedal===1?(b.turboCharge??1):pedal===-1?(b.brakeCharge??1):1;
- // Turbo needs a tactical reason; long empty straights alone do not qualify.
- if(pedal===1&&(reserve<policy.reserveFloor||attack===0))out.safe=false;
+ // Turbo can earn a direct cutoff or prepare an overtake; empty straights do neither.
+ if(pedal===1&&(reserve<policy.reserveFloor||(attack===0&&overtake===0)))out.safe=false;
  if(pedal===-1&&reserve<=0)out.safe=false;
- out.score=policy.space*space+policy.clearance*Math.min(clear/24,1)+policy.cutoff*attack+policy.pressure*pressure-policy.allyPenalty*ally-policy.reserveCost*out.spent;
+ out.score=policy.space*space+policy.clearance*Math.min(clear/24,1)+policy.cutoff*(attack+overtake)+policy.pressure*pressure-policy.allyPenalty*ally-policy.reserveCost*out.spent;
  if(dir===b.dir)out.score+=policy.straightBonus;
  // Coasting is preferable when changing speed buys no safety/timing benefit.
  if(pedal!==0)out.score-=.04;

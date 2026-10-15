@@ -1,3 +1,4 @@
+import {sampleTurnReactionSeconds} from './reaction.js';
 import {LIGHT_CYCLES as C} from '../config/light-cycles.js';
 import {ArenaQueries} from './geometry.js';
 import {AI_LIMITS as L,DEFAULT_POLICY,validatePolicy} from './config.js';
@@ -9,7 +10,7 @@ function random(state){state.seed=(Math.imul(state.seed,1664525)+1013904223)>>>0
 function context(r){
  let ctx=contexts.get(r);
  if(!ctx||ctx.round!==r.round){
-  ctx={round:r.round,tick:0,geometry:new ArenaQueries(),bots:new Map(),plans:0,guards:0,totalMilliseconds:0,totals:{cutoffPlans:0,turboPlans:0,brakePlans:0,guardTicks:0}};contexts.set(r,ctx);
+  ctx={round:r.round,tick:0,geometry:new ArenaQueries(),bots:new Map(),plans:0,guards:0,totalMilliseconds:0,totals:{overtakePlans:0,cutoffPlans:0,turboPlans:0,brakePlans:0,guardTicks:0}};contexts.set(r,ctx);
  }
  return ctx;
 }
@@ -49,11 +50,11 @@ export function planCycleAI(r,elapsed=r.elapsed??r.time){
    if(best){
     const threshold=best.score-Math.min(L.nearBestTolerance,state.policy.variation);let eligible=0,choice=best;
     for(let i=0;i<count;i++){const c=state.candidates[i];if(c.safe&&c.score>=threshold&&random(state)<1/++eligible)choice=c;}
-    state.dir=choice.dir;state.pedal=choice.pedal;state.reason=choice.reason;if(choice.cutoff>0)ctx.totals.cutoffPlans++;if(choice.pedal===1)ctx.totals.turboPlans++;if(choice.pedal===-1)ctx.totals.brakePlans++;
+    state.dir=choice.dir;state.pedal=choice.pedal;state.reason=choice.reason;if(choice.overtake>0)ctx.totals.overtakePlans++;if(choice.cutoff>0)ctx.totals.cutoffPlans++;if(choice.pedal===1)ctx.totals.turboPlans++;if(choice.pedal===-1)ctx.totals.brakePlans++;
    }
   }
   if(danger){
-   ctx.guards++;ctx.totals.guardTicks++;state.pedal=-1;state.reason='escape';let best=0,dir=b.dir;
+   ctx.guards++;ctx.totals.guardTicks++;state.pedal=(b.brakeCharge??1)>0?-1:0;state.reason='escape';let best=0,dir=b.dir;
    for(const d of [b.dir,(b.dir+1)%4,(b.dir+3)%4]){
     const room=Math.min(q.clearance(b,d,guardCells+3),q.trafficClearance(b,d,L.guardSeconds+L.safetySeconds,Math.max(speed,C.speedMetersPerSecond)));
     if(room>best){best=room;dir=d;}
@@ -61,8 +62,17 @@ export function planCycleAI(r,elapsed=r.elapsed??r.time){
    state.dir=dir;if(dir!==b.dir&&best>=guardCells)state.pedal=0;
   }
   const delta=(state.dir-b.dir+4)%4;
-  if((delta===1||delta===3)&&ctx.tick-state.turnAt>=L.turnTicks){state.turn=delta===1?1:-1;state.turnAt=ctx.tick;}
-  else if(delta===2){state.dir=b.dir;state.pedal=0;}
+  if(delta===1||delta===3){
+   // Emergency escape uses the same reaction delay as tactical turns: it must
+   // not become a perfect last-instant dodge around a freshly placed wall.
+   if(state.pendingTurn?.dir!==state.dir)state.pendingTurn={dir:state.dir,readyTick:ctx.tick+Math.ceil(sampleTurnReactionSeconds(b,()=>random(state))*L.tickHz)};
+   if(ctx.tick>=state.pendingTurn.readyTick&&ctx.tick-state.turnAt>=L.turnTicks){
+    state.turn=delta===1?1:-1;state.turnAt=ctx.tick;state.pendingTurn=null;
+   }
+  }else{
+   state.pendingTurn=null;
+   if(delta===2){state.dir=b.dir;state.pedal=0;}
+  }
   b.aiTurbo=state.pedal===1;b.aiBrake=state.pedal===-1;
  }
  if(r.aiMeasure){const milliseconds=performance.now()-start;ctx.totalMilliseconds+=milliseconds;r.aiMetrics={milliseconds,plans:ctx.plans,segmentTests:q.tests};}

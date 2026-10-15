@@ -5,7 +5,7 @@ import {validateNetwork} from './network.js';
 export const AI_LIMITS=Object.freeze({version:1,tickHz:120,planTicks:12,maxPlansPerTick:2,turnTicks:6,
  maxTrails:2048,maxLinks:32768,bucketCells:8,segmentTestsPerQuery:192,segmentTestsPerTick:12000,
  maxCandidates:9,guardSeconds:.14,safetySeconds:.08,horizonSeconds:1.2,maxRayCells:45,
- spaceVisits:256,nearBestTolerance:.025});
+ spaceVisits:256,nearBestTolerance:.025,overtakeMaxGapMeters:100,overtakeMinLateralMeters:3,overtakeMaxLateralMeters:32,overtakeSetupCredit:.35});
 export const BASELINE_POLICY=Object.freeze({version:1,id:'bounded-v1',space:1.4,clearance:.7,cutoff:2.4,
  pressure:.55,allyPenalty:1.4,reserveCost:.22,reserveFloor:.2,straightBonus:.12,switchCost:.12,
  leadSeconds:.18,variation:.015});
