@@ -268,6 +268,11 @@ export function createGameApp() {
       }catch(error){multiplayer?.close();multiplayer=null;homeTransition.clear();fail(error.message+' — RETURN HOME AND TRY AGAIN.');return;}
     }else if(selectedGame==='cycles'&&run.cycleRace)session.requestCycleEntry({entranceFormation:!testCycleStart,startOutside:testCycleStart&&CYCLE_TESTING.startOutsideArena,startWithBreach:testCycleStart&&CYCLE_TESTING.startWithBreach,hideMiddleOpponent:testCycleStart&&CYCLE_TESTING.hideMiddleOpponent});
     else startPursuit(run);
+    if(selectedGame==='cycles'&&!testCycleStart&&run.cycleRace)run.cycleRace.aiMode='bounded';
+    if(import.meta.env.DEV&&selectedGame==='cycles'&&new URLSearchParams(location.search).get('cycleAITrial')==='1'){
+      const {applyCycleAITrial}=await import('./cycle-ai-trial.js');
+      await applyCycleAITrial(run.cycleRace);
+    }
     loadArenaInBackground();
     run.cruiseThrottle = true;
     session.previous = { ...run };

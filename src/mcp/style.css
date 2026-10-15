@@ -64,3 +64,7 @@ body.mcp-command #conversation,body.mcp-command #encom-panel{visibility:hidden}
 #encom-panel[data-activity] .mcp-panel-lamp{opacity:1;animation:mcp-lamp-pulse 1.8s ease-in-out infinite;animation-delay:calc(var(--lamp) * -.3s)}
 @keyframes mcp-lamp-pulse{0%,100%{filter:brightness(.35)}45%{filter:brightness(1.65)}}
 @media(prefers-reduced-motion:reduce){#encom-panel[data-activity] .mcp-panel-lamp{animation:none;filter:brightness(1.3)}}
+
+/* Fade during the closing sentence, excluding the processed reverb tail. */
+body.mcp-command.mcp-command-ending #face,body.mcp-command.mcp-command-ending #face-fallback{animation:mcp-command-dismiss var(--mcp-end-duration,1s) linear both}
+@keyframes mcp-command-dismiss{from{opacity:1}to{opacity:0}}

@@ -13,7 +13,7 @@ function context(r){
  }
  return ctx;
 }
-export function cycleAIDebug(r){const ctx=contexts.get(r);return ctx?{tick:ctx.tick,totalMilliseconds:ctx.totalMilliseconds,totals:{...ctx.totals},plans:ctx.plans,guards:ctx.guards,segmentTests:ctx.geometry.tests,overflow:ctx.geometry.overflow,bots:[...ctx.bots.values()].map(b=>({id:b.id,reason:b.reason,dir:b.dir,pedal:b.pedal,decisions:b.decisions}))}:null;}
+export function cycleAIDebug(r){const ctx=contexts.get(r);return ctx?{tick:ctx.tick,totalMilliseconds:ctx.totalMilliseconds,totals:{...ctx.totals},plans:ctx.plans,guards:ctx.guards,segmentTests:ctx.geometry.tests,overflow:ctx.geometry.overflow,bots:[...ctx.bots.values()].map(b=>({id:b.id,policyId:b.policy.id,reason:b.reason,dir:b.dir,pedal:b.pedal,decisions:b.decisions}))}:null;}
 // Return commands first; the caller applies them only after all observations.
 export function planCycleAI(r,elapsed=r.elapsed??r.time){
  const ctx=context(r),start=r.aiMeasure?performance.now():0,q=ctx.geometry;ctx.tick=Math.floor(elapsed*L.tickHz+1e-7);ctx.plans=0;ctx.guards=0;

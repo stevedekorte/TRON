@@ -1,0 +1,2320 @@
+{
+  "version": 1,
+  "options": {
+    "population": 4,
+    "generations": 2,
+    "trainSeeds": 4,
+    "heldOutSeeds": 8,
+    "seconds": 180,
+    "workers": 3
+  },
+  "fitnessWeights": {
+    "winPoints": 1,
+    "enemyWallPoints": 0.5,
+    "trapAssistPoints": 0.35,
+    "confinementPoints": 0.1
+  },
+  "policy": {
+    "version": 1,
+    "id": "aggression-1-0",
+    "space": 1.0265488543501122,
+    "clearance": 0.5696747692371719,
+    "cutoff": 2.43018917881418,
+    "pressure": 0.4203364073229023,
+    "allyPenalty": 1.1431264319573526,
+    "reserveCost": 0.12869319598097353,
+    "reserveFloor": 0.19361033654771748,
+    "straightBonus": 0.1310492014372721,
+    "switchCost": 0.07043816516990772,
+    "leadSeconds": 0.15450646566948853,
+    "variation": 0.014276726701646113
+  },
+  "generations": [
+    [
+      {
+        "policy": {
+          "version": 1,
+          "id": "aggression-0-2",
+          "space": 1.171786854919046,
+          "clearance": 0.6279871742869727,
+          "cutoff": 2.806861239066347,
+          "pressure": 0.49492542627966035,
+          "allyPenalty": 1.2148608404211698,
+          "reserveCost": 0.18416598039958626,
+          "reserveFloor": 0.21180863467976452,
+          "straightBonus": 0.13798424588050692,
+          "switchCost": 0.09629791146609931,
+          "leadSeconds": 0.1788851503820624,
+          "variation": 0.015785694845253603
+        },
+        "result": {
+          "wins": 4,
+          "draws": 7,
+          "losses": 5,
+          "matches": 16,
+          "winRate": 0.25,
+          "wallEliminations": 3,
+          "trapAssists": 2.5,
+          "confinements": 15.333333333333334,
+          "fitness": 0.4942708333333333,
+          "rows": [
+            {
+              "seed": 10000,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 177.675,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 1.5,
+              "fitness": 0.5
+            },
+            {
+              "seed": 10000,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0.5,
+              "fitness": 0.05
+            },
+            {
+              "seed": 10000,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 4,
+              "fitness": 0.4
+            },
+            {
+              "seed": 10000,
+              "seat": 3,
+              "winner": 3,
+              "seconds": 144.25833333333333,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 1
+            },
+            {
+              "seed": 10001,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10001,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10001,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.6
+            },
+            {
+              "seed": 10001,
+              "seat": 3,
+              "winner": 3,
+              "seconds": 174.84166666666667,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 1.1
+            },
+            {
+              "seed": 10002,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 1,
+              "fitness": 0.44999999999999996
+            },
+            {
+              "seed": 10002,
+              "seat": 1,
+              "winner": 3,
+              "seconds": 156.54166666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10002,
+              "seat": 2,
+              "winner": 2,
+              "seconds": 136.425,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 1
+            },
+            {
+              "seed": 10002,
+              "seat": 3,
+              "winner": 2,
+              "seconds": 117.48333333333333,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10003,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 83.075,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.7
+            },
+            {
+              "seed": 10003,
+              "seat": 1,
+              "winner": 1,
+              "seconds": 142.10833333333332,
+              "kills": 0,
+              "assists": 0.5,
+              "confinements": 0.8333333333333333,
+              "fitness": 1.2583333333333333
+            },
+            {
+              "seed": 10003,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10003,
+              "seat": 3,
+              "winner": 0,
+              "seconds": 163.175,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 1.5,
+              "fitness": 0.65
+            }
+          ]
+        },
+        "timing": {
+          "aiMs": {
+            "p95": 0.12495800000033341,
+            "p99": 0.24458299999241717,
+            "max": 2.00495800000499
+          },
+          "tickMs": {
+            "p50": 0.17262500000651926,
+            "p95": 0.334166999993613,
+            "p99": 0.5317499999946449,
+            "max": 10.728959000000032
+          },
+          "passes": true
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "bounded-v1",
+          "space": 1.4,
+          "clearance": 0.7,
+          "cutoff": 2.4,
+          "pressure": 0.55,
+          "allyPenalty": 1.4,
+          "reserveCost": 0.22,
+          "reserveFloor": 0.2,
+          "straightBonus": 0.12,
+          "switchCost": 0.12,
+          "leadSeconds": 0.18,
+          "variation": 0.015
+        },
+        "result": {
+          "wins": 3,
+          "draws": 4,
+          "losses": 9,
+          "matches": 16,
+          "winRate": 0.1875,
+          "wallEliminations": 1,
+          "trapAssists": 4,
+          "confinements": 19.000000000000004,
+          "fitness": 0.42500000000000004,
+          "rows": [
+            {
+              "seed": 10000,
+              "seat": 0,
+              "winner": 2,
+              "seconds": 99.36666666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10000,
+              "seat": 1,
+              "winner": 2,
+              "seconds": 99.36666666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10000,
+              "seat": 2,
+              "winner": 2,
+              "seconds": 99.36666666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 1.1
+            },
+            {
+              "seed": 10000,
+              "seat": 3,
+              "winner": 2,
+              "seconds": 99.36666666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10001,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10001,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10001,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 4,
+              "fitness": 0.75
+            },
+            {
+              "seed": 10001,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10002,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 138.16666666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10002,
+              "seat": 1,
+              "winner": 3,
+              "seconds": 138.16666666666666,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 1.3333333333333333,
+              "fitness": 0.6333333333333333
+            },
+            {
+              "seed": 10002,
+              "seat": 2,
+              "winner": 3,
+              "seconds": 138.16666666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1.3333333333333333,
+              "fitness": 0.13333333333333333
+            },
+            {
+              "seed": 10002,
+              "seat": 3,
+              "winner": 3,
+              "seconds": 138.16666666666666,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 0.3333333333333333,
+              "fitness": 1.3833333333333335
+            },
+            {
+              "seed": 10003,
+              "seat": 0,
+              "winner": 2,
+              "seconds": 147.70833333333334,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 3.3333333333333335,
+              "fitness": 0.6833333333333333
+            },
+            {
+              "seed": 10003,
+              "seat": 1,
+              "winner": 2,
+              "seconds": 147.70833333333334,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0.8333333333333333,
+              "fitness": 0.08333333333333333
+            },
+            {
+              "seed": 10003,
+              "seat": 2,
+              "winner": 2,
+              "seconds": 147.70833333333334,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 3.5,
+              "fitness": 1.7000000000000002
+            },
+            {
+              "seed": 10003,
+              "seat": 3,
+              "winner": 2,
+              "seconds": 147.70833333333334,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1.3333333333333333,
+              "fitness": 0.13333333333333333
+            }
+          ]
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "aggression-0-1",
+          "space": 1.5106631141761317,
+          "clearance": 0.7535337801137939,
+          "cutoff": 2.790671846852638,
+          "pressure": 0.5405030687619001,
+          "allyPenalty": 1.1904487572959623,
+          "reserveCost": 0.19364246520586312,
+          "reserveFloor": 0.25940261005423965,
+          "straightBonus": 0.13891434498131275,
+          "switchCost": 0.08780512247350998,
+          "leadSeconds": 0.17005509179318323,
+          "variation": 0.013038667223299853
+        },
+        "result": {
+          "wins": 2,
+          "draws": 6,
+          "losses": 8,
+          "matches": 16,
+          "winRate": 0.125,
+          "wallEliminations": 1,
+          "trapAssists": 3.5,
+          "confinements": 24.833333333333332,
+          "fitness": 0.38802083333333337,
+          "rows": [
+            {
+              "seed": 10000,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 127.54166666666667,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10000,
+              "seat": 1,
+              "winner": 2,
+              "seconds": 116.25,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10000,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 4,
+              "fitness": 0.4
+            },
+            {
+              "seed": 10000,
+              "seat": 3,
+              "winner": 3,
+              "seconds": 137.075,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 1.1
+            },
+            {
+              "seed": 10001,
+              "seat": 0,
+              "winner": 2,
+              "seconds": 168.16666666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10001,
+              "seat": 1,
+              "winner": 1,
+              "seconds": 84.63333333333334,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 1.1
+            },
+            {
+              "seed": 10001,
+              "seat": 2,
+              "winner": 3,
+              "seconds": 137.03333333333333,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10001,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 3,
+              "fitness": 0.65
+            },
+            {
+              "seed": 10002,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10002,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10002,
+              "seat": 2,
+              "winner": 3,
+              "seconds": 176.74166666666667,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 4,
+              "fitness": 0.4
+            },
+            {
+              "seed": 10002,
+              "seat": 3,
+              "winner": 0,
+              "seconds": 109.43333333333334,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10003,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 174.83333333333334,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10003,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 1,
+              "assists": 2.5,
+              "confinements": 2.8333333333333335,
+              "fitness": 1.6583333333333334
+            },
+            {
+              "seed": 10003,
+              "seat": 2,
+              "winner": 1,
+              "seconds": 120.78333333333333,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10003,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            }
+          ]
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "aggression-0-0",
+          "space": 1.3114636061061173,
+          "clearance": 0.667263077434618,
+          "cutoff": 2.132370787113905,
+          "pressure": 0.6690645844605752,
+          "allyPenalty": 1.5686459858203305,
+          "reserveCost": 0.27746976688411085,
+          "reserveFloor": 0.2588841372355819,
+          "straightBonus": 0.09343010683078318,
+          "switchCost": 0.12342073469655587,
+          "leadSeconds": 0.17183581203245557,
+          "variation": 0.015251305787824094
+        },
+        "result": {
+          "wins": 1,
+          "draws": 6,
+          "losses": 9,
+          "matches": 16,
+          "winRate": 0.0625,
+          "wallEliminations": 3,
+          "trapAssists": 3.1666666666666665,
+          "confinements": 22.666666666666664,
+          "fitness": 0.3671875,
+          "rows": [
+            {
+              "seed": 10000,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 130.825,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1.5,
+              "fitness": 0.15000000000000002
+            },
+            {
+              "seed": 10000,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10000,
+              "seat": 2,
+              "winner": 1,
+              "seconds": 170.14166666666668,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1.5,
+              "fitness": 0.15000000000000002
+            },
+            {
+              "seed": 10000,
+              "seat": 3,
+              "winner": 3,
+              "seconds": 142.15,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 4,
+              "fitness": 1.4
+            },
+            {
+              "seed": 10001,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 3,
+              "fitness": 0.8
+            },
+            {
+              "seed": 10001,
+              "seat": 1,
+              "winner": 3,
+              "seconds": 90.70833333333333,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10001,
+              "seat": 2,
+              "winner": 0,
+              "seconds": 151.38333333333333,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10001,
+              "seat": 3,
+              "winner": 1,
+              "seconds": 156.7,
+              "kills": 0,
+              "assists": 1.6666666666666665,
+              "confinements": 1.6666666666666665,
+              "fitness": 0.7499999999999999
+            },
+            {
+              "seed": 10002,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10002,
+              "seat": 1,
+              "winner": 2,
+              "seconds": 130.06666666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10002,
+              "seat": 2,
+              "winner": 3,
+              "seconds": 151.075,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 1.5,
+              "fitness": 0.65
+            },
+            {
+              "seed": 10002,
+              "seat": 3,
+              "winner": 0,
+              "seconds": 143.775,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10003,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 146.775,
+              "kills": 1,
+              "assists": 1,
+              "confinements": 3.5,
+              "fitness": 1.2
+            },
+            {
+              "seed": 10003,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10003,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0.5,
+              "confinements": 4.5,
+              "fitness": 0.625
+            },
+            {
+              "seed": 10003,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1.5,
+              "fitness": 0.15000000000000002
+            }
+          ]
+        }
+      }
+    ],
+    [
+      {
+        "policy": {
+          "version": 1,
+          "id": "aggression-1-0",
+          "space": 1.0265488543501122,
+          "clearance": 0.5696747692371719,
+          "cutoff": 2.43018917881418,
+          "pressure": 0.4203364073229023,
+          "allyPenalty": 1.1431264319573526,
+          "reserveCost": 0.12869319598097353,
+          "reserveFloor": 0.19361033654771748,
+          "straightBonus": 0.1310492014372721,
+          "switchCost": 0.07043816516990772,
+          "leadSeconds": 0.15450646566948853,
+          "variation": 0.014276726701646113
+        },
+        "result": {
+          "wins": 1,
+          "draws": 11,
+          "losses": 4,
+          "matches": 16,
+          "winRate": 0.0625,
+          "wallEliminations": 2,
+          "trapAssists": 5,
+          "confinements": 17.833333333333336,
+          "fitness": 0.34583333333333327,
+          "rows": [
+            {
+              "seed": 10100,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10100,
+              "seat": 1,
+              "winner": 1,
+              "seconds": 151.875,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 1.5
+            },
+            {
+              "seed": 10100,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0.3333333333333333,
+              "fitness": 0.03333333333333333
+            },
+            {
+              "seed": 10100,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0.5,
+              "fitness": 0.05
+            },
+            {
+              "seed": 10101,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10101,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10101,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10101,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10102,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 157.25833333333333,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10102,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 3,
+              "confinements": 3,
+              "fitness": 1.3499999999999999
+            },
+            {
+              "seed": 10102,
+              "seat": 2,
+              "winner": 0,
+              "seconds": 121.60833333333333,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 2,
+              "fitness": 0.55
+            },
+            {
+              "seed": 10102,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10103,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10103,
+              "seat": 1,
+              "winner": 3,
+              "seconds": 135.43333333333334,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 2,
+              "fitness": 0.55
+            },
+            {
+              "seed": 10103,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10103,
+              "seat": 3,
+              "winner": 2,
+              "seconds": 126.23333333333333,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.6
+            }
+          ]
+        },
+        "timing": {
+          "aiMs": {
+            "p95": 0.15129199996590614,
+            "p99": 0.17795800004387274,
+            "max": 0.669041000015568
+          },
+          "tickMs": {
+            "p50": 0.3035410000011325,
+            "p95": 0.5282500000321306,
+            "p99": 0.5576669999863952,
+            "max": 9.113624999998137
+          },
+          "passes": true
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "aggression-1-1",
+          "space": 1.1049184057582169,
+          "clearance": 0.7392932874802499,
+          "cutoff": 2.7685852505732327,
+          "pressure": 0.45673982841894034,
+          "allyPenalty": 1.0172929032472893,
+          "reserveCost": 0.24850947489216924,
+          "reserveFloor": 0.2579600734822452,
+          "straightBonus": 0.12398467384278773,
+          "switchCost": 0.09194540376076474,
+          "leadSeconds": 0.18791667623911051,
+          "variation": 0.013597204968100414
+        },
+        "result": {
+          "wins": 2,
+          "draws": 9,
+          "losses": 5,
+          "matches": 16,
+          "winRate": 0.125,
+          "wallEliminations": 3,
+          "trapAssists": 0,
+          "confinements": 15,
+          "fitness": 0.3125,
+          "rows": [
+            {
+              "seed": 10100,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 170.8,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0.5,
+              "fitness": 0.05
+            },
+            {
+              "seed": 10100,
+              "seat": 1,
+              "winner": 1,
+              "seconds": 139.79166666666666,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 1
+            },
+            {
+              "seed": 10100,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1.5,
+              "fitness": 0.15000000000000002
+            },
+            {
+              "seed": 10100,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 3,
+              "fitness": 0.30000000000000004
+            },
+            {
+              "seed": 10101,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.6
+            },
+            {
+              "seed": 10101,
+              "seat": 1,
+              "winner": 0,
+              "seconds": 155.8,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10101,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10101,
+              "seat": 3,
+              "winner": 2,
+              "seconds": 140.4,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10102,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10102,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10102,
+              "seat": 2,
+              "winner": 3,
+              "seconds": 133.45,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 3,
+              "fitness": 0.30000000000000004
+            },
+            {
+              "seed": 10102,
+              "seat": 3,
+              "winner": 3,
+              "seconds": 119.9,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 0.5,
+              "fitness": 1.55
+            },
+            {
+              "seed": 10103,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10103,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 0.5,
+              "fitness": 0.55
+            },
+            {
+              "seed": 10103,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10103,
+              "seat": 3,
+              "winner": 0,
+              "seconds": 108.525,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            }
+          ]
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "aggression-1-2",
+          "space": 1.2191442347178234,
+          "clearance": 0.6830398919642903,
+          "cutoff": 2.7872092428384345,
+          "pressure": 0.6069573990791105,
+          "allyPenalty": 1.203631436161231,
+          "reserveCost": 0.22996231565531344,
+          "reserveFloor": 0.1639379754755646,
+          "straightBonus": 0.15764238882344214,
+          "switchCost": 0.10198062100564129,
+          "leadSeconds": 0.20630244212527757,
+          "variation": 0.013266951949917713
+        },
+        "result": {
+          "wins": 0,
+          "draws": 11,
+          "losses": 5,
+          "matches": 16,
+          "winRate": 0,
+          "wallEliminations": 3,
+          "trapAssists": 3,
+          "confinements": 14,
+          "fitness": 0.246875,
+          "rows": [
+            {
+              "seed": 10100,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10100,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10100,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 3,
+              "fitness": 0.30000000000000004
+            },
+            {
+              "seed": 10100,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10101,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10101,
+              "seat": 1,
+              "winner": 2,
+              "seconds": 163.125,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10101,
+              "seat": 2,
+              "winner": 3,
+              "seconds": 179.675,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10101,
+              "seat": 3,
+              "winner": 0,
+              "seconds": 157.43333333333334,
+              "kills": 0,
+              "assists": 2,
+              "confinements": 3,
+              "fitness": 1
+            },
+            {
+              "seed": 10102,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10102,
+              "seat": 1,
+              "winner": 2,
+              "seconds": 157.575,
+              "kills": 2,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 1
+            },
+            {
+              "seed": 10102,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10102,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10103,
+              "seat": 0,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10103,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 3,
+              "fitness": 0.65
+            },
+            {
+              "seed": 10103,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0.5
+            },
+            {
+              "seed": 10103,
+              "seat": 3,
+              "winner": 0,
+              "seconds": 164.525,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            }
+          ]
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "aggression-0-2",
+          "space": 1.171786854919046,
+          "clearance": 0.6279871742869727,
+          "cutoff": 2.806861239066347,
+          "pressure": 0.49492542627966035,
+          "allyPenalty": 1.2148608404211698,
+          "reserveCost": 0.18416598039958626,
+          "reserveFloor": 0.21180863467976452,
+          "straightBonus": 0.13798424588050692,
+          "switchCost": 0.09629791146609931,
+          "leadSeconds": 0.1788851503820624,
+          "variation": 0.015785694845253603
+        },
+        "result": {
+          "wins": 0,
+          "draws": 6,
+          "losses": 10,
+          "matches": 16,
+          "winRate": 0,
+          "wallEliminations": 2,
+          "trapAssists": 2,
+          "confinements": 19.666666666666668,
+          "fitness": 0.22916666666666666,
+          "rows": [
+            {
+              "seed": 10100,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 122.50833333333334,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10100,
+              "seat": 1,
+              "winner": 0,
+              "seconds": 134.24166666666667,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10100,
+              "seat": 2,
+              "winner": null,
+              "seconds": 180,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0.5
+            },
+            {
+              "seed": 10100,
+              "seat": 3,
+              "winner": 0,
+              "seconds": 134.24166666666667,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10101,
+              "seat": 0,
+              "winner": 1,
+              "seconds": 119.325,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 4.5,
+              "fitness": 0.8
+            },
+            {
+              "seed": 10101,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10101,
+              "seat": 2,
+              "winner": 1,
+              "seconds": 119.325,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10101,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1,
+              "fitness": 0.1
+            },
+            {
+              "seed": 10102,
+              "seat": 0,
+              "winner": 1,
+              "seconds": 90.76666666666667,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10102,
+              "seat": 1,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10102,
+              "seat": 2,
+              "winner": 0,
+              "seconds": 154.25,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10102,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 0,
+              "fitness": 0
+            },
+            {
+              "seed": 10103,
+              "seat": 0,
+              "winner": 3,
+              "seconds": 138.83333333333334,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.2
+            },
+            {
+              "seed": 10103,
+              "seat": 1,
+              "winner": 3,
+              "seconds": 105.51666666666667,
+              "kills": 0,
+              "assists": 1,
+              "confinements": 1.6666666666666665,
+              "fitness": 0.5166666666666666
+            },
+            {
+              "seed": 10103,
+              "seat": 2,
+              "winner": 3,
+              "seconds": 138.83333333333334,
+              "kills": 1,
+              "assists": 0,
+              "confinements": 2,
+              "fitness": 0.7
+            },
+            {
+              "seed": 10103,
+              "seat": 3,
+              "winner": null,
+              "seconds": 180,
+              "kills": 0,
+              "assists": 0,
+              "confinements": 1.5,
+              "fitness": 0.15000000000000002
+            }
+          ]
+        }
+      }
+    ]
+  ],
+  "heldOut": {
+    "candidate": {
+      "wins": 5,
+      "draws": 13,
+      "losses": 14,
+      "matches": 32,
+      "winRate": 0.15625,
+      "wallEliminations": 5,
+      "trapAssists": 10,
+      "confinements": 44.166666666666664,
+      "fitness": 0.4817708333333332,
+      "rows": [
+        {
+          "seed": 90000,
+          "seat": 0,
+          "winner": null,
+          "seconds": 180,
+          "kills": 1,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.6
+        },
+        {
+          "seed": 90000,
+          "seat": 1,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90000,
+          "seat": 2,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 2,
+          "confinements": 8,
+          "fitness": 1.5
+        },
+        {
+          "seed": 90000,
+          "seat": 3,
+          "winner": 0,
+          "seconds": 145.61666666666667,
+          "kills": 1,
+          "assists": 0,
+          "confinements": 2,
+          "fitness": 0.7
+        },
+        {
+          "seed": 90001,
+          "seat": 0,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 2,
+          "fitness": 0.55
+        },
+        {
+          "seed": 90001,
+          "seat": 1,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1.5,
+          "fitness": 0.15000000000000002
+        },
+        {
+          "seed": 90001,
+          "seat": 2,
+          "winner": 3,
+          "seconds": 110.325,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 2,
+          "fitness": 0.2
+        },
+        {
+          "seed": 90001,
+          "seat": 3,
+          "winner": 1,
+          "seconds": 178.63333333333333,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 2.5,
+          "fitness": 0.6
+        },
+        {
+          "seed": 90002,
+          "seat": 0,
+          "winner": 1,
+          "seconds": 103.83333333333333,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90002,
+          "seat": 1,
+          "winner": 3,
+          "seconds": 143.675,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90002,
+          "seat": 2,
+          "winner": 3,
+          "seconds": 139.175,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 4,
+          "fitness": 0.75
+        },
+        {
+          "seed": 90002,
+          "seat": 3,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90003,
+          "seat": 0,
+          "winner": 0,
+          "seconds": 100.63333333333334,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 1
+        },
+        {
+          "seed": 90003,
+          "seat": 1,
+          "winner": 3,
+          "seconds": 152.09166666666667,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90003,
+          "seat": 2,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 1,
+          "fitness": 0.44999999999999996
+        },
+        {
+          "seed": 90003,
+          "seat": 3,
+          "winner": 0,
+          "seconds": 174.475,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90004,
+          "seat": 0,
+          "winner": 0,
+          "seconds": 145.85833333333332,
+          "kills": 1,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 1.5
+        },
+        {
+          "seed": 90004,
+          "seat": 1,
+          "winner": 2,
+          "seconds": 157.19166666666666,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 1,
+          "fitness": 0.44999999999999996
+        },
+        {
+          "seed": 90004,
+          "seat": 2,
+          "winner": 2,
+          "seconds": 179.25833333333333,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 1.1
+        },
+        {
+          "seed": 90004,
+          "seat": 3,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90005,
+          "seat": 0,
+          "winner": 1,
+          "seconds": 136.00833333333333,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90005,
+          "seat": 1,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90005,
+          "seat": 2,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1.6666666666666665,
+          "fitness": 0.16666666666666666
+        },
+        {
+          "seed": 90005,
+          "seat": 3,
+          "winner": 0,
+          "seconds": 177.1,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90006,
+          "seat": 0,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 3.5,
+          "fitness": 0.7
+        },
+        {
+          "seed": 90006,
+          "seat": 1,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 1,
+          "fitness": 0.44999999999999996
+        },
+        {
+          "seed": 90006,
+          "seat": 2,
+          "winner": null,
+          "seconds": 180,
+          "kills": 1,
+          "assists": 1,
+          "confinements": 2,
+          "fitness": 1.05
+        },
+        {
+          "seed": 90006,
+          "seat": 3,
+          "winner": 2,
+          "seconds": 172.44166666666666,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90007,
+          "seat": 0,
+          "winner": 2,
+          "seconds": 162.15,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90007,
+          "seat": 1,
+          "winner": 1,
+          "seconds": 157.25,
+          "kills": 1,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 1.5
+        },
+        {
+          "seed": 90007,
+          "seat": 2,
+          "winner": 1,
+          "seconds": 170.15,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 3,
+          "fitness": 0.30000000000000004
+        },
+        {
+          "seed": 90007,
+          "seat": 3,
+          "winner": 3,
+          "seconds": 177.98333333333332,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 2,
+          "fitness": 1.2
+        }
+      ]
+    },
+    "baseline": {
+      "wins": 4,
+      "draws": 16,
+      "losses": 12,
+      "matches": 32,
+      "winRate": 0.125,
+      "wallEliminations": 3,
+      "trapAssists": 9,
+      "confinements": 42,
+      "fitness": 0.40156249999999993,
+      "rows": [
+        {
+          "seed": 90000,
+          "seat": 0,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 1,
+          "fitness": 0.44999999999999996
+        },
+        {
+          "seed": 90000,
+          "seat": 1,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90000,
+          "seat": 2,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 2.5,
+          "fitness": 0.25
+        },
+        {
+          "seed": 90000,
+          "seat": 3,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0.5,
+          "fitness": 0.05
+        },
+        {
+          "seed": 90001,
+          "seat": 0,
+          "winner": 0,
+          "seconds": 125.59166666666667,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 3,
+          "fitness": 1.3
+        },
+        {
+          "seed": 90001,
+          "seat": 1,
+          "winner": 0,
+          "seconds": 125.59166666666667,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90001,
+          "seat": 2,
+          "winner": 0,
+          "seconds": 125.59166666666667,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 4,
+          "fitness": 0.75
+        },
+        {
+          "seed": 90001,
+          "seat": 3,
+          "winner": 0,
+          "seconds": 125.59166666666667,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90002,
+          "seat": 0,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 2,
+          "fitness": 0.55
+        },
+        {
+          "seed": 90002,
+          "seat": 1,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90002,
+          "seat": 2,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90002,
+          "seat": 3,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 2,
+          "fitness": 0.2
+        },
+        {
+          "seed": 90003,
+          "seat": 0,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 2,
+          "fitness": 0.2
+        },
+        {
+          "seed": 90003,
+          "seat": 1,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 2,
+          "fitness": 0.55
+        },
+        {
+          "seed": 90003,
+          "seat": 2,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90003,
+          "seat": 3,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90004,
+          "seat": 0,
+          "winner": 2,
+          "seconds": 174.73333333333332,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90004,
+          "seat": 1,
+          "winner": 2,
+          "seconds": 174.73333333333332,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90004,
+          "seat": 2,
+          "winner": 2,
+          "seconds": 174.73333333333332,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 1.1
+        },
+        {
+          "seed": 90004,
+          "seat": 3,
+          "winner": 2,
+          "seconds": 174.73333333333332,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1,
+          "fitness": 0.1
+        },
+        {
+          "seed": 90005,
+          "seat": 0,
+          "winner": 1,
+          "seconds": 125.33333333333333,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 3.5,
+          "fitness": 0.7
+        },
+        {
+          "seed": 90005,
+          "seat": 1,
+          "winner": 1,
+          "seconds": 125.33333333333333,
+          "kills": 1,
+          "assists": 1,
+          "confinements": 1.5,
+          "fitness": 2
+        },
+        {
+          "seed": 90005,
+          "seat": 2,
+          "winner": 1,
+          "seconds": 125.33333333333333,
+          "kills": 1,
+          "assists": 0,
+          "confinements": 2,
+          "fitness": 0.7
+        },
+        {
+          "seed": 90005,
+          "seat": 3,
+          "winner": 1,
+          "seconds": 125.33333333333333,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 1,
+          "fitness": 0.44999999999999996
+        },
+        {
+          "seed": 90006,
+          "seat": 0,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 3,
+          "fitness": 0.65
+        },
+        {
+          "seed": 90006,
+          "seat": 1,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90006,
+          "seat": 2,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 1,
+          "confinements": 3.5,
+          "fitness": 0.7
+        },
+        {
+          "seed": 90006,
+          "seat": 3,
+          "winner": null,
+          "seconds": 180,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 1.5,
+          "fitness": 0.15000000000000002
+        },
+        {
+          "seed": 90007,
+          "seat": 0,
+          "winner": 0,
+          "seconds": 166.8,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 2,
+          "fitness": 1.2
+        },
+        {
+          "seed": 90007,
+          "seat": 1,
+          "winner": 0,
+          "seconds": 166.8,
+          "kills": 1,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0.5
+        },
+        {
+          "seed": 90007,
+          "seat": 2,
+          "winner": 0,
+          "seconds": 166.8,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        },
+        {
+          "seed": 90007,
+          "seat": 3,
+          "winner": 0,
+          "seconds": 166.8,
+          "kills": 0,
+          "assists": 0,
+          "confinements": 0,
+          "fitness": 0
+        }
+      ]
+    },
+    "paired": [
+      {
+        "seed": 90000,
+        "fitnessDelta": 0.5125,
+        "killDelta": 0.5,
+        "assistDelta": 0.25
+      },
+      {
+        "seed": 90001,
+        "fitnessDelta": -0.16249999999999998,
+        "killDelta": 0,
+        "assistDelta": 0.25
+      },
+      {
+        "seed": 90002,
+        "fitnessDelta": -6.938893903907228e-18,
+        "killDelta": 0,
+        "assistDelta": 0
+      },
+      {
+        "seed": 90003,
+        "fitnessDelta": 0.19999999999999998,
+        "killDelta": 0,
+        "assistDelta": 0
+      },
+      {
+        "seed": 90004,
+        "fitnessDelta": 0.48749999999999993,
+        "killDelta": 0.25,
+        "assistDelta": 0.25
+      },
+      {
+        "seed": 90005,
+        "fitnessDelta": -0.8958333333333335,
+        "killDelta": -0.5,
+        "assistDelta": -0.75
+      },
+      {
+        "seed": 90006,
+        "fitnessDelta": 0.17499999999999996,
+        "killDelta": 0.25,
+        "assistDelta": 0.25
+      },
+      {
+        "seed": 90007,
+        "fitnessDelta": 0.325,
+        "killDelta": 0,
+        "assistDelta": 0
+      }
+    ]
+  },
+  "timing": {
+    "aiMs": {
+      "p95": 0.15362500003539026,
+      "p99": 0.1857500000623986,
+      "max": 0.6340419999323785
+    },
+    "tickMs": {
+      "p50": 0.30404200009070337,
+      "p95": 0.5398339999374002,
+      "p99": 0.5981250000186265,
+      "max": 2.528042000019923
+    },
+    "passes": true
+  },
+  "promoted": false,
+  "note": "Exploratory run. Seed is the comparison unit; four spawn rotations are correlated. Requires gameplay review. Parallel matches are not performance measurements."
+}

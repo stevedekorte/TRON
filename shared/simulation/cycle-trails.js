@@ -1,3 +1,4 @@
+import {invalidateCycleTraps} from './cycle-traps.js';
 import {LIGHT_CYCLES as C} from './config/light-cycles.js';
 import {CYCLE_TRAIL_LIMIT,cycleTrailLength,cycleTrailHeadTrim} from './config/cycle-trails.js';
 
@@ -21,6 +22,7 @@ export function trimCycleTrails(r){
   }
  }
  if(!changed.length)return;
+ invalidateCycleTraps(r);
  const active=r.cycles.map(b=>r.trails[b.segment]);
  r.trails=r.trails.filter(t=>!removed.has(t));
  r.cycles.forEach((b,i)=>{b.segment=r.trails.indexOf(active[i]);});

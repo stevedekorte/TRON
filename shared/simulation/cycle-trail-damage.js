@@ -1,3 +1,4 @@
+import {invalidateCycleTraps} from './cycle-traps.js';
 import {LIGHT_CYCLES as C,cycleTrailState} from './config/light-cycles.js';
 import {cycleTrailLength} from './config/cycle-trails.js';
 import {rebuildTrailOccupancy} from './cycle-trails.js';
@@ -22,6 +23,7 @@ export function damageCycleTrail(r,ownerId,x,z){
   ranges.set(t,{start:length,size});length+=size;
  }
  if(hit===null)return false;
+ invalidateCycleTraps(r);
  const low=Math.max(0,hit-C.trailImpactHalfGapMeters),high=Math.min(length,hit+C.trailImpactHalfGapMeters);
  replaceTrails(r,t=>{
   const range=ranges.get(t);if(!range)return [t];

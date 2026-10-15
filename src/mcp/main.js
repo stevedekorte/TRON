@@ -8,6 +8,7 @@ import {McpVoice} from './voice.js';
 import {speakSentences} from './speech-queue.js';
 import {createVoiceEffects,MCP_VOICE_EFFECTS} from './voice-effects.js';
 const $=id=>document.getElementById(id);
+const MCP_CLOSING_FADE=Object.freeze({minimumSeconds:.05,finishLeadSeconds:.05});
 const apiBase=(import.meta.env.VITE_MCP_API_BASE||import.meta.env.VITE_JEV_API_BASE||'').replace(/\/$/,'');
 let face,recognition,recognizing=false,micEnabled=false,busy=false,leaving=false,paused=false,request,epoch=0,restartTimer;
 const history=[];
@@ -68,15 +69,15 @@ async function playSamples({samples,sampleRate,processed:rendered=false},token,{
   for(let i=offset;i<Math.min(samples.length,offset+1024);i++){sum+=samples[i]*samples[i];count++;}
   face?.level(Math.min(1,Math.sqrt(sum/Math.max(1,count))*7));audioFrame=requestAnimationFrame(animate);
  };
- await new Promise(resolve=>{let tail;finishAudio=()=>{clearTimeout(tail);resolve();};source.onended=()=>{source.disconnect();face?.speak(false);tail=setTimeout(resolve,processed?0:MCP_VOICE_EFFECTS.decaySeconds*1000);};onStart();source.start();animate();});
+ await new Promise(resolve=>{let tail;finishAudio=()=>{clearTimeout(tail);resolve();};source.onended=()=>{source.disconnect();face?.speak(false);tail=setTimeout(resolve,processed?0:MCP_VOICE_EFFECTS.decaySeconds*1000);};onStart({speechSeconds:Math.max(MCP_CLOSING_FADE.minimumSeconds,buffer.duration/rate-(processed?MCP_VOICE_EFFECTS.decaySeconds:0))});source.start();animate();});
  cancelAnimationFrame(audioFrame);finishAudio=null;audioSource=null;face?.speak(false);
 }
-async function speakCloned(text,token,{whole=false,onStart:started=()=>{},resumeListening=true}={}){
+async function speakCloned(text,token,{whole=false,onStart:started=()=>{},onChunkStart=()=>{},resumeListening=true}={}){
  panelActivity.set('tts');
- let displayed=false;const onStart=()=>{if(!displayed){$('reply').textContent=text;displayed=true;started();}};
+ let displayed=false;const onStart=(timing,chunk=text)=>{if(!displayed){$('reply').textContent=text;displayed=true;started();}onChunkStart(chunk,timing);};
  try{
   if(whole)await playSamples(await voice.generate(text),token,{onStart});
-  else await speakSentences({text,generate:chunk=>voice.generate(chunk),play:audio=>playSamples(audio,token,{onStart}),isCurrent:()=>token===epoch,onWaiting:()=>{panelActivity.set('tts');status('MCP GENERATING VOICE…');}});
+  else await speakSentences({text,generate:chunk=>voice.generate(chunk),play:(audio,chunk)=>playSamples(audio,token,{onStart:timing=>onStart(timing,chunk)}),isCurrent:()=>token===epoch,onWaiting:()=>{panelActivity.set('tts');status('MCP GENERATING VOICE…');}});
   if(token===epoch){if(resumeListening){setBusy(false);status('YOUR TURN');restartTimer=setTimeout(listen,350);}return true;}
  }catch(error){if(token===epoch){face?.speak(false);setBusy(false);status('MCP CLONED VOICE FAILED — REPLY SHOWN AS TEXT: '+error.message);$('reply').textContent=text+'\nMCP CLONED VOICE UNAVAILABLE';}}
  finally{if(token!==epoch){setBusy(false);if(!paused&&!leaving)status('YOUR TURN');}}
@@ -142,11 +143,17 @@ async function send(text){
  finally{clearInterval(waiting);clearTimeout(timeout);if(token===epoch)request=null;}
 }
 async function announceGame(text,token){
+ document.body.classList.remove('mcp-command-ending');
  // Load the face while TTS is preparing, but reveal it only at audio start.
  const faceReady=(async()=>{if(!face){try{const {createMcpFace}=await import('./face.js');face=await createMcpFace($('face'),{cover:true});}catch{}}})();
  await faceReady;if(token!==epoch||paused||leaving)return;
  face?.pause(false);
- const spoken=await speakCloned(text,token,{resumeListening:false,onStart:()=>document.body.classList.add('mcp-command')});
+ const spoken=await speakCloned(text,token,{resumeListening:false,onStart:()=>document.body.classList.add('mcp-command'),onChunkStart:(chunk,{speechSeconds})=>{
+  if(/\bEND\s+OF\s+LINE\b/i.test(chunk)){
+   document.body.style.setProperty('--mcp-end-duration',Math.max(MCP_CLOSING_FADE.minimumSeconds,speechSeconds-MCP_CLOSING_FADE.finishLeadSeconds)+'s');
+   document.body.classList.add('mcp-command-ending');
+  }
+ }});
  if(!spoken||token!==epoch||paused||leaving)return;
  await new Promise(resolve=>setTimeout(resolve,1000));
  if(token!==epoch||paused||leaving)return;
@@ -160,7 +167,7 @@ $('microphone').onclick=()=>{if(voice.ready)setMic(!micEnabled);};
 const exit=window.createExitConfirm({onConfirm:()=>{cancelIntro.pauseMusic();paused=true;interrupt();setMic(false);face?.pause(true);if(window.parent!==window){window.parent.postMessage({type:'mcp-home'},location.origin);}else{leaving=true;location.replace(new URL('./',location.href));}},onCancel:()=>{cancelIntro.resumeMusic();paused=false;status('YOUR TURN');void requestConversationAudio();listen();}});
 function showExit(){if(exit.open)return;cancelIntro.pauseMusic();paused=true;interrupt();exit.show();}
 
-window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-transition-start')cancelIntro.fadeOutMusic();if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-resume'){document.body.classList.remove('mcp-command');cancelIntro.resumeMusic();paused=false;void requestConversationAudio();face?.pause(false);listen();setBusy(voice.generating);status(voice.generating?'FINISHING PREVIOUS VOICE REQUEST…':voice.ready?'YOUR TURN':'PREPARING MCP VOICE…');}});
+window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-transition-start')cancelIntro.fadeOutMusic();if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-resume'){document.body.classList.remove('mcp-command','mcp-command-ending');cancelIntro.resumeMusic();paused=false;void requestConversationAudio();face?.pause(false);listen();setBusy(voice.generating);status(voice.generating?'FINISHING PREVIOUS VOICE REQUEST…':voice.ready?'YOUR TURN':'PREPARING MCP VOICE…');}});
 window.addEventListener('keydown',e=>{if(e.code==='Escape'&&!exit.open){e.preventDefault();showExit();}});
 window.addEventListener('pagehide',()=>{leaving=true;cancelIntro();interrupt();panelActivity.dispose();face?.dispose();voice.cancel();audioContext?.close();exit.dispose();},{once:true});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){interrupt({keepVoiceLoading:true});status('TRANSMISSION PAUSED');}else listen();});

@@ -12,9 +12,9 @@ try{
  });
  await page.route('**/api/jev/**',r=>r.fulfill({status:503,body:'{}'}));
  await page.route('**/api/mcp/status',r=>r.fulfill({json:{configured:true}}));
- await page.route('**/api/mcp/chat',async r=>{await new Promise(resolve=>setTimeout(resolve,500));return r.fulfill({json:{reply:'UNAUTHORIZED USER.\nREPORT TO THE GAME GRID.',action:{type:'launch_game',game:'cycles'}}});});
+ await page.route('**/api/mcp/chat',async r=>{await new Promise(resolve=>setTimeout(resolve,500));return r.fulfill({json:{reply:'UNAUTHORIZED USER.\nREPORT TO THE GAME GRID.\nEND OF LINE.',action:{type:'launch_game',game:'cycles'}}});});
  await page.route('**/src/mcp/terminal-intro.js',r=>r.fulfill({contentType:'text/javascript',body:`export function typeMcpAccess(e,done){setTimeout(done,50);const cancel=()=>{};cancel.pauseMusic=()=>{};cancel.resumeMusic=()=>{};cancel.fadeOutMusic=()=>{window.musicFadeAt=performance.now();};return cancel;}`}));
- await page.route('**/src/mcp/voice.js',r=>r.fulfill({contentType:'text/javascript',body:`export class McpVoice {ready=false;generating=false;async load(){this.ready=true;}async generate(){await new Promise(resolve=>setTimeout(resolve,500));return {samples:new Float32Array(4800),sampleRate:24000,processed:true};}abort(){}cancel(){}}`}));
+ await page.route('**/src/mcp/voice.js',r=>r.fulfill({contentType:'text/javascript',body:`export class McpVoice {ready=false;generating=false;async load(){this.ready=true;}async generate(text){await new Promise(resolve=>setTimeout(resolve,500));return {samples:new Float32Array(text.includes('END OF LINE')?43200:4800),sampleRate:24000,processed:true};}abort(){}cancel(){}}`}));
  await page.goto('http://127.0.0.1:5173/');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-mcp').disabled);
  await page.locator('#start-mcp').click();
  const frame=await (await page.waitForSelector('#mcp-panel')).contentFrame();
@@ -32,11 +32,16 @@ try{
  assert.equal(await frame.locator('#encom-panel').getAttribute('data-activity'),null);
  assert(await frame.locator('#face').isVisible());
  assert.equal(await page.locator('#mcp-panel').evaluate(e=>e.hidden),false);
+ await frame.waitForFunction(()=>document.body.classList.contains('mcp-command-ending'));
+ await frame.waitForFunction(()=>{const opacity=Number(getComputedStyle(document.querySelector('#face')).opacity);return opacity>0&&opacity<.9;});
+ await frame.waitForFunction(()=>Number(getComputedStyle(document.querySelector('#face')).opacity)===0);
+ assert(await frame.evaluate(()=>performance.now()-lastSpeechStart<1000),'face finishes fading by speech end, before the reverb tail');
+ assert.equal(await page.evaluate(()=>window.launchReceived),undefined,'fade does not cut off the announcement');
  await page.waitForFunction(()=>window.launchReceived,null,{timeout:15000});
  assert(await frame.evaluate(()=>performance.now()-lastSpeechEnd>=990),'transfer waits a second after speech');
  assert.equal(await page.locator('#home-selected-label').count(),0,'no home menu label in direct transition');
  await page.waitForFunction(()=>document.querySelector('#mcp-panel').hidden&&__tron.state.playerVehicle==='cycle',null,{timeout:60000});
  assert(await frame.evaluate(()=>window.musicFadeAt>lastSpeechEnd),'music fades during game transition');
  assert.equal(await page.evaluate(()=>__tron.state.mode),'running');
- assert.deepEqual(errors,[]);console.log('MCP face at speech, full announcement, one-second hold, music fade, and direct cycle entry passed.');
+ assert.deepEqual(errors,[]);console.log('MCP face at speech, closing-sentence fade, full announcement, one-second hold, music fade, and direct cycle entry passed.');
 }finally{await browser.close();}

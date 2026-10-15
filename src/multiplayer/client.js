@@ -108,7 +108,7 @@ export class MultiplayerClient{
     const old=previous.cycles[b.id];
     // A serialized copy of the same reward is not a new HUD animation.
     if(b.reserveReward&&old?.reserveReward&&['revision','turboFrom','brakeFrom','target'].every(key=>b.reserveReward[key]===old.reserveReward[key]))b.reserveReward=old.reserveReward;
-    if(old)for(const key of ['human','operator','reserveReward','wallEliminations'])if(!(key in b))delete old[key];
+    if(old)for(const key of ['human','operator','reserveReward','wallEliminations','trapAssists'])if(!(key in b))delete old[key];
     return Object.assign(old??{},b);
    });
    Object.assign(previous,race);run.cycleRace=previous;

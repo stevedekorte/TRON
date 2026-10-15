@@ -6,7 +6,7 @@ export class CycleRoster{
   this.element.hidden=!visible;if(!visible||!race)return;
   const cycles=[...race.cycles].sort((a,b)=>a.team-b.team||a.id-b.id);
   const queueCount=visible?Math.max(0,Math.floor(waiting||0)):0;
-  const signature=queueCount+':'+cycles.map(c=>`${c.id}:${c.team}:${+c.alive}:${!!c.human}:${c.id===race.playerId}:${race.localPlayerId}:${(c.wallEliminations??[]).map(hit=>`${hit.id}.${hit.team}`).join(",")}`).join('|');
+  const signature=queueCount+':'+cycles.map(c=>`${c.id}:${c.team}:${+c.alive}:${!!c.human}:${c.id===race.playerId}:${race.localPlayerId}:${[...(c.wallEliminations??[]),...(c.trapAssists??[]).map(h=>({...h,id:"assist"+h.id}))].map(hit=>`${hit.id}.${hit.team}`).join(",")}`).join('|');
   if(signature===this.signature)return;this.signature=signature;
   const groups=new Map();
   for(const cycle of cycles){
@@ -18,15 +18,16 @@ export class CycleRoster{
    icon.className='cycle-roster-icon'+(cycle.alive?'':' eliminated')+(cycle.human?' human':'')+(cycle.human&&cycle.id===race.localPlayerId?' local-player':'');icon.dataset.cycleId=String(cycle.id);
    icon.style.color='#'+LIGHT_CYCLES.colors[cycle.team].toString(16).padStart(6,'0');
    const label=`${team} cycle ${group.children.length+1} — ${cycle.alive?'active':'eliminated'}${cycle.human?' · '+cycle.operator:' · AI'}`;
-   const eliminations=cycle.wallEliminations??[];
-   const description=label+(eliminations.length?` · ${eliminations.length} enemy trail elimination${eliminations.length===1?'':'s'}`:'');
+   const eliminations=cycle.wallEliminations??[],assists=cycle.trapAssists??[];
+   const description=label+(eliminations.length?` · ${eliminations.length} enemy trail elimination${eliminations.length===1?'':'s'}`:'')+(assists.length?` · ${assists.length} trap assist${assists.length===1?'':'s'}`:'');
    icon.setAttribute('role','img');icon.setAttribute('aria-label',description);icon.title=description;
-   if(eliminations.length){
+   if(eliminations.length||assists.length){
     const dots=document.createElement('span');dots.className='cycle-roster-kills';dots.setAttribute('aria-hidden','true');
-    for(const hit of eliminations){
+    for(const hit of [...eliminations,...assists]){
      const dot=document.createElement('span');dot.className='cycle-roster-kill';
-     dot.style.backgroundColor='#'+LIGHT_CYCLES.colors[hit.team].toString(16).padStart(6,'0');
-     dot.title=LIGHT_CYCLES.teamNames[hit.team]+' enemy eliminated';dots.append(dot);
+     const color='#'+LIGHT_CYCLES.colors[hit.team].toString(16).padStart(6,'0');
+     if(assists.includes(hit)){dot.classList.add('trap-assist');dot.style.borderColor=color;}else dot.style.backgroundColor=color;
+     dot.title=LIGHT_CYCLES.teamNames[hit.team]+(assists.includes(hit)?' enemy trapped':' enemy eliminated');dots.append(dot);
     }
     icon.append(dots);
    }

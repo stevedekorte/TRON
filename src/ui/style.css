@@ -153,3 +153,5 @@ body.playing-multiplayer #controls-prompt{top:82px}
 /* Round-local enemy trail eliminations; independent of roster sizing. */
 .cycle-roster-kills{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:24px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px}
 .cycle-roster-kill{display:block;flex:0 0 3px;width:3px;height:3px;border-radius:50%}
+
+.cycle-roster-kill.trap-assist{box-sizing:border-box;border:1px solid;background:transparent}

@@ -1,3 +1,4 @@
+import {wallEliminationsByTeam,trapRewardsByTeam} from './fitness.mjs';
 import {cycleAIDebug} from '../../shared/simulation/cycle-ai/controller.js';
 import {performance} from 'node:perf_hooks';
 import {pathToFileURL} from 'node:url';
@@ -15,7 +16,7 @@ export function match({seed=1982,mode='classic',seconds=180,policies=null,measur
   if(measure){times.push(performance.now()-start);if(race.aiMetrics)ai.push(race.aiMetrics.milliseconds);}
  }
  const quantile=(a,q)=>a.length?a.sort((x,y)=>x-y)[Math.min(a.length-1,Math.floor(a.length*q))]:0;
- return {seed,mode,ticks:steps,seconds:steps/120,winner:race.winner,alive:race.cycles.filter(b=>b.alive).length,turns:race.cycles.reduce((s,b)=>s+b.turns,0),trailCount:race.trails.length,decisions:cycleAIDebug(race)?.totals,tickMs:{p50:quantile(times,.5),p95:quantile(times,.95),p99:quantile(times,.99),max:quantile(times,1)},aiMs:{p95:quantile(ai,.95),p99:quantile(ai,.99),max:quantile(ai,1)}};
+ return {seed,mode,ticks:steps,seconds:steps/120,matchLimitSeconds:seconds,winner:race.winner,wallEliminations:wallEliminationsByTeam(race),...trapRewardsByTeam(race),alive:race.cycles.filter(b=>b.alive).length,turns:race.cycles.reduce((s,b)=>s+b.turns,0),trailCount:race.trails.length,decisions:cycleAIDebug(race)?.totals,tickMs:{p50:quantile(times,.5),p95:quantile(times,.95),p99:quantile(times,.99),max:quantile(times,1)},aiMs:{p95:quantile(ai,.95),p99:quantile(ai,.99),max:quantile(ai,1)}};
 }
 if(import.meta.url===pathToFileURL(process.argv[1]).href){
  const mode=process.argv[2]??'classic',count=Number(process.argv[3]??3),seconds=Number(process.argv[4]??180);

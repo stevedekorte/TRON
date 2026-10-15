@@ -19,6 +19,12 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Evolved AI and trap attribution release — October 15
+
+- [x] Release checks: 563 unit tests, production build/asset audit, Worker dry run, and headless Chrome roster, MCP game-launch and two-client multiplayer checks pass on macOS. Publish the playtested `aggression-1-0` policy for solo/MP, persistent trap-assist attribution and hollow roster dots, and MCP closing-sentence fade. Later training found no qualifying improvement; retain the playtested weights.
+- [x] Deploy compatible multiplayer Worker `3f4f21f1-73fa-43c5-ba0d-c383a16eecdb`. Optional trap-assist snapshot data preserves the existing protocol. Training and research artifacts remain offline; no automatic training runs in production.
+- [ ] Publish the matching website revision and verify the production multiplayer connection. Historical local-only notes below describe their state when written.
+
 ## JavaScript cycle AI plan — October 14
 
 - [x] Write the [fast, compelling cycle AI plan](cycle-ai/index.html), prioritizing bounded runtime cost above tactical sophistication. Cover cutoffs/containment, joint turn and reserve planning, competent seeded variation, offline win-rate evolution and an optional tiny neural scorer.
@@ -2214,6 +2220,37 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Cycles crossing the outer edge silently derez, stop counting as survivors, and enter the normal next-match queue. No explosion effect or explosion sound; trail cleanup remains active. Keep bounded AI enabled after breaches appear.
 - [x] Validation: 27 focused multiplayer/breach/AI unit tests pass; Chrome arena breach geometry checks verify an opening and restored walls; production build passes. Local implementation only, not deployed.
 
+## Cycle AI evaluation rewards — October 14
+
+- [x] Add persistent, bounded confinement attribution, hollow roster assist dots, and offline rewards for direct kills, trap assists and creating confinement. Runtime remains the first gate; aggression and wins jointly determine fitness. 561 unit tests, Chrome roster checks, dense attribution benchmark, evolution smoke and production build pass. No live weights changed; implementation local only. See [cycle AI](cycle-ai/) for measured costs and conservative attribution limitations.
+
+## First evolved cycle AI playtest — October 14
+
+- [x] Run 128 training and 64 paired held-out matches with aggression rewards; preserve weights/results and check serial/browser performance. Candidate gets 5 versus 3 direct kills, 10 versus 9 trap assists and 5 versus 4 wins in the 32-match held-out comparison. Evidence remains weak across eight independent seeds.
+- [x] Add a development-only `?cycleAITrial=1` route for playing the candidate in LIGHT CYCLES. Exact weights and rendering verified in Chrome; baseline and production unchanged. See [cycle AI](cycle-ai/) for the reproducible artifact, timing and limitations.
+- [ ] Human play review and broader evaluation before promoting the candidate, including multiplayer wall-breach matches.
+
+## MCP closing-sentence fade — October 14
+
+- [x] Fade the MCP face during the END OF LINE sentence, completing before speech finishes rather than leaving it visible through the post-speech hold. Use the actual audio duration/pitch and exclude the rendered reverb tail. Keep complete playback, the one-second hold and the normal game transition. Clear the fade state on another announcement or panel resume.
+- [x] Four speech queue unit checks and the Chrome game-launch test pass, including progressive fade, disappearance before the closing audio ends, no early launch, complete speech, post-speech hold and direct cycle entry. Local only.
+
+## Evolved AI default for solo and MP — October 14
+
+- [x] Following the user's playtest, select frozen `aggression-1-0` weights as the common solo/MP default. Keep the original baseline for offline comparisons and keep ongoing experiments from replacing gameplay weights automatically. Solo arena AI remains bounded after breaches.
+- [x] Focused AI/authority policy-selection tests, two-client Chrome MP lifecycle coverage and Worker dry run pass. Production deployment remains outstanding.
+
+## Cycle AI research and evolution plateau — October 14
+
+- [x] Complete the extended evolution run: stop after three consecutive generations without a qualifying validation gain. Fresh evaluation does not improve on the playtested policy; retain `aggression-1-0`. Preserve the experiment and limitations on the [cycle AI page](cycle-ai/).
+- [x] Review original Tron AI research and Armagetron source for territory evaluation, neural inputs, passive self-play failure modes and close-combat interception. Record findings and proposed experiments on the cycle AI page. No new neural controller or overtaking behavior is implemented by this research.
+
+## Faster-win AI evaluation — October 14
+
+- [x] Add a tunable maximum 0.5-point bonus to confirmed wins, declining linearly with elapsed time relative to the evaluation match limit. Losses and timeouts earn no speed bonus; existing kill/trap/confinement rewards remain. Record match limits and worker bonus contributions for reproducibility. Runtime remains the first gate; gameplay weights are unchanged.
+- [x] Four fitness tests pass, covering fast/late wins, loss/timeout exclusion, bounded scoring, tuning and missing/invalid timing. Offline evolution smoke passes. New scoring needs a fresh training/evaluation comparison before any policy promotion; historical scores use the previous objective.
+- [x] Run `node tools/ai/evolve-until-plateau.mjs --fast-wins`: 352 simulated matches; stop after three consecutive failed validation generations. Retain `aggression-1-0`, with no trial/default change. Fresh results: 5/32 wins for both retained policy and original baseline, fitness 0.5266 versus 0.5500, mean winning duration 147.5 versus 151.2 seconds. No demonstrated improvement; see [full results and limitations](cycle-ai/). Runtime p99 gate passes; no deployment.
+
 
 ---
 
@@ -2434,7 +2471,7 @@ Implemented behavior:
 - A shared, fixed-capacity trail index uses the actual trimmed/damaged/expired collision segments. Queries cap work and treat overflow as unknown/blocked. The index currently rebuilds each step; measured cost fits the reference-machine gate, so incremental maintenance is deferred rather than adding invalidation complexity prematurely.
 - Nine joint heading/pedal candidates. The speed forecast shares the authority's response formula and step order; arrival checks account for acceleration, available charge and an opponent's possible turbo response. Cutoffs require an arrival lead and an exit. Closing a confined approach earns more than crossing open space. Brake/yield and resource-conserving coast options compete with turbo.
 - Stable target selection and switching penalties, plus seeded choice only among safe near-best candidates. Planning flood fills share a 255-cell limit across the three directions. Full two-turn search, explicit multi-bot role reservations and learned opponent prediction are not implemented yet.
-- Versioned bounded scoring weights, an offline evolutionary tournament tool, and an optional 32→16→1 neural residual scorer. Neural output is capped and cannot bypass safety. The shipped policy is the linear scorer; no evolved or neural weights have been promoted.
+- Versioned bounded scoring weights, an offline evolutionary tournament tool, and an optional 32→16→1 neural residual scorer. Neural output is capped and cannot bypass safety. The scorer is linear; the playtested evolved weights are now the local default (see promotion below). No neural weights are enabled.
 - Local development controls in TAB → Arena AI, plus `__tron.configureCycleAI({mode:'bounded', measure:true})` and `__tron.cycleAI` diagnostics. The latter includes decision/guard counts and cumulative AI milliseconds. Multiplayer AI remains authority-owned; the client panel cannot edit it. Settings apply to the current local arena, persist across its rounds, and are not saved globally.
 
 ### Verification and reproducible commands
@@ -2565,7 +2602,7 @@ Begin with approximately 8–12 bounded parameters: cutoff reward, containment r
 
 Run a plain Node.js headless tournament outside live matches. Mutate a small population around the champion, evaluate cheaply to reject poor candidates, then spend more trials on promising challengers. Use paired seeds with swapped spawn locations, team colors and teammates. Compare against the frozen current bot, several historical champions, defensive and aggressive opponents, plus mixed-policy teams. Separate duel and six/nine/twelve-cycle results. Rotate a held-out seed pool and keep the final promotion suite unseen during optimization.
 
-Rank performance lexicographically: runtime gate, safety regression gate, then team win rate. Record draws/timeouts explicitly, treat the whole match as the statistical unit, and report sample counts and uncertainty. Do not promote on a handful of wins or repeated testing against the same seeds. Require a prespecified statistically supported improvement on held-out matches and no material regression in scenario failures, resource efficiency or performance tails. Keep diverse historical opponents to discourage cyclic overfitting. Human play review remains necessary: higher win rate can still mean dull stalling.
+Rank performance lexicographically: runtime gate, safety regression gate, then combined aggression-and-win fitness, then team win rate. Record draws/timeouts explicitly, treat the whole match as the statistical unit, and report sample counts and uncertainty. Do not promote on a handful of wins or repeated testing against the same seeds. Require a prespecified statistically supported improvement on held-out matches and no material regression in scenario failures, resource efficiency or performance tails. Keep diverse historical opponents to discourage cyclic overfitting. Human play review remains necessary: higher win rate can still mean dull stalling.
 
 Public win rates are useful monitoring data, but depend on human skill, seats and teammate composition. Do not directly update weights after each public win/loss. Collect policy-tagged results, use them to identify weaknesses, validate a challenger offline, and activate a frozen approved version between matches with rollback available. Never mutate behavior midway through a match. Keep training opt-in and off the browser/server simulation loop.
 
@@ -2620,6 +2657,96 @@ Version features, architecture and weights together. Benchmark linear and neural
 - [ ] Record real-player impressions of cutoff pressure, deaths, turbo/brake intent and variety. Document remaining defects and actual benchmark hardware/results before recommending deployment.
 
 Validation status: implementation measurements and completed checks are recorded above. Unchecked stages remain outstanding, especially cross-device/server benchmarking, advanced coordination, training promotion and human play review.
+
+## Persistent trap attribution and aggressive evaluation — October 14
+
+The authority now tracks coarse reachable space on a 40×40 graph. One cycle is sampled every 0.1 seconds, at most three opposing wall owners are tested per sample, geometry is capped at 2,048 segments, and all floods in one update share a 16,000-node visit budget. This is attribution only, never a replacement for swept collision. A new enemy wall must reduce reachable space substantially: the remaining area is at most 40% of the arena, and removing its newly added barriers restores at least 80 coarse cells and 1.5× the area. Mere proximity and following do not earn credit.
+
+A detected trap remembers the original walls and region. New walls laid inside that region—including the victim filling it with a spiral—do not erase attribution. Before awarding an assist, the authority checks that the victim remains inside the original region and that surviving original barriers still enclose it. Removing the attacker's wall must restore meaningful escape space. There is no timeout. A direct hit on that same attacker's wall remains a direct kill, not an additional assist. Multiple attackers share at most one assist reward per victim. Hollow victim-colored roster dots show assists; filled dots remain direct wall eliminations. Compact snapshots carry assists, but not graph/history state.
+
+Conservative limitations: this graph cannot prove every narrow passage or every driving maneuver is viable. Breaches expand to coarse cells and deny uncertain credit. Trail damage, trimming or retirement invalidate pending attribution rather than risk keeping credit across a sub-grid opening; this can miss valid traps, including when an unrelated trail changes. Budget exhaustion cannot award an assist. A trap completed between scans can be missed. Large-region partitions and non-cardinal road joins are deliberately excluded. Human attribution review and slower-hardware/Worker profiling remain outstanding.
+
+Offline tournament fitness now awards 1 point per team win, 0.5 per direct enemy wall elimination, 0.35 per trap assist, and 0.1 per newly created confinement. Confinement and assist rewards are separately capped to one shared reward per victim per match. Runtime compliance ranks first; combined fitness ranks next, with win rate breaking ties. Thus aggression is a primary objective, not merely a tie-breaker for equally winning passive policies. Artifacts retain raw wins, draws, direct kills, assists and confinements. Promotion remains manual, with held-out checks and human gameplay review; no evolved weights have been deployed.
+
+Validation on Apple M2 Max, Node 22.22.0 and Chrome: 561 unit tests pass, including persistent 90-second trapping with self-fill, escape/opening invalidation, duplicate/direct/friendly exclusions, and shared reward ranking. Chrome roster checks pass; hollow assist dots visually inspected. A 12-cycle/2,048-trail stress fixture (`node tools/ai/trap-stress.mjs`) measures scheduled attribution work at p95 0.152 ms, p99 0.187 ms and max 0.191 ms. One 180-second bounded-AI match produces one trap assist despite zero direct wall kills, with total simulation tick p99 0.660 ms; the match times out, so this is not evidence of improved winning or entertainment. Evolution smoke pipeline and production build pass. Implementation is local, not deployed.
+
+## First aggression evolution trial — October 14
+
+Completed `node tools/ai/train.mjs`: four policies × two generations × four training seeds × four spawn rotations (128 training matches), then eight fresh seeds × four rotations for both the selected candidate and baseline (64 evaluation matches). Each match allows 180 seconds. Mutations are seeded (44123); historical opponents remain in training. Three worker threads execute simulation matches without timing instrumentation. Serial, uncontended performance checks gate each generation winner and the final candidate. The neural scorer remains disabled.
+
+Selected policy: `aggression-1-0`. Full weights, training scores, per-match held-out results, configuration and serial timing are retained in [the experiment artifact](experiments/aggression-2026-10-14.json). No automatic policy promotion or deployment occurred.
+
+| Fresh-seed results (32 matches each) | Baseline | Candidate |
+|---|---:|---:|
+| Direct enemy wall eliminations | 3 | 5 |
+| Trap assists (shared credits) | 9 | 10 |
+| Confinements (shared credits) | 42 | 44.17 |
+| Wins | 4 | 5 |
+| Timeouts/draws | 16 | 13 |
+| Losses | 12 | 14 |
+| Mean combined fitness | 0.4016 | 0.4818 |
+
+This is a modest exploratory gain, not established superiority. Candidate fitness is better on five seed groups, worse on two and tied on one; the approximate paired t interval across eight independent seed groups for the mean fitness difference is −0.301 to +0.461 (95%), spanning no improvement. Four spawn rotations within a seed are correlated. More losses and still many timeouts warrant gameplay review. These tournaments use closed arenas; they do not establish the same result under multiplayer wall-breach rules.
+
+Serial M2 Max/Node 22.22 timing for the candidate: AI p99 0.186 ms, full tick p99 0.598 ms, maximum full tick 2.528 ms. Chrome 155 on macOS verifies the exact selected weights, no page errors, and a rendered frame AI p99 of 0.300 ms; the isolated 12-cycle/2,048-trail browser planner fixture gives p99 0.400 ms. Captured and inspected the arena rendering. Sixteen focused AI/fitness tests and the production build pass. Visual rendering does not establish that the opponent feels more fun.
+
+To play locally, open `http://127.0.0.1:5173/?cycleAITrial=1` and choose LIGHT CYCLES. This development-only route loads `test-results/cycle-ai-trained.json`, validates the policy and requires its serial runtime check to have passed. The normal URL retains the baseline, and multiplayer authority is unchanged. Neither the loader nor the training artifact URL appears in production bundles. To reproduce the saved trial without retraining, copy the experiment JSON above to `test-results/cycle-ai-trained.json`. Browser check: `node tests/browser/cycle-ai.mjs --trial`.
+
+## Playtested policy selected for solo and MP — October 14
+
+At the user's request after playing the trial, `aggression-1-0` is now the shared default in `shared/simulation/cycle-ai/policies/aggression-v1.js`. Both solo arena bots and the multiplayer authority use these frozen weights. Solo LIGHT CYCLES keeps bounded AI enabled after a breach. Human controls and road mode remain unchanged. Training artifacts cannot replace this gameplay policy automatically; further evolution is separate. The original `bounded-v1` weights remain available as `BASELINE_POLICY` for reproducible offline comparisons.
+
+The earlier trial-only restriction no longer applies to these weights: normal local solo and MP games use them without a query parameter. This is a local source change, not a production deployment. Focused authority/AI tests verify both paths select the same policy; two-client Chrome MP lifecycle checks and the Worker dry run pass.
+
+## Extended evolution reached a plateau — October 14
+
+`node tools/ai/evolve-until-plateau.mjs` completed four generations and stopped after three consecutive generations without a qualifying validation improvement. This is a plateau for this mutation/search setup, not proof that no better policy exists. The validation winner `plateau-0-0` scored 0.4484 mean fitness on 32 fresh matches, versus 0.4664 for the playtested `aggression-1-0` and 0.3781 for `bounded-v1`. The challenger had 5 wins, 24 draws and 3 losses; the playtested policy had 4 wins, 14 draws and 14 losses. More survival did not produce better combined aggression fitness. Neither the trial artifact nor gameplay default was replaced.
+
+Full results: [plateau experiment](experiments/plateau-2026-10-14.json). Serial M2 Max Node timing passed: AI p99 0.252 ms and full simulation tick p99 0.661 ms. Closed-arena evaluation and small seed count remain limitations. Shared default integration passes 562 unit tests, Chrome AI and two-client multiplayer checks, and the Worker dry run; production remains unchanged.
+
+## Research findings — October 14
+
+### Faster-win reward follow-up
+
+Offline evaluation now adds `fastWinBonusPoints × max(0, 1 − seconds / matchLimitSeconds)` only for the winning team. `AI_FITNESS.fastWinBonusPoints` defaults to 0.5, in addition to the base win point: a 90-second win in a 180-second evaluation earns 1.25 before aggression rewards. A deadline win earns 1.0. Losses and timeouts earn no speed bonus, while earned wall, assist and confinement credit remains. Missing or invalid timing earns no bonus. Confinement credit is already recorded when a trap is detected and is not discounted by time spent filling the trapped region.
+
+Match results carry their configured limit, and tournament worker rows include the speed contribution. Fitness weights are retained in new training artifacts. Earlier artifacts retain their original scoring and must not be compared directly with new scores. Four fitness tests and the offline evolution smoke pass. No live simulation work or gameplay-policy change is introduced; a new training comparison is still required to establish behavioral improvement.
+
+### Original sources
+
+Original sources suggest several useful directions:
+
+- [Andy Sloane's winning 2010 AI postmortem](https://www.a1k0n.net/2010/03/04/google-ai-postmortem.html): bounded search plus obstacle-aware territory ownership and chokepoint/chamber analysis. Separate contested play from isolated space filling. His [simplified JavaScript opponent](https://www.a1k0n.net/code/tron.html) is directly inspectable.
+- [Animal–Animat Coevolution, 1998](https://www.demo.cs.brandeis.edu/papers/tronsab98.html): eight obstacle-distance sensors fed evolved controllers. Early perceptron evolution produced passive spirals; human-opponent evaluation helped escape this self-play equilibrium. The authors identify missing opponent position/heading as a sensory limitation.
+- [Modular Reinforcement Learning for Playing the Game of Tron, 2022](https://doi.org/10.1109/ACCESS.2022.3175299): separate interaction and isolated-survival models, with board channels for arena walls, own head/trail and opponent head/trail. Positive per-step survival rewards encouraged avoidance; negative per-step rewards produced more aggressive play in their experiments. Their convolutional network is larger than our proposed tiny scorer. Small two-player grids and a simplified search baseline limit transfer of strength claims to our arena.
+- [Simultaneous-move MCTS study, 2013](https://repository.tudelft.nl/record/uuid%3A814a4ba7-9508-410e-ba12-79de980cb67b): explicitly model simultaneous decisions; decoupled selection performed best among tested variants. It does not establish suitability under our twelve-cycle runtime budget.
+- [Armagetron close-combat source](https://github.com/ArmagetronAd/armagetronad/blob/trunk/src/tron/gAIBase.cpp): `ThinkCloseCombat` uses relative opponent position, direction and speed, reaction allowance, wall sensing and explicit cutoff comparisons, with emergency survival checks. This is a useful real-time interception reference, not evidence of learned turbo overtaking.
+
+Proposed next experiment, not implemented: keep bounded geometry/safety work, expose opponent-relative motion and speed reserves to a small policy controlling turn/turbo/brake jointly, and train against diverse historical opponents with explicit overtake/interception scenarios. Evaluate aggressive wins and successful confinement rather than survival time alone. A modest time penalty needs testing against suicide/recklessness. Maintain runtime as the first gate; use expensive search offline if it helps produce training examples. Our variable-speed, multi-cycle arena requires its own validation.
+
+## Faster-win evolution completed — October 14
+
+Ran `node tools/ai/evolve-until-plateau.mjs --fast-wins` using Node 22.22.0 on Apple M2 Max. Start from frozen `aggression-1-0`; mutation seed 882913, training seeds beginning at 220000, validation 240000–240003, final 300000–300007. Each seed has four team-position rotations, with 180-second match limits. Runtime measurements run serially after parallel match evaluation.
+
+All three generations failed the predeclared improvement criterion (fitness gain at least 0.02, improvements in at least three of four validation seed groups, and runtime pass). Training-selected challengers had validation fitness deltas −0.1560, −0.3443 and −0.2188; only the first improved any seed group (one). Stop after three consecutive failures. This establishes a plateau for this bounded weight-mutation experiment, not absence of better policies. No neural policy or new action repertoire was trained.
+
+The run executed 352 matches: 16 initial validation, 192 training, 48 challenger validation and 96 final evaluations. Because the champion stayed unchanged, two final 32-match evaluations use the same policy and seeds and produce identical results; they are a reproducibility check, not independent evidence.
+
+| Fresh evaluation | Retained playtested policy | Original baseline |
+|---|---:|---:|
+| Wins / draws / losses | 5 / 19 / 8 | 5 / 12 / 15 |
+| Mean winning duration, seconds | 147.46 | 151.20 |
+| Direct wall eliminations | 6 | 6 |
+| Trap assist credits | 9 | 12 |
+| Confinement credits | 52.5 | 50 |
+| Total faster-win bonus | 0.4519 | 0.4000 |
+| Mean combined fitness | 0.5266 | 0.5500 |
+
+Only five wins per policy contribute to mean winning duration, and they need not be the same scenarios. Eight independent seeds with correlated spawn rotations are insufficient to claim a reliable speed advantage. The retained policy has more draws and slightly worse combined fitness than the original baseline here. Neither this comparison nor unsuccessful mutations demonstrate that the new reward reduced spiraling. Trial and gameplay weights remain unchanged.
+
+Serial runtime passes the existing gate: AI p99 0.235 ms and full tick p99 0.478 ms; maximum full tick 10.860 ms exceeds one 120 Hz tick budget, so the p99 result is not a guarantee of no overruns. Closed-arena fixtures do not establish performance with MP breaches or on slower/server hardware. Four fitness unit checks pass; script syntax and generated-document checks pass. No browser test or deployment was needed for this offline experiment.
+
+Preserved [full weights, rows, configuration, validation and timing](experiments/fast-wins-2026-10-14.json). Further work should change the training situations or available decision structure rather than claiming more repetitions of this search have found a better AI.
 
 
 ---

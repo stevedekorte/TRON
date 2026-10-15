@@ -6,6 +6,12 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Evolved AI and trap attribution release — October 15
+
+- [x] Release checks: 563 unit tests, production build/asset audit, Worker dry run, and headless Chrome roster, MCP game-launch and two-client multiplayer checks pass on macOS. Publish the playtested `aggression-1-0` policy for solo/MP, persistent trap-assist attribution and hollow roster dots, and MCP closing-sentence fade. Later training found no qualifying improvement; retain the playtested weights.
+- [x] Deploy compatible multiplayer Worker `3f4f21f1-73fa-43c5-ba0d-c383a16eecdb`. Optional trap-assist snapshot data preserves the existing protocol. Training and research artifacts remain offline; no automatic training runs in production.
+- [ ] Publish the matching website revision and verify the production multiplayer connection. Historical local-only notes below describe their state when written.
+
 ## JavaScript cycle AI plan — October 14
 
 - [x] Write the [fast, compelling cycle AI plan](cycle-ai/index.html), prioritizing bounded runtime cost above tactical sophistication. Cover cutoffs/containment, joint turn and reserve planning, competent seeded variation, offline win-rate evolution and an optional tiny neural scorer.
@@ -2200,3 +2206,34 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Enable impact-created arena breaches in multiplayer, synchronize openings in full and compact snapshots, and restore intact walls each match. No opening is pre-created.
 - [x] Cycles crossing the outer edge silently derez, stop counting as survivors, and enter the normal next-match queue. No explosion effect or explosion sound; trail cleanup remains active. Keep bounded AI enabled after breaches appear.
 - [x] Validation: 27 focused multiplayer/breach/AI unit tests pass; Chrome arena breach geometry checks verify an opening and restored walls; production build passes. Local implementation only, not deployed.
+
+## Cycle AI evaluation rewards — October 14
+
+- [x] Add persistent, bounded confinement attribution, hollow roster assist dots, and offline rewards for direct kills, trap assists and creating confinement. Runtime remains the first gate; aggression and wins jointly determine fitness. 561 unit tests, Chrome roster checks, dense attribution benchmark, evolution smoke and production build pass. No live weights changed; implementation local only. See [cycle AI](cycle-ai/) for measured costs and conservative attribution limitations.
+
+## First evolved cycle AI playtest — October 14
+
+- [x] Run 128 training and 64 paired held-out matches with aggression rewards; preserve weights/results and check serial/browser performance. Candidate gets 5 versus 3 direct kills, 10 versus 9 trap assists and 5 versus 4 wins in the 32-match held-out comparison. Evidence remains weak across eight independent seeds.
+- [x] Add a development-only `?cycleAITrial=1` route for playing the candidate in LIGHT CYCLES. Exact weights and rendering verified in Chrome; baseline and production unchanged. See [cycle AI](cycle-ai/) for the reproducible artifact, timing and limitations.
+- [ ] Human play review and broader evaluation before promoting the candidate, including multiplayer wall-breach matches.
+
+## MCP closing-sentence fade — October 14
+
+- [x] Fade the MCP face during the END OF LINE sentence, completing before speech finishes rather than leaving it visible through the post-speech hold. Use the actual audio duration/pitch and exclude the rendered reverb tail. Keep complete playback, the one-second hold and the normal game transition. Clear the fade state on another announcement or panel resume.
+- [x] Four speech queue unit checks and the Chrome game-launch test pass, including progressive fade, disappearance before the closing audio ends, no early launch, complete speech, post-speech hold and direct cycle entry. Local only.
+
+## Evolved AI default for solo and MP — October 14
+
+- [x] Following the user's playtest, select frozen `aggression-1-0` weights as the common solo/MP default. Keep the original baseline for offline comparisons and keep ongoing experiments from replacing gameplay weights automatically. Solo arena AI remains bounded after breaches.
+- [x] Focused AI/authority policy-selection tests, two-client Chrome MP lifecycle coverage and Worker dry run pass. Production deployment remains outstanding.
+
+## Cycle AI research and evolution plateau — October 14
+
+- [x] Complete the extended evolution run: stop after three consecutive generations without a qualifying validation gain. Fresh evaluation does not improve on the playtested policy; retain `aggression-1-0`. Preserve the experiment and limitations on the [cycle AI page](cycle-ai/).
+- [x] Review original Tron AI research and Armagetron source for territory evaluation, neural inputs, passive self-play failure modes and close-combat interception. Record findings and proposed experiments on the cycle AI page. No new neural controller or overtaking behavior is implemented by this research.
+
+## Faster-win AI evaluation — October 14
+
+- [x] Add a tunable maximum 0.5-point bonus to confirmed wins, declining linearly with elapsed time relative to the evaluation match limit. Losses and timeouts earn no speed bonus; existing kill/trap/confinement rewards remain. Record match limits and worker bonus contributions for reproducibility. Runtime remains the first gate; gameplay weights are unchanged.
+- [x] Four fitness tests pass, covering fast/late wins, loss/timeout exclusion, bounded scoring, tuning and missing/invalid timing. Offline evolution smoke passes. New scoring needs a fresh training/evaluation comparison before any policy promotion; historical scores use the previous objective.
+- [x] Run `node tools/ai/evolve-until-plateau.mjs --fast-wins`: 352 simulated matches; stop after three consecutive failed validation generations. Retain `aggression-1-0`, with no trial/default change. Fresh results: 5/32 wins for both retained policy and original baseline, fitness 0.5266 versus 0.5500, mean winning duration 147.5 versus 151.2 seconds. No demonstrated improvement; see [full results and limitations](cycle-ai/). Runtime p99 gate passes; no deployment.

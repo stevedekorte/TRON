@@ -35,7 +35,7 @@ export async function speakSentences({text,generate,play,isCurrent,onWaiting=()=
    if(!isCurrent())return;
    if(result.error)throw result.error;
    if(i+1<chunks.length)pending=prepare(chunks[i+1]);
-   await play(result.audio);
+   await play(result.audio,chunks[i]);
   }
  }finally{
   // Escape stops playback immediately. Let any already-running inference settle

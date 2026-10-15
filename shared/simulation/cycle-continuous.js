@@ -1,3 +1,4 @@
+import {trackCycleTraps,invalidateCycleTraps} from './cycle-traps.js';
 import {rewardCycleWallOwner} from './cycle-reserve-reward.js';
 import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR,cycleFraction,cycleTrailState} from './config/light-cycles.js';
 import {ARENA_WALL,arenaWallBlocked,wallImpact,breachContains} from './config/arena-breaches.js';
@@ -50,6 +51,7 @@ function mark(r,x,z,id){
  else {const k=`${x},${z}`;if(!r.outerOccupied[k]||r.outerOccupied[k]===id)r.outerOccupied[k]=id;}
 }
 function retireTrail(r,b){
+ invalidateCycleTraps(r);
  const tail=r.trails[b.segment];
  if(tail){const length=Math.hypot(tail.x2-tail.x1,tail.z2-tail.z1),trim=Math.min(length,C.lengthMeters*.347/C.cellMeters);if(length){tail.x2-=(tail.x2-tail.x1)*trim/length;tail.z2-=(tail.z2-tail.z1)*trim/length;}}
  for(const t of r.trails)if(t.bikeId===b.id)t.dyingAt=Math.min(t.dyingAt??Infinity,r.time);
@@ -108,6 +110,7 @@ export function advanceContinuousCycles(r,alive,dt,world){
   const hit=sweepCycleSegment({x:p.from.x-q.from.x,z:p.from.z-q.from.z},{x:p.to.x-q.to.x,z:p.to.z-q.to.z},{x:0,z:0},{x:0,z:0},radius*2);
   if(hit&&hit.t<=(p.hit?.t??1)&&hit.t<=(q.hit?.t??1)){setHit(p,{t:hit.t});setHit(q,{t:hit.t});}
  }
+ trackCycleTraps(r,barriers,proposals);
  const trailHits=[];
  for(const p of proposals){
   const {b,from,to,hit}=p,t=hit?.t??1;
