@@ -89,8 +89,10 @@ void main(){
  color=mix(color,vec3(.82,.89,1.)*${WHEEL_GLINT.intensity},wheelReflection(localPoint,h.n,h.material)*rezSolid);
  // Preserve the body hue; coverage, halo strength and stage opacity control brightness.
  vec3 wireColor=bodyColor*${CYCLE_REZ.lineIntensity};
+ if(h.material==1)wireColor=humanPaint(wireColor,localPoint);
  // The solid briefly blooms almost white, while glass stays dark.
  color+=mix(bodyColor,vec3(.88,1.,.8),.8)*rezGlow*${CYCLE_REZ.bodyGlowIntensity.toFixed(1)}*(h.material==2?.04:1.);
+ if(h.material==1)color=humanPaint(color,localPoint);
  color=mix(wireColor,color,rezSolid/max(formationAlpha,.001));
  float depth=-(viewMatrix*vec4(worldPoint,1)).z;
  color=mix(color,sceneFogColor,1.-exp(-sceneFogDensity*sceneFogDensity*depth*depth));

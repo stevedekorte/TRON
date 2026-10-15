@@ -1,9 +1,11 @@
+import {MultiplayerFormationCamera} from './multiplayer-formation-camera.js';
 import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
 import {ROAD_CYCLE} from '../../shared/simulation/config/cycle-road.js';
 import {CycleResultCamera} from './cycle-result-camera.js';
 import {CluDeathCamera} from './clu-death-camera.js';
 import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 import {updateCycleOverview} from './cycle-overview.js';
+import {frameSpectatorOpponent} from './cycle-spectator-framing.js';
 import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 import { FreeCamera } from './free-camera.js';
 import * as THREE from 'three';
@@ -44,6 +46,7 @@ export class CameraRig {
     this.beamCamera = new BeamCamera();
     this.deathCamera = new CluDeathCamera();
     this.cycleResultCamera = new CycleResultCamera();
+    this.multiplayerFormationCamera = new MultiplayerFormationCamera();
     this.followPosition = new THREE.Vector3();
     this.look = new THREE.Vector3();
     this.desired = new THREE.Vector3();
@@ -56,6 +59,7 @@ export class CameraRig {
     this.beamCamera.reset();
     this.deathCamera.reset();
     this.cycleResultCamera.reset();
+    this.multiplayerFormationCamera.reset();
     this.beamCinematic = null;
     this.zoomTransition = null;
     this.zoomFov = undefined;
@@ -72,6 +76,7 @@ export class CameraRig {
     this.cycleOpening = null;
     this.cycleOverview = null;
     this.cycleAnchor = null;
+    this.spectatorOrbit = null;
     this.cycleSpeedDistanceScale=1;
     this.cycleFirstPerson=false;this.cycleFirstPersonMix=0;this.cycleVisibility=1;this.cycleFirstPersonAge=0;this.wasCycleFirstPerson=false;
     this.cycleFollowedId=undefined;
@@ -154,6 +159,8 @@ export class CameraRig {
     return this.frame;
   }
   update(run, previous, alpha, dt, mode, { x, s, yaw, turretYaw, fragments = [], cycleRace = run.cycleRace }) {
+    if(run.multiplayer&&cycleRace?.phase==='countdown'&&this.freeCamera.active)this.freeCamera.exit();
+    if(this.multiplayerFormationCamera.update(this,run,cycleRace,dt,mode))return {tankVisible:false};
     if (this.freeCamera.active) return { tankVisible: run.playerVehicle!=='cycle' };
     if(this.deathCamera.update(this,run,dt,mode))return {tankVisible:false};
     if(this.cycleResultCamera.update(this,run,cycleRace,dt,mode))return {tankVisible:false};
@@ -283,10 +290,13 @@ export class CameraRig {
         this.desired.copy(cockpitEye);
         this.desired.y=Math.max(this.camera.position.y,roofClearance);
       }
+      const spectatorFramed=run.cycleSpectating&&bike?.alive&&!escaped&&this.cycleOpening===null
+        ?frameSpectatorOpponent(this,cycleRace,bike,pose,mode==='paused'?0:dt):false;
+      if(!spectatorFramed)this.spectatorOrbit=null;
       const openingRoll=this.cycleOpening===null?0:applyCycleOpening(this.cycleOpening,cycleRace.site,this.desired,this.lookDesired);
       const cycleAnchor=cycleCameraAnchor(pose,cycleRace,CYCLE_CAMERA.wallAnchorHeightMeters,CAMERA_CLEARANCE.radiusMeters);
       const cycleWorld=cycleCameraWorld(this.world,cycleRace);
-      if(this.cycleOpening===null&&aerialMix===0&&this.cycleCockpitMix<.01&&cycleWallFollowPosition(cycleWorld,pose,cycleRace,this.desired,cycleAnchor,CAMERA_CLEARANCE.radiusMeters,previousCamera))
+      if(!spectatorFramed&&this.cycleOpening===null&&aerialMix===0&&this.cycleCockpitMix<.01&&cycleWallFollowPosition(cycleWorld,pose,cycleRace,this.desired,cycleAnchor,CAMERA_CLEARANCE.radiusMeters,previousCamera))
         this.lookDesired.lerp(new THREE.Vector3(pose.x,CYCLE_CAMERA.lookHeightMeters,-pose.s),.5);
       const blend=this.cycleOpening!==null||this.freshCamera?1:1-Math.exp(-dt*CYCLE_CAMERA.responsePerSecond);
       if(this.cycleSwitch){
@@ -297,7 +307,7 @@ export class CameraRig {
         this.look.lerpVectors(transition.look,this.lookDesired,t);
         transition.mix=t;
       }else{
-        this.camera.position.lerp(this.desired,blend);this.look.lerp(this.lookDesired,blend);
+        this.camera.position.lerp(this.desired,spectatorFramed?1:blend);this.look.lerp(this.lookDesired,blend);
       }
       if(cockpitReturn&&previousCamera&&previousCamera.y<roofClearance){
         // First rise vertically on the current side of the wall, then cross.
@@ -333,7 +343,7 @@ export class CameraRig {
       const cameraLook=this.cycleSwitch
         ?this.camera.position.clone().add(this.lookDesired.clone().sub(this.desired))
         :this.look.clone();
-      if(this.cycleOpening===null){
+      if(this.cycleOpening===null&&!spectatorFramed){
         // When a wall shortens the boom, look down toward the bike instead of
         // keeping an eight-meter forward target that loses it below frame.
         const distance=Math.hypot(this.camera.position.x-pose.x,this.camera.position.z+pose.s);

@@ -1028,10 +1028,13 @@ export function createGameApp() {
         view.monitorCycleRenderer(dt,run.playerVehicle==='cycle'&&mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting&&run.cycleRace?.phase==='racing');
         view.updateAntialiasing(dt,mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.opening===null&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting);
         view.render(run, session.previous, mode === 'running'&&!multiplayer ? loop.alpha : 1, dt, mode);
+        const formation=view.cameraRig.multiplayerFormationCamera.shot;
+        if(multiplayer&&formation?.ready&&run.cycleRace.cameraStaging&&(!sound.context||sound.cycleSamplesReady))multiplayer.cameraReady(formation.round,formation.seat);
         if((mode==='running'||mode==='entering'&&openingTransition)&&!run.arenaWaiting&&!document.body.classList.contains('cycle-loading'))homeTransition.sceneReady();
       }
       sound.cycleOpeningSeconds=view.cameraRig.cycleOpening===null?null:view.cameraRig.cycleOpening*CYCLE_OPENING.durationSeconds;
-      sound.cycleOpeningAudio?.update(sound.cycleOpeningSeconds,mode==='running');
+      if(multiplayer)sound.cycleOpeningAudio?.updateMaterialization(run.cycleRace,mode==='running');
+      else sound.cycleOpeningAudio?.update(sound.cycleOpeningSeconds,mode==='running');
       sound.update(run, view.camera, mode === 'running'||mode==='entering'&&openingTransition);
       hud.update({
         dt,

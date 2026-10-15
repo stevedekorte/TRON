@@ -1,3 +1,5 @@
+import {MP} from '../../shared/multiplayer/config.js';
+import {CYCLE_FORMATION_START_SECONDS} from '../../shared/simulation/config/light-cycles.js';
 export const CYCLE_ENTRY_CUES=Object.freeze([
   {name:'prepare-transport',at:9.3,gain:.85},
   {name:'transport',at:11.86,gain:.65},
@@ -7,10 +9,15 @@ export const CYCLE_ENTRY_CUES=Object.freeze([
 /** Intro time is owned by the app, so standby can resume even mid-sentence. */
 export class CycleOpeningAudio {
   constructor(context,master,samples){Object.assign(this,{context,master,samples});this.active=new Map();}
-  update(seconds,playing){
+  updateMaterialization(race,playing){
+    const age=race?.phase==='countdown'&&race.materializing&&!race.cameraStaging
+      ?Math.max(0,MP.materializationSeconds-race.remaining):null;
+    this.update(age===null?null:CYCLE_FORMATION_START_SECONDS+age,playing,true);
+  }
+  update(seconds,playing,materializationOnly=false){
     for(const cue of CYCLE_ENTRY_CUES){
       const buffer=this.samples['cycle-'+cue.name],offset=seconds===null?-1:seconds-cue.at;
-      const audible=playing&&buffer&&offset>=0&&offset<buffer.duration;
+      const audible=playing&&(!materializationOnly||cue.name==='entry-startup')&&buffer&&offset>=0&&offset<buffer.duration;
       const current=this.active.get(cue.name);
       if(!audible&&current){current.source.stop();current.cleanup();}
       else if(audible&&!current){

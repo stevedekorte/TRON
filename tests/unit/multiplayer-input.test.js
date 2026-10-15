@@ -7,7 +7,7 @@ import {LIGHT_CYCLES as C} from '../../shared/simulation/config/light-cycles.js'
 import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 
 function nearWall(speed,clearance=1.8){
- const room=new CycleRoom();room.join('driver');room.race.remaining=0;room.step();
+ const room=new CycleRoom();room.join('driver');room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();
  const me=room.clients.get('driver'),b=room.race.cycles[me.seat];
  // Existing outer wall; no other cycle or changing trail near the approach.
  for(const cycle of room.race.cycles)cycle.human=true;

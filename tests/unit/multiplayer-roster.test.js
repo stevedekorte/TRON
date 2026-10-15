@@ -4,7 +4,7 @@ import {CycleRoom} from '../../shared/multiplayer/room.js';
 import {MultiplayerClient} from '../../src/multiplayer/client.js';
 
 test('waiting roster excludes eliminated players retaining seats',()=>{
- const room=new CycleRoom();room.join('seated');room.race.remaining=0;room.step();
+ const room=new CycleRoom();room.join('seated');room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();
  const seat=room.clients.get('seated').seat;
  room.race.cycles[seat].alive=false;room.step();room.join('visitor');
  const client=Object.create(MultiplayerClient.prototype);

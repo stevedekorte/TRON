@@ -6,7 +6,7 @@ export class CycleRoom{
  constructor({seed=1982}={}){
   this.seed=seed>>>0;this.tick=0;this.clients=new Map();this.queue=[];this.serial=0;
   this.race={site:{x:0,s:0},seed:this.seed,round:0,scores:[0,0,0,0],time:0,
-   closedArena:false,derezOnEscape:true,aiMode:'bounded',startWithBreach:false,hideMiddleOpponent:false};
+   closedArena:false,derezOnEscape:true,formationSpacingCells:MP.startFormationSpacingCells,aiMode:'bounded',startWithBreach:false,hideMiddleOpponent:false};
   this.nextRound();
  }
  random(){this.seed=(Math.imul(this.seed,1664525)+1013904223)>>>0;return this.seed/4294967296;}
@@ -14,7 +14,7 @@ export class CycleRoom{
  join(id){
   if(this.clients.has(id)||this.clients.size>=MP.maxConnections)return false;
   this.clients.set(id,{id,label:`USER ${++this.serial}`,seat:null,seq:0,ack:0,inputs:[],control:{turbo:false,brake:false},lastInputTick:this.tick,lastTurnTick:-Infinity});
-  this.queue.push(id);if(this.race.phase==='countdown'){
+  this.queue.push(id);if(this.race.phase==='countdown'&&this.race.cameraStaging){
    if(this.clients.size>this.race.cycles.length&&this.race.cycles.length<MP.maxPlayers){
     const remaining=this.race.remaining;this.nextRound();this.race.remaining=remaining;
    }else this.fillSeats();
@@ -23,17 +23,17 @@ export class CycleRoom{
  leave(id){
   const client=this.clients.get(id);if(!client)return;
   const bike=this.race.cycles[client.seat];
-  if(bike&&this.race.phase==='countdown'){delete bike.human;delete bike.operator;}
+  if(bike&&this.race.phase==='countdown'&&this.race.cameraStaging){delete bike.human;delete bike.operator;}
   else if(bike?.alive){bike.alive=false;this.race.crashes.push({id:bike.id,x:bike.x,z:bike.z,dir:bike.dir,team:bike.team,time:this.race.time});}
   this.clients.delete(id);this.queue=this.queue.filter(x=>x!==id);
-  if(this.race.phase==='countdown')this.fillSeats();
+  if(this.race.phase==='countdown'&&this.race.cameraStaging)this.fillSeats();
  }
  fillSeats(){
   const occupied=new Set([...this.clients.values()].map(c=>c.seat).filter(x=>x!==null));
   const free=this.shuffle(this.race.cycles.filter(b=>!occupied.has(b.id)).map(b=>b.id));
   while(this.queue.length&&free.length){
    const client=this.clients.get(this.queue.shift());if(!client)continue;
-   client.seat=free.pop();client.inputs=[];client.control={turbo:false,brake:false};client.lastTurnTick=-Infinity;
+   client.seat=free.pop();client.cameraReady=false;client.inputs=[];client.control={turbo:false,brake:false};client.lastTurnTick=-Infinity;
    Object.assign(this.race.cycles[client.seat],{human:true,operator:client.label});
   }
  }
@@ -48,7 +48,8 @@ export class CycleRoom{
   const counts=available.length>1?available.filter(n=>n!==this.race.teamCount):available;
   this.race.teamCount=counts[Math.floor(this.random()*counts.length)];
   this.race.cyclesPerTeam=MP.maxCyclesPerTeam;this.race.breaches=[];
-  resetCycleRound(this.race);this.race.remaining=MP.countdownSeconds;
+  resetCycleRound(this.race);this.race.remaining=MP.countdownSeconds;this.race.cameraStaging=true;this.race.materializing=false;this.race.stagingElapsed=0;
+  for(const c of this.clients.values())c.cameraReady=false;
   // Survivors keep seats, but get a new randomly assigned team/slot.
   this.queue=[...this.shuffle(survivors.map(c=>c.id)),...this.queue.filter(id=>!survivors.some(c=>c.id===id))];
   this.fillSeats();
@@ -57,8 +58,13 @@ export class CycleRoom{
   // Count every connected human, including spectators: nobody may reset a shared match.
   if(this.clients.size!==1||!this.clients.has(id)||round!==this.race.round)return false;
   this.nextRound();
-  if(!this.queue.length){this.race.remaining=0;updateCycleRace(this.race,0);}
+  // The new camera/formation sequence replaces the old instant launch.
   return true;
+ }
+ cameraReady(id,round,seat){
+  const c=this.clients.get(id);
+  if(!c||round!==this.race.round||seat!==c.seat||!this.race.cameraStaging)return false;
+  c.cameraReady=true;return true;
  }
  input(id,message){
   const c=this.clients.get(id);
@@ -80,6 +86,13 @@ export class CycleRoom{
    this.race.time+=1/MP.tickHz;this.race.remaining-=1/MP.tickHz;
    if(this.race.remaining<=0)this.nextRound();return;
   }
+  if(this.race.cameraStaging){
+   this.race.stagingElapsed+=1/MP.tickHz;
+   if([...this.clients.values()].every(c=>c.cameraReady)){
+    this.race.cameraStaging=false;this.race.materializing=true;this.race.remaining=MP.materializationSeconds;this.urgentSnapshot=true;
+   }
+   return;
+  }
   const controls=new Map();
   for(const c of this.clients.values()){
    let turn=0;
@@ -92,7 +105,9 @@ export class CycleRoom{
    if(this.tick-c.lastInputTick>MP.inputTimeoutTicks)c.control={turbo:false,brake:false};
    if(c.seat!==null)controls.set(c.seat,{...c.control,turn});
   }
+  const previousPhase=this.race.phase;
   updateCycleRace(this.race,1/MP.tickHz,0,false,false,{},controls);
+  if(previousPhase!=='result'&&this.race.phase==='result'){this.race.remaining=MP.resultSeconds;this.urgentSnapshot=true;}
   for(const c of this.clients.values())if(c.seat!==null&&!this.race.cycles[c.seat].alive&&!this.queue.includes(c.id))this.queue.push(c.id);
   if(this.race.phase==='racing'&&(this.race.elapsed>=MP.maxMatchSeconds||this.race.trails.length>=MP.maxTrails)){
    this.race.phase='result';this.race.winner=null;this.race.remaining=MP.resultSeconds;

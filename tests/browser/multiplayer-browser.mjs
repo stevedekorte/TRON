@@ -1,10 +1,12 @@
+import {MP} from '../../shared/multiplayer/config.js';
+import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import WebSocket from 'ws';
 const browser=await chromium.launch({channel:'chrome',headless:true});
 const sockets=[],deliveryTimers=new Set();
 const base=process.env.TRON_URL||'http://127.0.0.1:5173/';
-const socketUrl=new URL('/api/multiplayer?v=1',base);socketUrl.protocol=socketUrl.protocol==='https:'?'wss:':'ws:';
+const socketUrl=new URL('/api/multiplayer?v='+MP.protocol,base);socketUrl.protocol=socketUrl.protocol==='https:'?'wss:':'ws:';
 try{
  const context=await browser.newContext({viewport:{width:1100,height:750},reducedMotion:'reduce'}),errors=[],requests=[];
  if(process.env.TRON_MP_JITTER==='1')await context.routeWebSocket('**/api/multiplayer*',socket=>{
@@ -48,7 +50,7 @@ try{
  // Real wire clients fill remaining seats; new participants spectate until the next match.
  for(let i=0;i<12;i++)await new Promise((resolve,reject)=>{
   const socket=new WebSocket(socketUrl,{origin:new URL(base).origin});sockets.push(socket);
-  socket.once('error',reject);socket.on('message',raw=>{const d=JSON.parse(raw);if(d.type==='welcome'){socket.playerId=d.id;}if(d.type==='state'){socket.latest=d;resolve();}});
+  socket.once('error',reject);socket.on('message',raw=>{const d=JSON.parse(raw);if(d.type==='welcome'){socket.playerId=d.id;}if(d.type==='state'){socket.latest=decodeSnapshot(d,socket.latest);if(!socket.latest)return;const me=socket.latest.clients.find(c=>c.id===socket.playerId);if(socket.latest.race.cameraStaging)socket.send(JSON.stringify({type:'camera-ready',round:socket.latest.race.round,seat:me.seat}));resolve();}});
  });
  assert(sockets.some(s=>s.latest.clients.find(c=>c.id===s.playerId)?.queue>0),'overflow users wait');
  const state=sockets.at(-1).latest;assert(state.race.cycles.length<=12);assert.equal(state.race.cyclesPerTeam,3);assert.equal(state.clients.length,14);
@@ -65,7 +67,7 @@ try{
  await page.screenshot({path:'test-results/multiplayer-normal.png'});
  assert(await page.locator('.cycle-roster-icon.human').count()>0,'human players have roster stripes');
  assert.equal(await page.locator('.human-cycle-marker').count(),0,'no floating human markers');
- assert(packets.some(p=>p.protocol===2&&p.compact&&!p.full),'browser receives compact field deltas');
+ assert(packets.some(p=>p.protocol===MP.protocol&&p.compact&&!p.full),'browser receives compact field deltas');
  assert(packets.every(p=>!JSON.stringify(p).includes('reactionTiming')),'AI internals stay on the server');
  assert.deepEqual(errors,[]);console.log('Two rendered clients share a 12-cycle arena; 14 connections, spectator queue, no cloud request, no eager MP client, and no local match reset.');
 }finally{for(const timer of deliveryTimers)clearTimeout(timer);for(const s of sockets)s.close();await browser.close();}

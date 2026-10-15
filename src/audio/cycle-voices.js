@@ -61,7 +61,7 @@ export class CycleVoices {
       if(r.phase==='countdown'){
         const b=r.cycles.find(b=>b.id===r.playerId)||r.cycles[0];
         // One dramatic team cue; six identical simultaneous copies overload the mix.
-        if(b&&!opening)this.voice('materialize',CYCLE_SOUND.startupGain,this.position(r,b),false,b);
+        if(b&&!opening&&r.cameraStaging===undefined)this.voice('materialize',CYCLE_SOUND.startupGain,this.position(r,b),false,b);
       }else if(r.phase==='racing')for(const b of r.cycles){
         if(b.alive&&!opening)this.voice('launch',CYCLE_SOUND.launchGain,this.position(r,b),false,b);
       }

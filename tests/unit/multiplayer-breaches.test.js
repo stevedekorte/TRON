@@ -7,7 +7,7 @@ import {ARENA_WALL as W} from '../../shared/simulation/config/arena-breaches.js'
 import {LIGHT_CYCLES as C} from '../../shared/simulation/config/light-cycles.js';
 
 test('MP wall impacts breach, exits silently eliminate and the next round heals walls',()=>{
- const room=new CycleRoom();room.join('human');room.race.remaining=0;room.step();
+ const room=new CycleRoom();room.join('human');room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();
  const r=room.race,b=r.cycles[room.clients.get('human').seat];
  const before=projectState(room.state());
  r.trails=[];

@@ -5,7 +5,7 @@ import {MultiplayerClient} from '../../src/multiplayer/client.js';
 import {CycleVoices} from '../../src/audio/cycle-voices.js';
 
 test('network snapshots preserve engine lifetime, launch once, and update live bike references',()=>{
- const room=new CycleRoom();room.join('listener');room.race.remaining=0;room.step();
+ const room=new CycleRoom();room.join('listener');room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();
  const client=Object.create(MultiplayerClient.prototype);
  Object.assign(client,{state:room.state(),me:room.state().clients[0],received:performance.now(),rtt:0,pending:[]});
  const run={cycleRace:{round:-1,site:{x:0,s:0}}};
@@ -87,4 +87,26 @@ test('spectator HUD reward animation finishes instead of restarting on repeated 
   assert.equal(hud.rewardStarted,100);
   hud.updateReserveReward(bike,1300);assert.equal(nodes.get('turbo').classList['reserve-reward'],false);
  }finally{if(previousDocument===undefined)delete globalThis.document;else globalThis.document=previousDocument;}
+});
+
+test('MP materialization plays only the solo startup cue at the matching offset without snapshot duplicates',async()=>{
+ const {CycleOpeningAudio,CYCLE_ENTRY_CUES}=await import('../../src/audio/cycle-opening.js');
+ const {MP}=await import('../../shared/multiplayer/config.js');
+ const sources=[],gains=[];
+ const context={createGain:()=>{const g={gain:{value:0},connect(){},disconnect(){}};gains.push(g);return g;},createBufferSource:()=>{
+  const s={connect(){},disconnect(){},start(when,offset){this.offset=offset;},stop(){this.stopped=true;}};sources.push(s);return s;
+ }};
+ const samples=Object.fromEntries(CYCLE_ENTRY_CUES.map(c=>['cycle-'+c.name,{name:c.name,duration:5}]));
+ const audio=new CycleOpeningAudio(context,{},samples);
+ const race={phase:'countdown',cameraStaging:true,materializing:false,remaining:0};
+ audio.updateMaterialization(race,true);assert.equal(sources.length,0);
+ Object.assign(race,{cameraStaging:false,materializing:true,remaining:MP.materializationSeconds-.2});
+ audio.updateMaterialization(race,true);assert.equal(sources.length,0);
+ race.remaining=MP.materializationSeconds-.5;audio.updateMaterialization(race,true);
+ assert.equal(sources.length,1);assert.equal(sources[0].buffer.name,'entry-startup');assert(Math.abs(sources[0].offset-.2)<1e-8);
+ assert.equal(gains[0].gain.value,CYCLE_ENTRY_CUES.find(c=>c.name==='entry-startup').gain);
+ audio.updateMaterialization({...race},true);assert.equal(sources.length,1);
+ audio.updateMaterialization(race,false);assert(sources[0].stopped);
+ race.remaining=MP.materializationSeconds-.8;audio.updateMaterialization(race,true);assert(Math.abs(sources[1].offset-.5)<1e-8);
+ race.phase='racing';audio.updateMaterialization(race,true);assert(sources[1].stopped);assert.equal(audio.active.size,0);
 });

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {CycleRoom,wireState} from '../../shared/multiplayer/room.js';
 import {MP} from '../../shared/multiplayer/config.js';
 const join=(room,n)=>{for(let i=0;i<n;i++)assert(room.join('u'+i));};
-function racing(room){room.race.remaining=0;room.step();}
+function racing(room){room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();}
 function kill(room,c){const b=room.race.cycles[c.seat];b.alive=false;room.race.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:room.race.time});room.step();}
 test('12 seats, excess spectators, random balanced teams and AI vacancies',()=>{
  const r=new CycleRoom();join(r,14);assert.equal(r.race.cycles.length,12);assert.equal(r.queue.length,2);
@@ -56,15 +56,16 @@ test('team size stays at three as the countdown population grows',()=>{
 });
 
 test('only the sole connected human can restart the authoritative match',()=>{
- const room=new CycleRoom();room.join('solo');room.race.remaining=0;room.step();
+ const room=new CycleRoom();room.join('solo');room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();
  const round=room.race.round;
  assert.equal(room.restart('unknown',round),false);
  assert.equal(room.restart('solo',round-1),false);
  assert.equal(room.restart('solo',round),true);
- assert.equal(room.race.round,round+1);assert.equal(room.race.phase,'racing');
- assert.equal(room.race.remaining,0);assert(room.race.trails.length>0,'immediate start initializes trails');
+ assert.equal(room.race.round,round+1);assert.equal(room.race.phase,'countdown');
+ assert(room.race.cameraStaging,'restart prepares cameras before formation');
+ assert.equal(room.race.remaining,MP.countdownSeconds);
  assert.equal(room.restart('solo',round),false,'duplicate request cannot restart again');
- room.race.remaining=0;room.step();room.join('spectator');
+ room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();room.join('spectator');
  assert.equal(room.clients.get('spectator').seat,null);
  assert.equal(room.restart('solo',room.race.round),false,'spectators count as other humans');
  room.leave('spectator');

@@ -1,0 +1,36 @@
+import {chromium} from '@playwright/test';
+import WebSocket from 'ws';
+import assert from 'node:assert/strict';
+import {MP} from '../../shared/multiplayer/config.js';
+import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
+const base=process.env.TRON_URL||'http://127.0.0.1:5177/';
+const url=new URL('/api/multiplayer?v='+MP.protocol,base);url.protocol='ws:';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+const socket=new WebSocket(url,{origin:new URL(base).origin});let id,state;
+try{
+ await new Promise((resolve,reject)=>{socket.on('error',reject);socket.on('message',raw=>{const d=JSON.parse(raw);if(d.type==='welcome')id=d.id;if(d.type==='state'){state=decodeSnapshot(d,state);resolve();}});});
+ const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/shader|WebGL|THREE/.test(m.text()))errors.push(m.text());});await page.route('**/api/jev/**',r=>r.fulfill({status:503,body:'{}'}));
+ await page.goto(base);await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-multiplayer').disabled);
+ await page.locator('#start-multiplayer').click();
+ await page.waitForFunction(()=>window.__tron?.state.multiplayer&&__tron.state.mode==='running',{}, {timeout:60000});
+ if(process.env.TRON_CYCLE_RENDERER)await page.evaluate(mode=>__tron.setCycleRenderer(mode),process.env.TRON_CYCLE_RENDERER);
+ await page.waitForTimeout(4500);
+ assert(state.race.cameraStaging,'slow second client holds formation');
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRendering.bikes.some(b=>b.visible)),false,'cycles stay hidden until everyone arrives');
+ assert(!/TEAM/.test(await page.locator('#cycle-controls').textContent()));
+ socket.send(JSON.stringify({type:'camera-ready',round:state.race.round,seat:state.clients.find(c=>c.id===id).seat}));
+ await page.waitForFunction(()=>!__tron.state.cycleRace.cameraStaging);
+ const before=await page.evaluate(()=>__tron.state.camera);
+ assert(await page.evaluate(()=>__tron.state.cycleRace.materializing),'readiness immediately starts materialization');
+ assert(!/MATCH STARTS IN/.test(await page.locator('#cycle-controls').textContent()));
+ await page.waitForFunction(()=>__tron.state.cycleRace.materializing);
+ await page.waitForTimeout(800);const during=await page.evaluate(()=>__tron.state.camera);
+ await page.screenshot({path:'test-results/mp-team-materialization.png'});
+ assert(Math.hypot(before.x-during.x,before.y-during.y,before.z-during.z)<.01,'formation camera holds');
+ await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing');
+ await page.waitForTimeout(100);await page.screenshot({path:'test-results/mp-team-launch.png'});
+ const after=await page.evaluate(()=>__tron.state.camera);
+ assert(Math.hypot(after.x-before.x,after.y-before.y,after.z-before.z)>2,'launch cuts to player follow');
+ assert.deepEqual(errors,[]);console.log('Camera arrival barrier, hidden formation, materialization hold and player launch passed.');
+}finally{socket.close();await browser.close();}

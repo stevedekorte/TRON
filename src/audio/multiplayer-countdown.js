@@ -22,13 +22,14 @@ export class MultiplayerCountdown {
   update(race,audible){
     if(!race){this.reset();return;}
     if(this.round!==race.round){this.reset();this.round=race.round;}
-    if(race.phase==='countdown'){
+    const stage=race.materializing&&race.phase==='countdown'?'materializing':race.phase;
+    if(stage==='countdown'&&!race.cameraStaging){
       const second=Math.ceil(race.remaining);
       if(second>0&&(this.second===null||second<this.second)){
         this.second=second;if(audible)this.tone(false);
       }
-    }else if(race.phase==='racing'&&this.phase==='countdown'&&audible)this.tone(true);
-    this.phase=race.phase;
+    }else if(stage==='racing'&&this.phase==='countdown'&&audible)this.tone(true);
+    this.phase=stage;
   }
   reset(){
     for(const voice of [...this.voices]){voice.oscillator.stop();voice.cleanup();}

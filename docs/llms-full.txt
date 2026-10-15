@@ -19,13 +19,45 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Multiplayer materialization sound — October 15
+
+- [x] MP now plays the solo `cycle-entry-startup.wav` cue 0.3 seconds into materialization, at the same gain and matching playback offset. Do not replay the transport dialogue; stop the cue at the same formation/launch boundary as solo. Suppress the older generic cue that fired prematurely when the roster changed.
+- [x] Wait for cycle samples to finish loading before acknowledging camera readiness. Regression coverage checks no cue during staging, correct sample/gain/offset, no duplicate sources on repeated snapshots, and pause/resume/launch cleanup. All 31 focused audio/camera tests and the production build pass. Headless Chrome confirmed the 3.058-second solo startup buffer played once during MP materialization, with a 0.006-second catch-up offset and no staging playback. The initial browser probe copied full game state from audio initialization and timed out; lightweight audio instrumentation passed. Local changes only.
+
+## Materialization timing and human paint — October 15
+
+- [x] Latest direction: five-second winner/last-cycle hold; once all cameras arrive, materialization begins immediately without a countdown. Solo and MP now share one formation/launch-hold timing object so their timing cannot drift.
+- [x] Apply each human cycle's black/white slash to construction lines as well as the solid body, in both the mesh and analytic renderers. Preserve the slash through the analytic solid glow. Unmarked AI cycles retain their body-colored construction lines; the existing palette still sets each wireframe's body hue and brightness controls remain active.
+- [x] All 573 unit tests and production build pass. Headless Chrome confirms the readiness barrier, immediate materialization without countdown, camera hold and launch in the normal renderer without shader errors. Analytic renderer captures verify human/AI image differences during wire and solid stages, plus all four team hues. Inspected the blue-team mesh reveal with two human markings. Restarted port 5173 with the current authority; changes remain local.
+
+## Connection error panel and local server recovery — October 15
+
+- [x] Give the error panel balanced inset padding, a smaller responsive heading, readable message wrapping and a compact reload button. Add an accessible alert label. Inspected headless Chrome captures at 1440×900 and 390×844; no horizontal overflow. Production build passes.
+- [x] Confirmed the existing port 5173 server accepted protocol 2 and rejected the new protocol 3 client. Restarted it with current code and verified protocol 3 connects. The usual local URL works again; production is unchanged.
+
+## Multiplayer team materialization transition — October 15
+
+- [x] Hold the winner/last-cycle result shot for five seconds before selecting the next roster. Move each seated player's camera smoothly over three seconds to the solo materialization perspective, rotated for their assigned team's wall. Use the solo close formation spacing for every MP team; queued spectators prepare a gold-team view.
+- [x] Keep cycles hidden and simulation stopped while cameras travel. Each client acknowledges its rendered arrival with its round and seat; the authority waits for every connected client before immediately starting the shared 1.833-second materialization and 0.6-second hold (no countdown timer or countdown beeps), then clients cut to normal cycle follow. Preserve the end-state camera position as the next flight's departure point. Reduced motion jumps to the destination but still acknowledges readiness.
+- [x] Clear readiness on roster changes, reject stale acknowledgments, release disconnected clients from the barrier, and disconnect clients that cannot prepare within 45 seconds. Late arrivals during materialization queue for the next round. Return for a sole human now runs this camera sequence instead of skipping directly into racing.
+- [x] Remove the player's team label from MP countdown text. Retain team names in winner announcements.
+- [x] Protocol 3 requires the matching client and server; production remains on protocol 2 until a coordinated deployment. Older connections are rejected rather than silently bypassing camera readiness.
+- [x] The initial transition passed 572 unit tests, production build and Worker deployment dry-run. The multiplayer browser lifecycle also passes with two rendered clients, 14 connections and an overflow queue. Headless Chrome on macOS verifies a delayed second client holds materialization, cycles remain hidden until ready, the camera holds throughout the reveal, and launch cuts to the player's cycle. Inspected close gold-team materialization and launch captures in `test-results/mp-team-materialization.png` and `test-results/mp-team-launch.png`. Changes are local, not deployed.
+
+## Spectator opponent framing — October 15
+
+- [x] When following a cycle before a match or after death, orbit the existing camera boom to frame the nearest living opposing cycle as well. Keep the current zoom, height and speed-dependent follow distance; ease the orbit with a bounded angular speed and aim between the two viewing directions. Exclude allies, dead cycles and escaped cycles; resume ordinary follow when no opponent remains.
+- [x] Preserve opening shots, target-switch transitions, death holds and camera collision clearance. Walls can still shorten the boom, and abrupt opponent changes can temporarily leave the frame while the orbit catches up.
+- [x] Production build passes. Headless Chrome on macOS rendered the full arena with a gold followed cycle and nearby blue opponent both visible; inspected `test-results/spectator-opponent-framing.png`, with no page errors. Dynamic feel still needs user playtesting.
+- [x] All 568 unit tests pass, including pair visibility in landscape/portrait views and countdown/racing states, unchanged follow distance, nearest-opponent filtering, bounded rotation and unchanged driving framing.
+
 ## First-match jitter and startup update recovery — October 15
 
 - [x] Reproduce clock lag after a two-second first-load rendering pause while snapshots continue. Local prediction and remote playback now re-anchor after a gap longer than their 0.2-second frame bound, instead of discarding elapsed time and advancing at snapshot boundaries while catching up. Normal frames retain continuous rate correction.
 - [x] Reproduce a separate local freeze/jump when high RTT drives prediction into its 200 ms extrapolation cap. Reserve two snapshot intervals below that cap (100 ms maximum RTT-derived presentation lead at current settings). Keep wire timestamps based on estimated authority time, independent of capped visual lead; immediate turns remain local and fractional. Extend input coverage to 500 ms RTT.
 - [x] Remove automatic home-screen service-worker activation/reload. Background updates wait until existing tabs close; explicit `update.html` recovery remains available. Chrome verifies a waiting update does not reload the menu and old-cache/missing-module recovery still works.
 - [x] 565 unit tests, production build, and isolated headless Chrome multiplayer lifecycle checks pass with 250 ms transit each way plus injected jitter. The first browser attempt shared the ordinary development server and timed out on sole-player restart; the isolated arena passed.
-- [ ] Publish and verify production. A 30-second public packet recording had 48.1 ms median, 64.1 ms p95 and 118.2 ms maximum packet gaps, no backward remote poses, and 32 held cycle-frames in 25,923 samples. A separately observed 1.7 m local jump was a race-start transition, not evidence of continuous driving jitter. Synthetic first-load/high-latency regressions reproduce concrete failure modes; user-device confirmation remains necessary.
+- [x] Deployed TRON `afa6c09` through website `0e78e3a`; Pages run `38761215638` succeeded. Production Chrome confirmed the prediction-headroom code in the served client, 52 decoded snapshots, immediate solo restart and no page errors. A 30-second public packet recording had 48.1 ms median, 64.1 ms p95 and 118.2 ms maximum packet gaps, no backward remote poses, and 32 held cycle-frames in 25,923 samples. A separately observed 1.7 m local jump was a race-start transition, not evidence of continuous driving jitter. Synthetic first-load/high-latency regressions reproduce concrete failure modes; user-device confirmation remains necessary.
 
 ## Cycle formation body colors — October 15
 

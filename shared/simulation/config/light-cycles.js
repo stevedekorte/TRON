@@ -37,3 +37,7 @@ export const cycleFraction = (race, bike) => bike.escaped || bike.continuousAren
   ? (bike.progress ?? race.accumulator / (LIGHT_CYCLES.cellMeters / LIGHT_CYCLES.speedMetersPerSecond)) : 1;
 
 export const CYCLE_JEV = Object.freeze({replanSeconds:4, goalSeconds:6, responseMaxAgeSeconds:2.5, rangeMeters:240, goalCells:40, minGoalCells:8, directionWeight:24});
+
+// Shared by solo presentation and multiplayer authority.
+export const CYCLE_FORMATION_TIMING=Object.freeze({formationSeconds:2.75/1.5,launchHoldSeconds:.6});
+export const CYCLE_FORMATION_START_SECONDS=16;

@@ -25,7 +25,8 @@ try{
   const composer=new EffectComposer(renderer),bloom=new UnrealBloomPass(new T.Vector2(1000,700),.6,.5,.85),output=new OutputPass();
   composer.addPass(new RenderPass(scene,camera));composer.addPass(bloom);composer.addPass(output);
   window.setWheelReflection=(phase,strength)=>{source.userData.wheelReflection={phase,strength};};
-  window.capturePhase=(progress,team=0)=>{
+  window.capturePhase=(progress,team=0,human=false)=>{
+   source.userData.human=human;
    source.userData.team=team;
    source.userData.cycleFormationProgress=progress;
    view.prepare();view.edges.render(renderer,view.root,camera);composer.render();
@@ -43,6 +44,11 @@ try{
  for(const team of [1,2,3]){
   await page.evaluate(team=>capturePhase(.6,team),team);
   await page.screenshot({path:`test-results/cycle-ray-rez-team-${team}.png`});
+ }
+ for(const progress of [.6,1]){
+  await page.evaluate(p=>capturePhase(p,1,false),progress);const ai=await page.screenshot();
+  await page.evaluate(p=>capturePhase(p,1,true),progress);const human=await page.screenshot({path:`test-results/cycle-human-rez-${progress}.png`});
+  assert(!ai.equals(human),'human slash is visible in both wireframe and solid stages');
  }
  await page.evaluate(()=>{setWheelReflection(.25,1);capturePhase(1);});
  const glint=await page.screenshot({path:'test-results/cycle-wheel-glint-on.png'});

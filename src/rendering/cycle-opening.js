@@ -1,9 +1,9 @@
 import {VectorKeyframeTrack, NumberKeyframeTrack, InterpolateSmooth, Vector3, MathUtils} from 'three';
-import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
+import {LIGHT_CYCLES,CYCLE_FORMATION_TIMING,CYCLE_FORMATION_START_SECONDS} from '../../shared/simulation/config/light-cycles.js';
 import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
 // Preserve the supplied clip's 00:00–00:16 move, then hold its endpoint
 // for the gold team's materialization before cutting to the player camera.
-export const CYCLE_OPENING=Object.freeze({startSeconds:1,durationSeconds:16,travelSeconds:16,formationSeconds:2.75/1.5,launchHoldSeconds:.6,raceReleaseFraction:1,lookDistanceMeters:100,minimumHeightMeters:4});
+export const CYCLE_OPENING=Object.freeze({startSeconds:1,durationSeconds:CYCLE_FORMATION_START_SECONDS,travelSeconds:CYCLE_FORMATION_START_SECONDS,...CYCLE_FORMATION_TIMING,raceReleaseFraction:1,lookDistanceMeters:100,minimumHeightMeters:4});
 // Relative phase timing, scaled to the formation's overall duration.
 export const CYCLE_FORMATION_MATERIALIZATION=Object.freeze({openSeconds:.6,passSeconds:1.4,fadeSeconds:.75});
 export const CYCLE_FORMATION_CAMERA=Object.freeze({blendStartSeconds:14,rightMeters:8,forwardMeters:5,heightMeters:.55,lookRightMeters:1.5,lookHeightMeters:.75,fovDegrees:38,framingAspect:1.9});

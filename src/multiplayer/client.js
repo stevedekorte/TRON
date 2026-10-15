@@ -44,6 +44,11 @@ export class MultiplayerClient{
   });
  }
  ping(){if(this.socket?.readyState===1)this.socket.send(JSON.stringify({type:'ping',sent:performance.now()}));}
+ cameraReady(round,seat){
+  const key=`${round}:${seat}`;
+  if(this.readyKey===key||this.socket?.readyState!==1||this.state?.race.round!==round)return;
+  this.socket.send(JSON.stringify({type:'camera-ready',round,seat}));this.readyKey=key;
+ }
  restart(){
   if(!this.state||this.closed||this.disconnected||this.socket?.readyState!==1||this.state.clients.length!==1||performance.now()-this.received>2000)return false;
   this.socket.send(JSON.stringify({type:'restart',round:this.state.race.round}));return true;
@@ -89,6 +94,7 @@ export class MultiplayerClient{
   const previous=run.cycleRace,site=previous.site,race={closedArena:false,derezOnEscape:true,arenaPaused:false,breaches:[],accumulator:0,...this.state.race,site,
    cycles:this.state.race.cycles.map(b=>({...b,previousX:b.x,previousZ:b.z,progress:1,continuousArena:true})),trails:this.state.race.trails.slice(),
    occupied:previous.occupied,outerOccupied:{},pendingTurns:[],playerId:this.me.seat??0,localPlayerId:this.me.seat};
+  if(race.phase==='countdown'&&!race.cameraStaging)race.remaining=Math.max(0,race.remaining-Math.min(.1,Math.max(0,(performance.now()-this.received)/1000)));
   const waiting=this.me.seat===null||!race.cycles[this.me.seat]?.alive;
   const stale=performance.now()-this.received>2000;
   if(race.phase==='racing'&&!stale&&!this.disconnected){

@@ -59,7 +59,7 @@ export function resetCycleRound(r){
   const teams=r.teamCount??2,count=r.cyclesPerTeam??3;
   r.cycles=Array.from({length:teams*count},(_,id)=>{
     const team=Math.floor(id/count),slot=id%count;
-    const lane=(slot-(count-1)/2)*(r.entranceFormation&&team===0?C.entranceFormationSpacingCells:12);
+    const lane=(slot-(count-1)/2)*(r.formationSpacingCells??(r.entranceFormation&&team===0?C.entranceFormationSpacingCells:12));
     const north=r.entranceFormation?team===0:team===1;
     const x=team<2?lane:(team===2?-startRow:startRow),z=team<2?(north?-startRow:startRow):lane;
     const dir=team<2?(north?2:0):(team===2?1:3);

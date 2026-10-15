@@ -44,3 +44,30 @@ export function installHumanStripe(root){
   material.customProgramCacheKey=()=>previousKey+'-human-stripe-v1';
  }
 }
+
+// Carry the same paint coordinates onto the construction lines, so a human's
+// identifying slash is present before the solid body has faded in.
+export function installHumanWireStripe(root,rez){
+ root.updateMatrixWorld(true);
+ const toMeters=new THREE.Matrix4().makeScale(root.scale.x,root.scale.y,root.scale.z).multiply(root.matrixWorld.clone().invert());
+ for(const line of rez.wires){
+  const painted=[].concat(line.parent.material).some(m=>['Color_D06','_1','Color_L12'].includes(m.name));
+  const positions=line.geometry.attributes.position,local=new Float32Array(positions.count*3);
+  const transform=toMeters.clone().multiply(line.parent.matrixWorld),point=new THREE.Vector3();
+  for(let i=0;i<positions.count;i++){
+   point.fromBufferAttribute(positions,i).applyMatrix4(transform);
+   if(!painted)point.z=1e6;
+   point.toArray(local,i*3);
+  }
+  line.geometry.setAttribute('cycleStripePosition',new THREE.BufferAttribute(local,3));
+ }
+ const material=rez.lineMaterial,compile=material.onBeforeCompile,key=material.customProgramCacheKey();
+ material.onBeforeCompile=function(shader,renderer){
+  compile.call(this,shader,renderer);shader.uniforms.humanStripe=root.userData.humanStripe;
+  shader.vertexShader='attribute vec3 cycleStripePosition; varying vec3 stripePosition;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nstripePosition=cycleStripePosition;');
+  shader.fragmentShader='varying vec3 stripePosition;\n'+humanStripeGLSL+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=humanPaint(diffuseColor.rgb,stripePosition);');
+ };
+ material.customProgramCacheKey=()=>key+'-human-wire-stripe-v1';material.needsUpdate=true;
+}

@@ -1,4 +1,5 @@
-import {installHumanStripe} from './cycle-human-stripe.js';
+import {MP} from '../../shared/multiplayer/config.js';
+import {installHumanStripe,installHumanWireStripe} from './cycle-human-stripe.js';
 import {refineCycleFrontWheel} from './cycle-front-wheel.js';
 import {advanceWheelReflection} from './cycle-wheel-reflections.js';
 import {repairCycleRearSeams,repairCyclePanelWinding} from './cycle-rear-seams.js';
@@ -51,7 +52,7 @@ export class LightCycleRaceView {
     this.arenaFloor=arenaFloor;this.groundFloor=groundFloor;
     this.root=new THREE.Group();this.root.name='Light cycle competition';arena.add(this.root);
     this.bikes=Array.from({length:C.maxCycles},(_,id)=>{const root=models[0].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;c.userData.originalCycleColor=m.color?.clone();materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);installHumanStripe(root);return root;});
-    this.materializations=this.bikes.map(root=>new CarrierMaterialization(root,{axis:'z',reverse:false,isLiveMaterial:()=>false}));
+    this.materializations=this.bikes.map(root=>{const rez=new CarrierMaterialization(root,{axis:'z',reverse:false,isLiveMaterial:()=>false});installHumanWireStripe(root,rez);return rez;});
     const receivers=[...floorReceivers];
     const crafts=this.bikes.map(root=>{const casters=[];root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude){casters.push(o);receivers.push(o);}});return {root,casters,radius:2.6,distance:8};});
     this.shadows=new RecognizerShadows(crafts,receivers,0,CYCLE_SELF_SHADOW);
@@ -84,9 +85,11 @@ export class LightCycleRaceView {
       const floor=onArena?this.arenaFloor:this.groundFloor;
       mesh.position.set(x,(floor?.position.y??0)+(mesh.userData.groundOffsetMeters??0),z);mesh.rotation.set(0,b.yaw??-b.dir*Math.PI/2,b.lean??0);
       const rez=this.materializations[b.id];
-      const age=openingFormationAge??(r.phase==='countdown'?Math.max(0,C.countdownSeconds-r.remaining):null);
+      const multiplayerFormation=r.cameraStaging!==undefined;
+      const formationDuration=multiplayerFormation?MP.formationSeconds:openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds;
+      const age=multiplayerFormation?(r.phase==='countdown'?(r.cameraStaging||!r.materializing?0:Math.max(0,MP.materializationSeconds-r.remaining)):null):openingFormationAge??(r.phase==='countdown'?Math.max(0,C.countdownSeconds-r.remaining):null);
       mesh.visible=b.alive&&(age===null||age>0)&&(openingFormationAge===null||b.team===0);
-      mesh.userData.cycleFormationProgress=age===null?1:THREE.MathUtils.clamp(age/(openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds),0,1);
+      mesh.userData.cycleFormationProgress=age===null?1:THREE.MathUtils.clamp(age/formationDuration,0,1);
       const moving=age===null&&r.phase==='racing'&&b.alive&&!r.arenaPaused;
       const speed=moving?(b.escaped?(b.roadSpeed??0):C.speedMetersPerSecond*(b.speedMultiplier??1)):0;
       // Interpolated cycle objects are replaced every rendered frame. Reset only
@@ -98,8 +101,8 @@ export class LightCycleRaceView {
       mesh.userData.wheelReflection=advanceWheelReflection(mesh.userData.wheelReflection,r.time,speed);
       if(age===null)rez.update(null);
       else {
-        const timing=openingFormationAge===null?undefined:CYCLE_FORMATION_MATERIALIZATION;
-        const phase=materializationPhase(age/(openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds)*materializationDuration(timing),timing);
+        const timing=openingFormationAge===null&&!multiplayerFormation?undefined:CYCLE_FORMATION_MATERIALIZATION;
+        const phase=materializationPhase(age/formationDuration*materializationDuration(timing),timing);
         rez.update(age,null,{phase,cut:THREE.MathUtils.lerp(rez.bounds.min.z,rez.bounds.max.z,phase.wire)});
 
       }
