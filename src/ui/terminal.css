@@ -86,7 +86,7 @@ body.entering .terminal-encom{opacity:calc(.8 * var(--opening-fade,1));}
 @media(prefers-reduced-motion:reduce){.loading-dots span{animation:none;opacity:1;will-change:auto}}
 
 #terminal-actions{margin-top:1.12em;font:400 var(--terminal-font-size)/1.12 FilmTerminal,monospace;letter-spacing:.025em;color:inherit;text-shadow:inherit}
-#game-menu{display:flex;flex-direction:column;align-items:flex-start;gap:0}
+#game-menu{display:flex;flex-direction:column;align-items:stretch;width:max-content;max-width:100%;gap:0}
 .terminal .game-choice{display:flex;align-items:center;gap:1ch;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:none;font:inherit;letter-spacing:inherit;color:inherit;text-shadow:inherit;touch-action:manipulation;outline:none;box-shadow:none}
 .game-choice .menu-marker{width:1ch;visibility:hidden}
 .game-choice[aria-pressed="true"] .menu-marker{visibility:visible}
@@ -125,7 +125,7 @@ body.entering.access-transition .terminal-content{opacity:var(--opening-fade,1)}
 body.mobile-terminal{--terminal-left:7vw;--terminal-top:28vh;--terminal-font-size:clamp(14px,2.6vw,24px)}
 body.mobile-terminal .terminal-content{width:86vw}
 body.mobile-terminal .terminal-copy{white-space:pre-wrap;line-height:1.4}
-body.mobile-terminal #hud,body.mobile-terminal #system-warnings{display:none}
+
 
 /* The selected home label supplies the terminal-to-scene fade. */
 body.home-access.entering .terminal-content,body.home-access.entering .terminal-encom{visibility:hidden}
@@ -136,3 +136,12 @@ body.home-opening #overlay,body.home-opening>.terminal-encom{visibility:hidden}
 
 /* The pre-rendered scene remains visible underneath the immediate home dissolve. */
 body.home-opening #game{visibility:visible}
+
+/* Touch menus retain terminal styling with room for a fingertip. */
+@media(pointer:coarse){.terminal .game-choice{min-height:44px}body.terminal #intro{overflow-y:auto}}
+
+.terminal .game-choice:disabled{cursor:not-allowed}
+#clu-mobile-note{opacity:.65}
+html.mobile-terminal .terminal .game-choice{min-height:44px}
+html.mobile-terminal #game-menu{width:100%}
+html.mobile-terminal .game-choice>span:last-child{min-width:0;white-space:normal}

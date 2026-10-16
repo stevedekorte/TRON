@@ -20,6 +20,16 @@ const exitConfirm=window.createExitConfirm({
     for(const bit of window.VizApp?._objects||[])bit.resumeListening?.();
   },
 });
+function showBitExit(){
+  window.bitPaused=true;
+  for(const bit of window.VizApp?._objects||[]){
+    bit._request?.abort();
+    bit.pauseListening?.(()=>{});
+  }
+  window.BitSound?.context?.suspend().catch(()=>{});
+  exitConfirm.show();
+}
+exitConfirm.addTouchMenu(showBitExit);
 window.addEventListener('keydown', event => {
   if(exitConfirm.open)return;
   if (['Enter','Space'].includes(event.code) && !window.VizApp?._didBegin) {
@@ -28,13 +38,7 @@ window.addEventListener('keydown', event => {
   if (event.code !== 'Escape') return;
   event.preventDefault();event.stopImmediatePropagation();
   if (event.repeat) return;
-  window.bitPaused=true;
-  for(const bit of window.VizApp?._objects||[]){
-    bit._request?.abort();
-    bit.pauseListening?.(()=>{});
-  }
-  window.BitSound?.context?.suspend().catch(()=>{});
-  exitConfirm.show();
+  showBitExit();
 }, true);
 window.addEventListener('pagehide', stopBit, {once:true});
 

@@ -166,6 +166,7 @@ $('microphone').onclick=()=>{if(voice.ready)setMic(!micEnabled);};
 
 const exit=window.createExitConfirm({onConfirm:()=>{cancelIntro.pauseMusic();paused=true;interrupt();setMic(false);face?.pause(true);if(window.parent!==window){window.parent.postMessage({type:'mcp-home'},location.origin);}else{leaving=true;location.replace(new URL('./',location.href));}},onCancel:()=>{cancelIntro.resumeMusic();paused=false;status('YOUR TURN');void requestConversationAudio();listen();}});
 function showExit(){if(exit.open)return;cancelIntro.pauseMusic();paused=true;interrupt();exit.show();}
+exit.addTouchMenu(showExit);
 
 window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-transition-start')cancelIntro.fadeOutMusic();if(event.origin===location.origin&&event.source===window.parent&&event.data?.type==='mcp-resume'){document.body.classList.remove('mcp-command','mcp-command-ending');cancelIntro.resumeMusic();paused=false;void requestConversationAudio();face?.pause(false);listen();setBusy(voice.generating);status(voice.generating?'FINISHING PREVIOUS VOICE REQUEST…':voice.ready?'YOUR TURN':'PREPARING MCP VOICE…');}});
 window.addEventListener('keydown',e=>{if(e.code==='Escape'&&!exit.open){e.preventDefault();showExit();}});

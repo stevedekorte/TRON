@@ -110,7 +110,7 @@ body.cycle-loading::after{content:'';position:fixed;inset:0;z-index:20;backgroun
 @keyframes jev-notice-fade{0%,70%{opacity:1}100%{opacity:0}}
 @media(max-width:800px){.sim-hint,#cycle-controls{top:calc(24px + 11 * var(--game-font-size));left:24px;right:24px}}
 
-#controls-help{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#020710df;color:#159ddd;padding:24px;overflow:auto}
+#controls-help{position:fixed;inset:0;z-index:40;display:grid;place-items:center;align-items:safe center;background:#020710df;color:#159ddd;padding:24px;overflow:auto}
 #controls-help[hidden]{display:none}
 #controls-help>div{max-width:100%;font:var(--game-font-size)/1.65 FilmTerminal,monospace;text-align:center}
 #controls-help h2,#controls-help p{font:inherit;margin:0 0 1em}
@@ -164,3 +164,19 @@ body.playing-multiplayer #controls-prompt{top:82px}
 #error .error-actions{display:flex;flex-direction:column;align-items:flex-start;gap:.5em}
 #error .terminal-start{font:inherit;letter-spacing:.025em;padding:0}
 @media(max-width:700px){#error .error-content{width:86vw}}
+
+/* Transparent edge zones leave the center of the arena visible and untouched. */
+#cycle-touch-controls{position:fixed;inset:0;z-index:8;pointer-events:none;user-select:none;-webkit-user-select:none}
+#cycle-touch-controls[hidden],#cycle-touch-controls button[hidden]{display:none}
+#cycle-touch-controls button{position:absolute;pointer-events:auto;touch-action:none;min-width:44px;min-height:44px;border:0;border-radius:0;background:#00121a12;color:#80c4e477;font:14px/1.3 FilmTerminal,monospace;padding:12px}
+#cycle-touch-controls button:active{background:#159ddd33;color:#b6eaff}
+#cycle-touch-controls button:disabled{pointer-events:none;opacity:.25}
+#cycle-touch-controls [data-action=left]{left:0;top:22%;bottom:22%;width:26%}
+#cycle-touch-controls [data-action=right]{right:0;top:22%;bottom:22%;width:26%}
+#cycle-touch-controls button span{display:block}
+#cycle-touch-controls [data-action=turbo]{left:30%;right:30%;top:100px;height:15%}
+#cycle-touch-controls [data-action=brake]{left:30%;right:30%;bottom:calc(54px + env(safe-area-inset-bottom));height:18%}
+#cycle-touch-controls [data-action=menu]{left:env(safe-area-inset-left);bottom:env(safe-area-inset-bottom);color:#91bcd0}
+#cycle-touch-controls [data-action=help]{right:env(safe-area-inset-right);bottom:env(safe-area-inset-bottom);color:#91bcd0}
+#cycle-touch-controls [data-action=restart]{left:30%;right:30%;bottom:calc(54px + env(safe-area-inset-bottom));color:#91bcd0}
+@media(max-height:500px){#cycle-touch-controls [data-action=turbo]{top:50px}}

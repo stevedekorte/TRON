@@ -6,6 +6,17 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Mobile programs and cycle controls — October 16
+
+- [x] Enable the terminal on mobile; disable only CLU, labeled “(UNAVAILABLE ON MOBILE)”. Mouse hover/click and touch taps select programs; keyboard navigation skips disabled choices.
+- [x] Cycle touch controls: tap left/right to turn (or follow while spectating), hold top turbo or bottom brake, with simultaneous steering and pedal input. MENU opens a tappable exit confirmation; CONTROLS explains gestures; eligible players can tap NEW MATCH. BIT and MCP also have touch exit menus. Pedals release on cancellation, blur, hidden controls and disposal.
+- [x] All 607 unit tests and production build/asset audit pass. Headless Chromium iPhone 13, iPad Pro 11 and Pixel 7 emulations verify menus and CLU restriction; desktop pointer tests pass. CDP multitouch verifies simultaneous turbo/turn, release/cancellation and brake. Actual solo launch, help, exit cancellation and return home pass. Physical mobile Safari/Chrome performance and feel remain to be checked. User authorized deployment.
+
+## Multiplayer roster controls guide — October 15
+
+- [x] The multiplayer C / CONTROLS panel now explains team groups, filled active versus empty eliminated circles, the local player's white outline, gray waiting circles, wall-kill and hollow trap-assist dots, and opponent-colored dots. It explicitly identifies the black-and-white diagonal slash on both human cycles and their roster circles. Solo help is unchanged.
+- [x] Overflowing help starts at a reachable top edge and scrolls in short windows. Headless Chrome at 1280×800 and 1280×600 verified the actual MP controls content and heading accessibility with no page errors; inspected the rendered panel capture. Syntax and whitespace checks pass. Included in the mobile release authorized for deployment.
+
 ## Blue-team multiplayer launch dialogue — October 15
 
 - [x] Preload the user-approved `cycles_blue_leader_speech.mp3` as cycle audio. Only clients with an assigned BLUE seat schedule the non-spatial team-radio clip, one second after observing the countdown-to-racing transition. It plays once per round; solo play, queued spectators, other teams and mid-match joins do not receive it. Assignment, not the spectator camera target, selects the team.

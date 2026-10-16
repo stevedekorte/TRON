@@ -9,6 +9,8 @@ window.createExitConfirm = function ({onConfirm, onCancel, muted=()=>false}) {
     #exit-confirm .menu-marker{display:inline-block;flex:none;width:.48em;height:.78em;visibility:hidden;background:repeating-linear-gradient(to top,color-mix(in srgb,currentColor 68%,transparent) 0,color-mix(in srgb,currentColor 68%,transparent) .015em,currentColor .015em,currentColor .08em);box-shadow:0 0 5px #0a91db;animation:exit-cursor-blink .85s steps(1) infinite}
     #exit-confirm button[aria-pressed="true"] .menu-marker{visibility:visible}
     @keyframes exit-cursor-blink{50%{opacity:0}}
+    .exit-touch-menu{display:none}
+    @media(pointer:coarse){.exit-touch-menu{display:block;position:fixed;left:env(safe-area-inset-left,0px);bottom:env(safe-area-inset-bottom,0px);z-index:100;min-width:64px;min-height:48px;background:#020204aa;border:0;color:#159ddd;font:16px FilmTerminal,VT323,monospace;touch-action:manipulation}#exit-confirm{font-size:max(16px,var(--terminal-font-size,22px));line-height:1.4}#exit-confirm button{min-height:48px;width:100%;padding:6px 0}}
     @media(prefers-reduced-motion:reduce){#exit-confirm .menu-marker{animation:none}}
   `;
   document.head.append(style);
@@ -22,7 +24,7 @@ window.createExitConfirm = function ({onConfirm, onCancel, muted=()=>false}) {
     button.addEventListener('focus',()=>select(button));
     button.addEventListener('pointerenter',()=>button.focus());
   }
-  let feedbackContext,confirmTimer;
+  let feedbackContext,confirmTimer,touchMenu;
   const prepareFeedback=()=>{try{feedbackContext??=new AudioContext();void feedbackContext.resume().catch(()=>{});}catch{}};
   const close=confirm=>{
     if(!dialog.open)return;
@@ -56,5 +58,5 @@ window.createExitConfirm = function ({onConfirm, onCancel, muted=()=>false}) {
     if(event.code==='Escape'){event.preventDefault();if(!event.repeat)close(false);}
   };
   window.addEventListener('keydown',keydown,true);
-  return {get open(){return dialog.open;},show(){prepareFeedback();if(!dialog.open){dialog.showModal();dialog.querySelector('[data-cancel]').focus();}},dispose(){clearTimeout(confirmTimer);void feedbackContext?.close().catch(()=>{});window.removeEventListener('keydown',keydown,true);dialog.remove();style.remove();}};
+  return {addTouchMenu(onRequest){touchMenu=document.createElement('button');touchMenu.className='exit-touch-menu';touchMenu.textContent='MENU';touchMenu.type='button';touchMenu.onclick=event=>{event.stopPropagation();onRequest();};document.body.append(touchMenu);},get open(){return dialog.open;},show(){prepareFeedback();if(!dialog.open){dialog.showModal();dialog.querySelector('[data-cancel]').focus();}},dispose(){touchMenu?.remove();clearTimeout(confirmTimer);void feedbackContext?.close().catch(()=>{});window.removeEventListener('keydown',keydown,true);dialog.remove();style.remove();}};
 };

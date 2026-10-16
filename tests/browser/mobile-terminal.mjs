@@ -2,28 +2,23 @@ import {chromium,devices} from '@playwright/test';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
- for(const profile of [devices['iPhone 13'],devices['iPad Pro 11'],devices['Pixel 7']]){
-  const page=await browser.newPage(profile),requests=[];page.on('request',r=>requests.push(r.url()));
-  await page.goto('http://localhost:5173/');
-  await page.locator('body.mobile-terminal').waitFor({state:'attached'});
-  await page.locator('#mobile-terminal-message').waitFor();
-  assert.equal(await page.locator('#mobile-terminal-message').innerText(),'MOBILE TERMINALS NOT SUPPORTED');
-  assert.equal(await page.locator('#intro').isVisible(),false);
-  assert(!requests.some(url=>/game-app\.js|\.glb(?:\?|$)/.test(url)));
+ for(const name of ['iPhone 13','iPad Pro 11','Pixel 7']){
+  const page=await browser.newPage({...devices[name],reducedMotion:'reduce'}),errors=[];page.setDefaultTimeout(90000);page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(process.env.TRON_URL??'http://127.0.0.1:5188/');
+  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-credits').disabled);
+  assert(await page.locator('#start').isDisabled());
+  assert.equal(await page.locator('#clu-mobile-note').innerText(),'(UNAVAILABLE ON MOBILE)');
+  assert.equal(await page.locator('#game-menu button:enabled').count(),5);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  await page.close();
+  await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-multiplayer').getAttribute('aria-pressed'),'true');
+  await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-bit').getAttribute('aria-pressed'),'true','keyboard skips CLU');
+  await page.locator('#start').dispatchEvent('click');assert.equal(await page.evaluate(()=>__tron.state.mode),'ready');
+  await page.screenshot({path:'test-results/mobile-menu-'+name.replaceAll(' ','-')+'.png'});
+  await page.locator('#start-credits').tap();
+  await page.waitForFunction(()=>document.body.classList.contains('victory-credits')&&!document.body.classList.contains('home-opening'));
+  await page.touchscreen.tap(15,15);
+  await page.waitForFunction(()=>__tron.state.mode==='ready'&&!document.body.classList.contains('home-opening'));
+  assert(await page.locator('#start').isDisabled());assert.deepEqual(errors,[]);
+  console.log(name+': menu loads, CLU disabled, keyboard skips it, touch credits launch/return works.');await page.close();
  }
- // The warning must paint even when every external script, stylesheet and font is blocked.
- const blocked=await browser.newPage(devices['iPhone 13']);
- await blocked.route('**/*',route=>route.request().resourceType()==='document'?route.continue():route.abort());
- await blocked.goto('http://localhost:5173/',{waitUntil:'domcontentloaded'});
- await blocked.locator('#mobile-terminal-message').waitFor({state:'visible'});
- assert.equal(await blocked.locator('#mobile-terminal-message').innerText(),'MOBILE TERMINALS NOT SUPPORTED');
- assert.equal(await blocked.locator('#loading').isVisible(),false);
- await blocked.close();
- const desktop=await browser.newPage({viewport:{width:600,height:800}});
- await desktop.goto('http://localhost:5173/');
- await desktop.locator('#intro:not([hidden])').waitFor({timeout:60000});
- assert.equal(await desktop.locator('body.mobile-terminal').count(),0);
- console.log('Phones/tablet show readable warning without loading game; narrow desktop retains menu.');
 }finally{await browser.close();}

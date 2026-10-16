@@ -2,6 +2,7 @@
 export class InputController {
   constructor() {
     this.keys = new Set();
+    this.touchKeys = new Set();
     this.cleanups = [];
     this.clear();
   }
@@ -9,7 +10,7 @@ export class InputController {
     object.addEventListener(event, handler, options);
     this.cleanups.push(() => object.removeEventListener(event, handler, options));
   }
-  clearKeys(){this.keys.clear();this.turretCenterChord=false;}
+  clearKeys(){this.keys.clear();this.touchKeys.clear();this.turretCenterChord=false;}
   clear() {
     this.clearKeys();
     this.mouseFire = false;
@@ -32,7 +33,7 @@ export class InputController {
     this.mouseTarget = null;
   }
   command(run, { mouseLook, mouseTarget } = {}) {
-    const held = (...keys) => keys.some((key) => this.keys.has(key));
+    const held = (...keys) => keys.some((key) => this.keys.has(key)||this.touchKeys.has(key));
     const road=run.playerVehicle==='cycle'&&run.cycleRace?.cycles[run.cycleRace.playerId]?.escaped;
     return {
       cycleTurn:this.cycleTurns[0]??0,

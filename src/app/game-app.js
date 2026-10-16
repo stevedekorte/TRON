@@ -1,3 +1,5 @@
+import {CycleTouchControls} from '../ui/cycle-touch-controls.js';
+import {isMobileTerminal} from '../ui/mobile-terminal.js';
 import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {clearLegacyMcpCache} from '../mcp/clear-legacy-cache.js';
 import {CycleRendererControl} from '../ui/cycle-renderer-control.js';
@@ -43,6 +45,8 @@ import { startPursuit, boostTank, stopTankTurbo } from '../simulation/run.js';
 import { config, defaults, GUNNER, AERIAL_ZOOM, FOLLOW_ZOOM } from '../game/config.js';
 
 export async function createGameApp() {
+  const mobileTerminal=isMobileTerminal();
+  document.getElementById('clu-mobile-note').hidden=!mobileTerminal;
   void clearLegacyMcpCache();
   performance.mark('tron:startup');
   const loadingTimings = new LoadingTimings();
@@ -201,11 +205,12 @@ export async function createGameApp() {
 
   const homeTransition=createHomeTransition();
   const mcpPanel=createMcpPanel({onClose:()=>{homeTransition.clear();$('start-mcp').focus();},onLaunch:async(game,overlay)=>{
+    if(mobileTerminal&&game==='space')return;
     homeTransition.clear();selectGame(game);windowFocused=true;window.focus();
     await start(overlay);await homeTransition.finish();
   }});
   async function start(directOverlay=null) {
-    if(homeTransition.active)return;
+    if(homeTransition.active||mobileTerminal&&selectedGame==='space')return;
     const homeSelection=mode==='ready'&&!endingStage;
     if(homeSelection){
       void sound.unlock().catch(e=>console.warn('Audio unavailable; continuing silently.',e.message));
@@ -333,9 +338,16 @@ export async function createGameApp() {
     onConfirm:()=>{setAutoplay(false);returnToProgramSelection();},
     onCancel:()=>{void resume();},
   });
+  const touchControls=mobileTerminal?new CycleTouchControls({
+    onTurn:direction=>{idleTime=0;if(run.cycleSpectating)followCycle(direction);else inputController.queueCycleTurn(direction,run.cycleRace?.pendingTurns.length??0);},
+    onHeld:(turbo,brake)=>{for(const [key,held] of [['KeyW',turbo],['KeyS',brake]])held?inputController.touchKeys.add(key):inputController.touchKeys.delete(key);},
+    onMenu:()=>{pause();$('paused').hidden=true;exitConfirm.show();},
+    onHelp:()=>showControlsHelp(),
+    onRestart:()=>{if(multiplayer){if(multiplayer.restart())inputController.clear();}else if(session.restartCycleMatch()){inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;}},
+  }):null;
   const gameChoices=[...document.querySelectorAll('#game-menu .game-choice')];
   function selectGame(game,{focus=false}={}){
-    if(homeTransition.active)return;
+    if(homeTransition.active||mobileTerminal&&game==='space')return;
     selectedGame=game;
     for(const button of gameChoices){
       const selected=button.dataset.game===game;
@@ -345,7 +357,9 @@ export async function createGameApp() {
   }
   for(const button of gameChoices){
     listen(button,'focus',()=>selectGame(button.dataset.game));
-    listen(button,'click',()=>{if(mode==='ready'&&!endingStage){selectGame(button.dataset.game);void start();}});
+    listen(button,'pointerenter',event=>{if(event.pointerType==='mouse'&&mode==='ready'&&!endingStage&&!button.disabled)selectGame(button.dataset.game);});
+    listen(button,'pointerdown',event=>{if(event.isPrimary&&event.button===0&&mode==='ready'&&!endingStage&&!button.disabled)selectGame(button.dataset.game);});
+    listen(button,'click',()=>{if(!button.disabled&&mode==='ready'&&!endingStage){selectGame(button.dataset.game);void start();}});
   }
   selectGame(selectedGame);
   listen(window,'click',event=>{
@@ -370,7 +384,12 @@ export async function createGameApp() {
       ['WEAPONS','J/L / TURRET','F OR J+L / CENTER + LEVEL','SPACE / FIRE','I/K / GUNNER AIM'],
       ['CAMERA','P / GUNNER VIEW','O / GUNNER ZOOM','V / AERIAL','I/K / AERIAL ZOOM'],
     ];
-    groups.push(['GAME','ESC / HOME']);
+    if(cycle&&selectedGame==='multiplayer')groups.push(
+      ['ROSTER','COLORED GROUPS / TEAMS','FILLED CIRCLE / ACTIVE CYCLE','EMPTY COLORED CIRCLE / ELIMINATED CYCLE','WHITE OUTLINE / YOUR CYCLE','GRAY CIRCLES AT LEFT / PLAYERS WAITING TO JOIN','DOTS BELOW / WALL KILLS','HOLLOW DOTS / TRAP ASSISTS','DOT COLOR / OPPONENT TEAM'],
+      ['HUMAN PLAYERS','BLACK + WHITE DIAGONAL SLASH / HUMAN PLAYER','MARKED ON BOTH THE CYCLE AND ITS ROSTER CIRCLE'],
+    );
+    if(cycle&&mobileTerminal)groups.unshift(['TOUCH CONTROLS','TAP LEFT / RIGHT EDGE / TURN OR FOLLOW','HOLD TOP EDGE / TURBO','HOLD BOTTOM EDGE / BRAKE','MENU / EXIT CONFIRMATION','NEW MATCH / RESTART WHEN AVAILABLE']);
+    groups.push(['GAME',mobileTerminal?'MENU / HOME':'ESC / HOME']);
     $('controls-help-text').textContent=groups.map(group=>group.join('\n')).join('\n\n');
     pause();inputController.clear();releaseMouse();
     controlsHelpOpen=true;$('paused').hidden=true;$('controls-help').hidden=false;
@@ -379,6 +398,7 @@ export async function createGameApp() {
     controlsHelpOpen=false;$('controls-help').hidden=true;inputController.clear();void resume();
   }
   for(const type of ['pointerdown','click'])listen(window,type,event=>{
+    if(type==='pointerdown'&&!controlsHelpOpen)suppressHelpClickUntil=0;
     if(type==='click'&&performance.now()<suppressHelpClickUntil){event.preventDefault();event.stopImmediatePropagation();return;}
     if(!controlsHelpOpen)return;
     event.preventDefault();event.stopImmediatePropagation();
@@ -421,8 +441,9 @@ export async function createGameApp() {
         if(event.code==='Enter')void start();
         else {
           const direction=['ArrowUp','ArrowLeft'].includes(event.code)?-1:1;
-          const index=gameChoices.findIndex(button=>button.dataset.game===selectedGame);
-          selectGame(gameChoices[(index+direction+gameChoices.length)%gameChoices.length].dataset.game,{focus:true});
+          const available=gameChoices.filter(button=>!button.disabled);
+          const index=available.findIndex(button=>button.dataset.game===selectedGame);
+          if(available.length)selectGame(available[(index+direction+available.length)%available.length].dataset.game,{focus:true});
         }
       }
       return;
@@ -1043,6 +1064,12 @@ export async function createGameApp() {
       if(multiplayer)sound.cycleOpeningAudio?.updateMaterialization(run.cycleRace,mode==='running');
       else sound.cycleOpeningAudio?.update(sound.cycleOpeningSeconds,mode==='running');
       sound.update(run, view.camera, mode === 'running'||mode==='entering'&&openingTransition);
+      touchControls?.update({
+        visible:run.playerVehicle==='cycle'&&mode==='running'&&!homeTransition.active&&!run.arenaWaiting&&view.cameraRig.cycleOpening===null&&!exitConfirm.open&&!controlsHelpOpen,
+        driving:run.cycleRace?.phase==='racing'&&!run.cycleSpectating&&!!run.cycleRace?.cycles[run.cycleRace.playerId]?.alive,
+        spectating:!!run.cycleSpectating,
+        restart:multiplayer?run.multiplayer?.players===1:run.cycleRace?.phase==='result'||!run.cycleRace?.cycles[run.cycleRace.playerId]?.alive,
+      });
       hud.update({
         dt,
         run,
@@ -1109,7 +1136,7 @@ export async function createGameApp() {
       await yieldToBrowser();
       loadingTimings.sync('First render submission / shader setup',()=>view.render(run, session.previous, 1, 0, 'ready'));
       performance.mark('tron:first-frame');
-      $('start').disabled = false;
+      $('start').disabled = mobileTerminal;
       $('start-cycles').disabled = false;
       $('start-multiplayer').disabled = false;
       $('start-bit').disabled = false;
@@ -1288,6 +1315,7 @@ export async function createGameApp() {
     exitConfirm.dispose();
     jev.dispose();
     loop.dispose();
+    touchControls?.dispose();
     inputController.dispose();
     view?.dispose();
     session.dispose();

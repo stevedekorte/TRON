@@ -1,8 +1,7 @@
-import {isMobileTerminal,showMobileTerminal} from './ui/mobile-terminal.js';
+import {isMobileTerminal} from './ui/mobile-terminal.js';
 import './pwa/launch.js';
-if(isMobileTerminal()){
-  showMobileTerminal();
-}else{
+if(isMobileTerminal())document.body.classList.add('mobile-terminal');
+{
   await import('./ui/style.css');
   await import('./pwa/register.js');
   // Let the static loading terminal paint before synchronous world construction.
