@@ -28,7 +28,22 @@
     if (window.tronMobileTerminal) document.documentElement.classList.add('mobile-terminal');
   </script>
   <script defer src="./bit/exit-confirm.js"></script>
-  <style>html,body{margin:0;background:#000;color:#9eb6ce}body{visibility:hidden}</style>
+  <style>
+    html,body{margin:0;background:#000;color:#9eb6ce}body{visibility:hidden}
+    /* The loading status must paint before ANY JavaScript or external CSS arrives. */
+    #loading{visibility:visible;position:fixed;inset:0;background:#020204}
+    #loading[hidden]{display:none}
+    #loading .terminal-content{position:absolute;top:27.5vh;left:20.4vw;color:#159ddd;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566}
+    #loading .terminal-copy{margin:0;font:400 min(1.5vw,2.15vh)/1.12 FilmTerminal,monospace;letter-spacing:.025em;white-space:pre}
+    #loading .terminal-encom{display:block;position:fixed;right:4vw;bottom:15vh;width:clamp(85px,9.5vw,190px);height:auto;opacity:.8}
+    .loading-dots span{display:inline-block;opacity:0;will-change:opacity;transform:translateZ(0);animation:loading-dot-one 1.8s steps(1,end) infinite}
+    .loading-dots span:nth-child(2){animation-name:loading-dot-two}
+    .loading-dots span:nth-child(3){animation-name:loading-dot-three}
+    @keyframes loading-dot-one{0%,100%{opacity:0}25%,99.99%{opacity:1}}
+    @keyframes loading-dot-two{0%,100%{opacity:0}50%,99.99%{opacity:1}}
+    @keyframes loading-dot-three{0%,100%{opacity:0}75%,99.99%{opacity:1}}
+    @media(max-width:700px){#loading .terminal-content{left:7vw;top:28vh}#loading .terminal-copy{font-size:max(14px,min(1.5vw,2.15vh))}}
+  </style>
   <link rel="icon" type="image/svg+xml" href="./assets/icons/encom-e-727c3ea9d1f1.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./assets/icons/encom-e-727c3ea9d1f1-180.png">
@@ -58,8 +73,8 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
   <p id="end-tribute" class="end-tribute"><span class="tribute-measure" aria-hidden="true"></span><span class="tribute-typed" aria-hidden="true"><span id="tribute-text"></span><span class="terminal-cursor"></span></span></p>
         <div id="terminal-actions" hidden>
           <div id="game-menu" role="group" aria-label="Choose a program">
-            <button id="start-cycles" class="terminal-start game-choice" data-game="cycles" aria-pressed="true" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>LIGHT CYCLES</span></button>
-            <button id="start-multiplayer" class="terminal-start game-choice" data-game="multiplayer" aria-pressed="false" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>LIGHT CYCLES MULTIPLAYER</span></button>
+            <button id="start-multiplayer" class="terminal-start game-choice" data-game="multiplayer" aria-pressed="true" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>LIGHT CYCLES MULTIPLAYER</span></button>
+            <button id="start-cycles" class="terminal-start game-choice" data-game="cycles" aria-pressed="false" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>LIGHT CYCLES</span></button>
             <button id="start" class="terminal-start game-choice" data-game="space" aria-pressed="false" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>CLU <span id="clu-mobile-note" hidden>(UNAVAILABLE ON MOBILE)</span></span></button>
             <button id="start-bit" class="terminal-start game-choice" data-game="bit" aria-pressed="false" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>BIT</span></button>
             <button id="start-mcp" class="terminal-start game-choice" data-game="mcp" aria-pressed="false" disabled><span class="menu-marker terminal-cursor" aria-hidden="true"></span><span>MCP</span></button>

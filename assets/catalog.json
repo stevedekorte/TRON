@@ -9718,6 +9718,132 @@
       "sha256": "0e92484b83ec597e898a8eea9ff57c7fe465d68f85bb66ef31c6b3b331c9cfca",
       "deploymentPolicy": "runtime",
       "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-f6e9dc7e2d033d6d",
+      "category": "audio",
+      "path": "assets/source/audio/team-leaders/gold-1-alan-commanding-dry.mp3",
+      "sourcePath": "assets/source/audio/team-leaders/gold-1-alan-commanding-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "film",
+      "author": "Runway-generated dialogue; user-provided TRON (1982) Alan voice reference",
+      "sourceUrl": null,
+      "license": "Generated audio; underlying film and voice rights remain with respective owners. No independent rights clearance supplied.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-gold-leader-source.json"
+      ],
+      "transformations": "Runway seed_audio generated speech, unprocessed master.",
+      "conversionCommands": [],
+      "bytes": 73604,
+      "sha256": "f6e9dc7e2d033d6daeeb89cfcfbc1e5e8f57b312d410b28e3a0b7a3a4aa954cd",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-8e3d4465c70b5e93",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-gold-leader.mp3",
+      "sourcePath": "assets/source/audio/team-leaders/gold-1-alan-commanding-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-gold-leader.mp3",
+      "creditId": "film",
+      "author": "Runway-generated dialogue; user-provided TRON (1982) Alan voice reference",
+      "sourceUrl": null,
+      "license": "Generated audio; underlying film and voice rights remain with respective owners. No independent rights clearance supplied.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-gold-leader-source.json"
+      ],
+      "transformations": "Approved generated voice with radio treatment; no time stretching.",
+      "conversionCommands": [],
+      "bytes": 40486,
+      "sha256": "8e3d4465c70b5e934354d25bda2f9f9aea2c19e1eb762596d3f034d06e205064",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-20cf5f6757ef50d5",
+      "category": "audio",
+      "path": "assets/source/audio/team-leaders/green-1-alan-commanding-dry.mp3",
+      "sourcePath": "assets/source/audio/team-leaders/green-1-alan-commanding-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "film",
+      "author": "Runway-generated dialogue; user-provided TRON (1982) Alan voice reference",
+      "sourceUrl": null,
+      "license": "Generated audio; underlying film and voice rights remain with respective owners. No independent rights clearance supplied.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-green-leader-source.json"
+      ],
+      "transformations": "Runway seed_audio generated speech, unprocessed master.",
+      "conversionCommands": [],
+      "bytes": 65663,
+      "sha256": "20cf5f6757ef50d5b46c75e4879c2153e1a50a9f8c13978c731fc99d120c2d1b",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-bb1e8bd629be2ab8",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-green-leader.mp3",
+      "sourcePath": "assets/source/audio/team-leaders/green-1-alan-commanding-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-green-leader.mp3",
+      "creditId": "film",
+      "author": "Runway-generated dialogue; user-provided TRON (1982) Alan voice reference",
+      "sourceUrl": null,
+      "license": "Generated audio; underlying film and voice rights remain with respective owners. No independent rights clearance supplied.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-green-leader-source.json"
+      ],
+      "transformations": "Approved generated voice with radio treatment; no time stretching.",
+      "conversionCommands": [],
+      "bytes": 39370,
+      "sha256": "bb1e8bd629be2ab854bfec2ef13e06f344ce16a18fc38c8c9de6a20d8babf195",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-c341f1870e2a1b90",
+      "category": "audio",
+      "path": "assets/source/audio/team-leaders/red-1-alan-commanding-dry.mp3",
+      "sourcePath": "assets/source/audio/team-leaders/red-1-alan-commanding-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "film",
+      "author": "Runway-generated dialogue; user-provided TRON (1982) Alan voice reference",
+      "sourceUrl": null,
+      "license": "Generated audio; underlying film and voice rights remain with respective owners. No independent rights clearance supplied.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-red-leader-source.json"
+      ],
+      "transformations": "Runway seed_audio generated speech, unprocessed master.",
+      "conversionCommands": [],
+      "bytes": 65663,
+      "sha256": "c341f1870e2a1b90645501af614939b8b073b3b1f279a347b8832891d34d44cc",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-a02afb02626eaf15",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-red-leader.mp3",
+      "sourcePath": "assets/source/audio/team-leaders/red-1-alan-commanding-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-red-leader.mp3",
+      "creditId": "film",
+      "author": "Runway-generated dialogue; user-provided TRON (1982) Alan voice reference",
+      "sourceUrl": null,
+      "license": "Generated audio; underlying film and voice rights remain with respective owners. No independent rights clearance supplied.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-red-leader-source.json"
+      ],
+      "transformations": "Approved generated voice with radio treatment; no time stretching.",
+      "conversionCommands": [],
+      "bytes": 36324,
+      "sha256": "a02afb02626eaf15f8a82b9e36a2dec96f24e186de6eacae2cafabaac0a93165",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
     }
   ],
   "duplicateContent": [

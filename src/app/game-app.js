@@ -54,7 +54,7 @@ export async function createGameApp() {
   const { world: map } = scenario;
   const cycleStart = new URLSearchParams(location.search).get('cycleStart');
   const testCycleStart = cycleStart === '1';
-  let selectedGame = 'cycles', multiplayer=null;
+  let selectedGame = testCycleStart?'cycles':'multiplayer', multiplayer=null;
   const cycleGame=()=>selectedGame==='cycles'||selectedGame==='multiplayer';
   const $ = (id) => document.getElementById(id);
   const inputController = new InputController();

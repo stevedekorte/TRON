@@ -1,0 +1,27 @@
+{
+  "source": "assets/source/audio/team-leaders/gold-1-alan-commanding-dry.mp3",
+  "script": "This is Gold-1 to Gold-2 and 3. Split up. Take them one-on-one.",
+  "generation": {
+    "script": "This is Gold-1 to Gold-2 and 3. Split up. Take them one-on-one.",
+    "request": {
+      "model": "seed_audio",
+      "referenceAudios": [
+        "test-results/alan-voice-reference.mp3"
+      ],
+      "promptText": "Generate only a single male voice speaking the following exact line: \"This is Gold-One to Gold-Two and Three. Split up. Take them one-on-one.\" Match the voice identity, timbre and accent of the man in @Audio1. Change his delivery: speak fast with firm command authority, confidence and controlled urgency. He is the squadron leader giving direct orders that must be obeyed immediately. A cool, collected jet fighter leader in combat. Strong decisive downward inflections and crisp consonants. Make \"Split up\" a firm imperative, and deliver \"Take them one-on-one\" as an unmistakable command. More authoritative than conversational, with focused vocal pressure and conviction, but no shouting, anger or exaggerated bass. Brisk clipped articulation and minimal pauses between clauses. Aim to deliver the whole line in approximately four seconds. Natural human speech, composed and alert, not shouting or theatrical. Start speaking immediately, finish promptly. Voice only, dry recording, no music, background noises or extra words. Do not repeat the words from the reference recording.",
+      "speechRate": 0,
+      "outputFormat": "mp3"
+    },
+    "direction": "User-provided 26-second AlanVoice.wav reference, with concise delivery; no post-generation time compression.",
+    "task": {
+      "id": "ed6892e8-0022-4840-bc2c-69fefbb720c0",
+      "estimatedCost": {
+        "credits": 5
+      }
+    },
+    "source": "Runway seed_audio voice reference: user-supplied TRON film dialogue; experimental generated audition, not deployed"
+  },
+  "processing": "User-approved generated take. 220 Hz high-pass, 4500 Hz low-pass, 2:1 compression, peak limiting; no time stretching.",
+  "useConstraints": "Generated with Runway seed_audio using user-supplied Alan dialogue from TRON (1982) as voice reference. Underlying film/voice rights remain with their respective owners; no independent rights clearance supplied.",
+  "playback": "Multiplayer only; local GOLD assigned seat; one second after launch; once per round."
+}

@@ -9,6 +9,8 @@ try{
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-credits').disabled,null,{timeout:90000});
  const ready=()=>page.waitForFunction(()=>__tron.state.mode==='ready'&&!document.body.classList.contains('home-opening'));
  await ready();
+ assert.equal(await page.locator('#game-menu button').first().getAttribute('id'),'start-multiplayer');
+ assert.equal(await page.locator('#start-multiplayer').getAttribute('aria-pressed'),'true');
  for(const id of ['start-cycles','start-multiplayer','start','start-bit','start-mcp','start-credits']){
   await page.locator('#'+id).hover();assert.equal(await page.locator('#'+id).getAttribute('aria-pressed'),'true');
  }

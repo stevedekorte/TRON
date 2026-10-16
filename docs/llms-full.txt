@@ -19,6 +19,28 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Occasional multiplayer leader announcements — October 16
+
+- [x] Guarantee the local team's announcement on the first participated launch of a multiplayer session, then make one independent 20% draw per subsequent participated launch. Queued spectator rounds do not consume the first launch. Muted/missing audio consumes that match's decision without delayed replay. Returning home/disconnecting resets the session; changing rounds or teams does not restore the guarantee.
+- [x] All 11 team-voice unit tests pass, including exact probability boundary, one decision per round, first-match/reset behavior and spectators/mute. Timing, team selection and volume remain unchanged. Local change; not deployed.
+
+## Preserve hidden menu labels during transition — October 16
+
+- [x] Transition copies use rendered text rather than raw textContent, so the hidden CLU mobile restriction no longer appears on desktop when selecting CLU or another program. The actual mobile notice is retained when visible.
+- [x] Headless Chrome regression covers selected/unselected desktop CLU copies and visible mobile notice preservation. Whitespace checks pass. Local fix; not deployed.
+
+## Multiplayer leader radio for all teams — October 16
+
+- [x] Add user-approved Gold, Green and Red leader takes using the same local assigned-seat radio path as Blue. Preserve the original Blue sample. Every team hears only its own clip, once per round, scheduled one second after racing begins. Solo, queued spectators and mid-match joins remain silent; mute, disconnect, exit, reassignment and round/result transitions cancel playback.
+- [x] Gold: “This is Gold-1 to Gold-2 and 3. Split up. Take them one-on-one.” Green: “Green-1 to Green-2 and 3. Draw them in. Close the trap.” Red: “Red-1 to Red-2 and 3. Break formation. Cut them off.” Generated with Runway seed_audio from the user-supplied Alan voice sample. Approved masters, generation metadata, processing and underlying rights constraints are catalogued. Runtime uses approved radio treatment without time stretching. Gold, Green and Red playback gains are four times the original level (3.4 versus the unchanged Blue gain of 0.85), following the user’s second doubling request.
+- [x] Eight targeted unit tests pass, including every assigned team and a different spectator target. Headless Chrome loads/decodes all cycle samples without errors and verifies the correct buffer remains active after the one-second delay for each team (Gold 4.55 s, Blue 3.91 s, Red/Green 4.05 s). Production build/asset audit passes with all three new content-hashed audio assets. Local integration; not deployed.
+
+## Immediate loading status and multiplayer-first menu — October 16
+
+- [x] Put critical loading layout and dot-animation CSS directly in the entry HTML, so the status can paint before external scripts or styles arrive. Keep the discrete dot status active with reduced motion; cursor and other motion preferences remain separate.
+- [x] LIGHT CYCLES MULTIPLAYER is the first menu item and default selection. The explicit development cycleStart route still selects solo cycles.
+- [x] Headless Chrome and WebKit 26.6 verify all four dot states while every external script and stylesheet is blocked, in normal and reduced-motion modes. Chrome menu checks verify the first/default item, all hover targets, click/tap activation, credits return, keyboard selection and CLU launch. Production build/asset audit passes. These changes are local; no claim that all subsequent main-thread stalls are eliminated.
+
 ## Foreground startup before offline installation — October 16
 
 - [x] Delay service-worker registration/update until the opening terminal is ready. Previously the window load event could start the approximately 90 MiB offline installation while the foreground was still fetching modules, models and audio. Existing installed workers still serve cached resources immediately; new installations begin after startup.

@@ -10,7 +10,7 @@ try{
   assert.equal(await page.locator('#clu-mobile-note').innerText(),'(UNAVAILABLE ON MOBILE)');
   assert.equal(await page.locator('#game-menu button:enabled').count(),5);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-multiplayer').getAttribute('aria-pressed'),'true');
+  await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-cycles').getAttribute('aria-pressed'),'true');
   await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-bit').getAttribute('aria-pressed'),'true','keyboard skips CLU');
   await page.locator('#start').dispatchEvent('click');assert.equal(await page.evaluate(()=>__tron.state.mode),'ready');
   await page.screenshot({path:'test-results/mobile-menu-'+name.replaceAll(' ','-')+'.png'});

@@ -12,13 +12,18 @@ try{
   const owner={context,samples:{},sampleErrors:[]};await Sound.prototype.loadCycleSamples.call(owner);
   const master=context.createGain();master.connect(context.destination);
   const audio=new MultiplayerTeamVoice(context,master,owner.samples);
-  const race={round:1,phase:'countdown',cycles:[{id:3,team:1}]},mp={connected:true,seat:3};
-  audio.update(race,mp,true);race.phase='racing';audio.update(race,mp,true);
-  const voice=audio.voice;const start=context.currentTime;
-  await new Promise(resolve=>setTimeout(resolve,1200));
-  const active=audio.voice===voice;audio.reset();master.disconnect();await context.close();
-  return {duration:owner.samples['cycle-blue-leader']?.duration,ready:owner.cycleSamplesReady,errors:owner.sampleErrors,scheduled:!!voice,activeAfterDelay:active,elapsed:context.currentTime-start};
+  const rows=[];
+  for(const [team,color] of ['gold','blue','red','green'].entries()){
+   const race={round:team+1,phase:'countdown',cycles:[{id:3,team}]},mp={connected:true,seat:3};
+   audio.update(race,mp,true);race.phase='racing';audio.update(race,mp,true);
+   const voice=audio.voice;
+   await new Promise(resolve=>setTimeout(resolve,1200));
+   rows.push({color,duration:owner.samples[`cycle-${color}-leader`]?.duration,scheduled:!!voice,correctBuffer:voice?.source.buffer===owner.samples[`cycle-${color}-leader`],activeAfterDelay:audio.voice===voice});
+   audio.reset();
+  }
+  master.disconnect();await context.close();
+  return {rows,ready:owner.cycleSamplesReady,errors:owner.sampleErrors};
  });
- assert(result.duration>3&&result.duration<5);assert(result.ready&&result.scheduled&&result.activeAfterDelay);
+ assert(result.ready);for(const row of result.rows){assert(row.duration>3&&row.duration<6);assert(row.scheduled&&row.correctBuffer&&row.activeAfterDelay);}
  assert.deepEqual(result.errors,[]);assert.deepEqual(errors,[]);console.log(JSON.stringify(result));
 }finally{await browser.close();}

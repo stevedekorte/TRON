@@ -48,7 +48,7 @@ try{
  const install=await cdp.send('Page.getInstallabilityErrors');assert.deepEqual(install.installabilityErrors,[]);
  await context.setOffline(true);await page.reload();
  await page.waitForFunction(()=>!document.querySelector('#start').disabled,null,{timeout:60000});
- await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
+ await page.locator('#start-cycles').click();await page.waitForFunction(()=>document.body.classList.contains('playing'));
  const range=await page.evaluate(async()=>{
   const r=await fetch('./assets/audio/cannon.wav?v=2',{headers:{Range:'bytes=0-31'}});
   return {status:r.status,length:(await r.arrayBuffer()).byteLength,range:r.headers.get('Content-Range')};

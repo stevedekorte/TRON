@@ -18,7 +18,8 @@ export function createHomeTransition(){
     const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
     const clone=element.tagName==='IMG'?element.cloneNode():document.createElement('div');
     clone.id=id;clone.removeAttribute('class');
-    if(element.tagName!=='IMG')clone.textContent=element.textContent.trim();
+    // Preserve what is rendered; textContent also includes hidden mobile-only labels.
+    if(element.tagName!=='IMG')clone.textContent=element.innerText.trim();
     Object.assign(clone.style,{position:'absolute',left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${rect.height}px`,margin:'0',padding:'0',font:style.font,letterSpacing:style.letterSpacing,color:style.color,textShadow:style.textShadow,whiteSpace:style.whiteSpace,textTransform:'uppercase',opacity:style.opacity,filter:style.filter});
     curtain.append(clone);return clone;
   }
