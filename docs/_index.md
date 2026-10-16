@@ -6,11 +6,16 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## AI follow-up training — October 16
+
+- [x] Completed one bounded generation: current policy plus three mutations, three training seeds and four spawn rotations each, 60-second encounters, two workers; seed offset 360000. Current approach-340000-0-0 ranked first (fitness 1.0175 versus 0.7862, 0.6856 and 0.6053). No weights promoted.
+- [x] Selected policy then completed eight fresh seeds/four rotations: 14 wall eliminations and 7 trap-assist credits across 32 matches. All reached the 60-second limit without a winner, so this run does not establish full-match win-rate improvement. Candidate and baseline are identical because the incumbent won selection. Serial AI p99 0.204 ms and tick p99 0.276 ms pass the existing performance gates. Summary: tools/ai/results/mobile-followup-360000.json; full local record: test-results/cycle-ai-mobile-followup.json. Trainer exited normally.
+
 ## Mobile programs and cycle controls — October 16
 
 - [x] Enable the terminal on mobile; disable only CLU, labeled “(UNAVAILABLE ON MOBILE)”. Mouse hover/click and touch taps select programs; keyboard navigation skips disabled choices.
 - [x] Cycle touch controls: tap left/right to turn (or follow while spectating), hold top turbo or bottom brake, with simultaneous steering and pedal input. MENU opens a tappable exit confirmation; CONTROLS explains gestures; eligible players can tap NEW MATCH. BIT and MCP also have touch exit menus. Pedals release on cancellation, blur, hidden controls and disposal.
-- [x] All 607 unit tests and production build/asset audit pass. Headless Chromium iPhone 13, iPad Pro 11 and Pixel 7 emulations verify menus and CLU restriction; desktop pointer tests pass. CDP multitouch verifies simultaneous turbo/turn, release/cancellation and brake. Actual solo launch, help, exit cancellation and return home pass. Physical mobile Safari/Chrome performance and feel remain to be checked. User authorized deployment.
+- [x] All 607 unit tests and production build/asset audit pass. Headless Chromium iPhone 13, iPad Pro 11 and Pixel 7 emulations verify menus and CLU restriction; desktop pointer tests pass. CDP multitouch verifies simultaneous turbo/turn, release/cancellation and brake. Actual solo launch, help, exit cancellation and return home pass. Physical mobile Safari/Chrome performance and feel remain to be checked. Deployed client 3883d5b via website 7bdeda8 (Pages run 38927792047 succeeded on retry after a dependency download timeout). Production headless iPhone emulation verified CLU disabled, multiplayer launch, touch guide and touch-only exit without page errors.
 
 ## Multiplayer roster controls guide — October 15
 
