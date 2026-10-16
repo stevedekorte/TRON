@@ -126,8 +126,23 @@ export class PovCycles {
   });
  }
  async warm(renderer,camera){
-  const scene=new T.Scene(),mesh=new T.Mesh(this.geometry,this.proxies[0].material);scene.add(mesh);
-  await renderer.compileAsync(scene,camera);
+  const scene=new T.Scene(),material=this.proxies[0].material,mesh=new T.Mesh(this.geometry,material);
+  mesh.frustumCulled=false;scene.add(mesh);
+  const target=new T.WebGLRenderTarget(16,16),previous=renderer.getRenderTarget();
+  const transparent=material.transparent,depthWrite=material.depthWrite;
+  try{
+   // The first formation uses a transparent pipeline; warming only the opaque
+   // racing pipeline leaves expensive first-use work inside the server's clock.
+   for(const fading of [true,false]){
+    material.transparent=fading;material.depthWrite=!fading;material.needsUpdate=true;
+    await renderer.compileAsync(scene,camera);
+    // Exercise uploads and the first draw offscreen before declaring readiness.
+    renderer.setRenderTarget(target);renderer.render(scene,camera);renderer.setRenderTarget(previous);
+   }
+  }finally{
+   renderer.setRenderTarget(previous);target.dispose();
+   material.transparent=transparent;material.depthWrite=depthWrite;material.needsUpdate=true;
+  }
  }
  prepare(){
   this.restore();

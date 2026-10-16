@@ -4,6 +4,8 @@ import {MP} from '../../shared/multiplayer/config.js';
 import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../../shared/simulation/config/light-cycles.js';
 import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 
+export const CONNECTION=Object.freeze({attempts:3,timeoutMs:8000,retryDelayMs:500});
+
 export const PREDICTION_CLOCK=Object.freeze({maxRateAdjustment:.1,correctionSeconds:.25,maxFrameSeconds:.2,reserveSnapshots:2});
 
 // Predict motion only. Collisions, eliminations, seats and trail history remain server-owned.
@@ -21,14 +23,29 @@ export class MultiplayerClient{
   this.url=new URL('/api/multiplayer',base);this.url.protocol=this.url.protocol==='https:'?'wss:':this.url.protocol==='http:'?'ws:':this.url.protocol;this.url.searchParams.set('v',MP.protocol);
   this.remotePlayback=new RemotePlayback();this.onStatus=onStatus;this.seq=0;this.pending=[];this.rtt=0;this.closed=false;this.lastSent=0;this.control={turbo:false,brake:false};
  }
- connect(){
+ async connect(options=CONNECTION){
+  for(let attempt=0;attempt<options.attempts;attempt++){
+   if(this.closed)throw Error('MULTIPLAYER CONNECTION CANCELLED');
+   this.disconnected=false;this.id=null;this.state=null;
+   try{return await this.connectAttempt(options.timeoutMs);}
+   catch(error){
+    clearInterval(this.heartbeat);
+    if(this.socket){this.socket.onopen=this.socket.onmessage=this.socket.onerror=this.socket.onclose=null;this.socket.close();}
+    if(this.closed||error.retryable===false||attempt===options.attempts-1)throw error;
+    this.onStatus('retrying');
+    await new Promise(resolve=>setTimeout(resolve,options.retryDelayMs));
+   }
+  }
+ }
+ connectAttempt(timeoutMs){
   return new Promise((resolve,reject)=>{
    this.socket=new WebSocket(this.url);
-   const timeout=setTimeout(()=>{reject(Error('MULTIPLAYER CONNECTION TIMED OUT'));this.close();},12000);
+   const timeout=setTimeout(()=>reject(Error('MULTIPLAYER CONNECTION TIMED OUT')),timeoutMs);
+   this.cancelConnect=()=>{clearTimeout(timeout);reject(Error('MULTIPLAYER CONNECTION CANCELLED'));};
    this.socket.onopen=()=>{this.ping();this.heartbeat=setInterval(()=>this.ping(),MP.heartbeatSeconds*1000);};
    this.socket.onmessage=event=>{
     let data;try{data=JSON.parse(event.data);}catch{return;}
-    if(data.type==='welcome'){if(data.protocol!==MP.protocol){this.close();reject(Error('MULTIPLAYER VERSION MISMATCH'));}this.id=data.id;return;}
+    if(data.type==='welcome'){if(data.protocol!==MP.protocol){clearTimeout(timeout);reject(Object.assign(Error('MULTIPLAYER VERSION MISMATCH — RELOAD TO UPDATE'),{retryable:false}));return;}this.id=data.id;return;}
     if(data.type==='pong'){this.rtt=Math.max(0,performance.now()-data.sent);return;}
     if(data.type!=='state'||data.protocol!==MP.protocol||!this.id)return;
     data=decodeSnapshot(data,this.state);
@@ -37,7 +54,7 @@ export class MultiplayerClient{
     const me=data.clients.find(c=>c.id===this.id);if(!me)return;
     if(this.state?.race.round!==data.race.round){this.pending=[];this.control={turbo:false,brake:false};this.lastSent=0;}
     this.pending=this.pending.filter(p=>p.seq>me.ack);this.state=data;this.me=me;this.received=performance.now();this.remotePlayback.push(data,this.received);
-    this.onStatus('connected');clearTimeout(timeout);resolve(this);
+    this.onStatus('connected');clearTimeout(timeout);this.cancelConnect=null;resolve(this);
    };
    this.socket.onerror=()=>{clearTimeout(timeout);reject(Error('MULTIPLAYER CONNECTION UNAVAILABLE'));};
    this.socket.onclose=()=>{clearTimeout(timeout);clearInterval(this.heartbeat);if(!this.closed){this.disconnected=true;this.onStatus('disconnected');reject(Error('MULTIPLAYER DISCONNECTED'));}};
@@ -62,7 +79,8 @@ export class MultiplayerClient{
   const leadTicks=Math.min(this.rtt/2*MP.tickHz/1000,maxLeadTicks);
   const target=this.state.tick+(now-this.received)*MP.tickHz/1000+leadTicks;
   let clock=this.predictionClock;
-  if(!clock||clock.round!==round||now-clock.now>PREDICTION_CLOCK.maxFrameSeconds*1000)clock=this.predictionClock={round,tick:target,now};
+  if(!clock||clock.round!==round)clock=this.predictionClock={round,tick:target,now};
+  else if(now-clock.now>PREDICTION_CLOCK.maxFrameSeconds*1000)clock=this.predictionClock={round,tick:Math.max(clock.tick,target),now};
   else{
    const dt=Math.max(0,Math.min(PREDICTION_CLOCK.maxFrameSeconds,(now-clock.now)/1000));
    const expected=clock.tick+dt*MP.tickHz;
@@ -149,5 +167,5 @@ export class MultiplayerClient{
   run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,unseatedWaiting:this.state.clients.filter(c=>c.seat===null&&c.queue>0).length,players:this.state.clients.length,ping:Math.round(this.rtt),round:race.round};
   Object.assign(run,cyclePlayerPose(race));return true;
  }
- close(){this.closed=true;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];this.remotePlayback?.reset();}
+ close(){this.closed=true;this.cancelConnect?.();this.cancelConnect=null;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];this.remotePlayback?.reset();}
 }

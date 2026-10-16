@@ -108,3 +108,26 @@ test('playback holds at last confirmed pose on stalls, bounds history and resets
  playback.push(state(1,2),11002);assert.equal(playback.frames.length,1);assert.equal(playback.sample(11002).tick,1);
  playback.reset();assert.equal(playback.sample(11003),null);
 });
+
+test('a long render pause cannot rewind a remote cycle when the server also stalls',()=>{
+ const playback=new RemotePlayback();
+ for(let now=0;now<=1000;now+=10){if(now%50===0)playback.push(state(now*MP.tickHz/1000),now);playback.sample(now);}
+ // Keep rendering briefly without packets, then pause the renderer as well.
+ // Rebasing to the old snapshot minus the buffer must not undo displayed travel.
+ const before=playback.sample(1080).tick;
+ playback.push(state(126),1320);
+ const resumed=playback.sample(1320).tick;
+ assert(resumed>=before,'a frame stall must not move a remote cycle backward');
+ playback.push(state(132),1330);
+ assert(playback.sample(1330).tick>=resumed,'the next snapshot must preserve monotonic playback');
+});
+
+
+test('local follow clock cannot rewind after a combined render and server stall',t=>{
+ let now=1000;t.mock.method(performance,'now',()=>now);
+ const client=Object.create(MultiplayerClient.prototype);
+ Object.assign(client,{state:state(120),received:1000,rtt:80});client.estimatedRenderTick();
+ now=1080;const before=client.estimatedRenderTick();
+ now=1320;client.state=state(126);client.received=now;
+ assert(client.estimatedRenderTick()>=before,'camera time cannot step backwards when slow server resumes');
+});

@@ -19,6 +19,26 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Monotonic recovery after combined stalls — October 15
+
+- [x] Reproduced a backward-clock correction when a render pause over 200 ms coincides with slow server tick progress and a newly received snapshot. Restoring the normal playback buffer could then place the remote clock behind its last displayed pose; the predicted local camera clock had the same recovery hazard. Both now preserve their previous clock minimum within a round, while retaining fresh-clock initialization for a new round. No extra interpolation delay or invented remote turns.
+- [x] Seven playback regression tests pass, including the new combined-stall cases for remote cycles and local camera. The remote regression failed before this correction. A separate headless Chrome 155 diagnostic across two actual local matches recorded 843/750 racing samples, zero backward clock steps or held samples, and frame p99 17.6 ms in both rounds; it did not reproduce the user's ongoing jitter. The controlled stall regression establishes one real cause, not proof that every reported jitter source is fixed. Browser/direction clarification requested. Local change, not deployed.
+
+
+## First multiplayer formation readiness — October 15
+
+- [x] Camera readiness also waits for the asynchronous cycle renderer selection, completion of the home transition, a visible document and existing audio readiness. Previously the initial camera could acknowledge readiness while the detailed renderer was still loading/compiling, allowing the server's short formation timeline to advance underneath first-use work.
+- [x] Detailed cycles warm both transparent formation and opaque racing pipelines with asynchronous compilation plus small offscreen draws before reporting renderer preparation complete. The warmup restores the render target and material flags and disposes its temporary target. Later matches reuse the prepared renderer.
+- [x] Headless Chrome 155, 1280×800: `node tests/browser/multiplayer-first-formation.mjs` deliberately holds the detailed renderer module for six seconds, confirms the server remains in camera staging with cycles hidden, then observes 2.41 seconds remaining at the beginning of visible materialization and a successful launch without page/shader errors. Inspected `test-results/mp-first-materialization.png`. This reproduces the readiness race with an artificial cold load, not the user's exact Safari/GPU timing. Local change; no deployment yet.
+
+
+## Multiplayer connection recovery and terminal errors — October 15
+
+- [x] Initial multiplayer connection retries up to three times, with an eight-second timeout per attempt and 500 ms between attempts. Dispose failed sockets and heartbeat timers; explicit cancellation stops retries, and protocol mismatch requests a reload immediately. This mitigates transient handshakes; it does not identify or repair a persistent network/server failure. Three production Chromium handshakes succeeded (about 1.2–3.1 seconds). The reported Safari failure remains unreproduced: current Playwright WebKit was unavailable, and the older installed engine stalled and was stopped.
+- [x] Shared game errors now use the ENCOM terminal font, blue text, black background, normal heading scale, wrapping and logo. Hide the tank/menu chrome, focus the return control, and provide RETURN TO PROGRAMS plus RELOAD TERMINAL. Returning after multiplayer failure resets the menu; early loading failures can reload the home URL.
+- [x] All 597 unit tests pass, including retry success, finite failure, timeout cleanup, version mismatch and cancellation. `node tests/browser/multiplayer-errors.mjs` in headless Chrome 155 verifies three injected failures, terminal styling, keyboard focus, no overflow at 1280×800 and 640×600, and return to selection without page errors. Inspected `test-results/multiplayer-error-terminal.png`. Changes are local pending deployment.
+
+
 ## Reference organization by subject — October 15
 
 - [x] Reorganized local `docs/references` material into subject folders, merging image/video locations for cycles, CLU/tanks and Recognizers. Maze trace overlays now live under `mazes/`; generator and documentation-copy paths follow them. Updated reference-page links and added subject aliases for the archived film collection while retaining legacy URL mappings. Original files and the existing archived collection are preserved; Finder metadata from the old folders was moved to temporary storage. Verified all 19 reference-page local links, both built trace backgrounds, the organization invariants, production build/asset audit and Worker dry-run.

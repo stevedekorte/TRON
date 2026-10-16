@@ -78,7 +78,14 @@ SELECT PROGRAM</span><span class="terminal-cursor" aria-hidden="true"></span></h
       <img class="terminal-encom" src="/assets/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
     </section>
     <section id="paused" class="standby" role="status" tabindex="-1" hidden>ANY KEY TO RESUME</section>
-    <section id="error" class="result" role="alert" aria-labelledby="error-title" hidden><div class="eyebrow">CONNECTION FAILED</div><h2 id="error-title">UNABLE TO ENTER</h2><p id="error-message"></p><button class="primary" onclick="location.assign('./update.html')">RELOAD</button></section>
+    <section id="error" class="intro" role="alert" aria-labelledby="error-title" hidden>
+      <div class="terminal-content error-content">
+        <h2 id="error-title">PROGRAM UNAVAILABLE</h2>
+        <p id="error-message"></p>
+        <div class="error-actions"><button id="error-home" class="terminal-start" type="button">RETURN TO PROGRAMS</button><button class="terminal-start" type="button" onclick="location.assign('./update.html')">RELOAD TERMINAL</button></div>
+      </div>
+      <img class="terminal-encom" src="/assets/images/encom-terminal.svg" alt="ENCOM" width="210" height="62">
+    </section>
   </main>
 
     <section id="controls-help" role="dialog" aria-modal="true" aria-labelledby="controls-help-title" hidden><div><h2 id="controls-help-title">CONTROLS</h2><p id="controls-help-text"></p></div></section>

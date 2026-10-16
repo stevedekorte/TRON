@@ -21,7 +21,9 @@ export class RemotePlayback{
   const target=last.state.tick+(now-last.now)*MP.tickHz/1000-REMOTE_PLAYBACK.bufferSeconds*MP.tickHz;
   // Loading/background pauses are not slow frames: restore the buffer on resume
   // instead of spending seconds pinned to packet boundaries while catching up.
-  if(this.tick===null||now-this.lastNow>REMOTE_PLAYBACK.maxFrameSeconds*1000)this.tick=target;
+  // A server stall can make that target older than a pose already displayed.
+  // Refill by slowing/holding, never by rewinding an existing round.
+  if(this.tick===null||now-this.lastNow>REMOTE_PLAYBACK.maxFrameSeconds*1000)this.tick=Math.max(this.tick??target,target);
   else{
    const dt=Math.max(0,Math.min(REMOTE_PLAYBACK.maxFrameSeconds,(now-this.lastNow)/1000));
    const expected=this.tick+dt*MP.tickHz;

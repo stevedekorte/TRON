@@ -189,7 +189,7 @@ export function createGameApp() {
     $('pause').hidden = next !== 'running';
     $('footer').hidden = next !== 'ready';
     document.body.classList.toggle('playing', next === 'running');
-    document.body.classList.toggle('terminal', ['ready', 'entering'].includes(next));
+    document.body.classList.toggle('terminal', ['ready', 'entering', 'error'].includes(next));
     document.body.classList.toggle('entering', next === 'entering');
     document.body.classList.toggle('paused', next === 'paused');
     if (next === 'running') document.body.classList.remove('detached');
@@ -316,10 +316,14 @@ export function createGameApp() {
     $('sound').setAttribute('aria-label', sound.muted ? 'Unmute sound' : 'Mute sound');
   }
   function fail(message) {
+    $('error-title').textContent=/MULTIPLAYER/i.test(message)?'MULTIPLAYER UNAVAILABLE':'PROGRAM UNAVAILABLE';
     $('error-message').textContent = /(?:importing a module script failed|failed to fetch dynamically imported module|loading chunk|module script|preload.*(?:css|module))/i.test(message)
       ? 'PROGRAM FILES COULD NOT LOAD. RELOAD TO CHECK FOR AN UPDATE.' : message;
     setMode('error');
+    $('error-home').focus({preventScroll:true});
   }
+
+  listen($('error-home'),'click',()=>view?.cameraRig?returnToProgramSelection():location.assign('./'));
 
   const exitConfirm=window.createExitConfirm({
     muted:()=>sound.muted,
@@ -1029,7 +1033,7 @@ export function createGameApp() {
         view.updateAntialiasing(dt,mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.opening===null&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting);
         view.render(run, session.previous, mode === 'running'&&!multiplayer ? loop.alpha : 1, dt, mode);
         const formation=view.cameraRig.multiplayerFormationCamera.shot;
-        if(multiplayer&&formation?.ready&&run.cycleRace.cameraStaging&&(!sound.context||sound.cycleSamplesReady))multiplayer.cameraReady(formation.round,formation.seat);
+        if(multiplayer&&formation?.ready&&run.cycleRace.cameraStaging&&!cycleRendererControl.busy&&!homeTransition.active&&!document.hidden&&(!sound.context||sound.cycleSamplesReady))multiplayer.cameraReady(formation.round,formation.seat);
         if((mode==='running'||mode==='entering'&&openingTransition)&&!run.arenaWaiting&&!document.body.classList.contains('cycle-loading'))homeTransition.sceneReady();
       }
       sound.cycleOpeningSeconds=view.cameraRig.cycleOpening===null?null:view.cameraRig.cycleOpening*CYCLE_OPENING.durationSeconds;
