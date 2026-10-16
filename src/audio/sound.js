@@ -1,4 +1,5 @@
 import {publicAssetUrl} from '../assets/public-url.js';
+import {MultiplayerTeamVoice} from './multiplayer-team-voice.js';
 import {MultiplayerCountdown} from './multiplayer-countdown.js';
 const SURFACE_HIT_SOUND=Object.freeze({referenceDistanceMeters:18,maximumDistanceMeters:12000,rolloff:1.2});
 import {CycleOpeningAudio, CYCLE_ENTRY_CUES} from './cycle-opening.js';
@@ -144,6 +145,7 @@ export class Sound {
     });
     this.cycleOpeningAudio = new CycleOpeningAudio(c, this.master, this.samples);
     this.multiplayerCountdown = new MultiplayerCountdown(c, this.master);
+    this.multiplayerTeamVoice = new MultiplayerTeamVoice(c, this.master, this.samples);
     this.cycleVoices = new CycleVoices(c, this.master, this.samples);
     this.loading = this.loadSamples();
   }
@@ -182,9 +184,9 @@ export class Sound {
 
   loadCycleSamples() {
     if(!this.context)return Promise.resolve();
-    return this.cycleLoading ??= Promise.all(['materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
+    return this.cycleLoading ??= Promise.all(['blue-leader','materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
       try {
-        const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+'.wav'));
+        const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+(name==='blue-leader'?'.mp3':'.wav')));
         if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.context.decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;
@@ -283,6 +285,7 @@ export class Sound {
       l.setPosition(ear.x, ear.y, -ear.s);
       l.setOrientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
     }
+    this.multiplayerTeamVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted);
     this.multiplayerCountdown.update(run.multiplayer?.connected?run.cycleRace:null,playing&&!this.muted);
     this.cycleVoices.update(run.cycleRace,playing,ear,this.cycleOpeningSeconds!==null&&this.cycleOpeningSeconds!==undefined);
     this.recognizerVoices.update(cycleMode ? {recognizers:run.recognizers.filter(e=>e.role==='arena-patrol')} : run, ear);
@@ -580,6 +583,7 @@ export class Sound {
   reset() {
     this.cycleOpeningAudio?.reset();
     this.multiplayerCountdown?.reset();
+    this.multiplayerTeamVoice?.reset();
     this.musicDirector.reset();
     this.cycleVoices?.reset();
     this.turretServo?.reset();
@@ -589,6 +593,7 @@ export class Sound {
     for (const s of this.sources) if (!s.loop) s.stop();
   }
   silence() {
+    this.multiplayerTeamVoice?.stopPlayback();
     this.musicDirector.silence();
     this.cycleVoices?.stopPlayback();
     if (this.context) this.master.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
@@ -600,6 +605,7 @@ export class Sound {
     this.recognizerVoices?.dispose();
     this.cycleOpeningAudio?.reset();
     this.multiplayerCountdown?.reset();
+    this.multiplayerTeamVoice?.reset();
     this.cycleVoices?.dispose();
     this.musicDirector.dispose();
     this.context?.close();

@@ -19,6 +19,18 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Blue-team multiplayer launch dialogue — October 15
+
+- [x] Preload the user-approved `cycles_blue_leader_speech.mp3` as cycle audio. Only clients with an assigned BLUE seat schedule the non-spatial team-radio clip, one second after observing the countdown-to-racing transition. It plays once per round; solo play, queued spectators, other teams and mid-match joins do not receive it. Assignment, not the spectator camera target, selects the team.
+- [x] Mute, leaving play, disconnect, seat reassignment, round changes and results cancel pending/active playback. Audio nodes disconnect on completion/reset. Runtime asset is an exact copy, catalogued with film provenance and use constraints.
+- [x] Ten targeted multiplayer audio unit tests pass, including the exact one-second schedule and eligibility/lifecycle cases. Headless Chrome (`TRON_URL=http://127.0.0.1:5188/ node tests/browser/multiplayer-team-voice.mjs`) decoded the 3.91-second clip, preloaded every cycle sample without errors, and kept the scheduled voice active beyond the delay. Production build and binary/immutable-asset audit pass. User confirmed the blue speech sounds perfect. Approved for deployment with the ten-second result hold and initial placement responsiveness fix.
+
+## Initial placement responsiveness and longer result hold — October 15
+
+- [x] Initial enemy placement now consumes the same seeded simulation generator in approximately 8 ms work slices, yielding to browser paint between slices. Spawn-cell checks and maze-exit route searches both cooperate; synchronous simulation callers and restarts retain the same results and random order. This addresses the initial pause that preceded the earlier model-loading improvements.
+- [x] Headless Chrome 155, 1280×800 (`TRON_URL=http://127.0.0.1:5188/ node tests/browser/loading-responsive.mjs`): initial/cached navigation recorded 271/234 animation frames during placement, maximum frame gaps 16.8/21.4 ms, all four dot states, and successful cycle launch without page errors. Cooperative scheduling adds elapsed loading time to preserve UI responsiveness. Individual GPU compilation operations can still block later in loading.
+- [x] Multiplayer win/tie hold increased from 5 to 10 seconds before selecting the next roster. Regression verifies the roster stays fixed for the full hold. Seeded synchronous/asynchronous session equivalence, reset behavior and initialization failure propagation pass. All 602 unit tests and production build/asset audit pass. Isolated browser server stopped. Changes are local; the hold requires a multiplayer Worker deployment.
+
 ## Responsive initial resource loading — October 15
 
 - [x] Model adaptation and world/cycle presentation construction now yield to browser paint between expensive phases, including cached loads. View factories finish asynchronously before the application uses them; background tabs have a timer fallback.

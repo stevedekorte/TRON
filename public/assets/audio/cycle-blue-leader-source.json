@@ -1,0 +1,8 @@
+{
+  "source": "references/film/dialog/cycles/cycles_blue_leader_speech.mp3",
+  "attribution": "TRON (1982), Walt Disney Productions; user-supplied film dialogue.",
+  "useConstraints": "Film dialogue; no redistribution license supplied.",
+  "processing": "User-approved CDX23 speech isolation; runtime MP3 is an exact copy, with no additional conversion.",
+  "sha256": "0e92484b83ec597e898a8eea9ff57c7fe465d68f85bb66ef31c6b3b331c9cfca",
+  "playback": "Multiplayer only; local BLUE assigned seat; one second after countdown transitions to racing; once per round."
+}

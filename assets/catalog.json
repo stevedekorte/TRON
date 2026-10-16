@@ -9696,6 +9696,28 @@
       "sha256": "39b46079e78c16b44488ce7f2ab0b0e9ab42a01c07c23f8555b680fec5f5266c",
       "deploymentPolicy": "reference-only",
       "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-0e92484b83ec597e",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-blue-leader.mp3",
+      "sourcePath": "references/film/dialog/cycles/cycles_blue_leader_speech.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-blue-leader.mp3",
+      "creditId": "unresolved",
+      "author": "Walt Disney Productions",
+      "sourceUrl": null,
+      "license": "Film dialogue; no redistribution license supplied.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-blue-leader-source.json",
+        "references/film/dialog/cycles/speech-isolation.txt"
+      ],
+      "transformations": "User-approved CDX23 speech isolation; runtime MP3 is an exact copy, with no additional conversion.",
+      "conversionCommands": [],
+      "bytes": 70904,
+      "sha256": "0e92484b83ec597e898a8eea9ff57c7fe465d68f85bb66ef31c6b3b331c9cfca",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
     }
   ],
   "duplicateContent": [

@@ -15,18 +15,21 @@ import {enemyHitPart,recordEnemyHit} from './hit-parts.js';
 import {randomSeed,seededRandom} from '../game/random.js';
 import {updateMouseAim,accelerateMouseAim} from './mouse-aim.js';
 import {stabilizeTurret} from './turret.js';
-import {createGroundTanks,updateGroundTanks,reactToGroundHit} from './ground-tanks.js';
+import {finishStartup,finishStartupAsync} from './startup-work.js';
+import {prepareGroundTanks,updateGroundTanks,reactToGroundHit} from './ground-tanks.js';
 import {intercept} from './intercept.js';
 import { TANK } from '../game/tank.js';
 import { config, CLU_HEALTH, CLU_WEAPON, GUNNER, gunnerAimScale, TURBO, RECOGNIZER_SCALE, clamp, damp, angleDelta } from '../game/config.js';
 import { createRecognizers, updateRecognizers, perceive } from './recognizers.js';
 
-export function createRun(seed=randomSeed(),world=DEFAULT_WORLD,settings=null) {
+export function createRun(seed=randomSeed(),world=DEFAULT_WORLD,settings=null){return finishStartup(prepareRun(seed,world,settings));}
+export function createRunAsync(seed=randomSeed(),world=DEFAULT_WORLD,settings=null,yieldControl){return finishStartupAsync(prepareRun(seed,world,settings),yieldControl);}
+function* prepareRun(seed,world,settings) {
   const config=settings?.vehicle||configFor(null);
   const {SPAWN}=world;
   const random=seededRandom(seed);
   const run={...SPAWN,seed,inspection:false,teleportPads:createTeleportPads(world.MAZE_INSTANCES,world.WALL_HEIGHT),teleport:null,teleportArrival:null,teleportRevision:0,pursuitSeconds:0,reinforcementsSpawned:0,cruiseThrottle:false,gunner:false,mouseAim:null,turretLocked:false,gunnerLeveling:false,gunnerYawMotion:0,gunnerPitchMotion:0,gunnerZoom:GUNNER.minZoom,aimPitch:0,turretYaw:0,turretHeading:null,turretCentering:false,turboRemaining:0,turboCooldown:0,speed:0,steer:0,time:0,impact:0,status:'running',
-    barrelJam:null,nextWallRamAt:-Infinity,carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:createGroundTanks(random,world,config),health:CLU_HEALTH.max,won:false,crushed:false,killedBy:null,cooldown:0,extraShots:CLU_WEAPON.maxExtraShots,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
+    barrelJam:null,nextWallRamAt:-Infinity,carrierHealth:100,carrierHitAt:-Infinity,transferActive:false,carrierSearch:createCarrierSearch(),dataBeams:createDataBeams(random,world),dataCollected:0,enemyTanks:yield* prepareGroundTanks(random,world,config),health:CLU_HEALTH.max,won:false,crushed:false,killedBy:null,cooldown:0,extraShots:CLU_WEAPON.maxExtraShots,shotRest:0,fireWasDown:false,recoil:0,shots:0,kills:0,projectiles:[],events:[],recognizers:createRecognizers(random,world),radio:[]};
   if(config.aiMode!=='classic'&&config.aiSmallEncounter){run.recognizers=run.recognizers.slice(0,2);run.enemyTanks=run.enemyTanks.filter(e=>e.role==='patrol'&&e.mazeId===0).slice(0,1);if(run.enemyTanks[0])Object.assign(run.enemyTanks[0],{id:100,index:0});}
   run.scenario={...world.spec,runSeed:seed,configuration:settings?structuredClone(settings):null};
   if(settings){attachSettings(run,settings);for(const e of [...run.recognizers,...run.enemyTanks])attachSettings(e,settings);}

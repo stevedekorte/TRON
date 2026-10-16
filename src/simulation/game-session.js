@@ -5,7 +5,7 @@ import { attachCycleWorld, configureCycleMatch, createCycleRace, updateCycleRace
 import { config, CLU_HEALTH, attachSettings } from '../game/config.js';
 import { FLIGHT } from './flight.js';
 import { HEARING } from '../game/hearing.js';
-import { createRun, step, stepCycleWorld } from './run.js';
+import { createRunAsync, createRun, step, stepCycleWorld } from './run.js';
 import { debrisVehicleTargets, applyDebrisImpacts } from './debris-damage.js';
 import { DEFAULT_WORLD, attachWorld } from '../levels/scenario.js';
 /** Owns one round and the ordered simulation/effect boundary. No DOM or network. */
@@ -15,7 +15,7 @@ export class GameSession {
     seed,
     physics = null,
     settings = world.spec.configuration,
-  } = {}) {
+  } = {}, initialize = true) {
     this.settings = {
       roadCycle: validateRoadCycle({...ROAD_CYCLE,...settings?.roadCycle}),
       cycleEndings: settings?.cycleEndings ?? CYCLE_TESTING.endingsEnabled,
@@ -25,14 +25,20 @@ export class GameSession {
     };
     this.world = world;
     this.physics = physics;
-    this.reset(seed);
+    if(initialize)this.reset(seed);
   }
-  reset(seed = this.world.spec.runSeed) {
+  static async create(options,yieldControl){
+    const session=new GameSession(options,false);
+    const seed=options?.seed??session.world.spec.runSeed;
+    const run=await createRunAsync(seed,session.world,session.settings,yieldControl);
+    session.reset(seed,run);return session;
+  }
+  reset(seed = this.world.spec.runSeed, initialRun = null) {
     this.debris?.clear();
     this.physics?.clear();
     // Arena damage belongs to this app session, not an individual match.
     const breaches=this.run?.cycleRace?.breaches??[];
-    this.run = createRun(seed, this.world, this.settings);
+    this.run = initialRun ?? createRun(seed, this.world, this.settings);
     this.run.cycleRace = createCycleRace(this.world, this.run.seed);
     if(this.run.cycleRace){this.run.cycleRace.roadConfig=this.settings.roadCycle;this.run.cycleRace.breaches=breaches;}
     if(this.run.cycleRace)this.run.cycleRace.phase='idle';

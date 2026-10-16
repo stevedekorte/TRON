@@ -14,12 +14,17 @@ try{
   }requestAnimationFrame(sample);
  });
  for(let i=0;i<2;i++){
-  if(i)await page.reload();else await page.goto('http://127.0.0.1:5173/');
+  if(i)await page.reload();else await page.goto(process.env.TRON_URL??'http://127.0.0.1:5173/');
   await page.waitForFunction(()=>window.tronLoadingReport?.().includes('Opening terminal ready'),null,{timeout:120000});
   const report=await page.evaluate(()=>{
    const frames=loadingFrames,begin=performance.getEntriesByName('tron:assets-ready')[0].startTime,end=performance.getEntriesByName('tron:world-ready')[0].startTime;
-   return {loadingFrames:frames.length,dotStates:[...new Set(frames.map(f=>f.dots))],worldBuildFrames:frames.filter(f=>f.now>=begin&&f.now<=end).length,timings:tronLoadingReport()};
+   const simStart=performance.getEntriesByName('tron:simulation-start')[0].startTime,simEnd=performance.getEntriesByName('tron:simulation-ready')[0].startTime;
+   const simFrames=frames.filter(f=>f.now>=simStart&&f.now<=simEnd);
+   const simTimes=[simStart,...simFrames.map(f=>f.now),simEnd];
+   return {simulationFrames:simFrames.length,simulationMaxPauseMs:Math.max(...simTimes.slice(1).map((t,i)=>t-simTimes[i])),loadingFrames:frames.length,dotStates:[...new Set(frames.map(f=>f.dots))],worldBuildFrames:frames.filter(f=>f.now>=begin&&f.now<=end).length,timings:tronLoadingReport()};
   });
+  assert(report.simulationFrames>=5,'initial enemy placement yields for painting');
+  assert(report.simulationMaxPauseMs<300,'initial enemy placement has no long synchronous pause');
   assert(report.loadingFrames>15,'loading UI continues to receive animation frames');
   assert(report.dotStates.length>1,'loading dots animate');
   assert(report.worldBuildFrames>=5,'world construction yields repeatedly for UI painting');

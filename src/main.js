@@ -8,6 +8,6 @@ if(isMobileTerminal()){
   // Let the static loading terminal paint before synchronous world construction.
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   const {createGameApp}=await import('./app/game-app.js');
-  const app=createGameApp();
+  const app=await createGameApp();
   if(import.meta.hot)import.meta.hot.dispose(app.dispose);
 }

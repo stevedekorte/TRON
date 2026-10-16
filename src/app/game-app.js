@@ -42,7 +42,7 @@ import { FLIGHT, FLIGHT_DEFAULTS } from '../simulation/flight.js';
 import { startPursuit, boostTank, stopTankTurbo } from '../simulation/run.js';
 import { config, defaults, GUNNER, AERIAL_ZOOM, FOLLOW_ZOOM } from '../game/config.js';
 
-export function createGameApp() {
+export async function createGameApp() {
   void clearLegacyMcpCache();
   performance.mark('tron:startup');
   const loadingTimings = new LoadingTimings();
@@ -75,7 +75,9 @@ export function createGameApp() {
     }
   } catch {}
 
-  const session = loadingTimings.sync('Initial simulation / enemy placement',()=>new GameSession({ world: map, seed:browserRunSeed(location) }));
+  performance.mark('tron:simulation-start');
+  const session = await loadingTimings.async('Initial simulation / enemy placement',()=>GameSession.create({ world: map, seed:browserRunSeed(location) },yieldToBrowser));
+  performance.mark('tron:simulation-ready');
   const terminal = new Terminal($('terminal-text'), $('terminal-actions'));
   const tribute = new TerminalTribute($('end-tribute'), creditsText, extendedCreditsText);
   tribute.preview=new CreditModelPreview();

@@ -19,12 +19,12 @@ test('formation waits for every current camera, validates round/seat and release
  assert.equal(room.race.phase,'racing');
  room.nextRound();assert(!a.cameraReady);assert(room.race.cameraStaging);
 });
-test('result holds the previous roster for five seconds before selecting the next one',()=>{
+test('result holds the previous roster for ten seconds before selecting the next one',()=>{
  const room=new CycleRoom();room.join('a');room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();
  for(const b of room.race.cycles)if(b.team!==0)b.alive=false;
- room.step();assert.equal(room.race.phase,'result');assert.equal(room.race.remaining,5);
+ room.step();assert.equal(room.race.phase,'result');assert.equal(room.race.remaining,10);
  const round=room.race.round,cycles=room.race.cycles;
- for(let i=0;i<599;i++)room.step();assert.equal(room.race.cycles,cycles);
+ for(let i=0;i<MP.resultSeconds*MP.tickHz-1;i++)room.step();assert.equal(room.race.cycles,cycles);
  room.step();room.step();assert.equal(room.race.round,round+1);assert(room.race.cameraStaging);
 });
 test('each team formation shot frames its three starting cycles in landscape and portrait',()=>{
