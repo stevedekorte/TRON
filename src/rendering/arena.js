@@ -1,3 +1,4 @@
+import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {ArenaBreaches} from './arena-breaches.js';
 import { loadLightCycles, LightCycleRaceView } from './light-cycles.js';
 import { arenaSite } from '../../shared/simulation/levels/arena.js';
@@ -12,6 +13,7 @@ export async function loadArena(world,floorReceivers=[]) {
   const site = arenaSite(world);
   if (!site) return null;
   const [{ scene }, cycles] = await Promise.all([new GLTFLoader().loadAsync(modelUrl), loadLightCycles()]);
+  await yieldToBrowser();
   const group = new THREE.Group();
   group.name = 'Light cycle arena';
   group.position.set(site.x, 0, -site.s);
@@ -39,9 +41,11 @@ export async function loadArena(world,floorReceivers=[]) {
     wall.rotation.y = yaw;
     architecture.add(wall);
   }
+  await yieldToBrowser();
   const style = styleArena(architecture);
   group.userData.arenaStyle = style;
   group.userData.breaches = new ArenaBreaches(architecture,style);
-  group.userData.cycleRace = new LightCycleRaceView(cycles, group,[floor,...floorReceivers],{arenaFloor:floor,groundFloor:floorReceivers[0]});
+  await yieldToBrowser();
+  group.userData.cycleRace = await LightCycleRaceView.create(cycles, group,[floor,...floorReceivers],{arenaFloor:floor,groundFloor:floorReceivers[0]});
   return group;
 }

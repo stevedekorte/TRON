@@ -42,7 +42,7 @@ try{
    });
   }
   window.overlapRepairs=models.map(m=>m.userData.cycleOverlapRepairs);
-  const view=new LightCycleRaceView(models,scene);
+  const view=await LightCycleRaceView.create(models,scene);
   view.materializations.forEach(rez=>rez.update(null));
   view.bikes.forEach((bike,i)=>{bike.visible=i===0;bike.position.y= bike.userData.groundOffsetMeters;});
   const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(1200,900);renderer.toneMapping=GAME_LIGHTING.toneMapping;renderer.toneMappingExposure=GAME_LIGHTING.exposure;

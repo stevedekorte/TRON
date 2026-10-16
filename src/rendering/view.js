@@ -1,3 +1,4 @@
+import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {CycleRendererGuard} from './cycle-renderer-guard.js';
 import {AdaptiveAA,ADAPTIVE_AA,supportedSamples} from './adaptive-aa.js';
 import {MazeWallDamage} from './maze-wall-damage.js';
@@ -77,7 +78,12 @@ export class View {
     this.world.floor.userData.arenaFootprint.value.set(arena.position.x,arena.position.z,466);
     this.scene.add(arena);
   }
-  constructor(
+  static async create(...args){
+    const view=new View();
+    await view.initialize(...args);
+    return view;
+  }
+  async initialize(
     canvas,
     tank,
     recognizer,
@@ -108,10 +114,12 @@ export class View {
     this.cameraRig = new CameraRig(map);
     this.camera = this.cameraRig.camera;
     this.scene.add(createGameLights());
+    await yieldToBrowser();
     this.world = createWorld(this.scene, map, arena);
     this.arena = arena;
     this.arenaFloor = arena?.getObjectByName('Procedural_arena_floor');
     if (arena) this.scene.add(arena);
+    await yieldToBrowser();
     this.dataBeams = new DataBeams(this.scene, map);
     this.teleportPads = createTeleporters(this.world.floor.material, createTeleportPads(map.MAZE_INSTANCES, map.WALL_HEIGHT));
     this.solarSailer = null;
@@ -121,6 +129,7 @@ export class View {
       carrier.userData.rez.updateTransit(0, carrierFor(map).speed);
       this.scene.add(carrier);
     }
+    await yieldToBrowser();
     this.clouds = null;
     this.tank = tank;
     this.scene.add(this.tank.root);
@@ -132,16 +141,20 @@ export class View {
       this.scene.add(craft.root);
       return craft;
     });
-    this.recognizers = RECOGNIZER_STARTS.map((_, i) => {
+    this.recognizers = [];
+    for(let i=0;i<RECOGNIZER_STARTS.length;i++){
+      await yieldToBrowser();
       const craft = createRecognizer(recognizer);
       craft.id = i;
       craft.rez = new Materialization(craft.root);
       craft.root.scale.setScalar(RECOGNIZER_SCALE);
       this.scene.add(craft.root);
-      return craft;
-    });
-    for (const craft of [this.tank, ...this.enemyTanks])
-      craft.rez = new Materialization(craft.root);
+      this.recognizers.push(craft);
+    }
+    for (const craft of [this.tank, ...this.enemyTanks]){
+      await yieldToBrowser();craft.rez = new Materialization(craft.root);
+    }
+    await yieldToBrowser();
     this.recognizerTemplate = recognizer;
     this.recognizerShadows = new RecognizerShadows(
       this.recognizers,
@@ -149,6 +162,7 @@ export class View {
       5,
       { maxCrafts: AIRCRAFT_SHADOWS.maxCasters },
     );
+    await yieldToBrowser();
     this.mazeShadows = new MazeShadows(
       this.world,
       [
@@ -166,6 +180,7 @@ export class View {
           ...this.recognizers.map((c) => c.root),
         ])
       : null;
+    await yieldToBrowser();
     this.surfaceImpacts = new SurfaceImpacts(this.scene);
     this.wallDamage=new MazeWallDamage(this.scene,this.world.slabs,this.world.seams);
     this.breakups = new Breakups(this.scene, map, physics);
@@ -184,6 +199,7 @@ export class View {
       }),
       map,
     );
+    await yieldToBrowser();
     this.shots = new THREE.InstancedMesh(
       new THREE.SphereGeometry(0.25, 6, 4),
       new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffd2a3).multiplyScalar(4) }),
@@ -203,6 +219,7 @@ export class View {
     this.scene.add(this.debris);
     this.particles = [];
     this.matrixObject = new THREE.Object3D();
+    await yieldToBrowser();
     this.adaptiveAA=new AdaptiveAA(supportedSamples(this.renderer.getContext()));
     const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
       type: THREE.HalfFloatType,

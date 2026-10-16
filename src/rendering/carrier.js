@@ -1,3 +1,4 @@
+import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {DEFAULT_WORLD,worldFor} from '../levels/scenario.js';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -5,6 +6,7 @@ import carrierUrl from '../../assets/runtime/models/tron_1982_carrier.glb?url';
 import {CARRIER,carrierFor} from '../game/carrier.js';
 export async function loadCarrier(){
  const {scene:root}=await new GLTFLoader().loadAsync(carrierUrl);
+ await yieldToBrowser();
  root.position.sub(new THREE.Box3().setFromObject(root).getCenter(new THREE.Vector3()));
  const ship=new THREE.Group();ship.add(root);
  const materials=new Set();root.traverse(o=>{if(o.isMesh)[].concat(o.material).forEach(m=>materials.add(m));});
@@ -31,6 +33,7 @@ export async function loadCarrier(){
  const armor=[];root.traverse(o=>{if(o.isMesh&&o.material?.name.startsWith('TxTC01'))armor.push(o);});
  const seamMaterial=new THREE.LineBasicMaterial({color:0x304d6b,transparent:true,opacity:.65,fog:false,depthWrite:false});
  for(const mesh of armor){
+  await yieldToBrowser();
   const seams=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry,25),seamMaterial);
   mesh.add(seams);
  }

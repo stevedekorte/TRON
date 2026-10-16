@@ -24,7 +24,7 @@ try{
     if(a.min.distanceTo(b.min)>.01||a.max.distanceTo(b.max)>.01)throw Error('Wheel refinement changed bike proportions');
    });
   }
-  const view=new LightCycleRaceView(models,scene);
+  const view=await LightCycleRaceView.create(models,scene);
   const race={round:1,time:1,phase:'racing',accumulator:0,trails:[],crashes:[],cycles:Array.from({length:4},(_,team)=>({id:team,team,alive:true,x:(team-1.5)*1.1,previousX:(team-1.5)*1.1,z:0,previousZ:0,dir:0}))};
   view.update(race);
   const colors=view.bikes.slice(0,4).map(b=>{let color;b.traverse(o=>{if(o.isMesh&&o.material.name==='Color_D06')color=o.material.color.getHex();});return color;});

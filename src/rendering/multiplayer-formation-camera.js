@@ -1,4 +1,4 @@
-import {Vector3,Quaternion,MathUtils} from 'three';
+import {Vector3,Quaternion,Matrix4,MathUtils} from 'three';
 import {MP} from '../../shared/multiplayer/config.js';
 import {LIGHT_CYCLES as C} from '../../shared/simulation/config/light-cycles.js';
 import {CYCLE_FORMATION_CAMERA as F} from './cycle-opening.js';
@@ -23,6 +23,12 @@ export function multiplayerFormationShot(race,seat,aspect){
 export class MultiplayerFormationCamera{
  reset(){this.shot=null;}
  update(rig,run,race,dt,mode){
+  // The launch hold belongs to moving cycles, not to the stationary countdown.
+  // Keep the completed formation camera fixed while bikes leave trails beneath it.
+  if(run.multiplayer&&race.phase==='racing'&&this.shot?.round===race.round&&this.shot.ready){
+   if(mode==='running')this.shot.launchElapsed=(this.shot.launchElapsed??0)+dt;
+   if((this.shot.launchElapsed??0)<MP.launchHoldSeconds)return true;
+  }
   if(!run.multiplayer||race.phase!=='countdown'){
    if(this.shot){this.reset();rig.finishCycleOpening();rig.followZoom=1;rig.aerial=false;rig.aerialBlend=0;rig.cycleFollowedId=undefined;rig.cycleSwitch=null;rig.cycleAnchor=null;rig.cycleDeathHold=null;rig.cycleDeathsHeld.clear();rig.cycleOverview=null;rig.spectatorOrbit=null;rig.cycleCockpitMix=0;rig.cycleSpeedDistanceScale=1;}
    return false;
@@ -41,7 +47,9 @@ export class MultiplayerFormationCamera{
   // at either endpoint keep the formation shot and the departure continuous.
   const arch=Math.max(0,ARENA_CAMERA_WALL_HEIGHT+12-Math.min(shot.position.y,target.position.y));
   rig.camera.position.y+=Math.sin(Math.PI*mix)**2*arch;
-  rig.camera.lookAt(target.look);const rotation=new Quaternion().copy(rig.camera.quaternion);
+  // Use the final shot orientation throughout the move. Looking from each
+  // intermediate position creates a moving rotation target that can reverse yaw.
+  const rotation=new Quaternion().setFromRotationMatrix(new Matrix4().lookAt(target.position,target.look,UP));
   rig.camera.quaternion.slerpQuaternions(shot.rotation,rotation,mix);
   rig.camera.fov=MathUtils.lerp(shot.fov,target.fov,mix);rig.camera.updateProjectionMatrix();
   rig.look.copy(target.look);rig.followPosition.copy(rig.camera.position);rig.freshCamera=false;

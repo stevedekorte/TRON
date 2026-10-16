@@ -19,6 +19,23 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Responsive initial resource loading — October 15
+
+- [x] Model adaptation and world/cycle presentation construction now yield to browser paint between expensive phases, including cached loads. View factories finish asynchronously before the application uses them; background tabs have a timer fallback.
+- [x] `node tests/browser/loading-responsive.mjs` passed in headless Chrome 155 at 1280×800 on initial and cached loads: all four loading-dot states appeared, 54 frames were rendered during world construction in each run, and solo cycles launched without page errors. All 600 unit tests pass. Remaining limitation: initial simulation placement and individual GPU compilation operations can still block briefly; these are not moved to a worker.
+
+## Direct rotation into multiplayer formation — October 15
+
+- [x] Formation travel now interpolates toward the final shot's fixed orientation, rather than recalculating the destination orientation from each intermediate camera position. This removes a moving aim target that could cause an initial yaw detour or reversal. Position travel, wall-clearance arch, materialization and moving launch hold remain unchanged.
+- [x] Regression checks the rotation follows one shortest arc and never turns away from the final heading for all four teams. It fails on the previous implementation and passes with the correction. All 42 multiplayer unit tests pass. Headless Chrome 155 at 1280×800 (`TRON_URL=http://127.0.0.1:5188/ node tests/browser/multiplayer-transition.mjs`) verifies camera arrival, materialization, the moving launch hold and player follow with no page/shader errors. Production build/asset audit passes; isolated server stopped. Local change; not deployed.
+
+
+## Moving multiplayer launch hold — October 15
+
+- [x] Corrected the launch hold placement: server materialization lasts only the shared solo formation duration (1.833 seconds). Cycles then race and lay trails while the client holds the completed formation shot fixed for the shared 0.6-second launch hold, before cutting to player follow. Previously those 0.6 seconds extended the stationary countdown and the camera cut immediately on movement. A new round or result still releases an obsolete shot.
+- [x] All 41 multiplayer unit tests pass, including camera position remaining fixed while bike positions advance, then cutting after the hold. `TRON_URL=http://127.0.0.1:5188/ node tests/browser/multiplayer-transition.mjs` passed on headless Chrome 155 at 1280×800: all-camera barrier, visible materialization, fixed launch shot with growing trails, and subsequent player view. Inspected `test-results/mp-team-launch-hold.png`; no page/shader errors. Isolated test server stopped afterward. Local change; deployment requires both Worker timing and client camera updates.
+
+
 ## Monotonic recovery after combined stalls — October 15
 
 - [x] Reproduced a backward-clock correction when a render pause over 200 ms coincides with slow server tick progress and a newly received snapshot. Restoring the normal playback buffer could then place the remote clock behind its last displayed pose; the predicted local camera clock had the same recovery hazard. Both now preserve their previous clock minimum within a round, while retaining fresh-clock initialization for a new round. No extra interpolation delay or invented remote turns.

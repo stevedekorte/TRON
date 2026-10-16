@@ -1,3 +1,4 @@
+import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {clearLegacyMcpCache} from '../mcp/clear-legacy-cache.js';
 import {CycleRendererControl} from '../ui/cycle-renderer-control.js';
 import {createMcpPanel} from '../ui/mcp-panel.js';
@@ -1059,6 +1060,7 @@ export function createGameApp() {
     try {
       const programResources=loadingTimings.async('CLU/cycle audio and BIT resources',()=>Promise.all([sound.preload().catch(error=>console.warn('Audio preload unavailable:',error)),preloadBitResources().catch(error=>console.warn('BIT preload unavailable:',error))]));
       await loadingTimings.async('Wait for physics initialization',()=>debrisPhysicsReady);
+      await yieldToBrowser();
       const context = loadingTimings.sync('Create WebGL2 context',()=>$('game').getContext('webgl2', {
         stencil: true,
         antialias: true,
@@ -1074,8 +1076,9 @@ export function createGameApp() {
         loadingTimings.async('Carrier model (fetch, decode, adapt)',()=>loadCarrier()),
       ]);
       performance.mark('tron:assets-ready');
+      await yieldToBrowser();
       const physics = loadingTimings.sync('Create debris physics world',()=>new DebrisPhysics(map.nearbyWalls));
-      view = loadingTimings.sync('Build rendering world / meshes / shadows',()=>new View($('game'), tank, recognizer, carrier, null, map, physics, null, boss));
+      view = await loadingTimings.async('Build rendering world / meshes / shadows',()=>View.create($('game'), tank, recognizer, carrier, null, map, physics, null, boss));
       performance.mark('tron:world-ready');
       session.arenaReady=!run.cycleRace;
       session.attachDebris(physics, view.breakups);
@@ -1097,9 +1100,11 @@ export function createGameApp() {
 
       // Compile the actual CLU opening (vehicles, carrier and shadows included)
       // during loading, so Return does not spend the dissolve compiling shaders.
+      await yieldToBrowser();
       view.cameraRig.opening=0;
       loadingTimings.sync('CLU opening render / shader setup',()=>view.render(run, session.previous, 1, 0, 'entering'));
       view.cameraRig.opening=null;
+      await yieldToBrowser();
       loadingTimings.sync('First render submission / shader setup',()=>view.render(run, session.previous, 1, 0, 'ready'));
       performance.mark('tron:first-frame');
       $('start').disabled = false;

@@ -1,3 +1,4 @@
+import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {createBossTank} from './boss-tank.js';
 import {RECOGNIZER_TINTS} from '../game/recognizer-appearance.js';
 import * as THREE from 'three';
@@ -12,6 +13,7 @@ const tankUrl = new URL('../../assets/runtime/models/tank_-_tron_1982.glb', impo
 
 export async function createTank() {
   const {scene} = await new GLTFLoader().loadAsync(tankUrl);
+  await yieldToBrowser();
   scene.updateMatrixWorld(true);
   const root = new THREE.Group(), turret = new THREE.Group(), barrel = new THREE.Group();
   root.name = 'Tank - Tron (1982) by arabinowitz';
@@ -91,6 +93,7 @@ const recognizerUrl = new URL('../../assets/runtime/models/tron_1982_recognizer.
 
 export async function loadRecognizer() {
   const {scene} = await new GLTFLoader().loadAsync(recognizerUrl);
+  await yieldToBrowser();
   scene.updateMatrixWorld(true);
   const bounds = new THREE.Box3().setFromObject(scene), center = bounds.getCenter(new THREE.Vector3());
   // Match the simulation's shoulder origin: feet -22, crown +8 before

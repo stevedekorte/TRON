@@ -1,3 +1,4 @@
+import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {MP} from '../../shared/multiplayer/config.js';
 import {installHumanStripe,installHumanWireStripe} from './cycle-human-stripe.js';
 import {refineCycleFrontWheel} from './cycle-front-wheel.js';
@@ -28,11 +29,17 @@ export async function loadLightCycles({refineWheels=true}={}){
     scene.traverse(o=>{if(o.isMesh){const original=o.geometry;o.geometry=repairCycleSurface(original);original.dispose();
       if(team===1&&o.material.name==='Color_I03')o.material.color.setHex(CYCLE_MODEL_STYLE.blueBody);
       if(team===1&&o.material.name==='_6')o.material.color.setHex(CYCLE_MODEL_STYLE.blueTrim);}});
+    await yieldToBrowser();
     repairCycleRearSeams(scene);
+    await yieldToBrowser();
     repairCyclePanelOverlaps(scene);
+    await yieldToBrowser();
     repairCyclePanelWinding(scene);
+    await yieldToBrowser();
     repairCycleHubs(scene);
+    await yieldToBrowser();
     if(refineWheels){refineCycleRearWheel(scene);refineCycleFrontWheel(scene);refineCycleWheelInteriors(scene);removeCycleWheelHighlights(scene);applyCycleBlackRims(scene);}
+    await yieldToBrowser();
     applyCycleMaterialLighting(scene);
     scene.userData.groundOffsetMeters=-new THREE.Box3().setFromObject(scene).min.y;
     // Measure the repaired rear tire instead of guessing its contact offset.
@@ -48,11 +55,18 @@ export async function loadLightCycles({refineWheels=true}={}){
   }));
 }
 export class LightCycleRaceView {
-  constructor(models,arena,floorReceivers=[],{arenaFloor,groundFloor}={}){
+  static async create(...args){const view=new LightCycleRaceView();await view.initialize(...args);return view;}
+  async initialize(models,arena,floorReceivers=[],{arenaFloor,groundFloor}={}){
     this.arenaFloor=arenaFloor;this.groundFloor=groundFloor;
     this.root=new THREE.Group();this.root.name='Light cycle competition';arena.add(this.root);
     this.bikes=Array.from({length:C.maxCycles},(_,id)=>{const root=models[0].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;c.userData.originalCycleColor=m.color?.clone();materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);installHumanStripe(root);return root;});
-    this.materializations=this.bikes.map(root=>{const rez=new CarrierMaterialization(root,{axis:'z',reverse:false,isLiveMaterial:()=>false});installHumanWireStripe(root,rez);return rez;});
+    this.materializations=[];
+    for(const root of this.bikes){
+      await yieldToBrowser();
+      const rez=new CarrierMaterialization(root,{axis:'z',reverse:false,isLiveMaterial:()=>false});
+      installHumanWireStripe(root,rez);this.materializations.push(rez);
+    }
+    await yieldToBrowser();
     const receivers=[...floorReceivers];
     const crafts=this.bikes.map(root=>{const casters=[];root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude){casters.push(o);receivers.push(o);}});return {root,casters,radius:2.6,distance:8};});
     this.shadows=new RecognizerShadows(crafts,receivers,0,CYCLE_SELF_SHADOW);
