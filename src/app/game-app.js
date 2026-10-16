@@ -1145,6 +1145,7 @@ export async function createGameApp() {
       terminal.finish();
       setMode('ready');
       loadingTimings.checkpoint('Opening terminal ready');
+      window.dispatchEvent(new Event('tron:ready'));
       loadingTimings.print();
       requestAnimationFrame(()=>{if(!disposed)loadingTimings.checkpoint('Frame callback after opening ready');});
       loop.start();

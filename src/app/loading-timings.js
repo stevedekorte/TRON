@@ -3,6 +3,12 @@ export class LoadingTimings {
   constructor() {
     this.rows=[];
     this.record('Navigation to app startup (document, modules, initial paint)',0);
+    const entry=performance.getEntriesByName('tron:entry').at(-1);
+    const request=performance.getEntriesByName('tron:module-request').at(-1);
+    const ready=performance.getEntriesByName('tron:module-ready').at(-1);
+    if(entry)this.record('Entry document / bootstrap download',0,entry.startTime);
+    if(entry&&request)this.record('Styles / loading terminal paint',entry.startTime,request.startTime);
+    if(request&&ready)this.record('Game modules download / evaluation',request.startTime,ready.startTime);
     window.tronLoadingReport=()=>this.report();
   }
   record(label,start,end=performance.now()) {

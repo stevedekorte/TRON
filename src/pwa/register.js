@@ -9,6 +9,7 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       void registration.update().catch(()=>{});
     }catch(error){console.warn('Offline installation unavailable:',error);}
   };
-  if(document.readyState==='complete')void register();
-  else window.addEventListener('load',register,{once:true});
+  // Offline installation fetches the full asset set. Never compete with the
+  // foreground's initial modules/models/audio, especially on a cold connection.
+  window.addEventListener('tron:ready',register,{once:true});
 }

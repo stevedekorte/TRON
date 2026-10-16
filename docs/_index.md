@@ -6,6 +6,12 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Foreground startup before offline installation — October 16
+
+- [x] Delay service-worker registration/update until the opening terminal is ready. Previously the window load event could start the approximately 90 MiB offline installation while the foreground was still fetching modules, models and audio. Existing installed workers still serve cached resources immediately; new installations begin after startup.
+- [x] Split startup instrumentation into entry-document/bootstrap, styles/terminal paint and game-module download/evaluation measurements. Safari unused-preload warnings alone do not identify a failed request or the cause of the reported 16-second pre-startup delay; download/evaluation timing is now separately observable.
+- [x] Production build/asset audit passes. Headless Chrome PWA test verifies registration occurs after menu enablement, installability, offline reload/play, ranged audio, and waiting updates through play/home until explicit update.html activation. Corrected an obsolete test expecting automatic activation on return home. This local change has not been deployed; no production speedup is claimed.
+
 ## AI follow-up training — October 16
 
 - [x] Completed one bounded generation: current policy plus three mutations, three training seeds and four spawn rotations each, 60-second encounters, two workers; seed offset 360000. Current approach-340000-0-0 ranked first (fitness 1.0175 versus 0.7862, 0.6856 and 0.6053). No weights promoted.

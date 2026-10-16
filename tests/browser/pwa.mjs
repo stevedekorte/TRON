@@ -26,9 +26,11 @@ try{
  const page=await context.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  page.on('response',r=>{if(r.status()>=400&&new URL(r.url()).pathname.startsWith(scope+'assets/'))errors.push(`${r.status()} ${r.url()}`);});
+ await page.addInitScript(()=>{window.pwaRegistrationChecks=[];const original=navigator.serviceWorker.register.bind(navigator.serviceWorker);navigator.serviceWorker.register=(...args)=>{window.pwaRegistrationChecks.push(!document.querySelector('#start-cycles')?.disabled);return original(...args);};});
  await page.goto(url);
  await page.waitForFunction(()=>!document.querySelector('#start').disabled,null,{timeout:60000});
  await page.evaluate(()=>navigator.serviceWorker.ready);
+ assert.deepEqual(await page.evaluate(()=>pwaRegistrationChecks),[true],'offline install waits for the menu');
  await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
  const manifest=await page.evaluate(async()=>{
   const href=document.querySelector('link[rel="manifest"]').href;
@@ -67,6 +69,9 @@ try{
  await expect.poll(()=>page.evaluate(async()=>(await navigator.serviceWorker.getRegistration()).waiting?.state==='installed'),{timeout:60000}).toBe(true);
  assert(await page.evaluate(()=>document.body.classList.contains('playing')));
  await page.keyboard.press('Escape');await page.locator('#exit-confirm [data-confirm]').click();
+ assert(await page.evaluate(async()=>(await navigator.serviceWorker.getRegistration()).waiting?.state==='installed'),'returning home must not force an update');
+ await page.goto(url+'update.html');
+ await page.waitForURL(url);
  await expect.poll(()=>page.evaluate(async()=>!(await navigator.serviceWorker.getRegistration()).waiting),{timeout:60000}).toBe(true);
  await page.waitForFunction(()=>!!document.querySelector('#start-credits')&&!document.querySelector('#start-credits').disabled);
  console.log('PWA: valid installability, scoped manifest/icons, offline tank and cycle starts, ranged audio, and non-interrupting updates passed.');
