@@ -1,0 +1,27 @@
+{
+  "source": "assets/source/audio/team-leaders/red-2-alan-commanding-dry.mp3",
+  "script": "Red team, move in. Press the attack. Give them no room.",
+  "generation": {
+    "script": "Red team, move in. Press the attack. Give them no room.",
+    "request": {
+      "model": "seed_audio",
+      "referenceAudios": [
+        "test-results/alan-voice-reference.mp3"
+      ],
+      "promptText": "Generate only a single male voice speaking the following exact line: \"Red team, move in. Press the attack. Give them no room.\" Match the voice identity, timbre and accent of the man in @Audio1. Change his delivery: speak fast with firm command authority, confidence and controlled urgency. He is the squadron leader giving direct orders that must be obeyed immediately. A cool, collected jet fighter leader in combat. Strong decisive downward inflections and crisp consonants. Make \"Press the attack\" a firm imperative, and deliver \"Give them no room\" as an unmistakable command. More authoritative than conversational, with focused vocal pressure and conviction, but no shouting, anger or exaggerated bass. Brisk clipped articulation and minimal pauses between clauses. Deliver the line as one continuous brisk transmission in approximately four seconds, with only brief pauses and no long gaps. Natural human speech, composed and alert, not shouting or theatrical. Start speaking immediately, finish promptly. Voice only, dry recording, no music, background noises or extra words. Do not repeat the words from the reference recording.",
+      "speechRate": 0,
+      "outputFormat": "mp3"
+    },
+    "direction": "User-provided 26-second AlanVoice.wav reference, with concise delivery; no post-generation time compression.",
+    "task": {
+      "id": "dd1f09e9-5aec-46a1-b0d0-b3a5eba87627",
+      "estimatedCost": {
+        "credits": 5
+      }
+    },
+    "source": "Runway seed_audio voice reference: user-supplied TRON film dialogue; experimental generated audition, not deployed"
+  },
+  "processing": "Generated alternate take. 220 Hz high-pass, 4500 Hz low-pass, 2:1 compression, peak limiting; no time stretching.",
+  "useConstraints": "Runway seed_audio output using user-supplied Alan dialogue from TRON (1982) as voice reference. Underlying film and voice rights remain with respective owners; no independent rights clearance supplied.",
+  "playback": "Multiplayer local RED assigned seat. Equal chance of either team line when voice plays; first participated match guaranteed, subsequent matches 20%; one-second launch delay."
+}

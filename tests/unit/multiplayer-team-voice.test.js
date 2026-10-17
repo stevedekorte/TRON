@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {MultiplayerTeamVoice,MP_TEAM_VOICE} from '../../src/audio/multiplayer-team-voice.js';
-function setup(team=1,seat=3,random=()=>0){
+function setup(team=1,seat=3,random=()=>0,chooseRandom=()=>0){
  const sources=[],gains=[],context={currentTime:20,createBufferSource(){const source={connect(){},disconnect(){this.disconnected=true;},start(time){this.when=time;},stop(){this.stopped=true;}};sources.push(source);return source;},createGain(){const gain={gain:{},connect(){},disconnect(){this.disconnected=true;}};gains.push(gain);return gain;}};
- const samples=Object.fromEntries(Object.values(MP_TEAM_VOICE.samplesByTeam).map(name=>[name,{name,duration:4}])),audio=new MultiplayerTeamVoice(context,{},samples,random);
+ const samples=Object.fromEntries(Object.values(MP_TEAM_VOICE.samplesByTeam).flat().map(name=>[name,{name,duration:4}])),audio=new MultiplayerTeamVoice(context,{},samples,random,chooseRandom);
  const race={round:1,phase:'countdown',playerId:3,cycles:[{id:3,team}]},mp={connected:true,seat};
  return {audio,race,mp,sources,gains,samples};
 }
@@ -70,4 +70,14 @@ test('muting the first launch consumes that match without a surprise guaranteed 
  audio.update(race,mp,true);race.phase='racing';audio.update(race,mp,false);
  race.round++;race.phase='countdown';audio.update(race,mp,true);
  race.phase='racing';audio.update(race,mp,true);assert.equal(sources.length,0);
+});
+
+for(const [team,color] of ['gold','blue','red','green'].entries())test(`${color} chooses either line equally without rerolling during playback`,()=>{
+ for(const [roll,suffix] of [[0,''],[.49999,''],[.5,'-alt'],[.99999,'-alt']]){
+  let choices=0;const {audio,race,mp,sources,samples,gains}=setup(team,3,()=>0,()=>{choices++;return roll;});
+  audio.update(race,mp,true);race.phase='racing';audio.update(race,mp,true);
+  assert.equal(sources[0].buffer,samples[`cycle-${color}-leader${suffix}`]);
+  assert.equal(gains[0].gain.value,color==='blue'&&!suffix?.85:3.4);
+  for(let i=0;i<10;i++)audio.update(race,mp,true);assert.equal(choices,1);
+ }
 });

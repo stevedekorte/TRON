@@ -184,9 +184,9 @@ export class Sound {
 
   loadCycleSamples() {
     if(!this.context)return Promise.resolve();
-    return this.cycleLoading ??= Promise.all([...Object.values(MP_TEAM_VOICE.samplesByTeam).map(sample=>sample.slice('cycle-'.length)),'materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
+    return this.cycleLoading ??= Promise.all([...Object.values(MP_TEAM_VOICE.samplesByTeam).flat().map(sample=>sample.slice('cycle-'.length)),'materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
       try {
-        const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+(name.endsWith('-leader')?'.mp3':'.wav')));
+        const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+(Object.values(MP_TEAM_VOICE.samplesByTeam).flat().includes('cycle-'+name)?'.mp3':'.wav')));
         if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.context.decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;

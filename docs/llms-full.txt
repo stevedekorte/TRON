@@ -19,6 +19,13 @@ subtitle: Current simulation scope, decisions, and acceptance criteria
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
 
+## Alternate team radio lines — October 16
+
+- [x] Add a second generated line for each team, selected 50/50 whenever an announcement plays. Keep the first-participated-match guarantee and subsequent 20% playback probability. Selection happens once per launch, never per frame. All generated clips use the increased gain; Blue's original film recording retains its existing gain.
+- [x] Revised alternate scripts: Gold “Gold team, stay focused. Make every turn count.” Blue “Blue flight, on me. Hold formation. Wait for my mark.” Green “All Green cycles. Keep them turning. Leave no way out.” Red “Red team, move in. Press the attack. Give them no room.” Same user-supplied Alan reference and commanding generation direction; masters and provenance catalogued. Gold, Blue and Green files run 4.08 seconds; Red runs 5.07 seconds. Radio treatment without time stretching. SHA-256 checks confirm all four original recordings are unchanged.
+- [x] Fifteen team-voice unit tests pass, including 50/50 selection boundaries, one selection per playback, original/alternate Blue gain, first-match and 20% behavior. Headless Chrome verified all eight buffers preload/decode and remain active after their scheduled delay without errors. Alternate set is integrated locally, not deployed.
+- [x] Prior release e209382 (website fb8c596, Pages run 38982565833) deployed successfully: first voice set, fourfold generated-voice gain, first-match/20% playback, multiplayer-first menu, early loading dots and hidden-mobile-label correction. Live browser check verified published menu, gains/probability and all four original voice assets.
+
 ## Occasional multiplayer leader announcements — October 16
 
 - [x] Guarantee the local team's announcement on the first participated launch of a multiplayer session, then make one independent 20% draw per subsequent participated launch. Queued spectator rounds do not consume the first launch. Muted/missing audio consumes that match's decision without delayed replay. Returning home/disconnecting resets the session; changing rounds or teams does not restore the guarantee.
