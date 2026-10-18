@@ -5,7 +5,7 @@ import {posix} from 'node:path';
 const media=/\.(?:wav|mp3|ogg|m4a|glb|obj|png|jpe?g|webp|svg|ttf|otf|woff2?|wasm)$/i;
 function files(root){return readdirSync(root,{withFileTypes:true}).flatMap(e=>e.isDirectory()?files(root+'/'+e.name):[root+'/'+e.name]).sort();}
 export function publicAssetPlugin(){
- let production=false,map={},assetDir='assets';
+ let production=false,map={},assetDir='assets',outDir='dist';
  const virtual='virtual:tron-public-assets',resolved='\0'+virtual;
  return {
   name:'tron-content-addressed-public-assets',
@@ -14,7 +14,7 @@ export function publicAssetPlugin(){
    const relative=posix.relative(hostType==='css'?assetDir:posix.dirname(hostId),map[filename]);
    return hostType==='js'?{runtime:`new URL(${JSON.stringify(relative)}, import.meta.url).href`}:relative;
   }}};},
-  configResolved(config){production=config.command==='build';assetDir=config.build.assetsDir;},
+  configResolved(config){production=config.command==='build';assetDir=config.build.assetsDir;outDir=config.build.outDir;},
   buildStart(){
    if(!production)return;
    map={};
@@ -36,11 +36,11 @@ export function publicAssetPlugin(){
    // Only rewrite copied public documents/scripts, never Vite's already-hashed chunks.
    const substitutions=Object.entries(map).flatMap(([old,current])=>[[old,current],...(old.startsWith('bit/')?[[old.slice(4),current.slice(4)]]:[])]).sort((a,b)=>b[0].length-a[0].length);
    for(const file of files('public').filter(p=>/\.(?:html|js|css|webmanifest)$/.test(p))){
-    const output='dist/'+file.slice(7);let text=await readFile(output,'utf8');
+    const output=outDir+'/'+file.slice(7);let text=await readFile(output,'utf8');
     for(const [old,current] of substitutions)text=text.replaceAll(old,current);
     await writeFile(output,text);
    }
-   await writeFile('dist/asset-manifest.json',JSON.stringify(map,null,2)+'\n');
+   await writeFile(outDir+'/asset-manifest.json',JSON.stringify(map,null,2)+'\n');
   },
  };
 }

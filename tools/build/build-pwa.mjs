@@ -8,7 +8,7 @@ async function walk(dir) {
 const env=loadEnv('production',process.cwd(),'VITE_');
 await writeFile('dist/bit/config.js',`window.BIT_API_BASE = ${JSON.stringify(process.env.VITE_JEV_API_BASE || env.VITE_JEV_API_BASE || '')};\n`);
 const media=JSON.parse(await readFile('dist/asset-manifest.json','utf8'));
-const files = ['asset-manifest.json','index.html', 'mcp.html', 'manifest.webmanifest', ...(await Promise.all(['assets','bit'].map(walk))).flat()].filter(file=>!media[file]&&!file.includes('ort-wasm-')&&!file.startsWith('assets/source/')&&!file.split('/').some(part=>part.startsWith('.'))).sort();
+const files = ['src/analytics/bit-play.js','asset-manifest.json','index.html', 'mcp.html', 'manifest.webmanifest', ...(await Promise.all(['assets','bit'].map(walk))).flat()].filter(file=>!media[file]&&!file.includes('ort-wasm-')&&!file.startsWith('assets/source/')&&!file.split('/').some(part=>part.startsWith('.'))).sort();
 const template = await readFile('src/pwa/sw.js', 'utf8');
 const hash = createHash('sha256').update(template);
 let bytes = 0;const hashes={};

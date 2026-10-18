@@ -1,3 +1,5 @@
+import {markPlay} from '../analytics/mark-play.js';
+import {PlayTracker} from '../analytics/play-tracker.js';
 import {CycleTouchControls} from '../ui/cycle-touch-controls.js';
 import {isMobileTerminal} from '../ui/mobile-terminal.js';
 import {yieldToBrowser} from '../loading/yield-to-browser.js';
@@ -55,6 +57,7 @@ export async function createGameApp() {
   const cycleStart = new URLSearchParams(location.search).get('cycleStart');
   const testCycleStart = cycleStart === '1';
   let selectedGame = testCycleStart?'cycles':'multiplayer', multiplayer=null;
+  const playTracker=new PlayTracker(markPlay);
   const cycleGame=()=>selectedGame==='cycles'||selectedGame==='multiplayer';
   const $ = (id) => document.getElementById(id);
   const inputController = new InputController();
@@ -265,6 +268,7 @@ export async function createGameApp() {
     // Home already owns a fresh simulation; rebuilding it here consumes the fade.
     const freshHomeRun=homeSelection&&run.time===0&&!run.crushed&&!run.won;
     if(!freshHomeRun)run = loadingTimings.sync('New game simulation reset',()=>session.reset(browserRunSeed(location)));
+    playTracker.reset();
     run.speed = config.maxSpeed;
     if(selectedGame==='multiplayer'){
       try{
@@ -1047,6 +1051,7 @@ export async function createGameApp() {
         simulationStepSeconds(run),
       );
     }
+    playTracker.update({mode,game:selectedGame,run});
     jev.update(run, !multiplayer && !run.arenaWaiting && !run.won && mode === 'running', autoplay);
     if (!autoplay.enabled && !multiplayer && (document.hidden || !windowFocused)) pause();
     if (view && mode !== 'error') {syncCycleSpectator();updateDeathTerminal(dt);}

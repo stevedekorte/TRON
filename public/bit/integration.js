@@ -55,6 +55,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.body.classList.remove('awaiting-microphone');
     document.body.classList.add('bit-ready');
     VizApp.beginIfNeeded();
+    if(VizApp._didBegin)void import('../src/analytics/bit-play.js').then(m=>m.markBitPlay()).catch(()=>{});
   };
   let requesting = false;
   VizApp.activate = async () => {
