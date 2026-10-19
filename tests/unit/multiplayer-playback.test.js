@@ -149,3 +149,24 @@ test('local timer batching cannot produce visible playback speed pulses',t=>{
  }
  assert(worst<.01,`steady motion should vary less than 1%, measured ${worst*100}%`);
 });
+
+test('adaptive buffer absorbs sustained delivery jitter then returns to its low-latency floor',()=>{
+ const p=new RemotePlayback(),packets=[];let seed=1982,lastArrival=0;
+ for(let i=0;i<1800;i++){
+  seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+  lastArrival=Math.max(lastArrival+.01,i*1000/30+20+seed/2**32*100);
+  packets.push({arrival:lastArrival,state:state(i*4)});
+ }
+ let index=0,previous=null,holds=0,maxBuffer=0;
+ for(let now=0;now<59000;now+=1000/144){
+  while(index<packets.length&&packets[index].arrival<=now){const packet=packets[index++];p.push(packet.state,packet.arrival);}
+  const sample=p.sample(now);if(!sample)continue;
+  if(now>2000&&sample.tick===previous)holds++;
+  previous=sample.tick;maxBuffer=Math.max(maxBuffer,p.bufferSeconds);
+ }
+ assert.equal(holds,0);assert(maxBuffer>.075&&maxBuffer<=.125);
+ let now=packets[index-1].arrival,tick=packets[index-1].state.tick;
+ for(let i=0;i<240;i++){now+=1000/30;tick+=4;p.push(state(tick),now);p.sample(now);}
+ assert.equal(p.bufferSeconds,REMOTE_PLAYBACK.bufferSeconds);
+ p.push(state(1,2),now+10);assert.equal(p.bufferSeconds,REMOTE_PLAYBACK.bufferSeconds);
+});

@@ -1,24 +1,38 @@
 import {MP} from '../../shared/multiplayer/config.js';
 
-export const REMOTE_PLAYBACK=Object.freeze({bufferSeconds:.075,historySeconds:.5,maxRateAdjustment:.02,clockCorrectionSeconds:2,maxFrameSeconds:.2});
+export const REMOTE_PLAYBACK=Object.freeze({bufferSeconds:.075,maxBufferSeconds:.125,arrivalWindow:64,bufferMarginSeconds:.016,historySeconds:.5,maxRateAdjustment:.02,clockCorrectionSeconds:2,maxFrameSeconds:.2});
 
 // Remote presentation consumes confirmed paths on a continuous, monotonic clock.
 // Packet arrival can adjust playback speed slightly, but never resets the clock.
 export class RemotePlayback{
  constructor(){this.reset();}
- reset(){this.frames=[];this.tick=null;this.lastNow=null;}
+ reset(){this.frames=[];this.tick=null;this.lastNow=null;this.gaps=[];this.bufferSeconds=REMOTE_PLAYBACK.bufferSeconds;this.heldFrames=0;this.samples=0;}
  push(state,now){
   const last=this.frames.at(-1);
   if(last&&last.state.race.round!==state.race.round)this.reset();
   const previous=this.frames.at(-1);
   if(previous&&state.tick<=previous.state.tick)return;
+  if(previous){
+   const gap=(now-previous.now)/1000;
+   // Ignore long suspension gaps. Use a percentile so one isolated outage does
+   // not impose extra latency on every subsequent frame.
+   if(gap>=0&&gap<REMOTE_PLAYBACK.historySeconds){
+    this.gaps.push(gap);if(this.gaps.length>REMOTE_PLAYBACK.arrivalWindow)this.gaps.shift();
+    if(this.gaps.length>=16){
+     const sorted=[...this.gaps].sort((a,b)=>a-b);
+     const desired=Math.max(REMOTE_PLAYBACK.bufferSeconds,Math.min(REMOTE_PLAYBACK.maxBufferSeconds,sorted[Math.floor(sorted.length*.95)]+REMOTE_PLAYBACK.bufferMarginSeconds));
+     this.bufferSeconds=desired>this.bufferSeconds?desired:Math.max(desired,this.bufferSeconds-.001);
+    }
+   }
+  }
   this.frames.push({state,now});
   const cutoff=state.tick-REMOTE_PLAYBACK.historySeconds*MP.tickHz;
   while(this.frames.length>2&&this.frames[1].state.tick<cutoff)this.frames.shift();
  }
+ diagnostics(){return {bufferMs:Math.round(this.bufferSeconds*1000),heldFrames:this.heldFrames,samples:this.samples};}
  sample(now){
   const last=this.frames.at(-1);if(!last)return null;
-  const target=last.state.tick+(now-last.now)*MP.tickHz/1000-REMOTE_PLAYBACK.bufferSeconds*MP.tickHz;
+  const target=last.state.tick+(now-last.now)*MP.tickHz/1000-this.bufferSeconds*MP.tickHz;
   // Loading/background pauses are not slow frames: restore the buffer on resume
   // instead of spending seconds pinned to packet boundaries while catching up.
   // A server stall can make that target older than a pose already displayed.
@@ -32,6 +46,7 @@ export class RemotePlayback{
   }
   this.lastNow=now;
   // Hold on a missing update rather than inventing another remote turn/path.
+  this.samples++;if(this.tick>last.state.tick)this.heldFrames++;
   this.tick=Math.max(this.frames[0].state.tick,Math.min(last.state.tick,this.tick));
   let upper=this.frames.findIndex(f=>f.state.tick>=this.tick);if(upper<0)upper=this.frames.length-1;
   const a=this.frames[Math.max(0,upper-1)].state,b=this.frames[upper].state;
@@ -46,6 +61,9 @@ export function remotePose(a,b,trails,fraction){
  if(!a||!b||!a.alive||!b.alive)return b;
  const turns=b.turns-a.turns;
  if(turns<0)return b;
+ // Most samples are straight. Avoid scanning the full, growing trail history
+ // for every cycle on every rendered frame when no corner was crossed.
+ if(turns===0)return {...b,x:a.x+(b.x-a.x)*fraction,z:a.z+(b.z-a.z)*fraction};
  const segments=[];
  for(let i=0;i<trails.length;i++)if(trails[i].bikeId===b.id&&i<=b.segment)segments.push(i);
  if(segments.length<turns+1)return b;

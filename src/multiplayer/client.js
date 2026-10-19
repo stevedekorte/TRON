@@ -1,3 +1,4 @@
+import {MultiplayerDiagnostics} from './diagnostics.js';
 import {gridSpeedAt,applyGridSpeed} from '../../shared/simulation/cycle-speed-ramp.js';
 import {RemotePlayback,presentRemoteCycles} from './remote-playback.js';
 import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
@@ -22,6 +23,9 @@ export class MultiplayerClient{
  constructor({url,onStatus=()=>{}}={}){
   const base=url||import.meta.env.VITE_MULTIPLAYER_URL||(import.meta.env.DEV?location.origin:import.meta.env.VITE_JEV_API_BASE||location.origin);
   this.url=new URL('/api/multiplayer',base);this.url.protocol=this.url.protocol==='https:'?'wss:':this.url.protocol==='http:'?'ws:':this.url.protocol;this.url.searchParams.set('v',MP.protocol);
+  this.diagnostics=new MultiplayerDiagnostics();
+  this.report=()=>this.diagnostics.report(this.remotePlayback);
+  if(typeof window!=='undefined')window.tronMultiplayerReport=this.report;
   this.remotePlayback=new RemotePlayback();this.onStatus=onStatus;this.seq=0;this.pending=[];this.rtt=0;this.closed=false;this.lastSent=0;this.control={turbo:false,brake:false};
  }
  async connect(options=CONNECTION){
@@ -47,8 +51,9 @@ export class MultiplayerClient{
    this.socket.onmessage=event=>{
     let data;try{data=JSON.parse(event.data);}catch{return;}
     if(data.type==='welcome'){if(data.protocol!==MP.protocol){clearTimeout(timeout);reject(Object.assign(Error('MULTIPLAYER VERSION MISMATCH — RELOAD TO UPDATE'),{retryable:false}));return;}this.id=data.id;return;}
-    if(data.type==='pong'){this.rtt=Math.max(0,performance.now()-data.sent);return;}
+    if(data.type==='pong'){this.diagnostics.pong(data,performance.now());this.rtt=Math.max(0,performance.now()-data.sent);return;}
     if(data.type!=='state'||data.protocol!==MP.protocol||!this.id)return;
+    this.diagnostics.snapshot(data,performance.now());
     data=decodeSnapshot(data,this.state);
     if(!data){if(!this.resyncPending){this.resyncPending=true;this.socket.send(JSON.stringify({type:'resync'}));}return;}
     this.resyncPending=false;
@@ -169,5 +174,5 @@ export class MultiplayerClient{
   run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,unseatedWaiting:this.state.clients.filter(c=>c.seat===null&&c.queue>0).length,players:this.state.clients.length,ping:Math.round(this.rtt),round:race.round};
   Object.assign(run,cyclePlayerPose(race));return true;
  }
- close(){this.closed=true;this.cancelConnect?.();this.cancelConnect=null;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];this.remotePlayback?.reset();}
+ close(){if(typeof window!=='undefined'&&window.tronMultiplayerReport===this.report)delete window.tronMultiplayerReport;this.closed=true;this.cancelConnect?.();this.cancelConnect=null;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];this.remotePlayback?.reset();}
 }
