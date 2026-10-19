@@ -1,10 +1,53 @@
 ---
+
+## Per-play analytics and exit announcement — October 18
+
+- [x] Production play markers distinguish `space-paranoids`, `cycles-solo`, `cycles-mp`, and `bit`. Space counts once when a fresh run reaches running mode; cycles count each racing round with a living assigned player (not spectators); BIT counts once after microphone permission and actual activation. Pause/resume and menus do not count. Markers honor analytics opt-out, are excluded from offline precache, and use one temporary iframe. App-start tracking is unchanged.
+- [x] Chrome headless production-build fixture verified exact mode/restart reports, BIT deduplication, no menu/spectator/development/opt-out reports, and one iframe; all Cloudflare report uploads intercepted and aborted. Unit test verifies run/round transitions. Scratch Vite builds now honor their output directory in the public-assets plugin.
+- [x] Replace the runtime illegal-exit announcement with the approved Runway transport-reference voice and subtle loudspeaker effects. Preserve the dry source and generation provenance. Add 14.95 dB with peak limiting to match the previous clip at −21.23 LUFS (measured true peak −1.85 dBTP). Existing per-player escape trigger and playback gain remain unchanged. Prior Leda source is retained; the original isolated film audition remains source-only.
+
 title: Implementation plan
 topTitle: TRON
 subtitle: Current simulation scope, decisions, and acceptance criteria
 ---
 
 Extended model and open-source acknowledgments: [Extended credits](credits_extended.txt).
+
+## Archived original grid-announcer recordings — October 18
+
+- [x] Preserve approved clean ElevenLabs transport isolation and its loudspeaker/echo version under `assets/source/audio/grid-announcer`, alongside the original illegal-exit isolation and matching effect audition. All four are catalogued source-only with provenance and verified hashes; no runtime references or playback changes. The existing generated exit announcement remains active pending approval of the original-voice replacement.
+
+## Solo roster player marker — October 18
+
+- [x] Show the black/white player slash on the solo player's roster circle only, with PLAYER accessibility text. Do not change cycle human flags or the rendered bike. MP spectators remain unmarked unless following an actual human. Headless Chrome roster checks pass, including no bike-state mutation and solo/MP marker transitions. Local change; not deployed.
+
+## Three-cycle team announcements — October 18
+
+- [x] Starting team speech only plays for an assigned team with exactly three cycles in solo or MP. Count team roster slots rather than surviving cycles so an early crash does not cut off speech. Smaller teams do not consume the first eligible announcement; eligible rounds retain the 20% later-match probability and equal original/alternate selection.
+- [x] All 18 team-voice unit tests pass, including one/two/four-cycle exclusion, other-team isolation, solo/MP coverage and teammate death during playback. Browser fixture updated to use three-cycle teams. Local change; not deployed.
+
+## Arena escape alarm — October 17
+
+- [x] A confirmed player cycle escape alerts all active arena-patrol Recognizers with a one-time position/velocity report. Guards leave their patrol route, investigate the exit and pursue upon visual acquisition using existing perception, search, attack and target-retirement behavior. No unseen live tracking; ordinary non-grid patrols receive no direct alarm. Initial outside testing spawns do not trigger it.
+- [x] Alarm clears stale neutralization state for the new escape but does not activate destroyed/materializing/teleporting guards. Multiplayer still silently derezzes escaped riders, so this pursuit applies to the surviving solo road cycle. Tests cover multiple guards, immutable observations, exclusions and an actual GameSession breach crossing. All 630 unit tests and production build/asset audit pass; pursuit feel has not been browser-playtested. Local change, not deployed.
+
+## Local illegal-exit announcement — October 17
+
+- [x] Use the approved Gemini Leda flight-controller reading with loudspeaker EQ and subtle echo when a rider clears the arena boundary through a breach. Shared simulation increments an escape revision, carried in MP snapshots; only that client's assigned seat hears it. Solo uses the player cycle. Spectator targets, ordinary crashes, initial outside spawns and joining after an escape do not trigger speech.
+- [x] Play once per confirmed exit, including subsequent solo exits after reentry. Mute, home/disconnect, reassignment and new rounds cancel; missing/muted audio does not replay later. Allow the line through the result hold after a silent MP exit. Stop any overlapping team-leader line. Existing MP derez behavior is unchanged.
+- [x] Preserve the dry generated master, generation direction and processing provenance; runtime contains only the approved processed recording. All 628 unit tests and production asset audit pass. Headless Chrome verifies actual sample loading/decoding and playback (10.17 seconds) without errors. Local change; not deployed, and MP requires the updated Worker snapshot field.
+
+## Escalating light-cycle grid speed — October 16
+
+- [x] Solo, multiplayer authority and JavaScript AI training share a 10% compounded speed increase every 15 seconds of active arena racing. Each increase ramps over one second, caps at 2× starting speed, and resets each match. Cruise, turbo and braking speeds scale together; reserve capacity/recharge and reaction times are unchanged. Paused/outside-arena play and staging/result time do not advance the ramp.
+- [x] Display a silent SPEED INCREASE IN 3/2/1 countdown, followed by one confirmation beep when the increase begins and GRID SPEED: N% for three seconds (October 17 adjustment). No further warning at the cap; no backlog of beeps after mute/network gaps. Uses terminal HUD styling.
+- [x] AI speed forecasts and local MP prediction account for grid speed. Snapshots include the grid multiplier and protocol advances from 3 to 4 to reject outdated current clients. Requires coordinated client/Worker deployment. Existing AI policies are unchanged; no evolution run has been performed under the new rules yet.
+- [x] All 620 existing unit tests plus five new speed-ramp tests pass. New coverage checks proportional cruise/turbo/brake motion, AI forecasts, cap, staging/pause/reset, warning timing and beep deduplication. Production build/asset audit passes. Headless Chrome at 1280×800 verifies the rendered solo 3/2/1 countdown, 110% notice and actual accelerated cycle speed without page errors; screenshot inspected (`test-results/cycle-speed-ramp.png`). Local implementation; not deployed.
+
+## Solo team radio — October 16
+
+- [x] Enable the existing team radio path for solo cycle play using the player's cycle team. Preserve the one-second launch delay, first-match guarantee, subsequent 20% chance, equal choice between original/alternate recordings, and existing gains. Non-cycle play and disconnected multiplayer sessions remain ineligible. Returning home resets the guarantee; solo retries preserve it.
+- [x] Seventeen focused unit tests pass, including solo selection/retry/session reset and disconnected multiplayer isolation. Headless Chrome verifies all eight recordings decode, schedule and play in both solo and MP paths without page errors. Production build and asset audit pass. Local change; not deployed.
 
 ## Alternate team radio lines — October 16
 

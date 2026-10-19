@@ -1,0 +1,27 @@
+{
+  "script": "Video game warriors escaping game grid. This is an illegal exit. You must return to game grid. Repeat, this is an illegal exit. You must return to the grid.",
+  "request": {
+    "model": "seed_audio",
+    "referenceAudios": [
+      "assets/source/audio/grid-announcer/prepare-transport-elevenlabs-clean.wav"
+    ],
+    "promptText": "Generate a single female voice speaking exactly this transcript, with every word intact: \"Video game warriors escaping game grid. This is an illegal exit. You must return to game grid. Repeat, this is an illegal exit. You must return to the grid.\" Match the female speaking voice timbre, register, accent and precise formal delivery of @Audio1. Brisk, professional 1950s military flight-controller announcement, urgent and authoritative without shouting or pleading. Clearly articulate VIDEO GAME, GAME GRID, ILLEGAL EXIT and YOU MUST RETURN. Do not slur or substitute syllables. Retain every You and every the exactly as written. Use short sentence pauses and allow enough time for intelligible speech, roughly ten seconds. Use the reference only for vocal characteristics; do not say the reference words about transport. Dry clean isolated voice with steady volume. No music, machinery, drone, static, echo, reverb or loudspeaker effects. Do not reproduce isolation artifacts.",
+    "speechRate": 0,
+    "outputFormat": "mp3"
+  },
+  "direction": "Clean ElevenLabs isolation of user-provided prepare to transport to light cycle grid.wav reference; exact user transcript; steady announcement delivery; no time compression.",
+  "task": {
+    "id": "2b184610-a4f4-48ea-9919-dc6953ea801c",
+    "estimatedCost": {
+      "credits": 5
+    }
+  },
+  "source": "assets/source/audio/grid-announcer/illegal-exit-runway-dry.mp3",
+  "processing": "320 Hz highpass, 4300 Hz lowpass, presence EQ, compression, short reflections and subtle 240/480 ms echo; +14.95 dB loudness match with peak limiter; no time stretching.",
+  "loudness": {
+    "integratedLUFS": -21.23,
+    "truePeakDBTP": -1.85
+  },
+  "playback": "Local assigned rider on confirmed arena breach escape, solo and MP; never spectators.",
+  "useConstraints": "Generated using TRON (1982) film voice reference and dialogue; underlying rights remain with respective owners."
+}

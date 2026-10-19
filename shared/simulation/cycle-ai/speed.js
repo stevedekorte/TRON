@@ -10,7 +10,7 @@ export function forecastSpeed(b,pedal,seconds,out){
  const duration=pedal===1?C.turboDurationSeconds:C.brakeDurationSeconds,initial=charge;
  while(remaining>1e-9){
   const active=pedal!==0&&charge>1e-9,step=Math.min(remaining,C.speedStepSeconds,active?charge*duration:Infinity);
-  const target=active?(pedal===1?C.turboSpeedMultiplier:C.slowSpeedMultiplier):1;
+  const target=(b.gridSpeedMultiplier??1)*(active?(pedal===1?C.turboSpeedMultiplier:C.slowSpeedMultiplier):1);
   distance+=speed*C.speedMetersPerSecond*step;
   speed=nextCycleSpeed(speed,target,active&&pedal===1,step);
   if(active)charge=Math.max(0,charge-step/duration);remaining-=step;
@@ -24,7 +24,7 @@ export function arrivalSeconds(b,pedal,meters,limit=2){
  while(time<limit-1e-9){
   const active=pedal!==0&&charge>1e-9,dt=Math.min(C.speedStepSeconds,limit-time,active?charge*duration:Infinity),travel=speed*C.speedMetersPerSecond*dt;
   if(travel>=meters)return time+meters/(speed*C.speedMetersPerSecond);
-  meters-=travel;speed=nextCycleSpeed(speed,active?(pedal===1?C.turboSpeedMultiplier:C.slowSpeedMultiplier):1,active&&pedal===1,dt);
+  meters-=travel;speed=nextCycleSpeed(speed,(b.gridSpeedMultiplier??1)*(active?(pedal===1?C.turboSpeedMultiplier:C.slowSpeedMultiplier):1),active&&pedal===1,dt);
   if(active)charge=Math.max(0,charge-dt/duration);time+=dt;
  }
  return Infinity;

@@ -9,14 +9,15 @@ export class MultiplayerTeamVoice {
   }
   resetRound(){this.stopPlayback();this.round=null;this.phase=null;this.seat=null;}
   reset(){this.resetRound();this.hasLaunched=false;}
-  update(race,multiplayer,audible){
-    if(!multiplayer?.connected||!race){this.reset();return;}
+  update(race,multiplayer,audible,solo=false){
+    if((multiplayer?!multiplayer.connected:!solo)||!race){this.reset();return;}
     if(this.round!==race.round){this.resetRound();this.round=race.round;}
-    const seat=multiplayer.seat;
+    const seat=multiplayer?multiplayer.seat:race.playerId;
     const bike=seat==null?null:race.cycles.find(b=>b.id===seat);
     const team=LIGHT_CYCLES.teamNames[bike?.team];
     const choices=MP_TEAM_VOICE.samplesByTeam[team];
-    const eligible=!!choices;
+    // Count the roster, not survivors: an early crash must not cut off the line.
+    const eligible=!!choices&&race.cycles.filter(b=>b.team===bike.team).length===3;
     if(!audible||!eligible||seat!==this.seat||race.phase!=='racing')this.stopPlayback();
     if(race.phase==='racing'&&this.phase==='countdown'&&seat===this.seat&&eligible){
       // Consume one decision per participated launch, even when muted or unavailable.

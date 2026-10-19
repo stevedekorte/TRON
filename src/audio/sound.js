@@ -1,3 +1,5 @@
+import {CycleExitVoice} from './cycle-exit-voice.js';
+import {CycleSpeedWarning} from './cycle-speed-warning.js';
 import {publicAssetUrl} from '../assets/public-url.js';
 import {MultiplayerTeamVoice,MP_TEAM_VOICE} from './multiplayer-team-voice.js';
 import {MultiplayerCountdown} from './multiplayer-countdown.js';
@@ -145,8 +147,10 @@ export class Sound {
     });
     this.cycleOpeningAudio = new CycleOpeningAudio(c, this.master, this.samples);
     this.multiplayerCountdown = new MultiplayerCountdown(c, this.master);
+    this.cycleSpeedWarning = new CycleSpeedWarning(c,this.master);
     this.multiplayerTeamVoice = new MultiplayerTeamVoice(c, this.master, this.samples);
     this.cycleVoices = new CycleVoices(c, this.master, this.samples);
+    this.cycleExitVoice = new CycleExitVoice(c,this.master,this.samples);
     this.loading = this.loadSamples();
   }
   async loadSamples() {
@@ -184,7 +188,7 @@ export class Sound {
 
   loadCycleSamples() {
     if(!this.context)return Promise.resolve();
-    return this.cycleLoading ??= Promise.all([...Object.values(MP_TEAM_VOICE.samplesByTeam).flat().map(sample=>sample.slice('cycle-'.length)),'materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
+    return this.cycleLoading ??= Promise.all([...Object.values(MP_TEAM_VOICE.samplesByTeam).flat().map(sample=>sample.slice('cycle-'.length)),'illegal-exit','materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
       try {
         const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+(Object.values(MP_TEAM_VOICE.samplesByTeam).flat().includes('cycle-'+name)?'.mp3':'.wav')));
         if(!response.ok)throw new Error('HTTP '+response.status);
@@ -285,7 +289,9 @@ export class Sound {
       l.setPosition(ear.x, ear.y, -ear.s);
       l.setOrientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
     }
-    this.multiplayerTeamVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted);
+    this.multiplayerTeamVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode);
+    this.cycleSpeedWarning.update(cycleMode?run.cycleRace:null,playing&&!this.muted);
+    if(this.cycleExitVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode))this.multiplayerTeamVoice.stopPlayback();
     this.multiplayerCountdown.update(run.multiplayer?.connected?run.cycleRace:null,playing&&!this.muted);
     this.cycleVoices.update(run.cycleRace,playing,ear,this.cycleOpeningSeconds!==null&&this.cycleOpeningSeconds!==undefined);
     this.recognizerVoices.update(cycleMode ? {recognizers:run.recognizers.filter(e=>e.role==='arena-patrol')} : run, ear);
@@ -583,7 +589,9 @@ export class Sound {
   reset() {
     this.cycleOpeningAudio?.reset();
     this.multiplayerCountdown?.reset();
+    this.cycleSpeedWarning?.reset();
     this.multiplayerTeamVoice?.reset();
+    this.cycleExitVoice?.reset();
     this.musicDirector.reset();
     this.cycleVoices?.reset();
     this.turretServo?.reset();
@@ -594,6 +602,7 @@ export class Sound {
   }
   silence() {
     this.multiplayerTeamVoice?.stopPlayback();
+    this.cycleExitVoice?.stopPlayback();
     this.musicDirector.silence();
     this.cycleVoices?.stopPlayback();
     if (this.context) this.master.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
@@ -605,7 +614,9 @@ export class Sound {
     this.recognizerVoices?.dispose();
     this.cycleOpeningAudio?.reset();
     this.multiplayerCountdown?.reset();
+    this.cycleSpeedWarning?.reset();
     this.multiplayerTeamVoice?.reset();
+    this.cycleExitVoice?.reset();
     this.cycleVoices?.dispose();
     this.musicDirector.dispose();
     this.context?.close();

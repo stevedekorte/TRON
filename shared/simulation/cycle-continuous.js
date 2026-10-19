@@ -130,6 +130,7 @@ export function advanceContinuousCycles(r,alive,dt,world){
   const mouth=wallImpact(b.x*C.cellMeters,b.z*C.cellMeters);
   if(!b.trailStopped&&Math.max(Math.abs(b.x),Math.abs(b.z))>Math.max(Math.abs(from.x),Math.abs(from.z))&&Math.max(Math.abs(b.x),Math.abs(b.z))*C.cellMeters+C.lengthMeters/2>=ARENA_WALL.innerMeters&&r.breaches.some(g=>g.axis===mouth.axis&&g.sign===mouth.sign&&breachContains(g,mouth.along)))retireTrail(r,b);
   if(Math.max(Math.abs(b.x),Math.abs(b.z))*C.cellMeters>ARENA_WALL.outerMeters+ARENA_WALL.cycleRadiusMeters){
+   b.escapeRevision=(b.escapeRevision??0)+1;
    if(r.derezOnEscape){
     b.alive=false;
     r.crashes.push({id:b.id,x:b.x,z:b.z,team:b.team,dir:b.dir,time:r.time,silent:true});

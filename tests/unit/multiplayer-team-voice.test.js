@@ -4,7 +4,7 @@ import {MultiplayerTeamVoice,MP_TEAM_VOICE} from '../../src/audio/multiplayer-te
 function setup(team=1,seat=3,random=()=>0,chooseRandom=()=>0){
  const sources=[],gains=[],context={currentTime:20,createBufferSource(){const source={connect(){},disconnect(){this.disconnected=true;},start(time){this.when=time;},stop(){this.stopped=true;}};sources.push(source);return source;},createGain(){const gain={gain:{},connect(){},disconnect(){this.disconnected=true;}};gains.push(gain);return gain;}};
  const samples=Object.fromEntries(Object.values(MP_TEAM_VOICE.samplesByTeam).flat().map(name=>[name,{name,duration:4}])),audio=new MultiplayerTeamVoice(context,{},samples,random,chooseRandom);
- const race={round:1,phase:'countdown',playerId:3,cycles:[{id:3,team}]},mp={connected:true,seat};
+ const race={round:1,phase:'countdown',playerId:3,cycles:[{id:3,team},{id:4,team},{id:5,team}]},mp={connected:true,seat};
  return {audio,race,mp,sources,gains,samples};
 }
 test('blue assigned players hear one cue scheduled one second after launch per round',()=>{
@@ -79,5 +79,35 @@ for(const [team,color] of ['gold','blue','red','green'].entries())test(`${color}
   assert.equal(sources[0].buffer,samples[`cycle-${color}-leader${suffix}`]);
   assert.equal(gains[0].gain.value,color==='blue'&&!suffix?.85:3.4);
   for(let i=0;i<10;i++)audio.update(race,mp,true);assert.equal(choices,1);
+ }
+});
+
+ test('solo uses the player team, guarantees the first launch and rolls later rounds',()=>{
+  const {audio,race,sources,samples}=setup(0,3,()=>.9,()=>.75);
+  const launch=()=>{race.phase='countdown';audio.update(race,null,true,true);race.phase='racing';audio.update(race,null,true,true);};
+  launch();assert.equal(sources.length,1);assert.equal(sources[0].buffer,samples['cycle-gold-leader-alt']);assert.equal(sources[0].when,21);
+  race.round++;launch();assert.equal(sources.length,1);
+  audio.reset();launch();assert.equal(sources.length,2);
+  audio.update(race,null,true,false);assert(sources[1].stopped);
+ });
+ test('solo eligibility cannot turn a disconnected multiplayer seat into a solo announcement',()=>{
+  const {audio,race,mp,sources}=setup();mp.connected=false;
+  audio.update(race,mp,true,true);race.phase='racing';audio.update(race,mp,true,true);assert.equal(sources.length,0);
+ });
+
+test('only three-cycle teams qualify in solo and MP; smaller teams preserve the first eligible announcement',()=>{
+ for(const solo of [false,true]){
+  const {audio,race,mp,sources}=setup(0,3,()=>.99);
+  const roster=race.cycles;
+  for(const size of [1,2,4,3]){
+   race.round++;race.cycles=size===4?[...roster,{id:6,team:0}]:roster.slice(0,size);
+   // Other teams cannot make a small local team eligible.
+   race.cycles.push({id:20,team:1},{id:21,team:1},{id:22,team:1});
+   race.phase='countdown';audio.update(race,solo?null:mp,true,solo);
+   race.phase='racing';audio.update(race,solo?null:mp,true,solo);
+   assert.equal(sources.length,size===3?1:0);
+  }
+  race.cycles[1].alive=false;audio.update(race,solo?null:mp,true,solo);
+  assert(!sources[0].stopped,'an early teammate death does not interrupt the announcement');
  }
 });

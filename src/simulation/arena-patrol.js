@@ -1,3 +1,4 @@
+import {raiseAlert} from './alertness.js';
 import { ARENA_PATROL, arenaPatrolRoute } from '../game/arena-patrol.js';
 import { configFor } from '../game/config.js';
 import { worldFor } from '../levels/scenario.js';
@@ -46,4 +47,16 @@ export function updateCycleArenaPatrol(run, dt) {
     e.hit = Math.max(0, (e.hit || 0) - dt * 3);
     flyArenaPatrol(e, run.time, dt);
   }
+}
+
+/** The grid's breach alarm supplies one fixed observation, not live tracking. */
+export function alertArenaEscape(run){
+ const sighting={x:run.x,s:run.s,vx:-Math.sin(run.yaw)*run.speed,vs:Math.cos(run.yaw)*run.speed,seenAt:run.time,source:'arena-exit'};
+ for(const e of run.recognizers){
+  if(e.role!=='arena-patrol'||e.state==='destroyed'||e.state==='materializing'||e.teleport)continue;
+  e.targetGone=false;e.neutralizationSent=false;e.arenaPatrolling=false;
+  e.attack=null;e.attackAssignment=null;e.tactical=null;e.spotlight=null;e.canSee=false;
+  e.memory={...sighting};e.goal={x:sighting.x,s:sighting.s};e.goalUntil=run.time+ARENA_PATROL.memorySeconds;
+  e.searchIndex=0;e.nextSense=run.time;e.state='investigate';raiseAlert(e,run.time);
+ }
 }

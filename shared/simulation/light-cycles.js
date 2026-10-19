@@ -1,3 +1,4 @@
+import {gridSpeedAt,applyGridSpeed} from './cycle-speed-ramp.js';
 import {planCycleAI,usesBoundedAI,resetCycleAI} from './cycle-ai/controller.js';
 import {nextCycleSpeed} from './cycle-ai/speed.js';
 import {rewardCycleWallOwner} from './cycle-reserve-reward.js';
@@ -235,6 +236,8 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={},
   while(remaining>1e-9&&r.phase==='racing'){
     const alive=r.cycles.filter(b=>b.alive&&!b.escaped);
     let slice=Math.min(remaining,C.speedStepSeconds);
+    const gridSpeed=gridSpeedAt(r.elapsed-remaining);
+    for(const b of alive)applyGridSpeed(b,gridSpeed);
     const boundedAI=usesBoundedAI(r);
     if(boundedAI){
       const commands=planCycleAI(r,r.elapsed-remaining+slice);
@@ -264,7 +267,7 @@ export function updateCycleRace(r,dt,turn=0,turbo=false,slow=false,roadInput={},
       b.braking=wantsBrake&&b.brakeCharge>1e-9;
       b.boosting=wantsTurbo&&!wantsBrake&&b.turboCharge>1e-9;
       b.reserveTurboRequested=wantsTurbo;b.reserveBrakeRequested=wantsBrake;
-      b.targetSpeedMultiplier=b.braking?C.slowSpeedMultiplier:b.boosting?C.turboSpeedMultiplier:1;
+      b.targetSpeedMultiplier=gridSpeed*(b.braking?C.slowSpeedMultiplier:b.boosting?C.turboSpeedMultiplier:1);
       b.travelRate=(b.speedMultiplier??1)/interval;
 
       if(b.braking)slice=Math.min(slice,b.brakeCharge*C.brakeDurationSeconds);

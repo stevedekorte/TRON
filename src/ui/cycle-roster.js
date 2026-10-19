@@ -15,9 +15,11 @@ export class CycleRoster{
     const group=document.createElement('div');group.className='cycle-team-icons';group.setAttribute('role','group');group.setAttribute('aria-label',team+' team');groups.set(cycle.team,group);
    }
    const group=groups.get(cycle.team),icon=document.createElement('span');
-   icon.className='cycle-roster-icon'+(cycle.alive?'':' eliminated')+(cycle.human?' human':'')+(cycle.human&&cycle.id===race.localPlayerId?' local-player':'');icon.dataset.cycleId=String(cycle.id);
+   const soloPlayer=race.localPlayerId===undefined&&cycle.id===race.playerId;
+   const human=cycle.human||soloPlayer;
+   icon.className='cycle-roster-icon'+(cycle.alive?'':' eliminated')+(human?' human':'')+(cycle.human&&cycle.id===race.localPlayerId?' local-player':'');icon.dataset.cycleId=String(cycle.id);
    icon.style.color='#'+LIGHT_CYCLES.colors[cycle.team].toString(16).padStart(6,'0');
-   const label=`${team} cycle ${group.children.length+1} — ${cycle.alive?'active':'eliminated'}${cycle.human?' · '+cycle.operator:' · AI'}`;
+   const label=`${team} cycle ${group.children.length+1} — ${cycle.alive?'active':'eliminated'}${soloPlayer?' · PLAYER':cycle.human?' · '+cycle.operator:' · AI'}`;
    const eliminations=cycle.wallEliminations??[],assists=cycle.trapAssists??[];
    const description=label+(eliminations.length?` · ${eliminations.length} enemy trail elimination${eliminations.length===1?'':'s'}`:'')+(assists.length?` · ${assists.length} trap assist${assists.length===1?'':'s'}`:'');
    icon.setAttribute('role','img');icon.setAttribute('aria-label',description);icon.title=description;

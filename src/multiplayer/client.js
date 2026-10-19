@@ -1,3 +1,4 @@
+import {gridSpeedAt,applyGridSpeed} from '../../shared/simulation/cycle-speed-ramp.js';
 import {RemotePlayback,presentRemoteCycles} from './remote-playback.js';
 import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
 import {MP} from '../../shared/multiplayer/config.js';
@@ -12,7 +13,7 @@ export const PREDICTION_CLOCK=Object.freeze({maxRateAdjustment:.1,correctionSeco
 function move(b,seconds,control){
  const [dx,dz]=DIR[b.dir];b.x+=dx*seconds*C.speedMetersPerSecond/C.cellMeters*b.speedMultiplier;b.z+=dz*seconds*C.speedMetersPerSecond/C.cellMeters*b.speedMultiplier;
  b.braking=control.brake&&b.brakeCharge>0;b.boosting=control.turbo&&!control.brake&&b.turboCharge>0;
- const target=b.braking?C.slowSpeedMultiplier:b.boosting?C.turboSpeedMultiplier:1;
+ const target=(b.gridSpeedMultiplier??1)*(b.braking?C.slowSpeedMultiplier:b.boosting?C.turboSpeedMultiplier:1);
  b.speedMultiplier+=(target-b.speedMultiplier)*(1-Math.exp(-(target>b.speedMultiplier&&b.boosting?C.turboResponsePerSecond:C.speedResponsePerSecond)*seconds));
  b.turboCharge=Math.max(0,Math.min(1,b.turboCharge+seconds*(b.boosting?-1/C.turboDurationSeconds:!control.turbo||control.brake?1/C.turboRechargeSeconds:0)));
  b.brakeCharge=Math.max(0,Math.min(1,b.brakeCharge+seconds*(b.braking?-1/C.brakeDurationSeconds:!control.brake?1/C.brakeRechargeSeconds:0)));
@@ -125,6 +126,7 @@ export class MultiplayerClient{
     const advance=to=>{
      while(cursor<to){
       const end=Math.min(to,Math.floor(cursor)+1);
+      applyGridSpeed(b,gridSpeedAt((this.state.race.elapsed??0)+(cursor-this.state.tick)/MP.tickHz));
       move(b,(end-cursor)/MP.tickHz,control);cursor=end;
      }
     };

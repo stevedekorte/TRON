@@ -1,4 +1,4 @@
-import { updateCycleArenaPatrol } from './arena-patrol.js';
+import { updateCycleArenaPatrol, alertArenaEscape } from './arena-patrol.js';
 import {ROAD_CYCLE,validateRoadCycle} from '../../shared/simulation/config/cycle-road.js';
 import {LIGHT_CYCLES,CYCLE_TESTING} from '../../shared/simulation/config/light-cycles.js';
 import { attachCycleWorld, configureCycleMatch, createCycleRace, updateCycleRace, resetCycleRound, cyclePlayerPose } from '../../shared/simulation/light-cycles.js';
@@ -82,12 +82,14 @@ export class GameSession {
     }
     if(r.playerVehicle==='cycle'){
       if(!r.won&&!r.crushed){
+        const escapeBefore=r.cycleRace.cycles[r.cycleRace.playerId]?.escapeRevision??0;
         r.time+=dt;updateCycleRace(r.cycleRace,dt,input.cycleTurn,input.cycleTurbo,input.cycleSlow,input.cycleRoad);
         Object.assign(r,cyclePlayerPose(r.cycleRace));r.speed=0;
         const bike=r.cycleRace.cycles[r.cycleRace.playerId];
         if(bike.escaped){
           r.speed=bike.roadSpeed;r.health=(bike.roadHealth??1)*CLU_HEALTH.max;
           r.crushed=!bike.alive;
+          if(bike.alive&&(bike.escapeRevision??0)>escapeBefore)alertArenaEscape(r);
           stepCycleWorld(r,dt);
           bike.roadHealth=Math.max(0,r.health/CLU_HEALTH.max);
           if(bike.alive&&(r.crushed||bike.roadHealth<=0)){

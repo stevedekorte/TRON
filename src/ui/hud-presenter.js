@@ -1,3 +1,4 @@
+import {gridSpeedNotice} from '../../shared/simulation/cycle-speed-ramp.js';
 import {CycleRoster} from './cycle-roster.js';
 import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
 import {CLU_AUTOPLAY_ENABLED} from '../game/autoplay.js';
@@ -108,6 +109,9 @@ export class HudPresenter {
     document.body.classList.toggle('playing-cycle',cycleMode);
     document.body.classList.toggle('playing-multiplayer',cycleMode&&!!run.multiplayer);
     this.cycleRoster.update(race,cycleMode&&!run.arenaWaiting&&rig.cycleOpening===null,run.multiplayer?.unseatedWaiting??0);
+    const speedNotice=cycleMode&&mode==='running'?gridSpeedNotice(race):null;
+    $('cycle-speed-notice').hidden=!speedNotice;
+    $('cycle-speed-notice').textContent=speedNotice?.text??'';
     const cycleControls=$('cycle-controls');
     const result=cycleMode&&race.phase==='result';
     const resultText=$('cycle-result');

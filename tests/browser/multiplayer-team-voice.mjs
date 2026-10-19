@@ -13,14 +13,14 @@ try{
   const master=context.createGain();master.connect(context.destination);
   const audio=new MultiplayerTeamVoice(context,master,owner.samples,()=>0,()=>0);
   const rows=[];
-  for(const [team,color] of ['gold','blue','red','green'].entries())for(const alternate of [false,true]){
+  for(const solo of [false,true])for(const [team,color] of ['gold','blue','red','green'].entries())for(const alternate of [false,true]){
    audio.chooseRandom=()=>alternate?.75:0;
    const key=`cycle-${color}-leader${alternate?'-alt':''}`;
-   const race={round:team*2+Number(alternate)+1,phase:'countdown',cycles:[{id:3,team}]},mp={connected:true,seat:3};
-   audio.update(race,mp,true);race.phase='racing';audio.update(race,mp,true);
+   const race={round:team*2+Number(alternate)+1,phase:'countdown',playerId:3,cycles:[{id:3,team},{id:4,team},{id:5,team}]},mp={connected:true,seat:3};
+   audio.update(race,solo?null:mp,true,solo);race.phase='racing';audio.update(race,solo?null:mp,true,solo);
    const voice=audio.voice;
    await new Promise(resolve=>setTimeout(resolve,1200));
-   rows.push({color,alternate,duration:owner.samples[key]?.duration,scheduled:!!voice,correctBuffer:voice?.source.buffer===owner.samples[key],activeAfterDelay:audio.voice===voice});
+   rows.push({solo,color,alternate,duration:owner.samples[key]?.duration,scheduled:!!voice,correctBuffer:voice?.source.buffer===owner.samples[key],activeAfterDelay:audio.voice===voice});
    audio.reset();
   }
   master.disconnect();await context.close();

@@ -26,6 +26,7 @@ test('MP wall impacts breach, exits silently eliminate and the next round heals 
  assert.equal(b.alive,false);assert(!b.escaped,'no road-mode cycle survives');
  assert.equal(r.crashes.length,1);assert.equal(r.crashes[0].silent,true);
  assert.equal(projectState(room.state()).race.crashes[0].silent,true);
+ assert.equal(b.escapeRevision,1);assert.equal(projectState(room.state()).race.cycles[b.id].escapeRevision,1);
  room.step();assert(room.queue.includes('human'));
  room.nextRound();assert.deepEqual(r.breaches,[]);assert.deepEqual(r.crashes,[]);
  assert(r.cycles.every(c=>c.alive));

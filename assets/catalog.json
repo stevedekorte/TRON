@@ -10012,6 +10012,153 @@
       "sha256": "9edcf211facb31458ed9357661f1ade36bb76cb4f1974be525ae576740ae8f87",
       "deploymentPolicy": "runtime",
       "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-84ac062e4cb80309",
+      "category": "audio",
+      "path": "assets/source/audio/cycle-illegal-exit-leda-dry.wav",
+      "sourcePath": null,
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "project",
+      "author": "Google Gemini TTS, preset Leda; user-directed TRON announcement",
+      "sourceUrl": null,
+      "license": "Generated preset-voice recording; underlying TRON dialogue rights remain with their owners.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-illegal-exit-source.json"
+      ],
+      "transformations": "Generated dry voice, no reference audio.",
+      "conversionCommands": [],
+      "bytes": 459236,
+      "sha256": "84ac062e4cb80309dd7afd7274705ab958fa611e5a7394e752812944020097b2",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": false
+    },
+    {
+      "id": "asset-b31911b116700f1b",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-illegal-exit.wav",
+      "sourcePath": "assets/source/audio/grid-announcer/illegal-exit-runway-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-illegal-exit.wav",
+      "creditId": "project",
+      "author": "Runway seed_audio; user-directed TRON film voice reference",
+      "sourceUrl": null,
+      "license": "Generated using TRON (1982) film voice reference and dialogue; underlying rights remain with respective owners.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-illegal-exit-source.json"
+      ],
+      "transformations": "320 Hz highpass, 4300 Hz lowpass, presence EQ, compression, short reflections and subtle 240/480 ms echo; +14.95 dB loudness match with peak limiter; no time stretching.",
+      "conversionCommands": [],
+      "bytes": 3099564,
+      "sha256": "c7816923752ada36af149613c98bc7a22f28e437d265b51b01f87eee67cb598f",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": false
+    },
+    {
+      "id": "asset-63f9a295d061cd49",
+      "category": "audio",
+      "path": "assets/source/audio/grid-announcer/prepare-transport-elevenlabs-clean.wav",
+      "sourcePath": null,
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "film",
+      "author": "TRON (1982) filmmakers / respective rights holders; voice performer unverified",
+      "sourceUrl": null,
+      "license": "Film dialogue from TRON (1982); underlying rights remain with respective owners. Isolation and effects do not constitute independent rights clearance.",
+      "provenanceRecords": [
+        "assets/source/audio/grid-announcer/provenance.json"
+      ],
+      "transformations": "ElevenLabs dialogue isolation",
+      "conversionCommands": [],
+      "bytes": 350118,
+      "sha256": "63f9a295d061cd49e165aeaa9ec4b7c2fd4f945f7a33a7db6c504453c6f444fe",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-e13477e6dc7c01f7",
+      "category": "audio",
+      "path": "assets/source/audio/grid-announcer/prepare-transport-elevenlabs-loudspeaker.wav",
+      "sourcePath": null,
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "film",
+      "author": "TRON (1982) filmmakers / respective rights holders; voice performer unverified",
+      "sourceUrl": null,
+      "license": "Film dialogue from TRON (1982); underlying rights remain with respective owners. Isolation and effects do not constitute independent rights clearance.",
+      "provenanceRecords": [
+        "assets/source/audio/grid-announcer/provenance.json"
+      ],
+      "transformations": "ElevenLabs dialogue isolation; 320 Hz highpass, 4300 Hz lowpass, +3 dB at 1600 Hz, 3:1 compression, short PA reflections at 37/73/113/173/251 ms, subtle 240/480 ms echo, limiting. No time stretching.",
+      "conversionCommands": [],
+      "bytes": 446830,
+      "sha256": "e13477e6dc7c01f7cea9ff1c96ad8e2400413aa5c7c8fdda4455274faa0517d1",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-641daaa07f6284a1",
+      "category": "audio",
+      "path": "assets/source/audio/grid-announcer/illegal-exit-elevenlabs-clean.wav",
+      "sourcePath": null,
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "film",
+      "author": "TRON (1982) filmmakers / respective rights holders; voice performer unverified",
+      "sourceUrl": null,
+      "license": "Film dialogue from TRON (1982); underlying rights remain with respective owners. Isolation and effects do not constitute independent rights clearance.",
+      "provenanceRecords": [
+        "assets/source/audio/grid-announcer/provenance.json"
+      ],
+      "transformations": "ElevenLabs dialogue isolation",
+      "conversionCommands": [],
+      "bytes": 1197696,
+      "sha256": "641daaa07f6284a1e80cd0c8bb09226916914e8d342913a60faa35085f131b29",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-7c5847a6dba810dd",
+      "category": "audio",
+      "path": "assets/source/audio/grid-announcer/illegal-exit-elevenlabs-loudspeaker.wav",
+      "sourcePath": null,
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "film",
+      "author": "TRON (1982) filmmakers / respective rights holders; voice performer unverified",
+      "sourceUrl": null,
+      "license": "Film dialogue from TRON (1982); underlying rights remain with respective owners. Isolation and effects do not constitute independent rights clearance.",
+      "provenanceRecords": [
+        "assets/source/audio/grid-announcer/provenance.json"
+      ],
+      "transformations": "ElevenLabs dialogue isolation; 320 Hz highpass, 4300 Hz lowpass, +3 dB at 1600 Hz, 3:1 compression, short PA reflections at 37/73/113/173/251 ms, subtle 240/480 ms echo, limiting. No time stretching.",
+      "conversionCommands": [],
+      "bytes": 1294408,
+      "sha256": "7c5847a6dba810ddefab4ee0ebd704ea52af6225ccc5628bd7c630c12fc1318c",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-41b8408d4f93bed1",
+      "category": "audio",
+      "path": "assets/source/audio/grid-announcer/illegal-exit-runway-dry.mp3",
+      "sourcePath": null,
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "project",
+      "author": "Runway seed_audio; user-directed TRON film voice reference",
+      "sourceUrl": null,
+      "license": "Generated using TRON (1982) film voice reference and dialogue; underlying rights remain with respective owners.",
+      "provenanceRecords": [
+        "public/assets/audio/cycle-illegal-exit-source.json"
+      ],
+      "transformations": "Generated dry reading using clean transport voice reference.",
+      "conversionCommands": [],
+      "bytes": 161376,
+      "sha256": "41b8408d4f93bed184487f229a1d3126a09a8b2a5e5a2e33587ca5dddd151a46",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": false
     }
   ],
   "duplicateContent": [

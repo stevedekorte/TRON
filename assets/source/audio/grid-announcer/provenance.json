@@ -1,0 +1,33 @@
+{
+  "service": "ElevenLabs audio isolation",
+  "originals": [
+    "/Users/steve/Desktop/prepare to transport to light cycle grid.wav",
+    "/Users/steve/Desktop/cycle illegal exit.wav"
+  ],
+  "transportIsolation": {
+    "source": "test-results/prepare-transport-isolation/padded-original.wav",
+    "service": "ElevenLabs audio isolation",
+    "endpoint": "/v1/audio-isolation",
+    "contentType": "audio/mpeg",
+    "bytes": 203798,
+    "originalSource": "/Users/steve/Desktop/prepare to transport to light cycle grid.wav",
+    "paddingSecondsEachEnd": 1.2,
+    "trimmedDurationSeconds": 2.645624
+  },
+  "exitIsolation": {
+    "source": "test-results/prepare-transport-isolation/combined-original.wav",
+    "service": "ElevenLabs audio isolation",
+    "endpoint": "/v1/audio-isolation",
+    "contentType": "audio/mpeg",
+    "bytes": 470247,
+    "originalSources": [
+      "/Users/steve/Desktop/cycle illegal exit.wav",
+      "/Users/steve/Desktop/prepare to transport to light cycle grid.wav"
+    ],
+    "splitSeconds": 9.052109,
+    "padding": false
+  },
+  "effects": "320 Hz highpass, 4300 Hz lowpass, +3 dB at 1600 Hz, 3:1 compression, short PA reflections at 37/73/113/173/251 ms, subtle 240/480 ms echo, limiting. No time stretching.",
+  "status": "Archived only; not wired into gameplay. Transport clean and treated approved; illegal-exit treatment audition pending.",
+  "rights": "Film dialogue from TRON (1982); underlying rights remain with respective owners. Isolation and effects do not constitute independent rights clearance."
+}
