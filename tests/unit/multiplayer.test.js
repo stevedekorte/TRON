@@ -152,7 +152,9 @@ test('MP presentation moves between ticks without applying a future turn early',
  for(let frame=1;frame<=8;frame++){
   now=1000+frame*2;const b=pose();
   const distance=Math.hypot(b.x-initial.x,b.z-initial.z)*C.cellMeters;
-  assert(Math.abs(distance-C.speedMetersPerSecond*frame*.002)<1e-9,'every 2 ms frame advances smoothly');
+  let expected=0;
+  for(let start=0;start<frame*.002;){const end=Math.min(frame*.002,(Math.floor(start*MP.tickHz+1e-9)+1)/MP.tickHz);expected+=C.speedMetersPerSecond*(1+.01*((state.race.elapsed??0)+start))*(end-start);start=end;}
+  assert(Math.abs(distance-expected)<1e-9,'every 2 ms frame advances smoothly with grid acceleration');
   const tail=run.cycleRace.trails[b.segment];assert.equal(tail.x2,b.x);assert.equal(tail.z2,b.z);
  }
  client.pending=[{seq:1,tick:state.tick+MP.inputLeadTicks+3,turn:1,turbo:false,brake:false}];

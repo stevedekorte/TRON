@@ -1,6 +1,4 @@
-# TRON
-
-> Current simulation scope, decisions, and acceptance criteria
+# Untitled
 
 ## Assets
 

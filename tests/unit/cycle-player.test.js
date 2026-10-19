@@ -75,7 +75,7 @@ test('cycle turbo accepts partial charge, boosts the player and autonomous cycle
  const start=b.z,other=race.cycles.find(c=>c.team===0&&c.id!==race.playerId).z;
  s.advance({cycleTurbo:true},.25);
  assert(b.speedMultiplier>1.4&&b.speedMultiplier<1.5,'turbo is still building speed after a quarter second');
- assert(start-b.z>2&&start-b.z<3);assert(Math.abs(other-race.cycles.find(c=>c.team===0&&c.id!==race.playerId).z-2)<1e-8);
+ assert(start-b.z>2&&start-b.z<3);assert(other-race.cycles.find(c=>c.team===0&&c.id!==race.playerId).z>=2&&other-race.cycles.find(c=>c.team===0&&c.id!==race.playerId).z<2.01);
  assert(Math.abs(b.turboCharge-.15)<1e-8);assert.equal(b.boosting,true);
  const before=b.speedMultiplier;s.advance({},.25);assert(b.speedMultiplier>1&&b.speedMultiplier<before);assert.equal(b.boosting,false);assert(b.turboCharge>.15);
 });
@@ -139,13 +139,13 @@ test('other cycles have approaching/receding Doppler; player cabin pitch stays s
 test('slow pedal eases to half speed, overrides turbo, and eases back to cruise',()=>{
  const s=session();enter(s);const race=s.run.cycleRace,b=race.cycles[race.playerId];race.phase='racing';b.turboCharge=.5;
  s.advance({cycleSlow:true,cycleTurbo:true},1/120);
- assert(b.speedMultiplier<1&&b.speedMultiplier>.5);assert.equal(b.boosting,false);assert(b.turboCharge>.5);
- s.advance({cycleSlow:true},.5);assert(b.speedMultiplier>.65&&b.speedMultiplier<.75,'S decelerates over time instead of immediately reaching half speed');
- s.advance({cycleSlow:true},1);assert(b.speedMultiplier>.5&&b.speedMultiplier<.53);
- assert.equal(race.cycles.find(c=>c.team===0&&c.id!==race.playerId).speedMultiplier,1);
- const slow=b.speedMultiplier;s.advance({},1/120);assert(b.speedMultiplier>slow&&b.speedMultiplier<1);
- s.advance({},.5);assert(b.speedMultiplier>.8&&b.speedMultiplier<.9);
- s.advance({},1);assert(b.speedMultiplier>.97&&b.speedMultiplier<1);
+ assert((b.speedMultiplier/b.gridSpeedMultiplier)<1&&(b.speedMultiplier/b.gridSpeedMultiplier)>.5);assert.equal(b.boosting,false);assert(b.turboCharge>.5);
+ s.advance({cycleSlow:true},.5);assert((b.speedMultiplier/b.gridSpeedMultiplier)>.65&&(b.speedMultiplier/b.gridSpeedMultiplier)<.75,'S decelerates over time instead of immediately reaching half speed');
+ s.advance({cycleSlow:true},1);assert((b.speedMultiplier/b.gridSpeedMultiplier)>.5&&(b.speedMultiplier/b.gridSpeedMultiplier)<.53);
+ assert.equal(race.cycles.find(c=>c.team===0&&c.id!==race.playerId).speedMultiplier,race.cycles.find(c=>c.team===0&&c.id!==race.playerId).gridSpeedMultiplier);
+ const slow=(b.speedMultiplier/b.gridSpeedMultiplier);s.advance({},1/120);assert((b.speedMultiplier/b.gridSpeedMultiplier)>slow&&(b.speedMultiplier/b.gridSpeedMultiplier)<1);
+ s.advance({},.5);assert((b.speedMultiplier/b.gridSpeedMultiplier)>.8&&(b.speedMultiplier/b.gridSpeedMultiplier)<.9);
+ s.advance({},1);assert((b.speedMultiplier/b.gridSpeedMultiplier)>.97&&(b.speedMultiplier/b.gridSpeedMultiplier)<1);
 });
 
 test('default cycle testing has unlimited Return restarts and no terminal endings',()=>{
@@ -233,7 +233,7 @@ test('teammates conserve launch turbo while enemies boost; all brake near blocke
  const s=session();enter(s);const r=s.run.cycleRace;r.phase='racing';
  s.advance({},.1);
  for(const b of r.cycles.filter(b=>b.alive&&b.id!==r.playerId)){
-  if(b.team===r.cycles[r.playerId].team){assert(!b.boosting);assert.equal(b.turboCharge,1);assert.equal(b.speedMultiplier,1);}
+  if(b.team===r.cycles[r.playerId].team){assert(!b.boosting);assert.equal(b.turboCharge,1);assert.equal(b.speedMultiplier,b.gridSpeedMultiplier);}
   else {assert(b.boosting);assert(b.turboCharge<1);assert(b.speedMultiplier>1);}
  }
  const b=r.cycles.find(c=>c.team===0&&c.id!==r.playerId),dz=b.dir===0?-1:1;

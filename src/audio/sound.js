@@ -1,5 +1,4 @@
 import {CycleExitVoice} from './cycle-exit-voice.js';
-import {CycleSpeedWarning} from './cycle-speed-warning.js';
 import {publicAssetUrl} from '../assets/public-url.js';
 import {MultiplayerTeamVoice,MP_TEAM_VOICE} from './multiplayer-team-voice.js';
 import {MultiplayerCountdown} from './multiplayer-countdown.js';
@@ -147,7 +146,6 @@ export class Sound {
     });
     this.cycleOpeningAudio = new CycleOpeningAudio(c, this.master, this.samples);
     this.multiplayerCountdown = new MultiplayerCountdown(c, this.master);
-    this.cycleSpeedWarning = new CycleSpeedWarning(c,this.master);
     this.multiplayerTeamVoice = new MultiplayerTeamVoice(c, this.master, this.samples);
     this.cycleVoices = new CycleVoices(c, this.master, this.samples);
     this.cycleExitVoice = new CycleExitVoice(c,this.master,this.samples);
@@ -290,7 +288,6 @@ export class Sound {
       l.setOrientation(forward.x, forward.y, forward.z, up.x, up.y, up.z);
     }
     this.multiplayerTeamVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode);
-    this.cycleSpeedWarning.update(cycleMode?run.cycleRace:null,playing&&!this.muted);
     if(this.cycleExitVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode))this.multiplayerTeamVoice.stopPlayback();
     this.multiplayerCountdown.update(run.multiplayer?.connected?run.cycleRace:null,playing&&!this.muted);
     this.cycleVoices.update(run.cycleRace,playing,ear,this.cycleOpeningSeconds!==null&&this.cycleOpeningSeconds!==undefined);
@@ -589,7 +586,6 @@ export class Sound {
   reset() {
     this.cycleOpeningAudio?.reset();
     this.multiplayerCountdown?.reset();
-    this.cycleSpeedWarning?.reset();
     this.multiplayerTeamVoice?.reset();
     this.cycleExitVoice?.reset();
     this.musicDirector.reset();
@@ -614,7 +610,6 @@ export class Sound {
     this.recognizerVoices?.dispose();
     this.cycleOpeningAudio?.reset();
     this.multiplayerCountdown?.reset();
-    this.cycleSpeedWarning?.reset();
     this.multiplayerTeamVoice?.reset();
     this.cycleExitVoice?.reset();
     this.cycleVoices?.dispose();

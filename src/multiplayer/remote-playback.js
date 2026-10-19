@@ -1,6 +1,6 @@
 import {MP} from '../../shared/multiplayer/config.js';
 
-export const REMOTE_PLAYBACK=Object.freeze({bufferSeconds:.075,historySeconds:.5,maxRateAdjustment:.1,clockCorrectionSeconds:.25,maxFrameSeconds:.2});
+export const REMOTE_PLAYBACK=Object.freeze({bufferSeconds:.075,historySeconds:.5,maxRateAdjustment:.02,clockCorrectionSeconds:2,maxFrameSeconds:.2});
 
 // Remote presentation consumes confirmed paths on a continuous, monotonic clock.
 // Packet arrival can adjust playback speed slightly, but never resets the clock.

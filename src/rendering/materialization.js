@@ -1,3 +1,4 @@
+import {materializationEdges} from './materialization-edges.js';
 import * as T from 'three';
 import {MATERIALIZATION,materializationPhase} from '../game/materialization.js';
 import {TELEPORTERS} from '../levels/teleporters.js';
@@ -53,9 +54,10 @@ export class Materialization{
   });
   const lineMaterial=new T.LineBasicMaterial({color:new T.Color(4,.015,.005),toneMapped:false,transparent:true,opacity:1,depthWrite:false,fog:wireFog});reveal(lineMaterial,this.wire);this.lineMaterial=lineMaterial;
   portalClip(lineMaterial,this.portal,true);
+  const baseOnly=sources.some(o=>o.material.name==='Base');
   for(const mesh of sources){
-   if(sources.some(o=>o.material.name==='Base')&&mesh.material.name!=='Base')continue;
-   const lines=new T.LineSegments(new T.EdgesGeometry(mesh.geometry,25),lineMaterial);lines.userData.breakupExclude=true;lines.visible=false;mesh.add(lines);this.wires.push(lines);
+   if(baseOnly&&mesh.material.name!=='Base')continue;
+   const lines=new T.LineSegments(materializationEdges(mesh.geometry),lineMaterial);lines.userData.breakupExclude=true;lines.visible=false;mesh.add(lines);this.wires.push(lines);
    const depth=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,side:T.DoubleSide,blending:T.NoBlending});reveal(depth,{rezInverse:this.inverse,rezCut:this.solid.rezCut});portalClip(depth,this.portal);mesh.userData.rezDepthMaterial=depth;this.depthMaterials.push(depth);
   }
   const size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());

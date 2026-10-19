@@ -14,11 +14,9 @@ try{
   __tron.place({cycleRace:race,crushed:false,won:false});
  });
  const notice=page.locator('#cycle-speed-notice');
- await page.waitForFunction(()=>document.querySelector('#cycle-speed-notice').textContent==='SPEED INCREASE IN 3...');assert(await notice.isVisible());
- await page.waitForFunction(()=>document.querySelector('#cycle-speed-notice').textContent==='SPEED INCREASE IN 2...');
- await page.waitForFunction(()=>document.querySelector('#cycle-speed-notice').textContent==='SPEED INCREASE IN 1...');
- await page.waitForFunction(()=>document.querySelector('#cycle-speed-notice').textContent==='GRID SPEED: 110%');
+ await page.waitForFunction(()=>document.querySelector('#cycle-speed-notice').textContent==='GRID SPEED: 112%');assert(await notice.isVisible());
+ await page.waitForFunction(()=>document.querySelector('#cycle-speed-notice').textContent==='GRID SPEED: 113%');assert(await notice.isVisible());
  await page.screenshot({path:'test-results/cycle-speed-ramp.png'});
- await page.waitForFunction(()=>__tron.state.cycleRace.cycles[__tron.state.cycleRace.playerId].speedMultiplier>=1.099);
- assert.deepEqual(errors,[]);console.log('Solo HUD counts 3/2/1, shows 110%, and cycle reaches increased speed without page errors.');
+ await page.waitForFunction(()=>__tron.state.cycleRace.cycles[__tron.state.cycleRace.playerId].speedMultiplier>=1.13);
+ assert.deepEqual(errors,[]);console.log('Solo HUD stays visible as speed rises by one percentage point per second, without page errors.');
 }finally{await browser.close();}

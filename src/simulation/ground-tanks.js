@@ -1,3 +1,4 @@
+import {ConnectedRouteCache} from './connected-route-cache.js';
 import {BOSS_TANK,bossMuzzlePoses,inBossCourt,bossCourtSector} from '../game/boss-tank.js';
 import {inPatrolRegion} from '../levels/patrol-region.js';
 import {enemyPlanningBudget} from './planning-budget.js';
@@ -25,18 +26,23 @@ import {intercept} from './intercept.js';
 export const ESCORT={count:2,turnRate:.8,turretRate:1.3,fireRange:340,spacing:38,damageAlertSeconds:5,damageProbeDistance:80};
 export const GROUND_PATROL={count:3,stuckSeconds:5};
 export const GROUND_NAVIGATION=Object.freeze({cellMeters:8,maxIterations:12000,detourMazeWidths:3,exitMarginMeters:32,partialProgressMeters:12,goalShiftMeters:12});
-const patrolExitCache=new WeakMap();
-function* patrolHasExit(p,world,config){
+function* patrolHasExit(p,world,config,cache){
  // The authored maze is generated as one connected corridor graph; only the
  // traced blueprint contains free-floor pockets outside that graph.
  if(world.MAZE_KIND!=='blueprint')return true;
- let cache=patrolExitCache.get(world);
- if(!cache||cache.radius!==config.tankRadius){cache={radius:config.tankRadius,points:new Map()};patrolExitCache.set(world,cache);}
  if(!cache.points.has(p)){
   const b=world.MAZE_INSTANCES[p.mazeId].bounds,margin=GROUND_NAVIGATION.exitMarginMeters;
   const site=world.MAZE_INSTANCES[p.mazeId];
   const goal=site.beamPosition??{x:b.minX-margin,s:b.minS-margin};
-  cache.points.set(p,(yield* searchGroundRoute(p,goal,{world,vehicleConfig:config,longRange:true,cellMeters:GROUND_NAVIGATION.cellMeters,maxIterations:site.patrols?40000:GROUND_NAVIGATION.maxIterations,detourMeters:world.MAZE_LENGTH*GROUND_NAVIGATION.detourMazeWidths})).length>0);
+  let routes=cache.routes.get(p.mazeId);
+  if(!routes){
+   routes=new ConnectedRouteCache((a,b)=>world.wallIntersection({...a,y:2},{...b,y:2},config.tankRadius+.5,true)===null);
+   cache.routes.set(p.mazeId,routes);
+  }
+  const connection=routes.connection(p);
+  const path=connection?[connection]:yield* searchGroundRoute(p,goal,{world,vehicleConfig:config,longRange:true,connectedGoal:n=>routes.connection(n),cellMeters:GROUND_NAVIGATION.cellMeters,maxIterations:site.patrols?40000:GROUND_NAVIGATION.maxIterations,detourMeters:world.MAZE_LENGTH*GROUND_NAVIGATION.detourMazeWidths});
+  if(path.length)routes.add([p,...path]);
+  cache.points.set(p,path.length>0);
  }
  return cache.points.get(p);
 }
@@ -64,7 +70,7 @@ export function escortSlot(index,time,world=DEFAULT_WORLD){const CARRIER=carrier
 export function createGroundTanks(random=Math.random,world=DEFAULT_WORLD,config=configFor(null)){return finishStartup(prepareGroundTanks(random,world,config));}
 export function* prepareGroundTanks(random,world,config){
  const {MAZE_INSTANCES}=world,patrolCells=yield* prepareGroundPatrolCells(world,config),GROUND_TANK_COUNT=groundTankCount(world),CARRIER=carrierFor(world);
- const starts=[];
+ const starts=[],exitCache={points:new Map(),routes:new Map()};
  for(const m of MAZE_INSTANCES)for(let sector=0;sector<(m.patrols?.groundCount??GROUND_PATROL.count)+(m.patrols?BOSS_TANK.count:0);sector++){
   // Keep broad spawn sectors when increasing density: narrower angular
   // slices can contain only sealed pockets of the traced maze.
@@ -78,7 +84,7 @@ export function* prepareGroundTanks(random,world,config){
   let p;
   while(candidates.length){
    const [candidate]=candidates.splice(Math.floor(random()*candidates.length),1);
-   if(yield* patrolHasExit(candidate,world,config)){p=candidate;break;}
+   if(yield* patrolHasExit(candidate,world,config,exitCache)){p=candidate;break;}
   }
   if(!p)throw new Error(`No connected ground patrol spawn in maze ${m.id}`);
   starts.push({...p,boss});

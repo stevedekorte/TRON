@@ -1,3 +1,4 @@
+import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import modelUrl from '../../assets/runtime/models/tron_1982_solar_sailer.glb?url';
@@ -7,6 +8,7 @@ export const SAILER_STYLE=Object.freeze({sailOpacity:.48,starLongRadiusMeters:4.
 
 export async function loadSolarSailer({previewBeam=false}={}) {
   const { scene: source } = await new GLTFLoader().loadAsync(modelUrl);
+  await yieldToBrowser();
   source.updateMatrixWorld(true);
   // The original yellow guide beam is a separate long, narrow mesh. Its center
   // locates the actual sail/hull axis; the overall hull bounds do not.
@@ -51,6 +53,7 @@ export async function loadSolarSailer({previewBeam=false}={}) {
     }
     material.userData.sailerOpacity = 1;
   }
+  await yieldToBrowser();
   // The two broad sail meshes include separate fabric and structural patches.
   // Clone their materials so translucency never leaks onto hull panels.
   source.traverse(mesh => {
@@ -70,6 +73,7 @@ export async function loadSolarSailer({previewBeam=false}={}) {
     });
     if(mesh.material.length===1)mesh.material=mesh.material[0];
   });
+  await yieldToBrowser();
   // Keep the very small source navigation lamps readable at sky-lane distances.
   const lampGeometry=new THREE.SphereGeometry(SAILER_STYLE.tipLightRadiusMeters,8,6);
   source.traverse(node=>{
@@ -97,6 +101,7 @@ export async function loadSolarSailer({previewBeam=false}={}) {
     material.userData.sailerOpacity=1;materials.add(material);
     const star=new THREE.Mesh(geometry,material);star.name='Beam coupling star';star.position.copy(center);ship.add(star);
   }
+  await yieldToBrowser();
   ship.updateMatrixWorld(true);
   const hullBounds = new THREE.Box3();
   source.traverse(mesh => {

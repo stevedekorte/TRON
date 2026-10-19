@@ -13,6 +13,9 @@ export function* searchGroundRoute(
   goal,
   {
     longRange = false,
+    // Startup connectivity checks only: a returned point already has a proven
+    // route to the goal. The returned path then ends at that connection.
+    connectedGoal = null,
     cellMeters = 12,
     maxIterations = 2500,
     detourMeters = 500,
@@ -61,6 +64,8 @@ export function* searchGroundRoute(
     if(n.g > seen.get(n.key)) continue;
     if (Math.hypot(n.x - goal.x, n.s - goal.s) < Math.hypot(closest.x - goal.x, closest.s - goal.s))
       closest = n;
+    const connection = connectedGoal?.(n);
+    if(connection)return [...pathTo(n),connection];
     if ((longRange || Math.hypot(n.x - goal.x, n.s - goal.s) < 24) && clear(n, goal))
       return [...pathTo(n), goal];
     for (let dx = -1; dx <= 1; dx++)

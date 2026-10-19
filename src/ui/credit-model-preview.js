@@ -3,7 +3,6 @@ import {fitCreditPreview,creditPreviewPoints} from './credit-preview-framing.js'
 import {createCreditBit} from '../rendering/credit-bit.js';
 import {createCreditMaze} from '../rendering/credit-maze.js';
 import {solarSailerTransit} from '../game/solar-sailer.js';
-import {loadSolarSailer,applySolarSailerState} from '../rendering/solar-sailer.js';
 import {loadCarrier} from '../rendering/carrier.js';
 import {createBossTank} from '../rendering/boss-tank.js';
 import * as T from 'three';
@@ -48,7 +47,9 @@ export class CreditModelPreview{
  async load(entry,generation){
   try{
    if(entry[1]==='cycle'&&!this.cycleEdges){const {PovCycleEdges}=await import('../rendering/pov-cycles.js');this.cycleEdges=new PovCycleEdges();}
-   const root=entry[1]==='arena'?await (await import('../rendering/credit-arena.js')).createCreditArena():entry[1]==='cycle'?(await import('../rendering/pov-cycles.js')).createPovCycleMesh(PREVIEW.cycleBodyBlue):entry[1]==='sailer'?(await loadSolarSailer({previewBeam:true})).ship:entry[1]==='carrier'?await loadCarrier():entry[1]==='bit'?await createCreditBit():entry[1]==='maze'?createCreditMaze():entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
+   const sailer=entry[1]==='sailer'?await import('../rendering/solar-sailer.js'):null;
+   if(sailer)this.applySolarSailerState=sailer.applySolarSailerState;
+   const root=entry[1]==='arena'?await (await import('../rendering/credit-arena.js')).createCreditArena():entry[1]==='cycle'?(await import('../rendering/pov-cycles.js')).createPovCycleMesh(PREVIEW.cycleBodyBlue):entry[1]==='sailer'?(await sailer.loadSolarSailer({previewBeam:true})).ship:entry[1]==='carrier'?await loadCarrier():entry[1]==='bit'?await createCreditBit():entry[1]==='maze'?createCreditMaze():entry[1]==='tank'?(await createTank()).root:entry[1]==='boss'?(await createBossTank()).root:(await new GLTFLoader().loadAsync(entry[2])).scene;
    if(generation!==this.generation){disposeSceneResources(root);return;}
    root.visible=true;
    root.traverse(o=>{if((o.userData.breakupExclude&&!o.userData.bossTrim)||o.name==='muzzle-flash')o.visible=false;});
@@ -79,7 +80,7 @@ export class CreditModelPreview{
   const opacity=(tribute.reducedMotion?Number(tribute.count>0):Math.min(1,this.age/PREVIEW.fadeSeconds))*Number(tribute.typed.style.opacity||1);
   this.element.style.opacity=String(opacity);
   if(!this.model)return;
-  if(this.key==='sailer')applySolarSailerState(this.sailerMaterials,solarSailerTransit(this.age*PREVIEW.sailerStateTimeScale).charge);
+  if(this.key==='sailer')this.applySolarSailerState(this.sailerMaterials,solarSailerTransit(this.age*PREVIEW.sailerStateTimeScale).charge);
   const cycleLighting=this.key==='cycle';this.cycleLights.visible=cycleLighting;
   this.renderer.toneMapping=cycleLighting?GAME_LIGHTING.toneMapping:T.NoToneMapping;
   this.renderer.toneMappingExposure=cycleLighting?GAME_LIGHTING.exposure:1;

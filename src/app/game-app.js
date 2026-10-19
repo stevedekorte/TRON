@@ -1,3 +1,4 @@
+import {yieldStartup} from '../loading/yield-startup.js';
 import {markPlay} from '../analytics/mark-play.js';
 import {PlayTracker} from '../analytics/play-tracker.js';
 import {CycleTouchControls} from '../ui/cycle-touch-controls.js';
@@ -83,7 +84,9 @@ export async function createGameApp() {
   } catch {}
 
   performance.mark('tron:simulation-start');
-  const session = await loadingTimings.async('Initial simulation / enemy placement',()=>GameSession.create({ world: map, seed:browserRunSeed(location) },yieldToBrowser));
+  const startupSeed=browserRunSeed(location);
+  loadingTimings.seeds={layoutSeed:scenario.spec.layoutSeed,runSeed:startupSeed};
+  const session = await loadingTimings.async('Initial simulation / enemy placement',()=>GameSession.create({ world: map, seed:startupSeed },yieldStartup));
   performance.mark('tron:simulation-ready');
   const terminal = new Terminal($('terminal-text'), $('terminal-actions'));
   const tribute = new TerminalTribute($('end-tribute'), creditsText, extendedCreditsText);
@@ -123,7 +126,7 @@ export async function createGameApp() {
     onClose:()=>{inputController.clear();if(tuningWasPlaying&&!disposed)resume();},
   }):null;
   const cycleRendererControl=new CycleRendererControl({getView:()=>view,getRun:()=>run,getMode:()=>mode});
-  let arenaLoad=null,solarLoad=null;
+  let arenaLoad=null,solarLoad=null,solarPlaySeconds=0;
   function loadSolarInBackground(){
     if(solarLoad||!SOLAR_SAILER.enabled)return solarLoad;
     solarLoad=loadingTimings.async('Solar sailer module + model',()=>import('../rendering/solar-sailer.js').then(async({loadSolarSailer,SolarSailer})=>({model:await loadSolarSailer(),SolarSailer}))).then(({model,SolarSailer})=>{
@@ -978,7 +981,12 @@ export async function createGameApp() {
   function frame(dt, background) {
     if (disposed||mcpPanel.active) return;
     cycleRendererControl.update();
-    if(mode==='running'&&(run.playerVehicle!=='cycle'||run.cycleRace?.arenaPaused)&&run.time>=SOLAR_SAILER.backgroundLoadSeconds)loadSolarInBackground();
+    // Optional scenery: all game modes can load it after active play begins.
+    // Use local play time, not MP server age, so joining cannot stall the opening.
+    if(mode==='running'&&!solarLoad){
+      solarPlaySeconds+=dt;
+      if(solarPlaySeconds>=SOLAR_SAILER.backgroundLoadSeconds)loadSolarInBackground();
+    }
     if (run.crushed && run.mouseAim) clearMouseAim();
     if (!autoplay.enabled && !multiplayer && (document.hidden || !windowFocused)) pause();
     if (mode === 'running') idleTime = keys.size || inputController.mouseFire ? 0 : idleTime + dt;
@@ -1129,7 +1137,7 @@ export async function createGameApp() {
 
       // Finish arena downloads and model repair before accepting a game choice.
       // A cached GLB still needs decoding/adaptation; doing that on Return stalls entry.
-      await Promise.all([loadArenaInBackground(),loadSolarInBackground(),programResources]);
+      await Promise.all([loadArenaInBackground(),programResources]);
       if(disposed||mode==='error')return;
 
       // Compile the actual CLU opening (vehicles, carrier and shadows included)

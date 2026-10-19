@@ -12,7 +12,7 @@ test('followed local cycle does not pull the camera backward on jittery snapshot
  const run={cycleRace:{round:-1,site:{x:0,s:0}}},packets=[];
  const speed=C.speedMetersPerSecond/C.cellMeters,delays=[20,50,15,45,25,40];
  for(let i=0;i<50;i++){
-  const s=state(i*6);s.clients=[{seat:0}];s.race.cycles=[0,1].map(id=>bike({id,x:i*.05*speed,z:id*3,segment:id,speedMultiplier:1,turboCharge:1,brakeCharge:1}));
+  const s=state(i*6);s.race.elapsed=i*.05;s.clients=[{seat:0}];s.race.cycles=[0,1].map(id=>bike({id,x:(i*.05+.005*(i*.05)**2)*speed,z:id*3,segment:id,speedMultiplier:1+.01*i*.05,gridSpeedMultiplier:1+.01*i*.05,turboCharge:1,brakeCharge:1}));
   s.race.trails=s.race.cycles.map(b=>({bikeId:b.id,dir:1,x1:0,z1:b.z,x2:b.x,z2:b.z}));
   packets.push({arrival:i*50+delays[i%delays.length],state:s});
  }
@@ -25,7 +25,7 @@ test('followed local cycle does not pull the camera backward on jittery snapshot
   const oldX=(client.state.tick/MP.tickHz+(now-client.received+client.rtt/2)/1000)*speed;
   if(previous!==null&&now>250){
    assert(x>previous,'the local follow target must not jump backward');
-   assert(x-previous<=speed/144*1.101,'packet arrivals must not lurch the camera forward');
+   assert(x-previous<=speed*(1+.01*now/1000)/144*1.101,'packet arrivals must not lurch the camera forward');
    oldWorstBackward=Math.max(oldWorstBackward,oldPrevious-oldX);
    worstStepError=Math.max(worstStepError,Math.abs(x-previous-speed/144));
   }
@@ -130,4 +130,22 @@ test('local follow clock cannot rewind after a combined render and server stall'
  now=1080;const before=client.estimatedRenderTick();
  now=1320;client.state=state(126);client.received=now;
  assert(client.estimatedRenderTick()>=before,'camera time cannot step backwards when slow server resumes');
+});
+
+test('local timer batching cannot produce visible playback speed pulses',t=>{
+ let now=0;t.mock.method(performance,'now',()=>now);
+ const playback=new RemotePlayback(),client=Object.create(MultiplayerClient.prototype);
+ client.rtt=0;
+ // A 60 Hz server pump emits 20 Hz snapshots with timer scheduling variation,
+ // even when socket transit itself takes effectively zero milliseconds.
+ const packets=Array.from({length:120},(_,i)=>({arrival:i*50+[0,16,8,14,2,10][i%6],state:state(i*6)}));
+ let index=0,previous=null,worst=0;
+ for(now=0;now<5900;now+=1000/144){
+  while(index<packets.length&&packets[index].arrival<=now){const p=packets[index++];playback.push(p.state,p.arrival);client.state=p.state;client.received=p.arrival;}
+  if(!client.state)continue;
+  const ticks=[playback.sample(now).tick,client.estimatedRenderTick()];
+  if(previous&&now>2000)for(let i=0;i<ticks.length;i++)worst=Math.max(worst,Math.abs((ticks[i]-previous[i])/(MP.tickHz/144)-1));
+  previous=ticks;
+ }
+ assert(worst<.01,`steady motion should vary less than 1%, measured ${worst*100}%`);
 });

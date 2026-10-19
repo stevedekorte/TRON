@@ -7,7 +7,7 @@ import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 
 export const CONNECTION=Object.freeze({attempts:3,timeoutMs:8000,retryDelayMs:500});
 
-export const PREDICTION_CLOCK=Object.freeze({maxRateAdjustment:.1,correctionSeconds:.25,maxFrameSeconds:.2,reserveSnapshots:2});
+export const PREDICTION_CLOCK=Object.freeze({maxRateAdjustment:.02,correctionSeconds:2,maxFrameSeconds:.2,reserveSnapshots:2});
 
 // Predict motion only. Collisions, eliminations, seats and trail history remain server-owned.
 function move(b,seconds,control){

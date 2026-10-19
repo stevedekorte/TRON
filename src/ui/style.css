@@ -181,5 +181,6 @@ body.playing-multiplayer #controls-prompt{top:82px}
 #cycle-touch-controls [data-action=restart]{left:30%;right:30%;bottom:calc(54px + env(safe-area-inset-bottom));color:#91bcd0}
 @media(max-height:500px){#cycle-touch-controls [data-action=turbo]{top:50px}}
 
-#cycle-speed-notice{position:fixed;top:25%;left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);pointer-events:none;z-index:5}
+#cycle-speed-notice{position:fixed;top:82px;left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);pointer-events:none;z-index:5}
+body.playing-multiplayer #cycle-speed-notice{top:106px}
 body.terminal #cycle-speed-notice{display:none}

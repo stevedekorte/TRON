@@ -1,6 +1,6 @@
-# TRON — Full Documentation
+# Untitled — Full Documentation
 
-Multiplayer proposal: Multiplayer light cycles compares timing, authority, hosting cost and staged acceptance checks. The public server-authoritative arena is deployed; compact protocol 2 remains local, and real-network latency testing and the staged hosting migration remain pending.
+title: Implementation plan topTitle: TRON subtitle: Current simulation scope, decisions, and acceptance criteria
 
 See also: /llms.txt (curated index) and /sitemap.xml.
 
@@ -11,7 +11,56 @@ See also: /llms.txt (curated index) and /sitemap.xml.
 <!-- Page: (root) -->
 Source: /
 
+## Gentler multiplayer clock corrections — October 19
+
+- [x] Local WebKit capture found playback-clock rates spanning approximately 0.914–1.10 despite no buffer underruns or backward motion. Packet scheduling jitter can vary the arrival-based clock even at near-zero RTT.
+- [x] Correct local prediction and remote playback clocks over two seconds, capped at ±2% instead of ±10% over a quarter-second. Keep the existing 75 ms remote buffer, immediate local input prediction, monotonic time, and pause recovery.
+- [x] Repeat WebKit capture measured rates 0.991–1.008 with no buffer holds or backwards motion. Eight playback regression tests pass, including timer batching, packet jitter, corners, and combined server/render stalls. This addresses measured speed pulsing; subjective play verification and other sources of stalls remain possible.
+
+## Single-line boot progress — October 19
+
+- [x] Replace the current boot status in place rather than appending completed stages. Retain the ENCOM heading, animated dots/cursor, half-second stage threshold, and full console timing report.
+
+## Reuse startup patrol connectivity — October 18
+
+- [x] Investigate the Safari screenshot showing 23,328 ms of enemy placement in a 26,481 ms boot. Random patrol candidates could repeatedly search the large labyrinth for a route to the same destination. Reuse collision-checked route points within each placement pass; nearby candidates/search nodes can join a proven route through a swept-clear segment. Sealed pockets still require rejection; gameplay pathfinding remains unchanged.
+- [x] Keep connectivity proofs local to a placement pass so seeded results do not depend on earlier games. Include layout/run seeds in the console loading report for exact reproduction of outliers.
+- [x] Local headless WebKit 26.6 on macOS: fixed-seed placement 1.4–1.8 s → 0.39–0.46 s; eight randomized boots reached the menu in 3.59–4.92 s, placement 0.66–1.99 s. The user's exact 23-second seed was not captured, so this is not proof that all outliers are eliminated.
+- [x] Full 634-test suite and production build/asset audit pass. Additional regression records swept-clear segments and independently checks that every spawned labyrinth tank is connected to its beam; cache tests cover separating walls, distant points, and reproducibility after another seed.
+
 ---
+
+## Lazy Solar Sailer — October 18
+
+- [x] Remove Solar Sailer loading from boot and from eager credit-preview imports. Start its optional background load after 30 seconds of local active play in CLU, solo cycles, or multiplayer; server match age does not trigger it immediately. Credit preview loads it on demand. Existing flyby scheduling joins naturally when resources arrive; no mode waits for this scenery.
+- [x] Yield between model adaptation phases so that resource preparation allows rendering. GLTF parsing and later GPU upload still use the renderer/main-thread pipeline; this is not a worker-decoding implementation or a guarantee of zero frame stalls.
+- [x] Browser checks verify no renderer/model request during boot or program entry, followed by a single model load in each of the three game modes. Offline PWA asset caching remains unchanged and may fetch the source asset in the background.
+
+
+## Reuse materialization edge calculations — October 18
+
+- [x] Trace materialization edges once per shared mesh geometry, then clone the resulting line buffers per vehicle. A weak cache follows source geometry lifetime and invalidates on position/index replacement or version changes. Materials, colors, animation uniforms, GPU buffers, and disposal remain independently owned.
+- [x] Fixed layout/run seed 1982 in local Chrome 155 headless: cached boot approximately 5.84 s → 3.86 s; rendering-world setup approximately 2.32 s → 1.07 s; arena setup approximately 1.33 s → 0.72 s. This reuses CPU calculations without reducing geometry fidelity.
+- [x] All 632 unit tests pass. Browser comparison of a warmed-cache Recognizer materialization against freshly calculated Three.js edges produced identical geometry and pixels (1,432 wireframe vertices). Unit regression covers buffer independence, disposal, and source-geometry changes. Production build and asset audit pass.
+
+
+## Startup scheduling — October 18
+
+- [x] Keep seeded simulation initialization sliced into 8 ms CPU budgets, but yield through `scheduler.yield()` (ordinary timer task fallback) instead of waiting for a full animation frame per slice. Rendering setup retains its existing paint boundaries. Asset caching avoids transfers, not simulation construction, model adaptation or GPU setup.
+- [x] Chrome 155 headless on macOS, fixed layout/run seed 1982: initial simulation approximately 2.44 s → 1.07–1.11 s; cached terminal ready approximately 7.02 s → 5.84–5.86 s. Timings are local development measurements, not production/Safari guarantees. Browser startup responsiveness checks pass in Chrome and WebKit: animated dots, repeated world-build paints, and cycle launch. WebKit startup frame gaps stayed under 25 ms in the measured runs. Full 631-unit suite passed.
+
+
+## ENCOM boot transcript — October 18
+
+- [x] Show stage-specific ENCOM progress messages for work lasting at least 500 ms, and retain only completed stages meeting that threshold. Omit aggregate startup timings and checkpoints from the transcript; no elapsed times appear on screen. Keep detailed console timing diagnostics unchanged. Append individual lines without rebuilding the transcript; preserve the animated working indicator and scroll within the existing terminal margins on small screens.
+
+
+## Continuous grid speed — October 18
+
+- [x] Solo, multiplayer authority/prediction, and AI forecasts now use a smooth additive increase of 1% of initial speed per elapsed racing second, retaining the 200% cap (reached at 100 seconds). New rounds reset to 100%; staging and paused arenas do not advance the clock.
+- [x] Keep GRID SPEED visible throughout countdown, racing, and results. Remove speed-increase beeps and temporary warning countdowns entirely; match countdown audio is unchanged. Multiplayer protocol advances to 5 because predicted movement changed; deploy client and Worker together.
+- [x] Unit checks cover linear progression, the cap, scaled turbo/brake and AI forecasts, reset/pause behavior, and persistent indicator text.
+
 
 ## Per-play analytics and exit announcement — October 18
 

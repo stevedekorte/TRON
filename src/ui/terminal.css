@@ -145,3 +145,7 @@ body.home-opening #game{visibility:visible}
 html.mobile-terminal .terminal .game-choice{min-height:44px}
 html.mobile-terminal #game-menu{width:100%}
 html.mobile-terminal .game-choice>span:last-child{min-width:0;white-space:normal}
+
+/* Keep the growing boot transcript inside the terminal on small screens. */
+#loading .terminal-content{width:calc(100% - 2 * var(--terminal-left));max-height:calc(100dvh - var(--terminal-top) - 8vh);overflow:auto;scrollbar-width:none}
+#loading .terminal-copy{white-space:pre-wrap}

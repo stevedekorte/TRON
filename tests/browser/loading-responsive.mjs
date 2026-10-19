@@ -1,7 +1,8 @@
-import {chromium} from '@playwright/test';
+import {chromium,webkit} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const engine=process.env.TRON_TEST_ENGINE==='webkit'?webkit:chromium;
+const browser=await engine.launch(engine===chromium?{channel:'chrome',headless:true}:{headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[],reports=[];
  page.on('pageerror',e=>errors.push(e.message));
