@@ -13,18 +13,23 @@ test('isolated stalls and inactive frames do not lower quality',()=>{
  feed(aa,4,60);aa.sample(.1);feed(aa,3,60);assert.equal(aa.index,initial);
  aa.sample(2);feed(aa,60,20,false);assert.equal(aa.index,initial);
 });
-test('upgrades slowly, backs off after sustained misses and never retries rejected levels',()=>{
+test('upgrades slowly, backs off after sustained misses and retries only after cooldown',()=>{
  const aa=new AdaptiveAA([0,2,4]),initial=aa.index;
  assert.equal(feed(aa,20,60),0);feed(aa,9,60);assert.equal(aa.index,initial+1);
  feed(aa,5,40);assert.equal(aa.index,initial);assert.equal(aa.ceiling,initial);
- assert.equal(feed(aa,180,60),0);assert.equal(aa.index,initial);
+ assert.equal(feed(aa,40,60),0);assert.equal(aa.index,initial);
+ feed(aa,25,60);assert.equal(aa.index,initial+1);
 });
-test('sustained overload reaches a bounded floor and stays there',()=>{
+test('sustained overload reaches a native-resolution floor and recovers with sustained headroom',()=>{
  const aa=new AdaptiveAA([0,2,4]);feed(aa,45,25);assert.equal(aa.index,0);
- assert.equal(feed(aa,180,60),0);assert.equal(aa.index,0);
+ assert.equal(aa.quality.ratio,1);feed(aa,180,60);assert(aa.index>0);
 });
 test('unstable frame pacing prevents speculative upgrades',()=>{
  const aa=new AdaptiveAA([0,2,4]);const initial=aa.index;
  for(let i=0;i<60;i++){feed(aa,1,60);feed(aa,1,50);}
  assert.equal(aa.index,initial);
+});
+
+test('initial quality restores aircraft supersampling without requiring 8x MSAA',()=>{
+ for(const samples of [[0],[0,4],[0,2,4,8]]){const aa=new AdaptiveAA(samples);assert.equal(aa.quality.ratio,1.5);assert(aa.quality.samples<=4);}
 });

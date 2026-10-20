@@ -11,6 +11,12 @@ See also: /llms.txt (curated index) and /sitemap.xml.
 <!-- Page: (root) -->
 Source: /
 
+## Restore aircraft antialiasing quality — October 19
+
+- [x] Investigate the quality change introduced with ray-cast cycles: the former 1.25–1.5× scene supersampling became a 1× starting level, and temporary frame-budget misses permanently lowered the session ceiling. This affects rasterized Recognizers and Solar Sailer geometry as well as cycles.
+- [x] Start scene and ray-cast renderer quality controllers at 1.5× with up to supported 4× MSAA, retaining pixel/texture budgets. Keep the fallback floor at native resolution rather than 0.85×. Retry rejected levels after sustained headroom and a 60-second cooldown, backing repeated failures off up to five minutes. Performance fallback remains available.
+- [x] Chrome rendered aircraft comparisons at 1×/1.5× show cleaner Recognizer edges; Solar Sailer captures also generated. Real framebuffer test confirms 1.5×/4× initial quality, native-resolution fallback, later recovery, and restoration of independent normal/ray-cast controllers. Unit tests cover sample support, startup quality, temporary stalls and bounded retry behavior. Higher starting resolution costs more GPU work; actual hardware can still reduce quality under sustained load.
+
 ## Multiplayer delivery resilience and host diagnostics — October 19
 
 - [x] Send authoritative snapshots at 30 Hz (120 Hz simulation unchanged). After catch-up, encode/broadcast only the latest state, retaining all simulation steps and trail corners. This avoids queuing obsolete intermediate snapshots. The additive metadata and cadence change remain compatible with protocol 5.

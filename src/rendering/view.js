@@ -263,7 +263,7 @@ export class View {
     this.camera.updateProjectionMatrix();
     const quality=this.adaptiveAA.quality;
     const ratio=this.lowQuality?1:Math.min(quality.ratio,ADAPTIVE_AA.maxPixelRatio,
-      Math.max(.85,Math.sqrt(ADAPTIVE_AA.pixelBudget/(w*h))),
+      Math.max(1,Math.sqrt(ADAPTIVE_AA.pixelBudget/(w*h))),
       this.renderer.capabilities.maxTextureSize/Math.max(w,h));
     // Sample count changes require new framebuffer attachments, not a new context.
     for(const target of [this.composer.renderTarget1,this.composer.renderTarget2]){
