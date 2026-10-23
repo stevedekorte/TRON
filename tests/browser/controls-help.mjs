@@ -10,7 +10,7 @@ try{
   await page.locator('#'+game).click();await page.waitForFunction(()=>__tron.state.mode==='running');
   if(game==='start-cycles')await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing',null,{timeout:60000});
   await page.locator('#controls-prompt').waitFor({state:'visible'});
-  assert.equal(await page.locator('#controls-prompt').textContent(),'C / CONTROLS');
+  assert.equal(await page.locator('#controls-prompt').textContent(),'Y / CONTROLS');
   assert.equal(await page.locator('#hint').isVisible(),false);
   await page.locator('#controls-prompt').waitFor({state:'hidden',timeout:10000});
   if(game==='start'){
@@ -21,8 +21,8 @@ try{
    assert.equal(await page.evaluate(()=>__tron.state.aerial),false);
   }
   const soundLabel=await page.locator('#sound').textContent();await page.keyboard.press('KeyM');assert.equal(await page.locator('#sound').textContent(),soundLabel);
-  for(const dismiss of ['Space','Escape','KeyC','click','tap']){
-   await page.keyboard.press('KeyC');await page.locator('#controls-help').waitFor({state:'visible'});
+  for(const dismiss of ['Space','Escape','KeyY','click','tap']){
+   await page.keyboard.press('KeyY');await page.locator('#controls-help').waitFor({state:'visible'});
    const panelText=await page.locator('#controls-help').innerText();
    assert(panelText.includes('DRIVING')&&panelText.includes('CAMERA'));
    assert(!panelText.includes('M / SOUND')&&!panelText.includes('ANY KEY'));
@@ -36,7 +36,7 @@ try{
    assert.equal(await page.evaluate(()=>__tron.state.shots),before.shots);
    assert.equal(await page.locator('#exit-confirm').isVisible(),false);
   }
-  await page.keyboard.press('KeyC');await page.screenshot({path:`test-results/controls-help-${game}.png`});
+  await page.keyboard.press('KeyY');await page.screenshot({path:`test-results/controls-help-${game}.png`});
  }
- assert.deepEqual(errors,[]);console.log('Clu/cycle controls: paused simulation; keyboard, Escape, C, click and touch resume without firing or opening exit confirmation.');
+ assert.deepEqual(errors,[]);console.log('Clu/cycle controls: paused simulation; keyboard, Escape, Y, click and touch resume without firing or opening exit confirmation.');
 }finally{await browser.close();}

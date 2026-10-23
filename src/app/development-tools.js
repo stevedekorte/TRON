@@ -104,7 +104,7 @@ export function createDevelopmentTools({
           pixelRatio: view.renderer.getPixelRatio(),
           adaptiveAA:{level:view.adaptiveAA.index,ceiling:view.adaptiveAA.ceiling,targetFps:config.targetFps,reason:view.adaptiveAA.reason},
           smaa: view.smaa.enabled,
-          samples: view.composer.renderTarget1.samples,
+          samples: view.scenePass.target.samples,
           ...view.renderer.info.memory,
           calls: view.renderer.info.render.calls,
         },

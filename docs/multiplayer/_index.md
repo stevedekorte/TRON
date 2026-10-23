@@ -4,6 +4,10 @@ topTitle: TRON
 subtitle: Authoritative arena, bandwidth reduction, and staged low-latency hosting
 ---
 
+## Revised proposal for review — October 22
+
+See [WebRTC private-match plan](webrtc/index.html) for a staged connectivity probe and three-human reliable-channel experiment with rotating hosts, precise-turn measurements, and a comparison with dedicated-server transports. This proposal does not supersede the public hosting plan below or authorize implementation.
+
 ## Selected low-latency hosting plan — October 14
 
 Adopt the staged migration below, based on the hosting proposal review. Keep the static client on GitHub Pages and AI services on the existing Cloudflare Worker. Target one Google Cloud VM for the authoritative public arena, first over WebSockets and then with WebTransport plus WebSocket fallback. Preserve the shared JavaScript simulation, public queue, AI vacancy filling and current gameplay. This is the implementation plan, not authorization to purchase infrastructure or publish a deployment.

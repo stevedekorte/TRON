@@ -16,7 +16,7 @@ try{
  const paused=await page.evaluate(()=>__tron.state.time);await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>__tron.state.time),paused);
  const acceleration=panel.locator('[data-value="accelerationMetersPerSecondSquared"]');await acceleration.fill('12');await acceleration.press('Tab');
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.roadConfig.accelerationMetersPerSecondSquared),12);
- await page.keyboard.press('KeyW');await page.keyboard.press('KeyC');assert.equal(await page.evaluate(()=>__tron.state.mode),'paused');
+ await page.keyboard.press('KeyW');await page.keyboard.press('KeyY');assert.equal(await page.evaluate(()=>__tron.state.mode),'paused');
  await panel.screenshot({path:'test-results/cycle-tuning.png'});
  await page.keyboard.press('Escape');await panel.waitFor({state:'hidden'});await page.waitForFunction(()=>__tron.state.mode==='running');
  await page.waitForTimeout(250);await page.keyboard.press('Escape');

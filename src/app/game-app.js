@@ -331,6 +331,7 @@ export async function createGameApp() {
     $('sound').setAttribute('aria-label', sound.muted ? 'Unmute sound' : 'Mute sound');
   }
   function fail(message) {
+    if(window.tronRecoverModuleFailure?.(message))return;
     $('error-title').textContent=/MULTIPLAYER/i.test(message)?'MULTIPLAYER UNAVAILABLE':'PROGRAM UNAVAILABLE';
     $('error-message').textContent = /(?:importing a module script failed|failed to fetch dynamically imported module|loading chunk|module script|preload.*(?:css|module))/i.test(message)
       ? 'PROGRAM FILES COULD NOT LOAD. RELOAD TO CHECK FOR AN UPDATE.' : message;
@@ -422,7 +423,7 @@ export async function createGameApp() {
       if(!event.repeat){dismissedHelpKeys.add(event.code);dismissControlsHelp();}
       return;
     }
-    if(event.code==='KeyC'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!exitConfirm.open&&!cycleTuning?.open&&(mode==='running'||mode==='entering'&&openingTransition)){
+    if(event.code==='KeyY'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!exitConfirm.open&&!cycleTuning?.open&&(mode==='running'||mode==='entering'&&openingTransition)){
       event.preventDefault();if(!event.repeat)showControlsHelp();return;
     }
     if(exitConfirm.open)return;

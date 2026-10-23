@@ -1,0 +1,1 @@
+- It'd be nice to have customizable controls and a "hotkey" for quick reference in controls

@@ -1,3 +1,34 @@
+## WebRTC experiment review — October 22
+
+- [x] Revise the [WebRTC plan](multiplayer/webrtc/index.html) around a connectivity probe followed by a three-human, reliable-channel game experiment with rotated hosts. Prioritize authoritative turn-position error in cycle lengths and non-host tail latency; document existing input/delta constraints, worker delivery stalls, concurrent STUN/TURN setup, explicit host-stall aborts, and gates before unreliable delivery or private-room productization. Documentation only; implementation/deployment remain unapproved.
+
+## WebRTC private-match proposal — October 21
+
+- [x] Write a [review plan for peer-hosted WebRTC matches](multiplayer/webrtc/index.html), including authority, STUN/TURN/signaling, loss recovery, host lifecycle, browser coverage, measurements, and dedicated-server alternatives. Proposal only; implementation and deployment are not approved. The public-arena hosting plan remains unchanged.
+
+## Automatic program-file recovery — October 21
+
+- [x] Inline a production-only recovery handler before the entry module so missing entry scripts, failed dynamic imports, and failed module/style preloads can recover at the ordinary game URL. Application-caught module errors use the same handler. Verify fresh HTML is reachable before unregistering only the exact game worker scope and clearing only this game's cached HTML/JS/CSS; preserve media, IndexedDB/settings and unrelated app caches.
+- [x] Retry once, with a ten-minute session guard and a URL guard when storage is unavailable; remove the temporary cache-busting query after successful startup. Bound recovery to eight seconds. Offline/unreachable-host and repeated failures show a message instead of looping. The error panel's reload action stays on the ordinary page.
+- [x] Service-worker navigations revalidate HTML against the host, with a 2.5-second timeout and installed-build fallback. Media stays cached, and background worker updates still wait without interrupting active play. Existing cached documents must receive this release before its inline recovery can run; this does not establish that the reported Chrome failures were cache-related.
+- [x] Chrome fixture tests pass for missing initial modules, scoped cleanup/media preservation, unreachable-host preservation and persistent-error loop prevention. Built-game tests pass for legacy cached-build migration, automatic failed multiplayer import recovery without an update-page visit, offline CLU/cycle/BIT resources, ranged audio and background updates that leave the menu/game intact.
+
+## Stable bloom with scene antialiasing — October 21
+
+- [x] Reproduce rectangular image loss in fresh headless WebKit on macOS during solo opening viewport changes. A frozen-frame comparison isolates bloom; subsequent HDR readback found non-finite scene color components. Bloom spreads these through its mip chain. The earlier suspected MSAA resolve explanation was not sufficient: separating buffers alone still reproduced the defect.
+- [x] Render the scene into a dedicated HDR multisample/stencil target, then copy to single-sample composer buffers with a finite-radiance guard before bloom. Replace NaNs with zero and bound radiance to 0–1024 to prevent non-finite values contaminating the blur. Retain adaptive scene MSAA and supersampling; dispose the extra scene target/copy pass with the view. This adds one full-screen copy and a dedicated scene buffer.
+- [x] Replace the shadow Gaussian's negative-base GLSL pow with direct multiplication; pow on negative bases is undefined even for an exponent of two. This correctness fix alone did not remove all non-finite scene pixels. Their remaining source needs investigation if localized defects become visible.
+- [x] WebKit and Chrome opening resize checks pass at four viewport sizes with finite-pixel readback of both composer buffers; inspected 1920px captures show the complete scene. Production build and asset audit pass. Native macOS fullscreen transition still needs user confirmation.
+
+## Controls help shortcut — October 20
+
+- [x] Move the controls-help shortcut from C to Y in CLU and cycle games to reduce accidental activation. Update desktop hints and browser checks; touch controls remain available.
+
+## Continuous multiplayer scenery motion — October 20
+
+- [x] Carrier positions are local, but previously used the snapshot-stepped match clock. Give the carrier, Solar Sailer and clouds a continuous local rendering clock in multiplayer, independent of packet arrivals and round resets. Solo scenery uses interpolated simulation time. Keep the authored opening carrier placement unchanged.
+- [x] All 642 unit tests pass, including packet holds, backwards timestamp corrections, round resets and solo pause/reset coverage. Local headless Chrome on macOS verified continuous carrier displacement across 179 multiplayer frame intervals with no page errors (`node test-results/carrier-clock-check.mjs`). Subjective play confirmation remains pending.
+
 ## Restore aircraft antialiasing quality — October 19
 
 - [x] Investigate the quality change introduced with ray-cast cycles: the former 1.25–1.5× scene supersampling became a 1× starting level, and temporary frame-budget misses permanently lowered the session ceiling. This affects rasterized Recognizers and Solar Sailer geometry as well as cycles.

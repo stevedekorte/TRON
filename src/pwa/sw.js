@@ -69,6 +69,17 @@ async function cachedResponse(request, key) {
   headers.set('Accept-Ranges', 'bytes');
   return new Response(bytes.slice(start, end + 1), {status: 206, headers});
 }
+async function entryResponse(request, key) {
+  // A fresh navigation should discover the current build instead of remaining
+  // pinned to cached HTML. Keep the installed build as an offline fallback.
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),2500);
+  try {
+    const response=await fetch(new Request(request,{cache:'no-cache',signal:controller.signal}));
+    if(response.ok&&response.headers.get('content-type')?.includes('text/html'))return response;
+  } catch {}
+  finally {clearTimeout(timer);}
+  return cachedResponse(request,key);
+}
 self.addEventListener('fetch', event => {
   const request = event.request, url = new URL(request.url);
   if (request.method !== 'GET' || !url.href.startsWith(self.registration.scope)) return;
@@ -79,6 +90,6 @@ self.addEventListener('fetch', event => {
   const lookup=new URL(url);if([...lookup.searchParams.keys()].every(key=>key==='v'))lookup.search='';
   const candidate=ALIASES.get(lookup.href)??lookup.href;
   const key = entry ? new URL('index.html', root).href : ASSETS.has(candidate)?candidate:url.href;
-  if (ASSETS.has(key)) event.respondWith(cachedResponse(request, key));
+  if (ASSETS.has(key)) event.respondWith(entry?entryResponse(request,key):cachedResponse(request, key));
   // Unlisted URLs (including API calls and docs) remain network requests.
 });

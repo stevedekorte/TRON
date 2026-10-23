@@ -1,0 +1,69 @@
+Speech-isolated dialogue copies
+
+Sources: cycles_blue_leader.mp3 and cycles_gold_leader.mp3 in this folder.
+Original film dialogue: TRON (1982), Disney. Separation does not change ownership
+or usage constraints. Source MP3 files are unchanged.
+
+Outputs: *_speech.wav (44.1 kHz mono, 24-bit PCM) and *_speech.mp3
+(44.1 kHz mono, highest-quality LAME VBR). Original decoded duration preserved.
+
+Method: local inference with ZFTurbo's CDX23 cinematic sound-demixing model,
+checkpoint 97d170e1-dbb4db15.th, speech stem (index 2).
+https://github.com/ZFTurbo/MVSEP-CDX23-Cinematic-Sound-Demixing
+Demucs 4.0.1 / PyTorch 2.5.1; two shifts, 0.8 overlap, random seed 0.
+Mono source duplicated to stereo for inference, speech output averaged to mono.
+Peak normalized toward -1 dBFS with gain capped at +12.04 dB.
+No additional gating, EQ, trimming, time stretching or synthesized speech.
+
+These are model-separated estimates; residual background sounds and separation
+artifacts may remain. Not yet integrated into the game.
+
+Gold leader revision 2:
+The initial CDX23 output was reported to drop parts of the speech. The *_speech_v2
+files use Meta Demucs htdemucs vocals (955717e8 checkpoint), four shifts, overlap
+0.75, random seed 0, one second of silence padding on each end before inference.
+https://github.com/facebookresearch/demucs
+The output mixes 75% vocal estimate with 25% original mono signal at native levels,
+then normalizes the peak to -1 dBFS. The fixed original-signal floor is intentional:
+it retains speech misclassified by the model, with some residual background sound.
+No gate or dynamic stem switching. WAV: 44.1 kHz mono PCM24; MP3: LAME VBR q0.
+Blue leader and the first gold leader version are unchanged for comparison.
+
+Gold leader revision 3:
+The user reported intelligible speech in v2 but excessive vehicle sounds. V3
+removes the original-audio blend entirely. Input is the saved, unnormalized
+htdemucs vocal estimate from v2. A second CDX23 pass (same checkpoint as v1,
+four shifts, overlap 0.8, seed 0, one-second end padding) estimates speech.
+A magnitude-ratio mask is applied to the htdemucs estimate, preserving its phase:
+2048-point Hann STFT, 256-sample hop; ratio clamped to [0,1] and smoothed over
+3 frequency bins / 15 time frames. Gain = floor + (1-floor)*ratio.
+The v3 floor is 0.35; v3_stronger uses 0.12 for greater effects suppression.
+Both use a 100 Hz high-pass and fixed peak normalization to -1 dBFS; no gate,
+automatic gain control, original-audio blend or synthetic replacement speech.
+Same duration and output encoding as v2. Earlier revisions remain unchanged.
+Audible speech preservation and remaining effects require listening review.
+
+Gold leader revision 4:
+The user still heard vehicle effects in v3. V4 changes approach to dedicated
+speech enhancement: htdemucs vocal estimate -> DeepFilterNet3 (deepfilternet
+0.5.6, checkpoint model_120.ckpt.best), post-filter enabled. No attenuation
+limit, original-audio blend or spectral gain floor. Model runs locally on CPU.
+https://github.com/Rikorose/DeepFilterNet
+Resampled to the model's 48 kHz; half-second context padding at each end, removed
+after inference with STFT delay compensation. Fixed peak normalization to -1 dBFS.
+Output: 48 kHz mono PCM24 WAV and LAME q0 MP3, original duration preserved within
+one resampling sample. Earlier versions and blue leader are untouched.
+Numerical checks passed (finite samples, duration, peak); audible removal of
+vehicle sounds and retention of every word are not independently verified.
+
+Individually split gold_1 / gold_2:
+New source clips supplied by user after v4 remained unsatisfactory. Processed
+independently from their original MP3s using the CDX23 author's three-checkpoint
+ensemble: 97d170e1-a778de4a, 97d170e1-dbb4db15 and 97d170e1-e41a5468.
+Each checkpoint uses two shifts, overlap 0.8, random seed 0 and one-second silence
+padding on both ends; padding removed afterward. Output is the mean of the three
+speech estimates, collapsed to mono, with fixed peak normalization to -1 dBFS.
+No original-audio blend, gain floor, additional denoiser or synthesized words.
+Outputs: gold_1_speech / gold_2_speech, 44.1 kHz PCM24 WAV and LAME q0 MP3.
+Source files, earlier versions, and blue leader are untouched. This is a new
+separation attempt; perceived quality still needs listening review.

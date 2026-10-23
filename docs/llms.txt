@@ -24,6 +24,7 @@
 ## Multiplayer light cycles
 
 - [Multiplayer light cycles](/multiplayer/): Authoritative arena, bandwidth reduction, and staged low-latency hosting
+- [WebRTC light-cycle matches](/multiplayer/webrtc/): Revised proposal for review — October 22, 2026
 
 ## Project organization plan
 

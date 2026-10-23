@@ -17,9 +17,9 @@ try{
   config.adaptiveAntialiasing=true;
   const samples=view.adaptiveAA.levels;
   for(let i=0;i<45*25;i++)view.updateAntialiasing(1/25,true);
-  const low={ratio:view.renderer.getPixelRatio(),samples:view.composer.renderTarget1.samples,index:view.adaptiveAA.index};
+  const low={ratio:view.renderer.getPixelRatio(),samples:view.scenePass.target.samples,index:view.adaptiveAA.index};
   for(let i=0;i<180*60;i++)view.updateAntialiasing(1/60,true);
-  const recovered={ratio:view.renderer.getPixelRatio(),samples:view.composer.renderTarget1.samples,index:view.adaptiveAA.index};
+  const recovered={ratio:view.renderer.getPixelRatio(),samples:view.scenePass.target.samples,index:view.adaptiveAA.index};
   return {low,recovered};
  });
  assert.equal(result.low.ratio,1);assert.equal(result.low.samples,0);assert(result.recovered.index>0);assert(result.recovered.ratio>=1.5);

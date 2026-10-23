@@ -11,12 +11,12 @@ const server=createServer(async(req,res)=>{
   const path=new URL(req.url,'http://localhost').pathname;
   if(!path.startsWith(scope)){res.writeHead(404).end();return;}
   if(path===scope+'update.html')updateVisits++;
-  if(brokenModule&&/\/client-[^/]+\.js$/.test(path)){res.writeHead(404).end();return;}
+  if(brokenModule&&/\/client-[^/]+\.js$/.test(path)&&req.headers['sec-fetch-dest']==='script'){brokenModule=false;res.writeHead(404).end();return;}
   const file=resolve(root,decodeURIComponent(path.slice(scope.length)||'index.html'));
   if(!file.startsWith(root+'/')){res.writeHead(403).end();return;}
   let data=await readFile(file);
   if(!updated&&file.endsWith('/index.html'))data=Buffer.from('<html><body>OLD CACHED BUILD<script>navigator.serviceWorker.register("./sw.js")</script></body></html>');
-  if(!updated&&file.endsWith('/sw.js'))data=Buffer.from(data.toString().replace(/await cache\.put\(METADATA,[^\n]+\n/,'').replace(/self.addEventListener\('message',event=>\{[\s\S]*?\n\}\);/,'').replace(/const CACHE = ([^;]+);/,'const CACHE = $1 + "-old";'));
+  if(!updated&&file.endsWith('/sw.js'))data=Buffer.from(data.toString().replace(/await cache\.put\(METADATA,[^\n]+\n/,'').replace(/self.addEventListener\('message',event=>\{[\s\S]*?\n\}\);/,'').replace(/const CACHE = ([^;]+);/,'const CACHE = $1 + "-old";').replace('entry?entryResponse(request,key):cachedResponse(request, key)','cachedResponse(request, key)'));
   if(newest&&file.endsWith('/sw.js'))data=Buffer.from(data.toString().replace(/const CACHE = ([^;]+);/,'const CACHE = $1 + "-next";'));
   res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream','Cache-Control':'no-store'}).end(data);
  }catch{res.writeHead(404).end();}
@@ -33,7 +33,7 @@ try{
  await page.waitForURL(url);await page.waitForFunction(()=>!document.querySelector('#start-credits')?.disabled&&!!document.querySelector('#controls-help'));
  assert.equal(await page.title(),'ENCOM TERMINAL');
  await page.waitForFunction(()=>!document.querySelector('#start').disabled);
- await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
+ await page.locator('#start-cycles').click();await page.waitForFunction(()=>document.body.classList.contains('playing'));
  console.log('Old cached build updates and starts the game.');
  await page.close();
  const recovery=await browser.newPage({reducedMotion:'reduce'});recovery.setDefaultTimeout(60000);
@@ -41,17 +41,14 @@ try{
  recovery.on('framenavigated',f=>{if(f===recovery.mainFrame())console.log('Recovery navigation:',f.url());});
  brokenModule=true;await recovery.goto(url);
  await recovery.waitForFunction(()=>!document.querySelector('#start-multiplayer').disabled);
+ await recovery.evaluate(()=>window.beforeRecovery=true);
  await recovery.locator('#start-multiplayer').click();
- await recovery.locator('#error').waitFor({state:'visible'});
- assert.match(await recovery.locator('#error-message').innerText(),/PROGRAM FILES COULD NOT LOAD/);
- console.log('Missing multiplayer module displays the recovery action.');
- brokenModule=false;const visits=updateVisits;
- await Promise.all([recovery.waitForURL(url+'update.html',{waitUntil:'commit'}),recovery.locator('#error button').click()]);
- await recovery.waitForURL(url);
- await recovery.waitForFunction(()=>!document.querySelector('#start-multiplayer')?.disabled&&!!document.querySelector('#start-multiplayer'));
- assert(updateVisits>visits,'Reload must visit the uncached update page');
+ await recovery.waitForFunction(()=>!!sessionStorage.getItem(`tron-recovery:${new URL('./',location.href).href}`));
+ await recovery.waitForFunction(()=>!window.beforeRecovery&&!new URL(location.href).searchParams.has('__tron_recover')&&!document.querySelector('#start-multiplayer')?.disabled&&!!document.querySelector('#start-multiplayer'));
  assert.equal(new URL(recovery.url()).pathname,scope);
- console.log('Missing multiplayer module recovers through the update page, including a failed first service-worker installation.');
+ assert.equal(updateVisits,1,'automatic recovery stays on the game URL');
+ console.log('Missing multiplayer module recovers automatically without visiting the update page.');
+ await recovery.evaluate(()=>navigator.serviceWorker.ready);
  newest=true;
  await recovery.evaluate(async()=>{window.updateNavigationMarker='menu-stays-open';const r=await navigator.serviceWorker.getRegistration();await r.update();});
  await recovery.waitForFunction(async()=>!!(await navigator.serviceWorker.getRegistration())?.waiting,{},{timeout:60000});

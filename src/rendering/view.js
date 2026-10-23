@@ -27,12 +27,13 @@ import { mouseTarget } from './mouse-target.js';
 import { groundTankCount, bossTankIndices } from '../simulation/ground-tanks.js';
 import { Searchlights } from './searchlights.js';
 import { updateCarrier } from './carrier.js';
+import { SceneryClock } from './scenery-clock.js';
 import { applyCycleOpeningCarrier, CYCLE_OPENING } from './cycle-opening.js';
 import { Breakups } from './breakup.js';
 import { createMuzzleFlash } from './muzzle-flash.js';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { AntialiasedScenePass } from './antialiased-scene-pass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
@@ -223,11 +224,11 @@ export class View {
     this.adaptiveAA=new AdaptiveAA(supportedSamples(this.renderer.getContext()));
     const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
       type: THREE.HalfFloatType,
-      samples: this.adaptiveAA.quality.samples,
-      stencilBuffer: true,
+      samples: 0,
     });
     this.composer = new EffectComposer(this.renderer, renderTarget);
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.scenePass=new AntialiasedScenePass(this.scene,this.camera,this.adaptiveAA.quality.samples);
+    this.composer.addPass(this.scenePass);
     this.enemyOutline = new OutlinePass(new THREE.Vector2(1, 1), this.scene, this.camera);
     this.enemyOutline.visibleEdgeColor.setHex(0x70bfd6);
     this.enemyOutline.hiddenEdgeColor.setHex(0x000000);
@@ -266,13 +267,12 @@ export class View {
       Math.max(1,Math.sqrt(ADAPTIVE_AA.pixelBudget/(w*h))),
       this.renderer.capabilities.maxTextureSize/Math.max(w,h));
     // Sample count changes require new framebuffer attachments, not a new context.
-    for(const target of [this.composer.renderTarget1,this.composer.renderTarget2]){
-      if(target.samples!==quality.samples){target.dispose();target.samples=quality.samples;}
-    }
+    this.scenePass.setSamples(quality.samples);
     this.renderer.setPixelRatio(ratio);
     this.composer.setPixelRatio(ratio);
     this.renderer.setSize(w * config.renderScale, h * config.renderScale, false);
     this.composer.setSize(w * config.renderScale, h * config.renderScale);
+
   }
 
   updateAntialiasing(dt,active){
@@ -280,6 +280,7 @@ export class View {
   }
 
   reset() {
+    this.sceneryClock?.reset();
     this.cameraRig.reset();
     this.gunnerHit = null;
     this.nextGunnerSolution = 0;
@@ -354,20 +355,21 @@ export class View {
     this.teleportPads.update(run.teleportPads, run.time);
     const { cinematic, aerialMix:modeAerialMix, preview, gunner } = this.cameraRig.begin(run, dt, mode);
     const aerialMix=this.cameraRig.cluAerialFraming(modeAerialMix).mix;
-    this.clouds?.update(run.time, run.seed, !preview);
-    this.solarSailer?.update(run.time, !preview);
+    const sceneryTime=(this.sceneryClock??=new SceneryClock()).sample(run,previous,alpha,dt);
+    this.clouds?.update(sceneryTime, run.seed, !preview);
+    this.solarSailer?.update(sceneryTime, !preview);
     if (this.carrier) {
       this.carrier.visible = !preview;
       updateCarrier(
         this.carrier,
-        run.time,
+        sceneryTime,
         run.carrierHealth,
         Math.max(0, 1 - (run.time - run.carrierHitAt) / 1.2),
         this.map,
       );
       if(this.cameraRig.cycleOpening!==null&&run.cycleRace)applyCycleOpeningCarrier(this.carrier,this.cameraRig.cycleOpening,run.cycleRace.site);
       if(run.playerVehicle==='cycle'||run.cycleEntryRequested)this.carrier.userData.rez.update();
-      else this.carrier.userData.rez.updateTransit(run.time, carrierFor(this.map).speed);
+      else this.carrier.userData.rez.updateTransit(sceneryTime, carrierFor(this.map).speed);
     }
     if (run.teleport) previous = { ...run };
     const x = previous.x + (run.x - previous.x) * alpha;

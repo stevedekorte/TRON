@@ -77,7 +77,7 @@ export class RecognizerShadows {
      if(all(greaterThan(p,vec3(0.)))&&all(lessThan(p,vec3(1.)))){
       float cover=0.;
       ${filterEdges?`vec2 texel=p.xy*${this.size}.-.5;vec2 base=floor(texel);vec2 fraction=fract(texel);`:''}
-      ${soft?Array.from({length:6},(_,k)=>`vec2 w${k}=exp(-.5*pow((vec2(${k-2}.)-fraction)/1.1,vec2(2.)));`).join('\n')+'\nvec2 weightSum=w0+w1+w2+w3+w4+w5;':''}
+      ${soft?Array.from({length:6},(_,k)=>`vec2 d${k}=(vec2(${k-2}.)-fraction)/1.1;vec2 w${k}=exp(-.5*d${k}*d${k});`).join('\n')+'\nvec2 weightSum=w0+w1+w2+w3+w4+w5;':''}
       ${Array.from({length:soft?36:filterEdges?4:1},(_,tap)=>`{
        vec2 local=(clamp(${filterEdges?`base+vec2(${tap%tapWidth-(soft?2:0)}.,${Math.floor(tap/tapWidth)-(soft?2:0)}.)`:`floor(p.xy*${this.size}.)`},vec2(0.),vec2(${this.size-1}.))+.5)/${this.size}.;
        vec2 uv=(local+vec2(${i%this.columns}.,${Math.floor(i/this.columns)}.))/vec2(${this.columns}.,${this.rows}.);
