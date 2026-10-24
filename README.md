@@ -4,7 +4,7 @@ An open-ended Three.js/WebGL simulation inspired by the 1982 film: explore a dia
 
 ## Play locally
 
-Requires Node.js 22.12+ and a desktop browser with WebGL 2.
+Requires patched Node.js 22.23.4+ (22.x) or 24.22.1+ (24.x) and a desktop browser with WebGL 2.
 
 ```sh
 npm ci

@@ -38,6 +38,10 @@
 
 - [References](/references/): Visual direction and source images
 
+## Security review and remediation plan
+
+- [Security review and remediation plan](/security/): TRON and related dekorte.com software — October 23, 2026
+
 ## Sound library
 
 - [Sound library](/sounds/): 1982 TRON sounds, experiments and future resources

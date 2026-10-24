@@ -1,3 +1,7 @@
+## Security review and remediation plan — October 23
+
+- [x] Review current upstream advisories, five dekorte.com npm lock trees, Max Headroom's Python lock, runtime pins and publishing configuration. Write the [security remediation plan](security/index.html) with saved audit evidence, exposure distinctions, patch targets, validation and rollout criteria. Confirm a legacy development private key is publicly served; prioritize artifact containment and affected-key replacement. Implemented runtime/library patches, retired published development keys, added CI audits and artifact guards, and verified application tests. See the plan for container findings and remaining trust/history review.
+
 ## WebRTC experiment review — October 22
 
 - [x] Revise the [WebRTC plan](multiplayer/webrtc/index.html) around a connectivity probe followed by a three-human, reliable-channel game experiment with rotated hosts. Prioritize authoritative turn-position error in cycle lengths and non-host tail latency; document existing input/delta constraints, worker delivery stalls, concurrent STUN/TURN setup, explicit host-stall aborts, and gates before unreliable delivery or private-room productization. Documentation only; implementation/deployment remain unapproved.

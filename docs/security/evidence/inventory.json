@@ -1,0 +1,36 @@
+{
+  "reviewDate": "2026-10-23",
+  "nodeObserved": "22.22.0",
+  "npmObserved": "10.9.4",
+  "locks": [
+    {
+      "path": "package-lock.json",
+      "sha256": "65b061f06cd728bea429af6defe3382c563ae3febcc3098ebfb665c954190783"
+    },
+    {
+      "path": "../../fun/MaxHeadroom/package-lock.json",
+      "sha256": "bda608f0b0722a8a8e66b9612a991645b771fca4a623f3a326d05a23bb853463"
+    },
+    {
+      "path": "../../fun/MaxHeadroom/uv.lock",
+      "sha256": "890c13e67620424bf310bf776426d4db2d846a01c040aa73d1c9867d50e93e47"
+    },
+    {
+      "path": "../../fun/cars/crawler/package-lock.json",
+      "sha256": "06aa4c115888e2bcc1c58e09b419890b55e6c0520840ade5c5d603a553aed6e1"
+    },
+    {
+      "path": "../../projects/apps/postcard/package-lock.json",
+      "sha256": "aac8ac8f029e3e829f184f720c78bf6a71af28ba34d04397dbae4f2232294928"
+    },
+    {
+      "path": "../../fun/visuals/bit/local-web-server/package-lock.json",
+      "sha256": "594f78eab9b4f6476e9fad5986df56f333f10a14db6534b60a2b8443e6f855d2"
+    }
+  ],
+  "notes": [
+    "npm counts affected dependency nodes, including meta-vulnerabilities, not unique CVEs or reachable exploits.",
+    "OSV query covers 37 registry packages in Max Headroom uv.lock, including development dependencies and platform alternatives.",
+    "No private-key bytes included. Public exposure confirmed by in-memory equality against tracked data."
+  ]
+}

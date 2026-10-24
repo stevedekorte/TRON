@@ -1,0 +1,6754 @@
+[
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "bsdutils",
+    "version": "1:2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "bsdutils",
+    "version": "1:2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "bsdutils",
+    "version": "1:2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "bsdutils",
+    "version": "1:2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "bsdutils",
+    "version": "1:2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "bsdutils",
+    "version": "1:2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-12064",
+    "package": "curl",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-6276",
+    "package": "curl",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8286",
+    "package": "curl",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8458",
+    "package": "curl",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8927",
+    "package": "curl",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "ffmpeg",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96889",
+    "package": "gir1.2-rsvg-2.0",
+    "version": "2.54.7+dfsg-1~deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-41992",
+    "package": "gzip",
+    "version": "1.12-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "imagemagick",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "imagemagick-6-common",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "imagemagick-6.q16",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-54369",
+    "package": "libacl1",
+    "version": "2.3.1-3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-6879",
+    "package": "libaom3",
+    "version": "3.6.0-1+deb12u3",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-39616",
+    "package": "libaom3",
+    "version": "3.6.0-1+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "libavcodec59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "libavdevice59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "libavfilter8",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "libavformat59",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "libavutil57",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "libblkid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "libblkid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "libblkid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "libblkid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "libblkid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "libblkid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "libblkid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "libblkid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "libblkid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "libblkid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "libblkid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "libblkid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-111497",
+    "package": "libbrotli-dev",
+    "version": "1.0.9-2+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-111497",
+    "package": "libbrotli1",
+    "version": "1.0.9-2+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-16554",
+    "package": "libcjson1",
+    "version": "1.7.15-1+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-29036",
+    "package": "libcjson1",
+    "version": "1.7.15-1+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-67215",
+    "package": "libcjson1",
+    "version": "1.7.15-1+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-67216",
+    "package": "libcjson1",
+    "version": "1.7.15-1+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-87933",
+    "package": "libcjson1",
+    "version": "1.7.15-1+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34980",
+    "package": "libcups2",
+    "version": "2.4.2-3+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-55453",
+    "package": "libcups2",
+    "version": "2.4.2-3+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-12064",
+    "package": "libcurl3-gnutls",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-6276",
+    "package": "libcurl3-gnutls",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8286",
+    "package": "libcurl3-gnutls",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8458",
+    "package": "libcurl3-gnutls",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8927",
+    "package": "libcurl3-gnutls",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-12064",
+    "package": "libcurl4",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-6276",
+    "package": "libcurl4",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8286",
+    "package": "libcurl4",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8458",
+    "package": "libcurl4",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8927",
+    "package": "libcurl4",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-12064",
+    "package": "libcurl4-openssl-dev",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-6276",
+    "package": "libcurl4-openssl-dev",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8286",
+    "package": "libcurl4-openssl-dev",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8458",
+    "package": "libcurl4-openssl-dev",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8927",
+    "package": "libcurl4-openssl-dev",
+    "version": "7.88.1-10+deb12u15",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58016",
+    "package": "libglib2.0-0",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58010",
+    "package": "libglib2.0-0",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58011",
+    "package": "libglib2.0-0",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58012",
+    "package": "libglib2.0-0",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58013",
+    "package": "libglib2.0-0",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58014",
+    "package": "libglib2.0-0",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58015",
+    "package": "libglib2.0-0",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58016",
+    "package": "libglib2.0-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58010",
+    "package": "libglib2.0-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58011",
+    "package": "libglib2.0-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58012",
+    "package": "libglib2.0-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58013",
+    "package": "libglib2.0-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58014",
+    "package": "libglib2.0-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58015",
+    "package": "libglib2.0-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58016",
+    "package": "libglib2.0-data",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58010",
+    "package": "libglib2.0-data",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58011",
+    "package": "libglib2.0-data",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58012",
+    "package": "libglib2.0-data",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58013",
+    "package": "libglib2.0-data",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58014",
+    "package": "libglib2.0-data",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58015",
+    "package": "libglib2.0-data",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58016",
+    "package": "libglib2.0-dev",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58010",
+    "package": "libglib2.0-dev",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58011",
+    "package": "libglib2.0-dev",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58012",
+    "package": "libglib2.0-dev",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58013",
+    "package": "libglib2.0-dev",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58014",
+    "package": "libglib2.0-dev",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58015",
+    "package": "libglib2.0-dev",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58016",
+    "package": "libglib2.0-dev-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58010",
+    "package": "libglib2.0-dev-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58011",
+    "package": "libglib2.0-dev-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58012",
+    "package": "libglib2.0-dev-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58013",
+    "package": "libglib2.0-dev-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58014",
+    "package": "libglib2.0-dev-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58015",
+    "package": "libglib2.0-dev-bin",
+    "version": "2.74.6-2+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-25193",
+    "package": "libharfbuzz0b",
+    "version": "6.0.0+dfsg-3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-68431",
+    "package": "libheif1",
+    "version": "1.15.1-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-32740",
+    "package": "libheif1",
+    "version": "1.15.1-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-32741",
+    "package": "libheif1",
+    "version": "1.15.1-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-32882",
+    "package": "libheif1",
+    "version": "1.15.1-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-41071",
+    "package": "libheif1",
+    "version": "1.15.1-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-47178",
+    "package": "libheif1",
+    "version": "1.15.1-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-84450",
+    "package": "libheif1",
+    "version": "1.15.1-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-84451",
+    "package": "libheif1",
+    "version": "1.15.1-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-70103",
+    "package": "libjxl0.7",
+    "version": "0.7.0-10+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-2953",
+    "package": "libldap-2.5-0",
+    "version": "2.5.13+dfsg-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickcore-6-arch-config",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickcore-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickcore-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickcore-6.q16-6-extra",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickcore-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickcore-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickwand-6-headers",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickwand-6.q16-6",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickwand-6.q16-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106565",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106567",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106573",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106576",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106578",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106579",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106580",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107209",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86420",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86421",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93589",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93590",
+    "package": "libmagickwand-dev",
+    "version": "8:6.9.11.60+dfsg-1.6+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-85746",
+    "package": "libmariadb-dev",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-92262",
+    "package": "libmariadb-dev",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107815",
+    "package": "libmariadb-dev",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107818",
+    "package": "libmariadb-dev",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107823",
+    "package": "libmariadb-dev",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86047",
+    "package": "libmariadb-dev",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-97380",
+    "package": "libmariadb-dev",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-85746",
+    "package": "libmariadb-dev-compat",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-92262",
+    "package": "libmariadb-dev-compat",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107815",
+    "package": "libmariadb-dev-compat",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107818",
+    "package": "libmariadb-dev-compat",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107823",
+    "package": "libmariadb-dev-compat",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86047",
+    "package": "libmariadb-dev-compat",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-97380",
+    "package": "libmariadb-dev-compat",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-85746",
+    "package": "libmariadb3",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-92262",
+    "package": "libmariadb3",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107815",
+    "package": "libmariadb3",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107818",
+    "package": "libmariadb3",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107823",
+    "package": "libmariadb3",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86047",
+    "package": "libmariadb3",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-97380",
+    "package": "libmariadb3",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-47917",
+    "package": "libmbedcrypto7",
+    "version": "2.28.3-1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34873",
+    "package": "libmbedcrypto7",
+    "version": "2.28.3-1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34875",
+    "package": "libmbedcrypto7",
+    "version": "2.28.3-1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-23775",
+    "package": "libmbedcrypto7",
+    "version": "2.28.3-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-48965",
+    "package": "libmbedcrypto7",
+    "version": "2.28.3-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-52496",
+    "package": "libmbedcrypto7",
+    "version": "2.28.3-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-25835",
+    "package": "libmbedcrypto7",
+    "version": "2.28.3-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34872",
+    "package": "libmbedcrypto7",
+    "version": "2.28.3-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "libmount-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "libmount-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "libmount-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "libmount-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "libmount-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "libmount-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "libmount1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "libmount1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "libmount1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "libmount1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "libmount1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "libmount1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-69720",
+    "package": "libncurses-dev",
+    "version": "6.4-4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-69720",
+    "package": "libncurses5-dev",
+    "version": "6.4-4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-69720",
+    "package": "libncurses6",
+    "version": "6.4-4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-69720",
+    "package": "libncursesw5-dev",
+    "version": "6.4-4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-69720",
+    "package": "libncursesw6",
+    "version": "6.4-4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-5841",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-42216",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-42217",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-12495",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-12839",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-12840",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-64181",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-27622",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34379",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34543",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34544",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34545",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34588",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-40244",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-40250",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-41142",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59184",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59186",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59187",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59189",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59981",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59982",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-68515",
+    "package": "libopenexr-3-1-30",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-5841",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-42216",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-42217",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-12495",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-12839",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-12840",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-64181",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-27622",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34379",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34543",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34544",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34545",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-34588",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-40244",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-40250",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-41142",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59184",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59186",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59187",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59189",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59981",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59982",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-68515",
+    "package": "libopenexr-dev",
+    "version": "3.1.5-5",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-9538",
+    "package": "libperl5.36",
+    "version": "5.36.0-7+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "libpostproc56",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-11940",
+    "package": "libpython3.11-minimal",
+    "version": "3.11.2-6+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-7210",
+    "package": "libpython3.11-minimal",
+    "version": "3.11.2-6+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-11940",
+    "package": "libpython3.11-stdlib",
+    "version": "3.11.2-6+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-7210",
+    "package": "libpython3.11-stdlib",
+    "version": "3.11.2-6+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96889",
+    "package": "librsvg2-2",
+    "version": "2.54.7+dfsg-1~deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96889",
+    "package": "librsvg2-common",
+    "version": "2.54.7+dfsg-1~deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96889",
+    "package": "librsvg2-dev",
+    "version": "2.54.7+dfsg-1~deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "libsmartcols1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "libsmartcols1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "libsmartcols1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "libsmartcols1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "libsmartcols1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "libsmartcols1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-37555",
+    "package": "libsndfile1",
+    "version": "1.2.0-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-7458",
+    "package": "libsqlite3-0",
+    "version": "3.40.1-2+deb12u2",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-11822",
+    "package": "libsqlite3-0",
+    "version": "3.40.1-2+deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-11824",
+    "package": "libsqlite3-0",
+    "version": "3.40.1-2+deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-7458",
+    "package": "libsqlite3-dev",
+    "version": "3.40.1-2+deb12u2",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-11822",
+    "package": "libsqlite3-dev",
+    "version": "3.40.1-2+deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-11824",
+    "package": "libsqlite3-dev",
+    "version": "3.40.1-2+deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-84782",
+    "package": "libssl-dev",
+    "version": "3.0.22-1~deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-84782",
+    "package": "libssl3",
+    "version": "3.0.22-1~deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "libswresample4",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52296",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52297",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58049",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64830",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64832",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64833",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64834",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64835",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66036",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66039",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-66040",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70628",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-70632",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75142",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75143",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75144",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-75146",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-8461",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-96611",
+    "package": "libswscale6",
+    "version": "7:5.1.9-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-16742",
+    "package": "libsystemd0",
+    "version": "252.39-1~deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-52355",
+    "package": "libtiff-dev",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-12912",
+    "package": "libtiff-dev",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-36849",
+    "package": "libtiff-dev",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52490",
+    "package": "libtiff-dev",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-52355",
+    "package": "libtiff6",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-12912",
+    "package": "libtiff6",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-36849",
+    "package": "libtiff6",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52490",
+    "package": "libtiff6",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-52355",
+    "package": "libtiffxx6",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-12912",
+    "package": "libtiffxx6",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-36849",
+    "package": "libtiffxx6",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52490",
+    "package": "libtiffxx6",
+    "version": "4.5.0-6+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-69720",
+    "package": "libtinfo6",
+    "version": "6.4-4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-16742",
+    "package": "libudev1",
+    "version": "252.39-1~deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "libuuid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "libuuid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "libuuid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "libuuid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "libuuid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "libuuid1",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-88806",
+    "package": "libx11-6",
+    "version": "2:1.8.4-2+deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-88806",
+    "package": "libx11-data",
+    "version": "2:1.8.4-2+deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-88806",
+    "package": "libx11-dev",
+    "version": "2:1.8.4-2+deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-88806",
+    "package": "libx11-xcb1",
+    "version": "2:1.8.4-2+deb12u2",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-6653",
+    "package": "libxml2",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-74860",
+    "package": "libxml2",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86138",
+    "package": "libxml2",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86140",
+    "package": "libxml2",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86142",
+    "package": "libxml2",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86143",
+    "package": "libxml2",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86144",
+    "package": "libxml2",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-6653",
+    "package": "libxml2-dev",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-74860",
+    "package": "libxml2-dev",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86138",
+    "package": "libxml2-dev",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86140",
+    "package": "libxml2-dev",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86142",
+    "package": "libxml2-dev",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86143",
+    "package": "libxml2-dev",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86144",
+    "package": "libxml2-dev",
+    "version": "2.9.14+dfsg-1.3~deb12u6",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-88807",
+    "package": "libxrender-dev",
+    "version": "1:0.9.10-1.1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-88807",
+    "package": "libxrender1",
+    "version": "1:0.9.10-1.1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-90037",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93221",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98805",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2013-7445",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2019-19449",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2019-19814",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2021-3847",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2021-3864",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-52452",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-52586",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-52624",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-52751",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-53218",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-21803",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-26669",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-26836",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-26913",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-26914",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-26944",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-38570",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-38630",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-41045",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-41935",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-42118",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-42162",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-44941",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-44942",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-44951",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-46729",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-46811",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-46813",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-47691",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-50217",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-50226",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-50282",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-53068",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-53147",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-53168",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-53179",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-53218",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-56538",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-56775",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-57900",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2024-57982",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-21927",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-21967",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-21969",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-21985",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-23133",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-37750",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-37776",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-37777",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-37861",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-37952",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-37957",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38069",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38081",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38182",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38204",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38248",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38369",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38582",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38585",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38595",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38636",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38722",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-38734",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-39744",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-39797",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-39810",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-39859",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-39952",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-40025",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-40137",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-40333",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-40354",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-68809",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-71068",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-71073",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-71152",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-100072",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-23171",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-23208",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-23226",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-23327",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-23361",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-31432",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-31493",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-31527",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-31568",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-31729",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-43049",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-43125",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-43185",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-43250",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-45893",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-45943",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-45957",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-46054",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-46068",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-46130",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-46181",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-46219",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-46241",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-46293",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-52991",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53000",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53091",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53115",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53117",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53118",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53120",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53129",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53143",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53156",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53179",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53262",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53272",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53330",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-63962",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64001",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64017",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64026",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64138",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64305",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64341",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64348",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64389",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64392",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64400",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64424",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-64556",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-68409",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-68426",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-68470",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-72042",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-72098",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-72130",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-74269",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-74345",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-74752",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-80837",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-80841",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-80883",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-80905",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89465",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89526",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89530",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89545",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89564",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89631",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89633",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89638",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89652",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89659",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89675",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89676",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89708",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89713",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89761",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89788",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89803",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89810",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89811",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89913",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-89972",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-90036",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-90048",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-90111",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-90206",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-90227",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-90315",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93792",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93817",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98222",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98364",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98466",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98490",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98715",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98716",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98725",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98741",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98742",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98769",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98792",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98794",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98797",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98799",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98803",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98823",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98824",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98827",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98829",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98836",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98837",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98846",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98862",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-98863",
+    "package": "linux-libc-dev",
+    "version": "6.1.190-1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-85746",
+    "package": "mariadb-common",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-92262",
+    "package": "mariadb-common",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107815",
+    "package": "mariadb-common",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107818",
+    "package": "mariadb-common",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-107823",
+    "package": "mariadb-common",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-86047",
+    "package": "mariadb-common",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-97380",
+    "package": "mariadb-common",
+    "version": "1:10.11.19-0+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "mount",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "mount",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "mount",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "mount",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "mount",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "mount",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-69720",
+    "package": "ncurses-base",
+    "version": "6.4-4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2025-69720",
+    "package": "ncurses-bin",
+    "version": "6.4-4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-60002",
+    "package": "openssh-client",
+    "version": "1:9.2p1-2+deb12u10",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106553",
+    "package": "openssh-client",
+    "version": "1:9.2p1-2+deb12u10",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106555",
+    "package": "openssh-client",
+    "version": "1:9.2p1-2+deb12u10",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-106583",
+    "package": "openssh-client",
+    "version": "1:9.2p1-2+deb12u10",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-59999",
+    "package": "openssh-client",
+    "version": "1:9.2p1-2+deb12u10",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-60000",
+    "package": "openssh-client",
+    "version": "1:9.2p1-2+deb12u10",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-84782",
+    "package": "openssl",
+    "version": "3.0.22-1~deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-9538",
+    "package": "perl",
+    "version": "5.36.0-7+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-9538",
+    "package": "perl-base",
+    "version": "5.36.0-7+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-9538",
+    "package": "perl-modules-5.36",
+    "version": "5.36.0-7+deb12u4",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-11940",
+    "package": "python3.11",
+    "version": "3.11.2-6+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-7210",
+    "package": "python3.11",
+    "version": "3.11.2-6+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-11940",
+    "package": "python3.11-minimal",
+    "version": "3.11.2-6+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-7210",
+    "package": "python3.11-minimal",
+    "version": "3.11.2-6+deb12u9",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "util-linux",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "util-linux",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "util-linux",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "util-linux",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "util-linux",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "util-linux",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "util-linux-extra",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "util-linux-extra",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "util-linux-extra",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "util-linux-extra",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "util-linux-extra",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "util-linux-extra",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53613",
+    "package": "uuid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-53615",
+    "package": "uuid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-76642",
+    "package": "uuid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78408",
+    "package": "uuid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78409",
+    "package": "uuid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-78410",
+    "package": "uuid-dev",
+    "version": "2.38.1-5+deb12u3",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58471",
+    "package": "wget",
+    "version": "1.21.3-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-58472",
+    "package": "wget",
+    "version": "1.21.3-1+deb12u1",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-5574",
+    "package": "xserver-common",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-55999",
+    "package": "xserver-common",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-56000",
+    "package": "xserver-common",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-88812",
+    "package": "xserver-common",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93516",
+    "package": "xserver-common",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93521",
+    "package": "xserver-common",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93523",
+    "package": "xserver-common",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-5574",
+    "package": "xvfb",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-55999",
+    "package": "xvfb",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-56000",
+    "package": "xvfb",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-88812",
+    "package": "xvfb",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93516",
+    "package": "xvfb",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93521",
+    "package": "xvfb",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2026-93523",
+    "package": "xvfb",
+    "version": "2:21.1.7-3+deb12u13",
+    "fixed": null,
+    "severity": "HIGH"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-45853",
+    "package": "zlib1g",
+    "version": "1:1.2.13.dfsg-1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  },
+  {
+    "target": "tron-codex:local (debian 12.15)",
+    "id": "CVE-2023-45853",
+    "package": "zlib1g-dev",
+    "version": "1:1.2.13.dfsg-1",
+    "fixed": null,
+    "severity": "CRITICAL"
+  }
+]
