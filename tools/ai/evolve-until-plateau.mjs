@@ -2,7 +2,7 @@ import {APPROACH} from './approach.mjs';
 // Start from the frozen playtested policy. Stop on a predeclared validation plateau.
 import {Worker} from 'node:worker_threads';
 import {writeFile,mkdir} from 'node:fs/promises';
-import {PLAYTESTED_POLICY} from '../../shared/simulation/cycle-ai/policies/aggression-v2.js';
+import {PLAYTESTED_POLICY} from '../../shared/simulation/cycle-ai/policies/aggression-v3.js';
 import {BASELINE_POLICY as DEFAULT_POLICY,POLICY_BOUNDS,validatePolicy} from '../../shared/simulation/cycle-ai/config.js';
 import {AI_FITNESS} from './fitness.mjs';
 import {match} from './benchmark.mjs';

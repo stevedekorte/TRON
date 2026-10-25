@@ -11,6 +11,25 @@ See also: /llms.txt (curated index) and /sitemap.xml.
 <!-- Page: (root) -->
 Source: /
 
+## Promote evolved AI as normal gameplay — October 25
+
+- [x] User requested the validated candidate become the normal version for PWA testing. Promote `approach-480000-1-0` through `shared/simulation/cycle-ai/policies/aggression-v3.js`; shared solo/MP defaults and the plateau trainer now use it. Preserve v2 for rollback and update the regression asserting both authorities use the expected default. This is an explicit user promotion after automated checks, not a claim of human play review.
+- [x] Release validation: 642 unit tests, production build/asset audit, Worker dry run and PWA checks pass. Normal Chrome startup selects the promoted policy; frame AI p99 0.60 ms, dense p99 0.40 ms, no page errors. Exact weights match the evaluated candidate. Multiplayer Worker deployed as `db608817-b999-4aa8-8aba-ad266946b86d`; static client prepared for the website Pages workflow. Promotion record: `tools/ai/results/promotion-480000.json`. PWA background updates activate between sessions; refresh/reopen after the new version is ready.
+
+## Broader cycle AI evolution and local trial — October 25
+
+- [x] Add repeatable `--opponent=artifact.json` support to the offline trainer. Validate imported policies and record initial opponent weights/paths in checkpoints and results. Keep held-out comparisons against the fixed deployed policy. Train from incumbent `approach-340000-0-0` with previous challenger `approach-370000-0-2` as an additional opponent.
+- [x] Complete `node tools/ai/train.mjs --population=6 --generations=2 --trainSeeds=4 --heldOutSeeds=12 --seconds=180 --workers=2 --seedOffset=480000 --opponent=tools/ai/results/followup-370000.json --artifact=cycle-ai-followup-2026-10-25-round2`. Node 22.23.4/macOS arm64; 192 training matches plus 96 held-out comparisons. Training seed groups 490000–490003 and 490100–490103; held-out groups 570000–570011, each with four correlated rotations. Final candidate `approach-480000-1-0`.
+- [x] Held-out results (48 matches each): candidate 27 wins / 25 direct eliminations / 7 trap assists, incumbent 12 / 21 / 3; no held-out timeouts. Mean fitness 1.92559 versus 1.27585 (+50.9%), positive paired fitness in 11/12 seed groups. This is promising offline evidence, not proof of general superiority against humans or other opponent distributions. Final serial AI p99 0.269 ms and tick p99 0.401 ms, tick max 1.262 ms; p99 runtime gate passes. Generation-selection ticks had maxima 12.762 and 9.236 ms, so not every timing probe stayed within the 8.333 ms tick budget.
+- [x] All 36 targeted AI/fitness/approach tests and trainer syntax checks pass. Headless Chrome 155 at 1280×800 (`node tests/browser/cycle-ai.mjs --trial`) loads the exact candidate/tuning weights and passes: rendered-frame AI p99 0.50 ms (max 1.10 ms), dense 12-cycle/2,048-trail p99 0.40 ms (max 0.80 ms), no page errors. Inspected the capture; human play-quality review remains outstanding.
+- [x] Enable only the optional development trial at `http://127.0.0.1:5173/?cycleAITrial=1`; choose LIGHT CYCLES. Saved previous trial as `test-results/cycle-ai-trained-before-480000.json`. Full results/checkpoint/log: `test-results/cycle-ai-followup-2026-10-25-round2*`; durable summary/weights/browser report: `tools/ai/results/followup-480000.json`. Trainer exited normally. Normal solo/MP defaults and production remain unchanged; no deployment.
+
+## Cycle AI evolution follow-up — October 25
+
+- [x] Run `node tools/ai/train.mjs --population=4 --generations=1 --trainSeeds=3 --heldOutSeeds=8 --seconds=180 --workers=2 --seedOffset=370000 --artifact=cycle-ai-followup-2026-10-25` from current deployed weights under the current speed-ramping rules. One generation, 48 training matches and 64 held-out comparisons; training seeds 380000–380002, evaluation 460000–460007, four correlated spawn rotations per seed. Node 22.23.4 on macOS arm64; two worker threads, no live training.
+- [x] Training selected `approach-370000-0-2`. On 32 fresh matches per policy: challenger 10 wins / 9 direct wall eliminations / 4 trap assists, incumbent 8 / 9 / 10. All matches completed without timeouts. Challenger mean fitness 1.18044 versus incumbent 1.32497 (10.9% lower), with positive paired fitness in only two of eight seed groups. Keep incumbent `approach-340000-0-0`; more wins in this small sample do not establish an overall improvement.
+- [x] Final serial candidate runtime gate passes: AI p99 0.226 ms, tick p99 0.317 ms. Tick maximum 8.858 ms exceeds the 8.333 ms budget; the gate checks p99, not zero outliers. Training selection also had an 11.254 ms maximum. Full local artifact/checkpoint/log: `test-results/cycle-ai-followup-2026-10-25*`; durable summary with weights, settings, scores and paired results: `tools/ai/results/followup-370000.json`. Trainer exited normally. No gameplay weights, trial policy, browser behavior or deployment changed.
+
 ## Lift shadow darkness to retain the grid — October 25
 
 - [x] Reduce bike, trail and perimeter floor-shadow attenuation from 98% to 88%, leaving 12% of underlying floor/grid radiance. Retain exact wall-shadow edges and no trail-to-trail reception. Apply the same 88% attenuation to Recognizer shadows on arena wall faces.
@@ -2877,6 +2896,44 @@ title: Fast, compelling cycle AI
 topTitle: TRON
 subtitle: Bounded JavaScript tactics, resource planning, and measured evolution
 ---
+
+## Promoted as normal gameplay — October 25
+
+At the user's explicit request, `approach-480000-1-0` is now the shared solo and multiplayer default in `shared/simulation/cycle-ai/policies/aggression-v3.js`. The former default remains in v2 for rollback. The normal game URL needs no trial parameter. This promotion follows the tournament/browser checks below and the user's decision to try it as the normal PWA version; no prior human play review is claimed.
+
+All 642 unit tests, production build/asset audit, Worker dry run and production PWA checks pass. Normal Chrome startup verifies the new policy, frame AI p99 0.60 ms, dense-scene p99 0.40 ms and no page errors. The multiplayer Worker is deployed; static/PWA publication uses the website Pages workflow. Installed PWAs receive the new client through the existing background update process. Exact promoted weights and release checks are retained in `tools/ai/results/promotion-480000.json`.
+
+## Broader evolution candidate available locally — October 25
+
+A second run used six policies × two generations × four training seeds, followed by twelve fresh evaluation seeds, four rotations each and 180-second limits: 288 tournament matches in total. Two workers ran on Node 22.23.4/macOS arm64. The trainer now accepts repeatable `--opponent=artifact.json` arguments and stores imported weights and paths. This run started from the deployed policy and included the preceding challenger as a historical training opponent. Held-out opponents remained fixed to the deployed policy.
+
+| Held-out result (48 matches each) | Candidate `approach-480000-1-0` | Deployed `approach-340000-0-0` |
+| --- | --- | --- |
+| Wins | 27 | 12 |
+| Direct wall eliminations | 25 | 21 |
+| Trap assists | 7 | 3 |
+| Mean fitness | 1.92559 | 1.27585 |
+
+Fitness improves 50.9%, with positive paired differences in eleven of twelve seed groups and no held-out timeouts. The four rotations within each group are correlated; these results are exploratory and compare against one fixed opponent distribution. Final serial AI p99 is 0.269 ms, tick p99 0.401 ms and maximum tick 1.262 ms. Generation-selection probes had some tick-budget outliers; the trainer gates p99, not maximum latency.
+
+All 36 targeted AI/fitness/approach tests pass. Chrome 155 at 1280×800 verifies the exact trial policy, tuning controls and execution without page errors. Rendered-frame AI p99 is 0.50 ms (maximum 1.10 ms); dense 12-cycle/2,048-trail p99 is 0.40 ms (maximum 0.80 ms). Inspected `test-results/cycle-ai-trial.png`; this does not establish subjective enjoyment. The candidate is available through `http://127.0.0.1:5173/?cycleAITrial=1` → LIGHT CYCLES. The preceding local trial is backed up as `test-results/cycle-ai-trained-before-480000.json`. Normal gameplay defaults and production are unchanged.
+
+Reproduce with `node tools/ai/train.mjs --population=6 --generations=2 --trainSeeds=4 --heldOutSeeds=12 --seconds=180 --workers=2 --seedOffset=480000 --opponent=tools/ai/results/followup-370000.json --artifact=cycle-ai-followup-2026-10-25-round2`. Summary, exact weights and browser results are in `tools/ai/results/followup-480000.json`; full rows are in `test-results/cycle-ai-followup-2026-10-25-round2.json`. No training remains running and no further run is scheduled. Human review and promotion remain separate steps.
+
+## Current-rules evolution follow-up — October 25
+
+Completed a fresh one-generation run from the deployed `approach-340000-0-0`, under current speed ramping: population four, three training seeds, eight held-out seeds, four rotations each, 180-second limits and two workers. This is 48 training matches plus 64 held-out comparisons; the longer horizon produced no timeouts. Node 22.23.4, macOS arm64. Training selected `approach-370000-0-2`.
+
+| Held-out result (32 matches each) | Challenger | Current policy |
+| --- | --- | --- |
+| Wins | 10 | 8 |
+| Direct wall eliminations | 9 | 9 |
+| Trap assists | 4 | 10 |
+| Mean fitness | 1.18044 | 1.32497 |
+
+The challenger improves paired fitness in only two of eight seed groups and scores 10.9% lower overall. Retain the deployed weights. Rotations share seeds; these exploratory results do not establish a general win-rate gain. Serial AI p99 is 0.226 ms and tick p99 0.317 ms; the final 8.858 ms tick maximum exceeds the nominal 120 Hz budget despite passing the p99 gate. No browser/play review or promotion was performed.
+
+Reproduce with `node tools/ai/train.mjs --population=4 --generations=1 --trainSeeds=3 --heldOutSeeds=8 --seconds=180 --workers=2 --seedOffset=370000 --artifact=cycle-ai-followup-2026-10-25`. Full local output is `test-results/cycle-ai-followup-2026-10-25.json`; the repository summary is `tools/ai/results/followup-370000.json`. The trainer exited normally and no further run is scheduled.
 
 ## Obstacle-aware training reward — October 15
 
@@ -5910,6 +5967,16 @@ Source: /validation/
 title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
+
+## Evolved AI default release — October 25
+
+User-approved `approach-480000-1-0` promotion: all 642 unit tests pass, including solo/MP default identity. Production build and asset audit pass. `node tests/browser/cycle-ai.mjs` verifies the normal, non-trial entry point in Chrome 155 at 1280×800; frame AI p99 0.60 ms/max 1.00 ms, dense p99 0.40 ms/max 0.70 ms, no page errors. Promoted module weights exactly match the evaluated candidate. `node tests/pwa.mjs` passes installability, scoped icons/manifest, offline tank/cycle startup, ranged audio and non-interrupting updates. Worker dry run and deployment succeed; version `db608817-b999-4aa8-8aba-ad266946b86d`. Static publication proceeds via website revision pin. Full release metadata is in `tools/ai/results/promotion-480000.json`.
+
+## Broader evolved cycle-AI trial — October 25
+
+Completed 288 offline tournament matches with the existing safety/controller rules and a historical training opponent. Candidate wins 27/48 held-out games versus incumbent 12/48, scores 50.9% higher and improves paired fitness in 11/12 groups; full metrics and weights are retained in `tools/ai/results/followup-480000.json`. Rotated seats are correlated, so these are exploratory results. The final serial p99 timing gate passes; earlier generation probes include tick-budget outliers.
+
+`node --test tests/unit/cycle-ai.test.js tests/unit/cycle-ai-fitness.test.js tests/unit/cycle-ai-approach.test.js`: 36 pass. `node --check tools/ai/train.mjs`: pass. `node tests/browser/cycle-ai.mjs --trial`: Chrome 155, macOS, 1280×800; exact candidate weights and tuning values verified, no page errors, frame AI p99 0.50 ms/max 1.10 ms; dense-scene p99 0.40 ms/max 0.80 ms. Inspected `test-results/cycle-ai-trial.png`. Optional local trial updated with the previous artifact preserved; no shared live-policy or deployment changes. Human gameplay review remains outstanding.
 
 ## Grid-visible shadows — October 25
 

@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-25",
+  "authorizedByUser": true,
+  "policy": {
+    "version": 1,
+    "id": "approach-480000-1-0",
+    "space": 0.719743750281632,
+    "clearance": 0.791621218281798,
+    "cutoff": 1.7066593531519172,
+    "pressure": 0.32037167462985966,
+    "allyPenalty": 1.1630799298989587,
+    "reserveCost": 0.08071088971290737,
+    "reserveFloor": 0.16631910644471648,
+    "straightBonus": 0.08031191605143248,
+    "switchCost": 0.07173405723879114,
+    "leadSeconds": 0.13908921824907886,
+    "variation": 0.008232411816716195
+  },
+  "previousPolicy": "approach-340000-0-0",
+  "rollbackModule": "shared/simulation/cycle-ai/policies/aggression-v2.js",
+  "evolutionSummary": "tools/ai/results/followup-480000.json",
+  "validation": {
+    "unitTestsPassed": 642,
+    "productionBuild": true,
+    "assetAudit": true,
+    "workerDryRun": true,
+    "pwaChecks": true,
+    "browser": {
+      "state": {
+        "debug": {
+          "tick": 121,
+          "totalMilliseconds": 9.800000101327896,
+          "totals": {
+            "overtakePlans": 0,
+            "cutoffPlans": 0,
+            "turboPlans": 0,
+            "brakePlans": 0,
+            "guardTicks": 0
+          },
+          "plans": 0,
+          "guards": 0,
+          "segmentTests": 9,
+          "overflow": false,
+          "bots": [
+            {
+              "id": 0,
+              "policyId": "approach-480000-1-0",
+              "reason": "space",
+              "dir": 2,
+              "pedal": 0,
+              "decisions": 10
+            },
+            {
+              "id": 1,
+              "policyId": "approach-480000-1-0",
+              "reason": "space",
+              "dir": 2,
+              "pedal": 0,
+              "decisions": 10
+            },
+            {
+              "id": 3,
+              "policyId": "approach-480000-1-0",
+              "reason": "space",
+              "dir": 0,
+              "pedal": 0,
+              "decisions": 10
+            },
+            {
+              "id": 4,
+              "policyId": "approach-480000-1-0",
+              "reason": "space",
+              "dir": 0,
+              "pedal": 0,
+              "decisions": 10
+            },
+            {
+              "id": 5,
+              "policyId": "approach-480000-1-0",
+              "reason": "space",
+              "dir": 0,
+              "pedal": 0,
+              "decisions": 10
+            }
+          ]
+        },
+        "metrics": {
+          "milliseconds": 0,
+          "plans": 0,
+          "segmentTests": 9
+        }
+      },
+      "frameAI": {
+        "frames": 481,
+        "p99": 0.6000000089406967,
+        "max": 1.0000000149011612
+      },
+      "report": {
+        "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "p95": 0.30000001192092896,
+        "p99": 0.4000000059604645,
+        "max": 0.7000000029802322
+      },
+      "errors": []
+    }
+  },
+  "worker": {
+    "version": "db608817-b999-4aa8-8aba-ad266946b86d",
+    "url": "https://tron-jev.tron-canyon-run.workers.dev"
+  },
+  "note": "Explicit user promotion after offline and browser checks. Human trial play was not a release gate requested by the user. Static publication verified separately."
+}

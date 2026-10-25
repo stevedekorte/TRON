@@ -3,6 +3,16 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Evolved AI default release — October 25
+
+User-approved `approach-480000-1-0` promotion: all 642 unit tests pass, including solo/MP default identity. Production build and asset audit pass. `node tests/browser/cycle-ai.mjs` verifies the normal, non-trial entry point in Chrome 155 at 1280×800; frame AI p99 0.60 ms/max 1.00 ms, dense p99 0.40 ms/max 0.70 ms, no page errors. Promoted module weights exactly match the evaluated candidate. `node tests/pwa.mjs` passes installability, scoped icons/manifest, offline tank/cycle startup, ranged audio and non-interrupting updates. Worker dry run and deployment succeed; version `db608817-b999-4aa8-8aba-ad266946b86d`. Static publication proceeds via website revision pin. Full release metadata is in `tools/ai/results/promotion-480000.json`.
+
+## Broader evolved cycle-AI trial — October 25
+
+Completed 288 offline tournament matches with the existing safety/controller rules and a historical training opponent. Candidate wins 27/48 held-out games versus incumbent 12/48, scores 50.9% higher and improves paired fitness in 11/12 groups; full metrics and weights are retained in `tools/ai/results/followup-480000.json`. Rotated seats are correlated, so these are exploratory results. The final serial p99 timing gate passes; earlier generation probes include tick-budget outliers.
+
+`node --test tests/unit/cycle-ai.test.js tests/unit/cycle-ai-fitness.test.js tests/unit/cycle-ai-approach.test.js`: 36 pass. `node --check tools/ai/train.mjs`: pass. `node tests/browser/cycle-ai.mjs --trial`: Chrome 155, macOS, 1280×800; exact candidate weights and tuning values verified, no page errors, frame AI p99 0.50 ms/max 1.10 ms; dense-scene p99 0.40 ms/max 0.80 ms. Inspected `test-results/cycle-ai-trial.png`. Optional local trial updated with the previous artifact preserved; no shared live-policy or deployment changes. Human gameplay review remains outstanding.
+
 ## Grid-visible shadows — October 25
 
 Reduced bike/trail/perimeter floor attenuation to 88% and arena-wall aircraft attenuation to 88%. Production build and asset audit pass; Chrome trail checks retain floor shadow coverage, collapse/removal and unchanged trail faces. Inspected the lighter capture. The preceding deployment completed successfully, and a live Chrome check started CLU and cycles, loaded versioned models/audio and played the audio studio without HTTP/page errors. Updated the production smoke check to accept immutable content hashes in the Recognizer flight audio filename; its legacy exact-name assertion had falsely reported an audio failure. Live verification of this attenuation adjustment follows publication.

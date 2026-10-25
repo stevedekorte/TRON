@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "options": {
+    "population": 4,
+    "generations": 1,
+    "trainSeeds": 3,
+    "heldOutSeeds": 8,
+    "seconds": 180,
+    "workers": 2,
+    "seedOffset": 370000
+  },
+  "initialPolicy": {
+    "version": 1,
+    "id": "approach-340000-0-0",
+    "space": 0.7,
+    "clearance": 0.5710767524503172,
+    "cutoff": 1.6172238771803673,
+    "pressure": 0.3472025061398745,
+    "allyPenalty": 1.027476475341245,
+    "reserveCost": 0.08986003088857979,
+    "reserveFloor": 0.18521312844008211,
+    "straightBonus": 0.09796467728912829,
+    "switchCost": 0.06432283084141091,
+    "leadSeconds": 0.15562226661108436,
+    "variation": 0.010922345181461424
+  },
+  "fitnessWeights": {
+    "version": 2,
+    "winPoints": 1,
+    "fastWinBonusPoints": 0.5,
+    "enemyWallPoints": 1,
+    "trapAssistPoints": 1,
+    "earlyEliminationBonusPoints": 1,
+    "confinementPoints": 0,
+    "approachPoints": 0.15
+  },
+  "approachConfig": {
+    "version": 1,
+    "sampleSeconds": 1,
+    "gridStepMeters": 2.4,
+    "nearMeters": 20,
+    "farMeters": 120,
+    "pairCap": 1,
+    "teamCap": 1
+  },
+  "policy": {
+    "version": 1,
+    "id": "approach-370000-0-2",
+    "space": 0.7,
+    "clearance": 0.6588844531658106,
+    "cutoff": 1.2652308436576274,
+    "pressure": 0.3197035271651112,
+    "allyPenalty": 1,
+    "reserveCost": 0.08,
+    "reserveFloor": 0.15162182116881018,
+    "straightBonus": 0.08676089869346468,
+    "switchCost": 0.07006924509769306,
+    "leadSeconds": 0.17208569974056448,
+    "variation": 0.008674360181903467
+  },
+  "generations": [
+    [
+      {
+        "policy": {
+          "version": 1,
+          "id": "approach-370000-0-2",
+          "space": 0.7,
+          "clearance": 0.6588844531658106,
+          "cutoff": 1.2652308436576274,
+          "pressure": 0.3197035271651112,
+          "allyPenalty": 1,
+          "reserveCost": 0.08,
+          "reserveFloor": 0.15162182116881018,
+          "straightBonus": 0.08676089869346468,
+          "switchCost": 0.07006924509769306,
+          "leadSeconds": 0.17208569974056448,
+          "variation": 0.008674360181903467
+        },
+        "result": {
+          "wins": 2,
+          "draws": 0,
+          "losses": 10,
+          "matches": 12,
+          "winRate": 0.16666666666666666,
+          "wallEliminations": 7,
+          "trapAssists": 1,
+          "confinements": 9,
+          "offensePoints": 12.896666666666667,
+          "approach": 0.8976860069094013,
+          "approachMs": 23002.87857799993,
+          "fastWinBonus": 0.6758333333333333,
+          "fitness": 1.3089294084197007
+        },
+        "timing": {
+          "aiMs": {
+            "p95": 0.19616700000187848,
+            "p99": 0.43416699999943376,
+            "max": 2.5155830000003334
+          },
+          "tickMs": {
+            "p50": 0.13870900000620168,
+            "p95": 0.32237500000337604,
+            "p99": 0.6558329999970738,
+            "max": 11.25449999999546
+          },
+          "passes": true
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "approach-340000-0-0",
+          "space": 0.7,
+          "clearance": 0.5710767524503172,
+          "cutoff": 1.6172238771803673,
+          "pressure": 0.3472025061398745,
+          "allyPenalty": 1.027476475341245,
+          "reserveCost": 0.08986003088857979,
+          "reserveFloor": 0.18521312844008211,
+          "straightBonus": 0.09796467728912829,
+          "switchCost": 0.06432283084141091,
+          "leadSeconds": 0.15562226661108436,
+          "variation": 0.010922345181461424
+        },
+        "result": {
+          "wins": 3,
+          "draws": 0,
+          "losses": 9,
+          "matches": 12,
+          "winRate": 0.25,
+          "wallEliminations": 5,
+          "trapAssists": 1,
+          "confinements": 10,
+          "offensePoints": 10.842083333333333,
+          "approach": 0.8407997858268432,
+          "approachMs": 24136.424448999867,
+          "fastWinBonus": 0.9710416666666667,
+          "fitness": 1.2449370806561688
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "approach-370000-0-0",
+          "space": 0.8244385462719946,
+          "clearance": 0.6680662563745864,
+          "cutoff": 1.404283809754997,
+          "pressure": 0.4812214945000597,
+          "allyPenalty": 1,
+          "reserveCost": 0.15057802624814212,
+          "reserveFloor": 0.20833042018115525,
+          "straightBonus": 0.1071464105369523,
+          "switchCost": 0.05,
+          "leadSeconds": 0.14349839993775823,
+          "variation": 0.007347809525672346
+        },
+        "result": {
+          "wins": 2,
+          "draws": 0,
+          "losses": 10,
+          "matches": 12,
+          "winRate": 0.16666666666666666,
+          "wallEliminations": 5,
+          "trapAssists": 1,
+          "confinements": 10,
+          "offensePoints": 11.448055555555555,
+          "approach": 0.9170805473936317,
+          "approachMs": 23463.42700400001,
+          "fastWinBonus": 0.7090740740740741,
+          "fitness": 1.1912243093115564
+        }
+      },
+      {
+        "policy": {
+          "version": 1,
+          "id": "approach-370000-0-1",
+          "space": 0.7,
+          "clearance": 0.5117436076002196,
+          "cutoff": 1.5762352108256887,
+          "pressure": 0.3029816524032504,
+          "allyPenalty": 1,
+          "reserveCost": 0.08,
+          "reserveFloor": 0.1384485971461982,
+          "straightBonus": 0.12640277959406376,
+          "switchCost": 0.09732683216570877,
+          "leadSeconds": 0.1583909374815412,
+          "variation": 0.013984229671186768
+        },
+        "result": {
+          "wins": 3,
+          "draws": 0,
+          "losses": 9,
+          "matches": 12,
+          "winRate": 0.25,
+          "wallEliminations": 1,
+          "trapAssists": 1,
+          "confinements": 8.833333333333334,
+          "offensePoints": 3.665277777777778,
+          "approach": 0.8821502240499529,
+          "approachMs": 25281.31292500013,
+          "fastWinBonus": 0.7986805555555556,
+          "fitness": 0.6330234055784022
+        }
+      }
+    ]
+  ],
+  "heldOut": {
+    "candidate": {
+      "wins": 10,
+      "draws": 0,
+      "losses": 22,
+      "matches": 32,
+      "winRate": 0.3125,
+      "wallEliminations": 9,
+      "trapAssists": 4,
+      "confinements": 24.499999999999996,
+      "offensePoints": 24.117592592592594,
+      "approach": 2.6343103903316796,
+      "approachMs": 67653.15503800083,
+      "fastWinBonus": 3.261435185185185,
+      "fitness": 1.1804429480102354
+    },
+    "baseline": {
+      "wins": 8,
+      "draws": 0,
+      "losses": 24,
+      "matches": 32,
+      "winRate": 0.25,
+      "wallEliminations": 9,
+      "trapAssists": 10,
+      "confinements": 39,
+      "offensePoints": 31.308055555555555,
+      "approach": 2.1226107863518315,
+      "approachMs": 61139.07764800031,
+      "fastWinBonus": 2.7725231481481485,
+      "fitness": 1.3249678225517652
+    },
+    "previous": {
+      "wins": 8,
+      "draws": 0,
+      "losses": 24,
+      "matches": 32,
+      "winRate": 0.25,
+      "wallEliminations": 9,
+      "trapAssists": 10,
+      "confinements": 39,
+      "offensePoints": 31.308055555555555,
+      "approach": 2.1226107863518315,
+      "approachMs": 61139.07764800031,
+      "fastWinBonus": 2.7725231481481485,
+      "fitness": 1.3249678225517652
+    },
+    "paired": [
+      {
+        "seed": 460000,
+        "fitnessDelta": -1.3869271886624746,
+        "killDelta": -0.5,
+        "assistDelta": -0.25
+      },
+      {
+        "seed": 460001,
+        "fitnessDelta": 0.9478696749052877,
+        "killDelta": 0,
+        "assistDelta": -0.25
+      },
+      {
+        "seed": 460002,
+        "fitnessDelta": -0.7791579413738273,
+        "killDelta": -0.25,
+        "assistDelta": 0
+      },
+      {
+        "seed": 460003,
+        "fitnessDelta": -0.875280796929971,
+        "killDelta": -0.25,
+        "assistDelta": -0.5
+      },
+      {
+        "seed": 460004,
+        "fitnessDelta": -0.4281739573382764,
+        "killDelta": -0.25,
+        "assistDelta": 0
+      },
+      {
+        "seed": 460005,
+        "fitnessDelta": 1.8364743750728802,
+        "killDelta": 1.25,
+        "assistDelta": -0.25
+      },
+      {
+        "seed": 460006,
+        "fitnessDelta": -0.12318549560965841,
+        "killDelta": 0,
+        "assistDelta": -0.25
+      },
+      {
+        "seed": 460007,
+        "fitnessDelta": -0.34781766639619754,
+        "killDelta": 0,
+        "assistDelta": 0
+      }
+    ]
+  },
+  "timing": {
+    "aiMs": {
+      "p95": 0.17291699998895638,
+      "p99": 0.22550000000046566,
+      "max": 0.7695000000239816
+    },
+    "tickMs": {
+      "p50": 0.1587500000023283,
+      "p95": 0.25412499997764826,
+      "p99": 0.31720799999311566,
+      "max": 8.857749999995576
+    },
+    "passes": true
+  },
+  "promoted": false,
+  "note": "Exploratory run. Seed is the comparison unit; four spawn rotations are correlated. Requires gameplay review. Parallel matches are not performance measurements.",
+  "sourceRevision": "0418a217a85435e2eb257de3c172430d2de3234f",
+  "environment": {
+    "node": "v22.23.4",
+    "platform": "darwin",
+    "architecture": "arm64"
+  },
+  "fullArtifact": "test-results/cycle-ai-followup-2026-10-25.json",
+  "decision": {
+    "promoted": false,
+    "retainPolicy": "approach-340000-0-0",
+    "reason": "Candidate won more held-out games but had lower aggregate fitness, fewer trap assists, unchanged direct kills, and positive paired fitness in only two of eight seed groups."
+  }
+}

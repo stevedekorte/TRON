@@ -1,4 +1,4 @@
-import {PLAYTESTED_POLICY} from './policies/aggression-v2.js';
+import {PLAYTESTED_POLICY} from './policies/aggression-v3.js';
 import {validateNetwork} from './network.js';
 // Runtime/safety limits are not evolved. Distances below are arena-cell units
 // only at the geometry adapter; behavior time and distance parameters use SI.

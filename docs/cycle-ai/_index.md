@@ -4,6 +4,44 @@ topTitle: TRON
 subtitle: Bounded JavaScript tactics, resource planning, and measured evolution
 ---
 
+## Promoted as normal gameplay — October 25
+
+At the user's explicit request, `approach-480000-1-0` is now the shared solo and multiplayer default in `shared/simulation/cycle-ai/policies/aggression-v3.js`. The former default remains in v2 for rollback. The normal game URL needs no trial parameter. This promotion follows the tournament/browser checks below and the user's decision to try it as the normal PWA version; no prior human play review is claimed.
+
+All 642 unit tests, production build/asset audit, Worker dry run and production PWA checks pass. Normal Chrome startup verifies the new policy, frame AI p99 0.60 ms, dense-scene p99 0.40 ms and no page errors. The multiplayer Worker is deployed; static/PWA publication uses the website Pages workflow. Installed PWAs receive the new client through the existing background update process. Exact promoted weights and release checks are retained in `tools/ai/results/promotion-480000.json`.
+
+## Broader evolution candidate available locally — October 25
+
+A second run used six policies × two generations × four training seeds, followed by twelve fresh evaluation seeds, four rotations each and 180-second limits: 288 tournament matches in total. Two workers ran on Node 22.23.4/macOS arm64. The trainer now accepts repeatable `--opponent=artifact.json` arguments and stores imported weights and paths. This run started from the deployed policy and included the preceding challenger as a historical training opponent. Held-out opponents remained fixed to the deployed policy.
+
+| Held-out result (48 matches each) | Candidate `approach-480000-1-0` | Deployed `approach-340000-0-0` |
+| --- | --- | --- |
+| Wins | 27 | 12 |
+| Direct wall eliminations | 25 | 21 |
+| Trap assists | 7 | 3 |
+| Mean fitness | 1.92559 | 1.27585 |
+
+Fitness improves 50.9%, with positive paired differences in eleven of twelve seed groups and no held-out timeouts. The four rotations within each group are correlated; these results are exploratory and compare against one fixed opponent distribution. Final serial AI p99 is 0.269 ms, tick p99 0.401 ms and maximum tick 1.262 ms. Generation-selection probes had some tick-budget outliers; the trainer gates p99, not maximum latency.
+
+All 36 targeted AI/fitness/approach tests pass. Chrome 155 at 1280×800 verifies the exact trial policy, tuning controls and execution without page errors. Rendered-frame AI p99 is 0.50 ms (maximum 1.10 ms); dense 12-cycle/2,048-trail p99 is 0.40 ms (maximum 0.80 ms). Inspected `test-results/cycle-ai-trial.png`; this does not establish subjective enjoyment. The candidate is available through `http://127.0.0.1:5173/?cycleAITrial=1` → LIGHT CYCLES. The preceding local trial is backed up as `test-results/cycle-ai-trained-before-480000.json`. Normal gameplay defaults and production are unchanged.
+
+Reproduce with `node tools/ai/train.mjs --population=6 --generations=2 --trainSeeds=4 --heldOutSeeds=12 --seconds=180 --workers=2 --seedOffset=480000 --opponent=tools/ai/results/followup-370000.json --artifact=cycle-ai-followup-2026-10-25-round2`. Summary, exact weights and browser results are in `tools/ai/results/followup-480000.json`; full rows are in `test-results/cycle-ai-followup-2026-10-25-round2.json`. No training remains running and no further run is scheduled. Human review and promotion remain separate steps.
+
+## Current-rules evolution follow-up — October 25
+
+Completed a fresh one-generation run from the deployed `approach-340000-0-0`, under current speed ramping: population four, three training seeds, eight held-out seeds, four rotations each, 180-second limits and two workers. This is 48 training matches plus 64 held-out comparisons; the longer horizon produced no timeouts. Node 22.23.4, macOS arm64. Training selected `approach-370000-0-2`.
+
+| Held-out result (32 matches each) | Challenger | Current policy |
+| --- | --- | --- |
+| Wins | 10 | 8 |
+| Direct wall eliminations | 9 | 9 |
+| Trap assists | 4 | 10 |
+| Mean fitness | 1.18044 | 1.32497 |
+
+The challenger improves paired fitness in only two of eight seed groups and scores 10.9% lower overall. Retain the deployed weights. Rotations share seeds; these exploratory results do not establish a general win-rate gain. Serial AI p99 is 0.226 ms and tick p99 0.317 ms; the final 8.858 ms tick maximum exceeds the nominal 120 Hz budget despite passing the p99 gate. No browser/play review or promotion was performed.
+
+Reproduce with `node tools/ai/train.mjs --population=4 --generations=1 --trainSeeds=3 --heldOutSeeds=8 --seconds=180 --workers=2 --seedOffset=370000 --artifact=cycle-ai-followup-2026-10-25`. Full local output is `test-results/cycle-ai-followup-2026-10-25.json`; the repository summary is `tools/ai/results/followup-370000.json`. The trainer exited normally and no further run is scheduled.
+
 ## Obstacle-aware training reward — October 15
 
 The offline trainers now include bounded approach credit based on navigable route distance, not Euclidean proximity. See the [current plan](../) for deployment state, checks and limitations. `tools/ai/approach.mjs` samples a swept-disc route graph once per simulated second, using the same active trail segments as collision. It credits the AI's own progress toward a frozen target, checks that the opponent is still reachable, and excludes passive closing and disconnected regions. A per-pair progress high-water mark limits repeated approach/retreat credit; initial enemy-pair normalization prevents team-size/death artifacts. The maximum approach bonus remains 0.15. Fitness version 2 now assigns one base point plus up to one early-confirmation point per eliminated enemy, shared between direct wall owners and successful trappers. Unfinished confinements no longer earn fitness. See the current plan for the bounded evolution results and limitations.
