@@ -1,3 +1,7 @@
+## Lift shadow darkness to retain the grid — October 25
+
+- [x] Reduce bike, trail and perimeter floor-shadow attenuation from 98% to 88%, leaving 12% of underlying floor/grid radiance. Retain exact wall-shadow edges and no trail-to-trail reception. Apply the same 88% attenuation to Recognizer shadows on arena wall faces.
+
 ## Crisp floor shadows matching bikes — October 25
 
 - [x] Match both trail and perimeter wall floor shadows to the bikes’ 98% attenuation. Replace their floor atlas reception with exact projected silhouettes, preserving the displayed trail taper and breach geometry replacements. A shared stencil bit prevents overlapping wall shadows from darkening the same floor sample repeatedly; main-scene antialiasing filters edges.

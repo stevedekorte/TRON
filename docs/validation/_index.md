@@ -3,6 +3,10 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Grid-visible shadows — October 25
+
+Reduced bike/trail/perimeter floor attenuation to 88% and arena-wall aircraft attenuation to 88%. Production build and asset audit pass; Chrome trail checks retain floor shadow coverage, collapse/removal and unchanged trail faces. Inspected the lighter capture. The preceding deployment completed successfully, and a live Chrome check started CLU and cycles, loaded versioned models/audio and played the audio studio without HTTP/page errors. Updated the production smoke check to accept immutable content hashes in the Recognizer flight audio filename; its legacy exact-name assertion had falsely reported an audio failure. Live verification of this attenuation adjustment follows publication.
+
 ## Crisp floor shadows — October 25
 
 `npm test`: all 642 tests pass for the release candidate before the final floor-shadow presentation correction. `node tests/browser/cycle-trail-shadows.mjs` passes after replacing the trail atlas with exact projected floor silhouettes at 98% attenuation. Trail faces remain unchanged with shadow strength enabled/disabled; collapsing a trail reduces floor coverage and removing all trails restores the original floor exactly. The updated arena-wall fixture passes exact perimeter floor silhouettes alongside normal/analytic bike atlas reception. `npm run build` and `node tests/pwa.mjs` pass, including offline tank/cycle starts, ranged audio, scoped installability and non-interrupting updates. Inspected the final crisp trail-floor capture. Overlapping wall projections share stencil bit 4; maze floor/wall shadows retain bits 1/2.

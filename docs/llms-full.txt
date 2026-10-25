@@ -11,6 +11,10 @@ See also: /llms.txt (curated index) and /sitemap.xml.
 <!-- Page: (root) -->
 Source: /
 
+## Lift shadow darkness to retain the grid — October 25
+
+- [x] Reduce bike, trail and perimeter floor-shadow attenuation from 98% to 88%, leaving 12% of underlying floor/grid radiance. Retain exact wall-shadow edges and no trail-to-trail reception. Apply the same 88% attenuation to Recognizer shadows on arena wall faces.
+
 ## Crisp floor shadows matching bikes — October 25
 
 - [x] Match both trail and perimeter wall floor shadows to the bikes’ 98% attenuation. Replace their floor atlas reception with exact projected silhouettes, preserving the displayed trail taper and breach geometry replacements. A shared stencil bit prevents overlapping wall shadows from darkening the same floor sample repeatedly; main-scene antialiasing filters edges.
@@ -5906,6 +5910,10 @@ Source: /validation/
 title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
+
+## Grid-visible shadows — October 25
+
+Reduced bike/trail/perimeter floor attenuation to 88% and arena-wall aircraft attenuation to 88%. Production build and asset audit pass; Chrome trail checks retain floor shadow coverage, collapse/removal and unchanged trail faces. Inspected the lighter capture. The preceding deployment completed successfully, and a live Chrome check started CLU and cycles, loaded versioned models/audio and played the audio studio without HTTP/page errors. Updated the production smoke check to accept immutable content hashes in the Recognizer flight audio filename; its legacy exact-name assertion had falsely reported an audio failure. Live verification of this attenuation adjustment follows publication.
 
 ## Crisp floor shadows — October 25
 

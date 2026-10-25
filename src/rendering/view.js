@@ -45,7 +45,7 @@ import { config, RECOGNIZER_SCALE, angleDelta } from '../game/config.js';
 
 const TURBO_GLOW = Object.freeze({ base: 1.8, pulse: 1.2, hz: 2, response: 10 });
 
-const AIRCRAFT_SHADOWS = Object.freeze({ maxCasters: 12, arenaWallDarkness: .98 });
+const AIRCRAFT_SHADOWS = Object.freeze({ maxCasters: 12, arenaWallDarkness: .88 });
 export class View {
   async setCycleRenderer(mode){
     if(!['normal','pov'].includes(mode))throw Error('Unknown cycle renderer');

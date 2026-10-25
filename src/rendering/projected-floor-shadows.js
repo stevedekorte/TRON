@@ -2,7 +2,7 @@ import * as T from 'three';
 
 // Exact silhouettes share one stencil bit: overlapping wall shadows darken
 // the floor once. Main-scene MSAA filters the edge without a shadow-map blur.
-export const FLOOR_WALL_SHADOWS=Object.freeze({darkness:.98,stencilBit:4,renderOrder:-1.7});
+export const FLOOR_WALL_SHADOWS=Object.freeze({darkness:.88,stencilBit:4,renderOrder:-1.7});
 export class ProjectedFloorShadows {
  constructor(root,sources,floors,{tapered=false}={}){
   this.root=root;this.sources=sources;this.floors=floors;this.strengths=new Float32Array([1]);
