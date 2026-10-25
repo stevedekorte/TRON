@@ -45,7 +45,7 @@ import { config, RECOGNIZER_SCALE, angleDelta } from '../game/config.js';
 
 const TURBO_GLOW = Object.freeze({ base: 1.8, pulse: 1.2, hz: 2, response: 10 });
 
-const AIRCRAFT_SHADOWS = Object.freeze({ maxCasters: 12 });
+const AIRCRAFT_SHADOWS = Object.freeze({ maxCasters: 12, arenaWallDarkness: .98 });
 export class View {
   async setCycleRenderer(mode){
     if(!['normal','pov'].includes(mode))throw Error('Unknown cycle renderer');
@@ -57,7 +57,7 @@ export class View {
     if(!this.arena)throw Error('The arena is still loading');
     const {PovCycles}=await import('./pov-cycles.js');
     if(this.renderDisposed||request!==this.cycleRendererRequest)return this.cycleRendererMode;
-    const candidate=new PovCycles(this.arena.userData.cycleRace);
+    const candidate=new PovCycles(this.arena.userData.cycleRace,{aircraftShadows:()=>this.recognizerShadows});
     try{await candidate.warm(this.renderer,this.camera);}catch(error){candidate.dispose();throw error;}
     if(this.renderDisposed||request!==this.cycleRendererRequest){candidate.dispose();return this.cycleRendererMode;}
     this.normalAdaptiveAA=this.adaptiveAA;
@@ -78,6 +78,7 @@ export class View {
     this.arena=arena;this.arenaFloor=arena.getObjectByName('Procedural_arena_floor');
     this.world.floor.userData.arenaFootprint.value.set(arena.position.x,arena.position.z,466);
     this.scene.add(arena);
+    this.recognizerShadows.addReceivers(arena.userData.recognizerShadowReceivers);
   }
   static async create(...args){
     const view=new View();
@@ -159,9 +160,9 @@ export class View {
     this.recognizerTemplate = recognizer;
     this.recognizerShadows = new RecognizerShadows(
       this.recognizers,
-      [this.world.slabs, this.world.seams, this.world.floor],
+      [this.world.slabs, this.world.seams, this.world.floor,...(this.arena?.userData.recognizerShadowReceivers??[])],
       5,
-      { maxCrafts: AIRCRAFT_SHADOWS.maxCasters },
+      { maxCrafts: AIRCRAFT_SHADOWS.maxCasters, darknessForReceiver:receiver=>receiver.userData.arenaAircraftShadow?AIRCRAFT_SHADOWS.arenaWallDarkness:undefined },
     );
     await yieldToBrowser();
     this.mazeShadows = new MazeShadows(
@@ -600,6 +601,9 @@ export class View {
     this.mazeShadows.refreshDamage(this.world.slabs,this.wallDamage.revision);
     this.horizon.update(this.camera, !preview && !this.cameraRig.referenceCamera);
     this.renderer.info.reset();
+    this.arena?.userData.cycleRace.wallShadows.update(this.renderer);
+    this.arena?.userData.cycleRace.perimeterFloorShadows.update();
+    this.arena?.userData.cycleRace.trailShadows.update();
     this.mazeShadows.update(this.renderer);
     this.recognizerShadows.update(this.renderer, this.breakups.bursts, this.camera.position);
     this.carrierShadows?.update(this.renderer);
@@ -639,9 +643,9 @@ export class View {
     this.searchlights.beams.push(...new Searchlights(this.scene, extra, undefined, this.map).beams);
     this.recognizerShadows = new RecognizerShadows(
       this.recognizers,
-      [this.world.slabs, this.world.seams, this.world.floor],
+      [this.world.slabs, this.world.seams, this.world.floor,...(this.arena?.userData.recognizerShadowReceivers??[])],
       5,
-      { maxCrafts: AIRCRAFT_SHADOWS.maxCasters },
+      { maxCrafts: AIRCRAFT_SHADOWS.maxCasters, darknessForReceiver:receiver=>receiver.userData.arenaAircraftShadow?AIRCRAFT_SHADOWS.arenaWallDarkness:undefined },
     );
     const vehicles = [
       this.tank.root,
@@ -673,6 +677,9 @@ export class View {
     this.surfaceImpacts.dispose();
     this.wallDamage.dispose();
     this.clouds?.dispose();
+    this.arena?.userData.cycleRace.perimeterFloorShadows.dispose();
+    this.arena?.userData.cycleRace.trailShadows.dispose();
+    this.arena?.userData.cycleRace.wallShadows.dispose();
     this.arena?.userData.cycleRace.shadows.dispose();
     this.arena?.userData.cycleRace.tireTraces.dispose();
     this.arena?.userData.cycleRace.materializations.forEach(rez=>rez.dispose());

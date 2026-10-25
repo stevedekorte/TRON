@@ -17,6 +17,7 @@ export class LightCycleWalls {
     this.matrix=new THREE.Object3D();
     this.meshes=CYCLE_WALL_STYLE.colors.map(color=>{
       const geometry=new THREE.BoxGeometry(1,1,1,1,CYCLE_WALL_STYLE.connectionHeightSegments,1);
+      geometry.setAttribute('shadowWallId',new THREE.InstancedBufferAttribute(Float32Array.from({length:CAPACITY},(_,slot)=>1+CYCLE_WALL_STYLE.colors.indexOf(color)*CAPACITY+slot),1));
       geometry.setAttribute('trailPattern',new THREE.InstancedBufferAttribute(new Float32Array(CAPACITY*3),3).setUsage(THREE.DynamicDrawUsage));
       geometry.setAttribute('deathFlash',new THREE.InstancedBufferAttribute(new Float32Array(CAPACITY),1).setUsage(THREE.DynamicDrawUsage));
       geometry.setAttribute('trailDistance',new THREE.InstancedBufferAttribute(new Float32Array(CAPACITY*2),2).setUsage(THREE.DynamicDrawUsage));
@@ -45,6 +46,7 @@ export class LightCycleWalls {
             float cutout=sqrt(max(0.,wheelRadius*wheelRadius-dy*dy))+wheelClearance;
             tapered.x-=connection*cutout/trailDistance.x;
             tapered.y=y/trailHeight-.5;
+            #include <begin_vertex>
             gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(tapered,1.);
           }`,
         fragmentShader:`varying vec3 pattern;uniform float stripeSpacing,stripeWidth,edgeWidth;varying float flash;uniform vec3 wallColor,flareColor;uniform float flareLength;
@@ -60,11 +62,14 @@ export class LightCycleWalls {
             float edge=1.-smoothstep(edgeWidth,edgeWidth+fwidth(wallHeight),min(wallHeight,1.-wallHeight));
             color=mix(color,flareColor,max(vertical*.24,edge*.3));
             gl_FragColor=vec4(mix(color,flareColor,flash*.85),1.);
+            vec3 totalEmissiveRadiance=max(gl_FragColor.rgb-base,vec3(0.));
+            #include <tonemapping_fragment>
             #include <colorspace_fragment>
           }`,
         transparent:false,depthWrite:true,depthTest:true,toneMapped:false,
       });
       const mesh=new THREE.InstancedMesh(geometry,material,CAPACITY);
+      mesh.userData.shadowWorldExpression='(modelMatrix*instanceMatrix*vec4(tapered,1.)).xyz';
       mesh.name='Opaque_light_cycle_walls';mesh.count=0;mesh.frustumCulled=false;
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);root.add(mesh);return mesh;
     });

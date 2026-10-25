@@ -2,7 +2,7 @@ import {mazeLightVisibility} from './maze-light-visibility.js';
 import * as T from 'three';
 // One compact light-space tile per aircraft: stable detail across distant mazes.
 export class RecognizerShadows {
- constructor(crafts,receivers,maxBursts=5,{size=512,prefix='recShadow',darkness=.78,excludeSelf=false,maxCrafts=Infinity,filterEdges=false,depthBias=.0002}={}){
+ constructor(crafts,receivers,maxBursts=5,{size=512,prefix='recShadow',darkness=.78,excludeSelf=false,maxCrafts=Infinity,filterEdges=false,depthBias=.0002,darknessForReceiver=null}={}){
   const soft=filterEdges==='soft',tapWidth=soft?6:2;
   const named=code=>code.replaceAll('recShadow',prefix);
   const count=Math.min(crafts.length,maxCrafts);
@@ -29,8 +29,11 @@ export class RecognizerShadows {
   this.craftCount=this.entries.length;
   for(let i=0;i<maxBursts;i++)this.entries.push({scene:new T.Scene(),pairs:[],camera:new T.OrthographicCamera(-25,25,25,-25,.1,2000),matrix:new T.Matrix4().makeTranslation(1e9,1e9,1e9),burst:null});
   this.strengths=new Float32Array(this.entries.length).fill(1);
-  this.patches=[];const patched=new Set();
+  this.patches=[];
+  this.addReceivers=receivers=>{
+  const patched=new Set(this.patches.map(p=>p.material));
   for(const receiver of receivers){
+   const receiverDarkness=darknessForReceiver?.(receiver)??darkness;
    const material=receiver.material;if(patched.has(material))continue;patched.add(material);
    const previous=material.onBeforeCompile,previousKey=material.customProgramCacheKey();
    this.patches.push({material,compile:previous,key:material.customProgramCacheKey});
@@ -89,18 +92,20 @@ export class RecognizerShadows {
        if(receiverWallId>.5&&abs(casterId-receiverWallId)<.5)sampleCover=0.;`:''}
        cover+=sampleCover${soft?`*w${tap%6}.x*w${Math.floor(tap/6)}.y/(weightSum.x*weightSum.y)`:filterEdges?`*${tap%2?'fraction.x':'(1.-fraction.x)'}*${tap>1?'fraction.y':'(1.-fraction.y)'}`:''};
       }`).join('\n')}
-      recShadowShade=min(recShadowShade,1.-${darkness.toFixed(3)}*cover*recShadowStrength[${i}]);
+      recShadowShade=min(recShadowShade,1.-${receiverDarkness.toFixed(3)}*cover*recShadowStrength[${i}]);
      }
     }`).join('\n');
     const emissive=shader.fragmentShader.includes('totalEmissiveRadiance')?' + totalEmissiveRadiance*(1.-recShadowShade)':'';
     shader.fragmentShader=shader.fragmentShader.replace('#include <tonemapping_fragment>',named(`float recShadowShade=1.;\n${occlusion?.code||''}\n${tests}\n${occlusion?`recShadowShade=mix(1.,recShadowShade,${occlusion.visible});`:''}\n${unionAttenuation===undefined?`gl_FragColor.rgb=gl_FragColor.rgb*recShadowShade${emissive};`:`gl_FragColor.rgb=vec3(min(${unionAttenuation.toFixed(3)},recShadowShade)/max(recShadowShade,.001));`}\n#include <tonemapping_fragment>`));
    };
-   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${darkness}:receiver-plane-v11:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}:union${receiver.userData.shadowUnionAttenuation??'none'}:exactWall${!!receiver.userData.exactMazeWallShadow}:exactFloor${!!receiver.userData.exactMazeFloorShadow}:occlusion${this.occlusion?.entries.length||0}`;
+   material.customProgramCacheKey=()=>`${previousKey}|${prefix}:${size}:${receiverDarkness}:receiver-plane-v11:${filterEdges}:${depthBias}:${excludeSelf}:${this.entries.length}:union${receiver.userData.shadowUnionAttenuation??'none'}:exactWall${!!receiver.userData.exactMazeWallShadow}:exactFloor${!!receiver.userData.exactMazeFloorShadow}:occlusion${this.occlusion?.entries.length||0}`;
    // A rebuilt atlas can reuse the same shader source/key. Evict the old
    // material program bindings so Three invokes onBeforeCompile again with
    // this atlas and its current matrices instead of a disposed texture.
    material.dispose();material.needsUpdate=true;
   }
+  };
+  this.addReceivers(receivers);
  }
  setOcclusion(atlas){this.occlusion=atlas;for(const p of this.patches){p.material.dispose();p.material.needsUpdate=true;}}
  update(renderer,bursts=[],focus=null){

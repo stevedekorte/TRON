@@ -1,4 +1,7 @@
 import {yieldToBrowser} from '../loading/yield-to-browser.js';
+import {ProjectedFloorShadows} from './projected-floor-shadows.js';
+import {CycleTrailShadows} from './cycle-trail-shadows.js';
+import {ArenaWallShadows} from './arena-wall-shadows.js';
 import {ArenaBreaches} from './arena-breaches.js';
 import { loadLightCycles, LightCycleRaceView } from './light-cycles.js';
 import { arenaSite } from '../../shared/simulation/levels/arena.js';
@@ -47,5 +50,20 @@ export async function loadArena(world,floorReceivers=[]) {
   group.userData.breaches = new ArenaBreaches(architecture,style);
   await yieldToBrowser();
   group.userData.cycleRace = await LightCycleRaceView.create(cycles, group,[floor,...floorReceivers],{arenaFloor:floor,groundFloor:floorReceivers[0]});
+  const receivers=[floor,...floorReceivers];
+  for(const root of group.userData.cycleRace.bikes)root.traverse(mesh=>{
+    if(mesh.isMesh&&!mesh.userData.breakupExclude)for(const material of [].concat(mesh.material))receivers.push({material,geometry:mesh.geometry,userData:mesh.userData,isMesh:true});
+  });
+  group.userData.cycleRace.wallShadows=new ArenaWallShadows(architecture,receivers.filter(r=>![floor,...floorReceivers].includes(r)));
+  group.userData.cycleRace.trailShadows=new CycleTrailShadows(group.userData.cycleRace.root,group.userData.cycleRace.trails,[floor,...floorReceivers]);
+  const architectureMeshes=[];architecture.traverse(mesh=>{if(mesh.isMesh)architectureMeshes.push(mesh);});
+  group.userData.cycleRace.perimeterFloorShadows=new ProjectedFloorShadows(architecture,architectureMeshes,[floor,...floorReceivers]);
+  const aircraftReceivers=[];
+  architecture.traverse(mesh=>{
+    if(mesh.isMesh)for(const material of [].concat(mesh.material)){
+      aircraftReceivers.push({material,geometry:mesh.geometry,userData:{...mesh.userData,arenaAircraftShadow:true},isMesh:true});
+    }
+  });
+  group.userData.recognizerShadowReceivers=aircraftReceivers;
   return group;
 }

@@ -1,3 +1,5 @@
+import {cycleAircraftShadowGLSL,createCycleAircraftShadowUniforms,updateCycleAircraftShadowUniforms} from './cycle-aircraft-shadows.js';
+import {arenaCycleShadows} from './arena-wall-shadows.js';
 import {humanStripeGLSL} from './cycle-human-stripe.js';
 // Loaded only on explicit selection. Proxy boxes bound ray work; the actual CSG
 // hit writes depth into the ordinary scene, before bloom/AA/output conversion.
@@ -8,9 +10,9 @@ import {POV_CYCLE_SCALE} from '../experiments/pov-cycle-model.js';
 import {CYCLE_WHEEL_REFLECTIONS as WHEEL_GLINT} from './cycle-wheel-reflections.js';
 const EDGE_FILTER={radiusPixels:1.2,creaseStart:.18,creaseFull:.65,strength:.8,paintStrength:.22};
 export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.003,contourRadiusPixels:.65,haloRadiusPixels:1.8,haloStrength:.16,lineIntensity:2.2,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
-const COLORS=[0xe6bd14,0x086ac4,0xff1010,0x178c42];
+const COLORS=[0xe6bd14,0x086ac4,0xb50910,0x178c42];
 const vertexShader=`varying vec3 localSurface;void main(){localSurface=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
-const fragmentShader=cycleSceneGLSL+humanStripeGLSL+`
+const fragmentShader=cycleSceneGLSL+humanStripeGLSL+cycleAircraftShadowGLSL+arenaCycleShadows.glsl+`
 uniform mat4 inverseCycleWorld,cycleWorld,viewProjection;
 uniform vec3 sceneFogColor;uniform float sceneFogDensity;
 uniform bool edgeNormalPass,edgeMapReady;
@@ -83,6 +85,7 @@ void main(){
   vec3 localKey=normalize(mat3(inverseCycleWorld)*key);
   if(cycleHit(localPoint+h.n*.002,localKey).material!=0)visibility=${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)};
  }
+ visibility=min(visibility,min(aircraftVisibility(worldPoint),arenaWallVisibility(worldPoint)));
  vec3 color=lightingVisible(worldPoint,normal,normalize(cameraPosition-worldPoint),h.material==1?humanPaint(materialColor(h.material),localPoint):materialColor(h.material),h.material==2?90.:45.,visibility);
  if(h.material==4)color=max(color,materialColor(3)*${CYCLE_LIGHTING_CONFIG.windowReturnFill});
  color=edgeMapReady?filteredEdges(color,normal,h.material):cycleEdgeHighlights(color,normal,normalize(cameraPosition-worldPoint),h.material);
@@ -105,7 +108,7 @@ export function createPovCycleGeometry(){
  return new T.BoxGeometry(160*scale,230.1*scale,525.2*scale).translate(0,115*scale,0);
 }
 export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeometry()){
-   const uniforms={humanStripe:{value:0},cockpitMix:{value:0},wheelPhase:{value:0},wheelGlintStrength:{value:0},rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
+   const uniforms={...createCycleAircraftShadowUniforms(),...arenaCycleShadows.createUniforms(),humanStripe:{value:0},cockpitMix:{value:0},wheelPhase:{value:0},wheelGlintStrength:{value:0},rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
    const material=new T.ShaderMaterial({defines:{SHOW_CYCLE:1},uniforms,vertexShader,fragmentShader,side:T.BackSide});
    const mesh=new T.Mesh(geometry,material);mesh.name='CSG cycle';mesh.visible=false;
    mesh.onBeforeRender=(renderer,scene,camera)=>{
@@ -116,7 +119,8 @@ export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeomet
  return mesh;
 }
 export class PovCycles {
- constructor(raceView){
+ constructor(raceView,{aircraftShadows=()=>null}={}){
+  this.aircraftShadows=aircraftShadows;
   this.raceView=raceView;this.saved=[];this.edges=new PovCycleEdges();
   this.geometry=createPovCycleGeometry();
   this.root=new T.Group();this.root.name='POV-Ray cycle renderer';raceView.root.add(this.root);
@@ -152,6 +156,8 @@ export class PovCycles {
    proxy.visible=this.raceView.root.visible&&source.visible;
    if(!proxy.visible)continue;
    const uniforms=proxy.material.uniforms;
+   updateCycleAircraftShadowUniforms(uniforms,this.aircraftShadows());
+   arenaCycleShadows.update(uniforms,this.raceView.wallShadows);
    const phase=cycleMaterializationPhase(source.userData.cycleFormationProgress??1);
    uniforms.cockpitMix.value=source.userData.cockpitMix??0;
    uniforms.humanStripe.value=source.userData.human?1:0;

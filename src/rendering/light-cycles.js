@@ -19,7 +19,8 @@ import goldUrl from '../../assets/runtime/models/preti_light_cycle_gold.glb?url'
 import blueUrl from '../../assets/runtime/models/preti_light_cycle_blue.glb?url';
 import { LIGHT_CYCLES as C, cycleFraction } from '../../shared/simulation/config/light-cycles.js';
 export const CYCLE_SELF_SHADOW=Object.freeze({size:1024,prefix:'cycleShadow',darkness:.65,maxCrafts:6,filterEdges:'soft',depthBias:.002});
-export const CYCLE_MODEL_STYLE=Object.freeze({blueBody:0x086ac4,blueTrim:0x084b92,redBody:0xff1010,redTrim:0xff4840,ambientScale:.35});
+export const CYCLE_FLOOR_SHADOW=Object.freeze({darkness:.98});
+export const CYCLE_MODEL_STYLE=Object.freeze({blueBody:0x086ac4,blueTrim:0x084b92,redBody:0xb50910,redTrim:0xd5161d,ambientScale:.35});
 export async function loadLightCycles({refineWheels=true}={}){
   return Promise.all([goldUrl,blueUrl].map(async(url,team)=>{
     const {scene}=await new GLTFLoader().loadAsync(url);
@@ -69,7 +70,7 @@ export class LightCycleRaceView {
     await yieldToBrowser();
     const receivers=[...floorReceivers];
     const crafts=this.bikes.map(root=>{const casters=[];root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude){casters.push(o);receivers.push(o);}});return {root,casters,radius:2.6,distance:8};});
-    this.shadows=new RecognizerShadows(crafts,receivers,0,CYCLE_SELF_SHADOW);
+    this.shadows=new RecognizerShadows(crafts,receivers,0,{...CYCLE_SELF_SHADOW,darknessForReceiver:receiver=>floorReceivers.includes(receiver)?CYCLE_FLOOR_SHADOW.darkness:CYCLE_SELF_SHADOW.darkness});
     this.wallRenderer=new LightCycleWalls(this.root);
     this.trails=this.wallRenderer.meshes;
     this.explosions=new CycleExplosions(this.root);

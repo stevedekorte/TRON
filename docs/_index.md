@@ -1,3 +1,53 @@
+## Crisp floor shadows matching bikes — October 25
+
+- [x] Match both trail and perimeter wall floor shadows to the bikes’ 98% attenuation. Replace their floor atlas reception with exact projected silhouettes, preserving the displayed trail taper and breach geometry replacements. A shared stencil bit prevents overlapping wall shadows from darkening the same floor sample repeatedly; main-scene antialiasing filters edges.
+- [x] Remove the dynamic 4096-pixel trail atlas and its live-bounds pass now that trails only shadow the floor. Perimeter maps remain for bike reception. Preserve the user's brighter blue floor, saturated green patrol, deep red bikes and no trail-to-trail shadows.
+- [x] Chrome trail checks pass with floor shadows, collapse/removal, unchanged trail faces and idle behavior. All 642 simulation/unit tests passed before this presentation correction; production and rendered perimeter checks are recorded in validation.
+
+## Recognizer shadows on arena walls — October 24
+
+- [x] Register arena architecture surfaces with the existing aircraft shadow atlas, including late background attachment and atlas rebuilding when the aircraft pool grows. Use 98% attenuation on arena wall faces, preserving the independent edge outlines and the existing strengths on other receivers. No extra shadow render pass.
+- [x] Chrome fixture verifies late receiver attachment, duplicate-registration suppression, stronger wall shadows and pixel-identical output after atlas reconstruction. The green patrol preview also renders with the requested `#003600` base tint and unchanged luminous red trim. New interior breach-lining materials are not included in this receiver registration; original wall surfaces retain shadow reception through geometry cuts.
+
+## Arena patrol Recognizer green — October 24
+
+- [x] Change the green face-tint preset used by the arena patrol from muted `#1c3825` to saturated dark green `#003600`, guided by the supplied film reference. The independent luminous red trim and other tint presets remain unchanged.
+
+## Deeper red cycle palette — October 24
+
+- [x] Match the supplied darker red-cycle reference with crimson body `#b50910` and red trim `#d5161d` in the mesh renderer; use the same body hue in the analytic renderer and its materialization colors. Preserve the trail palette.
+
+## Darker bike contact shadows and bluer floor — October 24
+
+- [x] Increase bike shadow attenuation on floor receivers from 65% to 98%, preserving the existing 65% bike-surface self shading through per-receiver shadow strength. Keep trail shadows at 92% with no trail-to-trail reception.
+- [x] Brighten the arena floor navy from `#020c1b` to `#03182d`, guided by the supplied blue-floor reference. Grid color and spacing remain as authored.
+
+## Floor-only cycle trail shadows — October 24
+
+- [x] Remove trail sheets from the trail-shadow receiver list at the user’s request. Trails still cast the darker 92% shadows onto the arena floor and adjacent ground; they no longer darken themselves or other trails. Retain growth, collapse, removal and idle-map behavior.
+- [x] Update the Chrome rendering check to require pixel-identical trail surfaces with trail shadows enabled/disabled, alongside the existing floor shadow, collapse and cleanup checks.
+
+## Cycle trail self and floor shadows — October 24
+
+- [x] Increase trail-shadow attenuation from 55% to 92% at the user’s request for much darker shadows; fully covered floor/body surfaces retain 8% of their underlying color while luminous accents remain visible.
+
+- [x] Add a shared dynamic 4096-pixel shadow map for the opaque trails left by bikes, receiving on the grid floor, adjacent ground and other trails. Match the displayed rear-tire cutout and tapered connection in the instanced depth shader. Fit the light frustum and depth range to live trail bounds for short-shadow detail. Preserve luminous accents while shading the colored body.
+- [x] Store an independent 16-bit identity per trail instance so the originating sheet does not falsely shadow itself, while other segments can occlude it. Track growth, collapse and removal through the existing instance transforms/counts; clear the last shadow when trails disappear and skip idle redraws. Dispose map, duplicate instances and shader wrappers during teardown/cancelled loading.
+- [x] Focused headless Chrome checks verify floor and trail-to-trail shadowing, an unchanged isolated sheet, shrinking floor coverage during collapse, exact restoration after removal, and zero idle shadow draws. Inspected the rendered parallel-wall shadow. Arena-wall and analytic materialization regressions pass.
+- [ ] Profile dense matches on target hardware and review Safari. This adds a 4096-pixel render target, active-frame instanced shadow draws, live-bounds work and receiver texture samples; no negligible-performance-cost claim.
+
+## Arena perimeter wall shadows — October 24
+
+- [x] Cast the actual arena architecture onto the arena/adjacent ground floor and normal bikes through a cached 2048-pixel light-space map. Sample that map at the exact surface hit for ray-cast bikes, sharing the four-tap shader sampler with aircraft shadows. This covers perimeter architecture, not glowing cycle trails.
+- [x] Refresh after breach geometry replacement, added fracture faces, round restoration or arena placement changes. Dispose the map and receiver wrappers on view teardown and cancelled background loading. Unchanged walls add no shadow-map draw calls; receivers still pay texture-sampling cost.
+- [x] Headless Chrome on macOS: `node tests/browser/arena-wall-shadows.mjs` verifies floor, mesh and ray-cast shadow reception, light through the real breach cut, exact restoration and zero cached redraws at 800×600 with a translated arena fixture. Inspected the floor capture. Aircraft shadow and cycle materialization regression checks pass. Target-hardware performance and Safari/full-arena visual review remain outstanding.
+
+## Recognizer shadows on ray-cast cycles — October 24
+
+- [x] Sample the existing Recognizer/debris shadow atlas at each analytic bike surface hit. Apply visibility to key lighting with four-tap edge filtering and receiver-plane depth bias; preserve construction glow, surface accents and fog. No new shadow render pass or geometry intersection rays. Read the current atlas each frame so aircraft-pool rebuilds do not leave stale textures.
+- [x] Headless Chrome on macOS: focused rendered fixture confirms overhead shadow darkening and exact restoration when the caster disappears; inspected the shadow capture. Existing analytic materialization check passes without shader errors. Full renderer-switch check is not passing: original stops at its JEV warning assertion; a temporary rerun omitting that assertion reaches the draw-count equality check (929 versus 863) after successful renderer switching and geometry cleanup. Do not treat the full lifecycle check as passed.
+- [ ] Measure representative gameplay GPU cost on target hardware. The small headless fixture timing is inconclusive; no performance improvement or negligible-cost claim is established. Safari and an actual Recognizer flyover remain for visual confirmation.
+
 ## Security review and remediation plan — October 23
 
 - [x] Review current upstream advisories, five dekorte.com npm lock trees, Max Headroom's Python lock, runtime pins and publishing configuration. Write the [security remediation plan](security/index.html) with saved audit evidence, exposure distinctions, patch targets, validation and rollout criteria. Confirm a legacy development private key is publicly served; prioritize artifact containment and affected-key replacement. Implemented runtime/library patches, retired published development keys, added CI audits and artifact guards, and verified application tests. See the plan for container findings and remaining trust/history review.

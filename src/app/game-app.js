@@ -141,7 +141,7 @@ export async function createGameApp() {
     session.arenaReady=!!view.arena;
     if(view.arena)return;
     arenaLoad=loadingTimings.async('Arena module + models / cycle setup',()=>import('../rendering/arena.js').then(({loadArena})=>loadArena(map,[view.world.floor]))).then(arena=>{
-      if(disposed){arena?.userData.cycleRace.shadows.dispose();arena?.userData.arenaStyle.dispose();if(arena)disposeSceneResources(arena);return;}
+      if(disposed){arena?.userData.cycleRace.perimeterFloorShadows.dispose();arena?.userData.cycleRace.trailShadows.dispose();arena?.userData.cycleRace.wallShadows.dispose();arena?.userData.cycleRace.shadows.dispose();arena?.userData.arenaStyle.dispose();if(arena)disposeSceneResources(arena);return;}
       loadingTimings.sync('Attach arena / floor',()=>view.attachArena(arena));session.arenaReady=true;
       loadingTimings.checkpoint('Arena assets ready');loadingTimings.print();
     }).catch(error=>{if(!disposed)fail('Unable to load the cycle arena. Please reload to retry. '+error.message);});

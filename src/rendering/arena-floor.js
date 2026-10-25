@@ -7,7 +7,7 @@ export const ARENA_FLOOR=Object.freeze({
  innerWallMeters:ARENA_WALL.innerMeters,passageColor:0x062b38,
  sizeMeters:932,elevationMeters:-.06,gridMeters:fitArenaGridSpacing(ARENA_WALL.innerMeters),
  lineHalfWidthMeters:ARENA_GRID.lineHalfWidthMeters,antialiasScale:GROUND_GRID_AA_SCALE,
- fadeStartMeters:160,fadeEndMeters:650,backgroundColor:0x020c1b,lineColor:0x888888,
+ fadeStartMeters:160,fadeEndMeters:650,backgroundColor:0x03182d,lineColor:0x888888,
 });
 // Finer light-cycle grid; preserve thin-line coverage when viewed from afar.
 // Caller owns the returned mesh and disposes its geometry/material.

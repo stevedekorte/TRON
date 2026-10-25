@@ -3,6 +3,38 @@ title: Validation
 subtitle: Browser checks, performance, and remaining work
 ---
 
+## Crisp floor shadows — October 25
+
+`npm test`: all 642 tests pass for the release candidate before the final floor-shadow presentation correction. `node tests/browser/cycle-trail-shadows.mjs` passes after replacing the trail atlas with exact projected floor silhouettes at 98% attenuation. Trail faces remain unchanged with shadow strength enabled/disabled; collapsing a trail reduces floor coverage and removing all trails restores the original floor exactly. The updated arena-wall fixture passes exact perimeter floor silhouettes alongside normal/analytic bike atlas reception. `npm run build` and `node tests/pwa.mjs` pass, including offline tank/cycle starts, ranged audio, scoped installability and non-interrupting updates. Inspected the final crisp trail-floor capture. Overlapping wall projections share stencil bit 4; maze floor/wall shadows retain bits 1/2.
+
+## Patrol green and aircraft shadows on arena walls — October 24
+
+A temporary headless Chrome preview renders the patrol's `#003600` face tint under game lighting; assertions confirm the material tint and unchanged luminous trim. Inspected `test-results/arena-patrol-dark-green.png`. This is a visual approximation of the supplied reference; the material's highlights still respond to scene lighting.
+
+`node tests/browser/recognizer-arena-wall-shadows.mjs` passes in headless Chrome on macOS, 800×600. The styled arena-wall material receives a shadow from the existing aircraft atlas after late registration; registering twice installs one patch. 98% wall attenuation is darker than the 78% comparison. Reconstructing the atlas produces pixel-identical output. No page/shader errors. New fracture-lining materials remain unregistered; Safari and a full patrol flyover remain for visual review.
+
+## Floor and cycle palette adjustments — October 24
+
+Chrome trail-floor rendering checks pass after the floor changed to `#03182d`; trail surfaces remain pixel-identical with shadow strength enabled/disabled. A temporary full-game Chrome check renders the brighter floor and 98% bike floor shadows without page/shader errors (`test-results/cycle-blue-floor-dark-shadows.png`). Existing 65% bike-surface shadow attenuation remains unchanged. A temporary analytic materialization check also passes all existing assertions with the deeper crimson palette; inspected its solid red capture `test-results/cycle-dark-red-solid.png`. These colors are visual approximations guided by the supplied references, not a calibrated film color match.
+
+## Cycle trail shadows — October 24
+
+`node tests/browser/cycle-trail-shadows.mjs` passes in headless Chrome on macOS, 1000×700. Two actual instanced trail sheets, translated 6 km, cast onto the grid floor and each other. An isolated straight sheet is pixel-identical with reception enabled/disabled (self identity exclusion). Lowering the casting instance increases floor brightness; removing all instances restores the unshadowed floor exactly. Idle update has zero draw calls. Depth rendering shares the exact displayed taper/cutout vertex code; the fixture uses straight sections. Inspected `test-results/cycle-trail-shadow.png`. A first whole-arena-frustum capture showed coarse bands; fitting coverage and depth to live geometry removes those visible bands in the fixture.
+
+Arena perimeter shadow and analytic materialization browser regressions pass. A temporary full seeded-game smoke check reaches racing with more than ten trail segments without page/shader errors; captured `test-results/cycle-trail-shadow-game.png`. Production build and asset audit pass. Dense-match GPU/CPU cost, long-lived trail coverage, curved connection shadow fidelity and Safari remain for further review. This is a dynamic full-resolution atlas rather than the cached perimeter map.
+
+## Arena perimeter wall shadows — October 24
+
+`node tests/browser/arena-wall-shadows.mjs` passes in headless Chrome on macOS, 800×600. A wall fixture at the authored inner-wall location, translated 6 km, shadows the procedural arena floor, a mesh receiver and an analytic bike. Cutting the actual jagged breach geometry increases summed RGB for all three; restoring the original geometry reproduces each original shadow image exactly. A cached update issues zero shadow-map draw calls. No page/shader errors. Inspected `test-results/arena-wall-shadow-floor.png`; bike capture is `test-results/arena-wall-shadow-ray.png`.
+
+`node tests/browser/cycle-aircraft-shadows.mjs` and `node tests/cycle-ray-materialization.mjs` pass with the shared sampler. A temporary full-game Chrome smoke check also launches the seeded cycle game, switches to analytic rendering and captures the arena without page/shader errors. `npm run build` passes, including the asset audit. The fixture and smoke check do not establish full-arena fidelity/performance. Safari, target-hardware frame timing, and a full-game perimeter/breach play review remain outstanding.
+
+## Ray-cast cycle aircraft shadows — October 24
+
+`node tests/browser/cycle-aircraft-shadows.mjs` passes in headless Chrome on macOS at 800×600. The real aircraft atlas, with an overhead box caster, reduces bike-image summed RGB from 3,508,298 to 2,719,340; hiding the caster restores 3,508,298 exactly. No page/console errors. Inspected `test-results/cycle-aircraft-shadow.png`; comparison is `test-results/cycle-aircraft-unshadowed.png`. This verifies ray-hit shadow reception rather than film fidelity. `node tests/cycle-ray-materialization.mjs` also passes construction, solid fade, human markings and wheel reflection checks.
+
+`node tests/cycle-renderer.mjs` stops at the unrelated JEV warning timeout. A temporary copy omitting that assertion successfully switches to POV and back, preserves the paused race and releases CSG geometry, then fails the existing normal draw-count equality check (929 versus 863). Full renderer lifecycle validation remains unresolved. The fixture's short timing sample does not establish representative GPU overhead; target-hardware gameplay profiling and Safari/flyover review remain outstanding.
+
 ## Carrier/maze ground-shadow overlap — September 24
 
 `node tests/carrier-maze-overlap.mjs` passed in headless Chrome on macOS. With both shadow layers present, the corrected render matches the reference without coarse floor masking exactly (zero differing channels); restoring the old atlas cutout differs in 34,080 channels. Inspected the low-angle rendered overlap. `node tests/recognizer-shadow-occlusion.mjs` passed wall/debris occlusion checks; its floorless fixture initially exposed an unconditional floor access, now guarded. Production/documentation build passed. Safari at the reported gameplay location remains for user confirmation.
