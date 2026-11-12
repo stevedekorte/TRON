@@ -18,9 +18,9 @@ export class CycleRendererControl {
   const visible=this.getRun()?.playerVehicle==='cycle'&&['running','entering'].includes(this.getMode()),view=this.getView();
   const state=`${view?.cycleRendererMode}:${view?.cycleRendererReason}${this.priorFailure?`:${visible}`:''}`;
   if(state!==this.lastState){this.lastState=state;this.noticeUntil=performance.now()+NOTICE_MILLISECONDS;}
-  this.button.hidden=!visible||this.busy||view?.cycleRendererMode==='pov'||performance.now()>=this.noticeUntil;
+  this.button.hidden=!visible||(!this.busy&&(view?.cycleRendererMode==='pov'||performance.now()>=this.noticeUntil));
   if(visible&&view?.arena&&!this.autoAttempted){this.autoAttempted=true;void this.select('pov');}
-  if(!this.busy){const label=`SHIFT-R / RENDERER: ${view?.cycleRendererMode==='pov'?'POV-RAY':view?.cycleRendererReason==='performance'?'NORMAL (PERFORMANCE)':view?.cycleRendererReason==='self-test'?'NORMAL (POV SELF-TEST FAILED)':this.priorFailure?'NORMAL (POV GRAPHICS FAILURE)':'NORMAL'}`;if(this.button.textContent!==label)this.button.textContent=label;}
+  if(!this.busy){const label=`SHIFT-R / RENDERER: ${view?.cycleRendererMode==='pov'?'POV-RAY':view?.cycleRendererReason==='performance'?'NORMAL (PERFORMANCE)':view?.cycleRendererReason==='self-test'?'NORMAL (POV SELF-TEST FAILED)':this.lastError?'NORMAL (POV FAILED — SEE CONSOLE)':this.priorFailure?'NORMAL (POV GRAPHICS FAILURE)':'NORMAL'}`;if(this.button.textContent!==label)this.button.textContent=label;}
  }
  async toggle(){this.autoAttempted=true;return this.select(this.getView()?.cycleRendererMode==='pov'?'normal':'pov');}
 
@@ -28,9 +28,10 @@ export class CycleRendererControl {
   const view=this.getView();if(this.busy||this.disposed||!view)return;
   this.busy=true;this.button.disabled=true;this.button.textContent=mode==='pov'?'PREPARING POV-RAY CYCLES…':'RESTORING NORMAL RENDERER…';
   this.pendingMode=mode;
-  try{if(await view.setCycleRenderer(mode)==='pov'){this.priorFailure=false;storePovFailure(false);}}
-  catch(error){console.error('Cycle renderer:',error);this.button.title=error.message;}
-  finally{this.busy=false;this.pendingMode=null;if(!this.disposed){this.button.disabled=false;this.button.textContent=`SHIFT-R / RENDERER: ${view.cycleRendererMode==='pov'?'POV-RAY':'NORMAL'}`;}}
+  this.lastError=null;const started=performance.now();
+  try{if(await view.setCycleRenderer(mode)==='pov'){this.priorFailure=false;storePovFailure(false);console.info(`POV-Ray cycles ready in ${Math.round(performance.now()-started)} ms`);}}
+  catch(error){console.error('Cycle renderer:',error);this.button.title=error.message;this.lastError=error.message;}
+  finally{this.busy=false;this.pendingMode=null;this.lastState=null;if(!this.disposed){this.button.disabled=false;this.button.textContent=`SHIFT-R / RENDERER: ${view.cycleRendererMode==='pov'?'POV-RAY':'NORMAL'}`;}}
  }
  /** Call from the webglcontextlost handler; returns true when POV was implicated. */
  noteContextLost(){

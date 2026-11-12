@@ -4,6 +4,7 @@ import {recognizerPose} from './recognizer-pose.js';
 import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {CycleRendererGuard} from './cycle-renderer-guard.js';
 import {AdaptiveAA,ADAPTIVE_AA,supportedSamples} from './adaptive-aa.js';
+import {installShaderLogFilter} from './shader-log-filter.js';
 import {MazeWallDamage} from './maze-wall-damage.js';
 import {GAME_LIGHTING,createGameLights} from './game-lighting.js';
 import {interpolateCycleRace} from './cycle-poses.js';
@@ -110,6 +111,7 @@ export class View {
     if(groundShadowOption==='sharp'||groundShadowOption==='diffuse')config.diffuseGroundShadows=groundShadowOption==='diffuse';
     const RECOGNIZER_STARTS = recognizerStarts(map),
       GROUND_TANK_COUNT = groundTankCount(map);
+    installShaderLogFilter();
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
