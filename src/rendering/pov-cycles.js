@@ -11,6 +11,16 @@ import {CYCLE_WHEEL_REFLECTIONS as WHEEL_GLINT} from './cycle-wheel-reflections.
 const EDGE_FILTER={radiusPixels:1.2,creaseStart:.18,creaseFull:.65,strength:.8,paintStrength:.22};
 export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.003,contourRadiusPixels:.65,haloRadiusPixels:1.8,haloStrength:.16,lineIntensity:2.2,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
 const COLORS=[0xe6bd14,0x086ac4,0xb50910,0x178c42];
+// ?povDebug=box paints the proxy boxes magenta; hit shows CSG hits by material
+// (yellow paint, blue glass, gray underbody, green window return) and misses as
+// dark red; nan marks the first non-finite stage: red hit/normal/depth, orange
+// edge/grid coverage, yellow shadowing, magenta lighting, cyan final color.
+export const POV_DEBUG_MODES=Object.freeze({off:0,box:1,hit:2,nan:3});
+export function povDebugMode(search=globalThis.location?.search??''){return POV_DEBUG_MODES[new URLSearchParams(search).get('povDebug')]??0;}
+// Fully formed and mid-formation renders of one cycle, read back before the
+// normal meshes are hidden. A GPU that draws nothing, black or non-finite
+// output keeps the normal renderer.
+export const POV_SELF_TEST=Object.freeze({sizePixels:96,fovDegrees:40,cameraMeters:[-5,3.5,-4],targetMeters:[0,.8,0],minLitFraction:.01,litLuminance:.01});
 const vertexShader=`varying vec3 localSurface;void main(){localSurface=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
 const fragmentShader=cycleSceneGLSL+humanStripeGLSL+cycleAircraftShadowGLSL+arenaCycleShadows.glsl+`
 uniform mat4 inverseCycleWorld,cycleWorld,viewProjection;
@@ -54,13 +64,31 @@ vec3 filteredEdges(vec3 color,vec3 normal,int material){
  return mix(color,max(color,ink),coverage*${EDGE_FILTER.strength}*(material==1?${EDGE_FILTER.paintStrength}:1.));
 }
 varying vec3 localSurface;
+// Diagnostics (?povDebug=box|hit|nan). Bit tests survive fast-math compilers
+// that fold isnan()/isinf() to false.
+bool badf(float x){return (floatBitsToUint(x)&0x7f800000u)==0x7f800000u;}
+bool badv(vec3 v){return badf(v.x)||badf(v.y)||badf(v.z);}
+#define POV_FLAG(c) {gl_FragColor=vec4(c,1.);return;}
 void main(){
- vec3 origin=(inverseCycleWorld*vec4(cameraPosition,1)).xyz;
+ vec3 origin=(inverseCycleWorld*vec4(cameraPosition,1.)).xyz;
  vec3 direction=normalize(localSurface-origin);
- Hit h=cycleHit(origin,direction);if(h.material==0)discard;
- vec3 localPoint=origin+direction*h.t,worldPoint=(cycleWorld*vec4(localPoint,1)).xyz;
+#if POV_DEBUG==1
+ gl_FragDepth=gl_FragCoord.z;POV_FLAG(vec3(1,0,1))
+#endif
+ Hit h=cycleHit(origin,direction);
+#if POV_DEBUG==2
+ if(h.material==0){gl_FragDepth=gl_FragCoord.z;POV_FLAG(vec3(.35,0,0))}
+#else
+ if(h.material==0)discard;
+#endif
+ vec3 localPoint=origin+direction*h.t,worldPoint=(cycleWorld*vec4(localPoint,1.)).xyz;
  vec3 normal=normalize(mat3(cycleWorld)*h.n);
- vec4 clip=viewProjection*vec4(worldPoint,1);gl_FragDepth=clip.z/clip.w*.5+.5;
+ vec4 clip=viewProjection*vec4(worldPoint,1.);gl_FragDepth=clip.z/clip.w*.5+.5;
+#if POV_DEBUG==2
+ if(!edgeNormalPass)POV_FLAG(h.material==1?vec3(1,.8,0):h.material==2?vec3(0,.4,1):h.material==4?vec3(0,1,0):vec3(.6))
+#elif POV_DEBUG==3
+ if(!edgeNormalPass&&(badf(h.t)||badv(normal)||badf(gl_FragDepth)))POV_FLAG(vec3(1,0,0))
+#endif
  if(edgeNormalPass){gl_FragColor=vec4(normal*.5+.5,1.);return;}
  // Construction curves are intersections of the exact CSG surface with
  // evenly spaced local section planes, analytically filtered in pixel space.
@@ -74,22 +102,31 @@ void main(){
  float cut=mix(${CYCLE_REZ.frontMeters},${CYCLE_REZ.rearMeters},rezSweep);
  float revealed=1.-smoothstep(cut-max(fwidth(localPoint.z),.001),cut,localPoint.z);
  contour*=revealed;halo*=revealed;grid*=revealed;
+ #if POV_DEBUG==3
+ if(badf(contour)||badf(halo)||badf(grid))POV_FLAG(vec3(1,.5,0))
+ #endif
  float wire=max(max(contour,grid),halo);
  float formationAlpha=rezSolid+(1.-rezSolid)*wire;
  float alpha=formationAlpha*(1.-cockpitMix);
  if(alpha<.002)discard;
  // Transform the world light into this cycle's coordinates for self-occlusion.
- vec3 key=normalize(vec3(-1,2,-1));
+ vec3 key=normalize(vec3(-1.,2.,-1.));
  float visibility=1.;
  if(rezSolid>0.&&dot(normal,key)>0.){
   vec3 localKey=normalize(mat3(inverseCycleWorld)*key);
   if(cycleHit(localPoint+h.n*.002,localKey).material!=0)visibility=${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)};
  }
  visibility=min(visibility,min(aircraftVisibility(worldPoint),arenaWallVisibility(worldPoint)));
+ #if POV_DEBUG==3
+ if(badf(visibility))POV_FLAG(vec3(1,1,0))
+ #endif
  vec3 color=lightingVisible(worldPoint,normal,normalize(cameraPosition-worldPoint),h.material==1?humanPaint(materialColor(h.material),localPoint):materialColor(h.material),h.material==2?90.:45.,visibility);
  if(h.material==4)color=max(color,materialColor(3)*${CYCLE_LIGHTING_CONFIG.windowReturnFill});
  color=edgeMapReady?filteredEdges(color,normal,h.material):cycleEdgeHighlights(color,normal,normalize(cameraPosition-worldPoint),h.material);
  color=mix(color,vec3(.82,.89,1.)*${WHEEL_GLINT.intensity},wheelReflection(localPoint,h.n,h.material)*rezSolid);
+ #if POV_DEBUG==3
+ if(badv(color))POV_FLAG(vec3(1,0,1))
+ #endif
  // Preserve the body hue; coverage, halo strength and stage opacity control brightness.
  vec3 wireColor=bodyColor*${CYCLE_REZ.lineIntensity};
  if(h.material==1)wireColor=humanPaint(wireColor,localPoint);
@@ -97,8 +134,11 @@ void main(){
  color+=mix(bodyColor,vec3(.88,1.,.8),.8)*rezGlow*${CYCLE_REZ.bodyGlowIntensity.toFixed(1)}*(h.material==2?.04:1.);
  if(h.material==1)color=humanPaint(color,localPoint);
  color=mix(wireColor,color,rezSolid/max(formationAlpha,.001));
- float depth=-(viewMatrix*vec4(worldPoint,1)).z;
+ float depth=-(viewMatrix*vec4(worldPoint,1.)).z;
  color=mix(color,sceneFogColor,1.-exp(-sceneFogDensity*sceneFogDensity*depth*depth));
+ #if POV_DEBUG==3
+ if(badv(color)||badf(alpha))POV_FLAG(vec3(0,1,1))
+ #endif
  gl_FragColor=vec4(color,alpha);
  #include <tonemapping_fragment>
  #include <colorspace_fragment>
@@ -109,7 +149,7 @@ export function createPovCycleGeometry(){
 }
 export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeometry()){
    const uniforms={...createCycleAircraftShadowUniforms(),...arenaCycleShadows.createUniforms(),humanStripe:{value:0},cockpitMix:{value:0},wheelPhase:{value:0},wheelGlintStrength:{value:0},rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
-   const material=new T.ShaderMaterial({defines:{SHOW_CYCLE:1},uniforms,vertexShader,fragmentShader,side:T.BackSide});
+   const material=new T.ShaderMaterial({defines:{SHOW_CYCLE:1,POV_DEBUG:povDebugMode()},uniforms,vertexShader,fragmentShader,side:T.BackSide});
    const mesh=new T.Mesh(geometry,material);mesh.name='CSG cycle';mesh.visible=false;
    mesh.onBeforeRender=(renderer,scene,camera)=>{
     uniforms.cycleWorld.value.copy(mesh.matrixWorld);uniforms.inverseCycleWorld.value.copy(mesh.matrixWorld).invert();
@@ -117,6 +157,43 @@ export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeomet
     uniforms.sceneFogColor.value.copy(scene.fog?.color??scene.background??new T.Color(0));uniforms.sceneFogDensity.value=scene.fog?.density??0;
    };
  return mesh;
+}
+function rendererName(gl){const info=gl.getExtension('WEBGL_debug_renderer_info');return info?gl.getParameter(info.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);}
+export function selfTestPovCycle(renderer,geometry=createPovCycleGeometry(),options=POV_SELF_TEST){
+ const size=options.sizePixels,floats=renderer.extensions.has('EXT_color_buffer_float');
+ const target=new T.WebGLRenderTarget(size,size,{type:floats?T.FloatType:T.UnsignedByteType});
+ const scene=new T.Scene(),mesh=createPovCycleMesh(COLORS[0],geometry);mesh.visible=true;mesh.frustumCulled=false;scene.add(mesh);
+ const camera=new T.PerspectiveCamera(options.fovDegrees,1,.05,100);camera.position.set(...options.cameraMeters);camera.lookAt(...options.targetMeters);
+ const uniforms=mesh.material.uniforms,previous=renderer.getRenderTarget(),clear=renderer.getClearColor(new T.Color()),alpha=renderer.getClearAlpha(),autoClear=renderer.autoClear;
+ const pixels=floats?new Float32Array(size*size*4):new Uint8Array(size*size*4),scale=floats?1:1/255;
+ const measure=()=>{
+  renderer.setRenderTarget(target);renderer.clear();renderer.render(scene,camera);
+  renderer.readRenderTargetPixels(target,0,0,size,size,pixels);
+  let drawn=0,lit=0,nonFinite=0;
+  for(let i=0;i<pixels.length;i+=4){
+   const [r,g,b,a]=[pixels[i],pixels[i+1],pixels[i+2],pixels[i+3]];
+   if(![r,g,b,a].every(Number.isFinite)){nonFinite++;continue;}
+   if(a*scale<=.001)continue;drawn++;
+   if((.2126*r+.7152*g+.0722*b)*scale>options.litLuminance)lit++;
+  }
+  const total=size*size;return {drawnFraction:drawn/total,litFraction:lit/total,nonFinite};
+ };
+ try{
+  renderer.setClearColor(0,0);renderer.autoClear=true;
+  uniforms.rezSolid.value=1;uniforms.rezSweep.value=1;uniforms.rezGrid.value=1;uniforms.rezGlow.value=0;
+  const solid=measure();
+  // Mid-formation: wire-only output exercises the transparent-stage math.
+  uniforms.rezSolid.value=0;uniforms.rezGlow.value=.5;
+  const forming=measure();
+  const result={renderer:rendererName(renderer.getContext()),floatReadback:floats,solid,forming,debug:povDebugMode()};
+  result.reason=solid.drawnFraction===0?'no CSG hits':solid.nonFinite||forming.nonFinite?'non-finite output':solid.litFraction<options.minLitFraction?'unlit/black output':null;
+  result.ok=!result.reason;
+  console.info('POV-Ray cycle self-test',result);
+  return result;
+ }finally{
+  renderer.setRenderTarget(previous);renderer.setClearColor(clear,alpha);renderer.autoClear=autoClear;
+  target.dispose();mesh.material.dispose();
+ }
 }
 export class PovCycles {
  constructor(raceView,{aircraftShadows=()=>null}={}){
@@ -147,6 +224,9 @@ export class PovCycles {
    renderer.setRenderTarget(previous);target.dispose();
    material.transparent=transparent;material.depthWrite=depthWrite;material.needsUpdate=true;
   }
+  const result=selfTestPovCycle(renderer,this.geometry);
+  if(!result.ok){const error=Error(`POV-Ray cycle self-test failed (${result.reason})`);error.selfTest=result;throw error;}
+  return result;
  }
  prepare(){
   this.restore();

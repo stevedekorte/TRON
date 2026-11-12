@@ -13,7 +13,7 @@ export const cycleSceneGLSL=`
 uniform vec3 bodyColor;
 uniform bool shadows;
 struct Hit {float t;vec3 n;int material;};
-Hit emptyHit(){return Hit(1000.,vec3(0,1,0),0);}
+Hit emptyHit(){return Hit(1000.,vec3(0.,1.,0.),0);}
 #if defined(SHOW_CYCLE) || defined(CAST_SHADOWS)
 ${csgKernelGLSL}
 ${compilePovCycle()}
@@ -30,7 +30,7 @@ vec3 cycleEdgeHighlights(vec3 color,vec3 normal,vec3 viewDirection,int material)
  return mix(color,max(color,ink),coverage);
 }
 vec3 lightingVisible(vec3 p,vec3 n,vec3 viewDirection,vec3 albedo,float gloss,float visibility){
- vec3 key=normalize(vec3(-1,2,-1)),fill=normalize(vec3(1,.5,1));
+ vec3 key=normalize(vec3(-1.,2.,-1.)),fill=normalize(vec3(1.,.5,1.));
  vec3 ambient=mix(vec3(.075,.065,.11),vec3(.22,.28,.4),n.y*.5+.5)*${CYCLE_LIGHTING_CONFIG.ambientIntensity.toFixed(2)};
  float spec=pow(max(0.,dot(n,normalize(key+viewDirection))),gloss);
  return albedo*(ambient+vec3(.85,.92,1.)*max(0.,dot(n,key))*visibility+vec3(.2,.17,.28)*${CYCLE_LIGHTING_CONFIG.fillIntensity.toFixed(2)}*max(0.,dot(n,fill)))+vec3(.55,.65,.8)*spec*visibility;
@@ -38,7 +38,7 @@ vec3 lightingVisible(vec3 p,vec3 n,vec3 viewDirection,vec3 albedo,float gloss,fl
 vec3 lighting(vec3 p,vec3 n,vec3 viewDirection,vec3 albedo,float gloss){
  float visibility=1.;
 #ifdef CAST_SHADOWS
- if(cycleHit(p+n*.002,normalize(vec3(-1,2,-1))).material!=0)visibility=${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)};
+ if(cycleHit(p+n*.002,normalize(vec3(-1.,2.,-1.))).material!=0)visibility=${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)};
 #endif
  return lightingVisible(p,n,viewDirection,albedo,gloss,visibility);
 }
@@ -67,7 +67,7 @@ vec3 sampleRay(vec2 pixel){
   float grid=max(lines.x,lines.y)*(1.-smoothstep(${ARENA_FLOOR.fadeStartMeters.toFixed(1)},${ARENA_FLOOR.fadeEndMeters.toFixed(1)},h.t));
   color=mix(vec3(${new Color(ARENA_FLOOR.backgroundColor).toArray().join(',')}),vec3(${new Color(CYCLE_LIGHTING_CONFIG.gridLineColor).toArray().join(',')}),grid);
 #ifdef CAST_SHADOWS
-  if(cycleHit(p+vec3(0,.002,0),normalize(vec3(-1,2,-1))).material!=0)color*=.15;
+  if(cycleHit(p+vec3(0,.002,0),normalize(vec3(-1.,2.,-1.))).material!=0)color*=.15;
 #endif
  }else if(h.material!=0){p=ro+rd*h.t;color=lighting(p,h.n,-rd,materialColor(h.material),h.material==2?90.:45.);
 #ifdef SHOW_CYCLE

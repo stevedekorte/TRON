@@ -49,7 +49,7 @@ export function compilePovCycle(){
     const [points,depth]=l.data;
     call=`vec2 poly[9];${points.map((p,j)=>`poly[${j}]=${vec(p)};`).join('')} prismEvents(o,d,${points.length},poly,${number(depth)},${i}u,normalMatrix);`;
    }else call=`${l.kind}Events(o,d,${l.data.map(number).map(n=>n+',').join('')}${i}u,normalMatrix);`;
-   return `{mat4 inv=${m};vec3 o=(inv*vec4(ro,1)).xyz,d=(inv*vec4(rd,0)).xyz;mat3 normalMatrix=transpose(mat3(inv));${call}}`;
+   return `{mat4 inv=${m};vec3 o=(inv*vec4(ro,1.)).xyz,d=(inv*vec4(rd,0.)).xyz;mat3 normalMatrix=transpose(mat3(inv));${call}}`;
   }).join('\n');
   // Only the rear prism cut on the projecting side window is a gray return.
   // Keep the roof strip / top lip and curved glazing black. Material 4 shares

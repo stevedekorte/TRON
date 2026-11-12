@@ -61,7 +61,13 @@ export class View {
     const {PovCycles}=await import('./pov-cycles.js');
     if(this.renderDisposed||request!==this.cycleRendererRequest)return this.cycleRendererMode;
     const candidate=new PovCycles(this.arena.userData.cycleRace,{aircraftShadows:()=>this.recognizerShadows});
-    try{await candidate.warm(this.renderer,this.camera);}catch(error){candidate.dispose();throw error;}
+    try{await candidate.warm(this.renderer,this.camera);}
+    catch(error){
+      candidate.dispose();
+      // Stay on the normal meshes; the label tells a remote tester what happened.
+      if(error.selfTest&&request===this.cycleRendererRequest)this.cycleRendererReason='self-test';
+      throw error;
+    }
     if(this.renderDisposed||request!==this.cycleRendererRequest){candidate.dispose();return this.cycleRendererMode;}
     this.normalAdaptiveAA=this.adaptiveAA;
     this.povAdaptiveAA??=new AdaptiveAA(supportedSamples(this.renderer.getContext()));

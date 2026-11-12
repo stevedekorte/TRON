@@ -881,6 +881,8 @@ export async function createGameApp() {
   listen(window, 'resize', () => view?.resize());
   listen($('game'), 'webglcontextlost', (event) => {
     event.preventDefault();
+    const pov=cycleRendererControl.noteContextLost();
+    if(pov)console.warn('Graphics context lost while POV-Ray cycles were active; the next load uses the normal cycle renderer.');
     fail('The graphics connection was interrupted. Reload to reconnect.');
   });
 

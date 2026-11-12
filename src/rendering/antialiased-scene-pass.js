@@ -11,12 +11,18 @@ export class AntialiasedScenePass extends RenderPass {
     this.target=new WebGLRenderTarget(1,1,{type:HalfFloatType,samples,stencilBuffer:true});
     // A single NaN/Infinity can contaminate every bloom mip. Keep scene
     // radiance finite before any filtering; 1024 leaves ample HDR headroom.
+    // Bit tests, not isnan(): Direct3D's compiler (and fast-math backends)
+    // assume finite floats and delete isnan() checks (FXC warning X3577).
     this.copy=new ShaderPass({...CopyShader,fragmentShader:CopyShader.fragmentShader.replace(
+      'void main() {',
+      `bool nanBits(float x){uint b=floatBitsToUint(x);return (b&0x7f800000u)==0x7f800000u&&(b&0x007fffffu)!=0u;}
+       void main() {`
+    ).replace(
       'gl_FragColor = opacity * texel;',
-      `texel = vec4(isnan(texel.x) ? 0. : texel.x,
-                    isnan(texel.y) ? 0. : texel.y,
-                    isnan(texel.z) ? 0. : texel.z,
-                    isnan(texel.w) ? 1. : texel.w);
+      `texel = vec4(nanBits(texel.x) ? 0. : texel.x,
+                    nanBits(texel.y) ? 0. : texel.y,
+                    nanBits(texel.z) ? 0. : texel.z,
+                    nanBits(texel.w) ? 1. : texel.w);
        gl_FragColor = opacity * clamp(texel, vec4(0.), vec4(1024.));`
     )});
     this.copy.material.depthTest=false;this.copy.material.depthWrite=false;
