@@ -256,6 +256,8 @@ export class PovCycles {
   }
  }
  restore(){for(const source of this.saved)source.visible=true;this.saved.length=0;}
+ /** While suspended for performance, the proxies must not draw over the normal meshes. */
+ hide(){this.restore();for(const proxy of this.proxies)proxy.visible=false;}
  dispose(){this.edges.dispose();this.restore();this.root.removeFromParent();for(const proxy of this.proxies)proxy.material.dispose();this.geometry.dispose();}
 }
 

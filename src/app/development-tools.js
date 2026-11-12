@@ -22,7 +22,8 @@ export function createDevelopmentTools({
       race.aiMode=mode;race.aiMeasure=measure;resetCycleAI(race);
     },
     setCycleRenderer:mode=>getView().setCycleRenderer(mode),
-    sampleCycleRenderer:(dt,active=true)=>getView().monitorCycleRenderer(dt,active),
+    // POV-Ray cycles are one rung of the adaptive quality ladder.
+    sampleCycleRenderer:(dt,active=true)=>getView().updateAntialiasing(dt,active),
     get state() {
       const view = getView(),
         run = session.run,

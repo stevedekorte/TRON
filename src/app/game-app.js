@@ -1119,7 +1119,6 @@ export async function createGameApp() {
     if (view && mode !== 'error') {
       view.cameraRig.freeCamera.update(dt, keys);
       if (!document.hidden && !(mode==='ready'&&endingStage==='victory')) {
-        view.monitorCycleRenderer(dt,run.playerVehicle==='cycle'&&mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting&&run.cycleRace?.phase==='racing');
         view.updateAntialiasing(dt,mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.opening===null&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting);
         view.render(run, session.previous, mode === 'running'&&!multiplayer ? loop.alpha : 1, dt, mode);
         const formation=view.cameraRig.multiplayerFormationCamera.shot;

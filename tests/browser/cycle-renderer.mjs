@@ -40,12 +40,15 @@ try{
  await page.goto('http://127.0.0.1:5173/?layoutSeed=1982&cycleStart=1');
  await page.waitForFunction(()=>{try{return window.__tron?.state.cycleRendererMode==='pov';}catch{return false;}},{},{timeout:120000});
  await page.keyboard.press('Escape');
- await page.evaluate(()=>{for(let i=0;i<320;i++)__tron.sampleCycleRenderer(.04);});
+ // POV-Ray is one rung of the quality ladder: sustained load suspends it after
+ // supersampling, and sustained headroom later resumes it without recompiling.
+ await page.evaluate(()=>{for(let i=0;i<20*25;i++)__tron.sampleCycleRenderer(.04);});
  assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'normal');
  assert.equal(await page.evaluate(()=>__tron.state.cycleRendererReason),'performance');
+ assert.equal(await page.evaluate(()=>__tron.state.renderer.pixelRatio),1,'POV-Ray is suspended before light MSAA or resolution');
  await page.keyboard.press('Escape');await page.waitForTimeout(500);
- assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'normal','fallback must not automatically re-enable CSG');
  assert.match(await page.locator('#cycle-renderer').textContent(),/PERFORMANCE/);
- await page.waitForTimeout(4100);assert(await page.locator('#cycle-renderer').isHidden());
+ await page.evaluate(()=>{for(let i=0;i<120*60;i++)__tron.sampleCycleRenderer(1/60);});
+ assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'pov','sustained headroom resumes POV-Ray cycles');
  assert.deepEqual(errors,[]);console.log('Lazy load, shared-scene rendering, race preservation, reversible switch and async cancellation passed.');
 }finally{await browser.close();}

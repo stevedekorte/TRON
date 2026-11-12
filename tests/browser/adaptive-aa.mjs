@@ -16,17 +16,17 @@ try{
   const {config}=await import('/src/game/config.js');const view=window.aaView;
   config.adaptiveAntialiasing=true;
   const samples=view.adaptiveAA.levels;
-  for(let i=0;i<45*25;i++)view.updateAntialiasing(1/25,true);
+  for(let i=0;i<90*25;i++)view.updateAntialiasing(1/25,true);
   const low={ratio:view.renderer.getPixelRatio(),samples:view.scenePass.target.samples,index:view.adaptiveAA.index};
-  for(let i=0;i<180*60;i++)view.updateAntialiasing(1/60,true);
+  for(let i=0;i<400*60;i++)view.updateAntialiasing(1/60,true);
   const recovered={ratio:view.renderer.getPixelRatio(),samples:view.scenePass.target.samples,index:view.adaptiveAA.index};
   return {low,recovered};
  });
- assert.equal(result.low.ratio,1);assert.equal(result.low.samples,0);assert(result.recovered.index>0);assert(result.recovered.ratio>=1.5);
- // Renderer switches must start sharp and preserve the normal scene controller.
+ assert.equal(result.low.ratio,.5);assert.equal(result.low.samples,0);assert(result.recovered.index>0);assert(result.recovered.ratio>=1.5);
+ // One controller: selecting POV-Ray keeps the current (higher) quality.
  await page.evaluate(()=>__tron.setCycleRenderer('pov'));
- assert.equal(await page.evaluate(()=>__tron.state.renderer.pixelRatio),1.5);
+ assert.equal(await page.evaluate(()=>__tron.state.renderer.pixelRatio),result.recovered.ratio);
  await page.evaluate(()=>__tron.setCycleRenderer('normal'));
  assert.equal(await page.evaluate(()=>__tron.state.renderer.pixelRatio),result.recovered.ratio);
- assert.deepEqual(errors,[]);console.log('Native-resolution floor, recovery, restored initial supersampling and ray-cast renderer switching verified.',{initial,result});
+ assert.deepEqual(errors,[]);console.log('Half-resolution floor, recovery, restored initial supersampling and ray-cast renderer switching verified.',{initial,result});
 }finally{await browser.close();}

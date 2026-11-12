@@ -2,7 +2,6 @@ import {CluCannonBolts} from './clu-cannon-bolts.js';
 import {CluHaze,CLU_HAZE} from './clu-haze.js';
 import {recognizerPose} from './recognizer-pose.js';
 import {yieldToBrowser} from '../loading/yield-to-browser.js';
-import {CycleRendererGuard} from './cycle-renderer-guard.js';
 import {AdaptiveAA,ADAPTIVE_AA,supportedSamples} from './adaptive-aa.js';
 import {installShaderLogFilter} from './shader-log-filter.js';
 import {MazeWallDamage} from './maze-wall-damage.js';
@@ -51,13 +50,18 @@ const TURBO_GLOW = Object.freeze({ base: 1.8, pulse: 1.2, hz: 2, response: 10 })
 
 const AIRCRAFT_SHADOWS = Object.freeze({ maxCasters: 12, arenaWallDarkness: .88 });
 export class View {
+  // The adaptive ladder decides whether POV-Ray cycles draw: under load they are
+  // suspended (compiled shader kept) and resume when headroom returns.
+  get cycleRendererMode(){return this.povCycles&&this.adaptiveAA?.quality.pov?'pov':'normal';}
+  get cycleRendererReason(){return this.povCycles&&!this.adaptiveAA.quality.pov?'performance':this.cycleRendererFailure??null;}
   async setCycleRenderer(mode){
     if(!['normal','pov'].includes(mode))throw Error('Unknown cycle renderer');
-    this.cycleRendererReason=null;
+    this.cycleRendererFailure=null;
     const request=this.cycleRendererRequest=(this.cycleRendererRequest??0)+1;
-    this.povCycles?.dispose();this.povCycles=null;this.cycleRendererMode='normal';
-    if(this.normalAdaptiveAA){this.adaptiveAA=this.normalAdaptiveAA;this.normalAdaptiveAA=null;this.adaptiveAA.clear();this.resize();}
-    if(mode==='normal')return 'normal';
+    // Suspended for performance: an explicit request resumes without recompiling.
+    if(mode==='pov'&&this.povCycles){this.allowPovCycles();return 'pov';}
+    this.povCycles?.dispose();this.povCycles=null;this.adaptiveAA.setPovRelevant(false);
+    if(mode==='normal'){this.adaptiveAA.clear();this.resize();return 'normal';}
     if(!this.arena)throw Error('The arena is still loading');
     const {PovCycles}=await import('./pov-cycles.js');
     if(this.renderDisposed||request!==this.cycleRendererRequest)return this.cycleRendererMode;
@@ -66,21 +70,18 @@ export class View {
     catch(error){
       candidate.dispose();
       // Stay on the normal meshes; the label tells a remote tester what happened.
-      if(error.selfTest&&request===this.cycleRendererRequest)this.cycleRendererReason='self-test';
+      if(error.selfTest&&request===this.cycleRendererRequest)this.cycleRendererFailure='self-test';
       throw error;
     }
     if(this.renderDisposed||request!==this.cycleRendererRequest){candidate.dispose();return this.cycleRendererMode;}
-    this.normalAdaptiveAA=this.adaptiveAA;
-    this.povAdaptiveAA??=new AdaptiveAA(supportedSamples(this.renderer.getContext()));
-    this.adaptiveAA=this.povAdaptiveAA;this.adaptiveAA.clear();this.resize();
-    this.cycleRendererGuard=new CycleRendererGuard();
-    this.povCycles=candidate;this.cycleRendererMode='pov';return 'pov';
+    this.povCycles=candidate;this.adaptiveAA.setPovRelevant(true);this.allowPovCycles();
+    return 'pov';
   }
-  monitorCycleRenderer(dt,active){
-    if(this.povCycles&&this.cycleRendererGuard.sample(dt,active,config.targetFps)){
-      void this.setCycleRenderer('normal');this.cycleRendererReason='performance';
-      console.info('POV-Ray cycles: sustained low frame rate; using normal renderer. Shift-R can retry manually.');
-    }
+  // Selecting POV-Ray cycles lifts quality to at least the lowest POV level;
+  // the ladder lowers it again if this machine cannot hold the frame rate.
+  allowPovCycles(){
+    this.adaptiveAA.raiseTo(this.adaptiveAA.levels.findIndex(level=>level.pov));
+    this.resize();
   }
   attachSolarSailer(model,SolarSailer){this.solarSailer=new SolarSailer(model,this.scene,this.map);}
   attachArena(arena){
@@ -636,10 +637,10 @@ export class View {
     this.recognizerShadows.update(this.renderer, this.breakups.bursts, this.camera.position);
     this.carrierShadows?.update(this.renderer);
     if(run.cycleRace&&run.cycleRace.phase!=='idle')this.arena?.userData.cycleRace.shadows.update(this.renderer,[],this.camera.position);
-    if(this.povCycles){
+    if(this.cycleRendererMode==='pov'){
       this.povCycles.prepare();
       try{this.povCycles.edges.render(this.renderer,this.povCycles.root,this.camera);this.composer.render(dt);}finally{this.povCycles.restore();}
-    }else this.composer.render(dt);
+    }else{this.povCycles?.hide();this.composer.render(dt);}
   }
 
   connectMazeOcclusion() {
