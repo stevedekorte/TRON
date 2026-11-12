@@ -42,11 +42,21 @@ export class Sound {
     this.sampleErrors = [];
     this.sources = new Set();
   }
+  // Samples decode before the first gesture without an AudioContext: browsers
+  // log "AudioContext was not allowed to start" for every context creation,
+  // resume() and source start() that precedes user activation.
   async preload(){
-    if(!this.context)this.init();
+    this.loading??=this.loadSamples();
     await Promise.all([this.loading,this.loadCycleSamples(),this.musicDirector.preload()]);
   }
+  decoder(){
+    // AudioBuffers are context-independent; playback resamples if rates differ.
+    return this.context??(this.decodeContext??=new OfflineAudioContext(1,1,48000));
+  }
   unlock() {
+    // Only a trusted gesture may create or resume audio. Calls outside one
+    // (e.g. entering the ready state on load) are retried by the next gesture.
+    if (globalThis.navigator?.userActivation && !navigator.userActivation.isActive) return Promise.resolve();
     if (!this.context) this.init();
     const c = this.context;
     // Both resume and a source start happen inside the trusted input event.
@@ -149,7 +159,9 @@ export class Sound {
     this.multiplayerTeamVoice = new MultiplayerTeamVoice(c, this.master, this.samples);
     this.cycleVoices = new CycleVoices(c, this.master, this.samples);
     this.cycleExitVoice = new CycleExitVoice(c,this.master,this.samples);
-    this.loading = this.loadSamples();
+    this.loading ??= this.loadSamples();
+    this.startLoops();
+    if (this.pendingMusic) { const args = this.pendingMusic; this.pendingMusic = null; this.startMusic(...args); }
   }
   async loadSamples() {
     await Promise.all(
@@ -165,7 +177,7 @@ export class Sound {
           if (!response.ok) throw new Error('HTTP ' + response.status);
           const bytes = await response.arrayBuffer();
           if (this.disposed) return;
-          const buffer = await this.context.decodeAudioData(bytes);
+          const buffer = await this.decoder().decodeAudioData(bytes);
           if (this.disposed) return;
           (name.startsWith('terminal-key-') ? this.keySamples : this.samples)[name] = buffer;
         } catch (e) {
@@ -174,6 +186,13 @@ export class Sound {
       }),
     );
     if (this.disposed) return;
+    this.samplesLoaded = true;
+    this.startLoops();
+  }
+  // Continuous sources need both the graph (first gesture) and decoded samples.
+  startLoops() {
+    if (!this.context || !this.samplesLoaded || this.loopsStarted || this.disposed) return;
+    this.loopsStarted = true;
     if (this.samples['tank-drive']) {
       this.engine.stop();
       this.engine.disconnect();
@@ -185,13 +204,12 @@ export class Sound {
   }
 
   loadCycleSamples() {
-    if(!this.context)return Promise.resolve();
     return this.cycleLoading ??= Promise.all([...Object.values(MP_TEAM_VOICE.samplesByTeam).flat().map(sample=>sample.slice('cycle-'.length)),'illegal-exit','materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
       try {
         const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+(Object.values(MP_TEAM_VOICE.samplesByTeam).flat().includes('cycle-'+name)?'.mp3':'.wav')));
         if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
-        const buffer=await this.context.decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;
+        const buffer=await this.decoder().decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;
       }catch(e){if(!this.disposed)this.sampleErrors.push('cycle-'+name+': '+e.message);}
     })).then(()=>{this.cycleSamplesReady=true;});
   }
@@ -575,6 +593,7 @@ export class Sound {
   }
   prepareMusic(){this.musicDirector.prepareGameplay();}
   startMusic(...args) {
+    if (!this.context) { this.pendingMusic = args; return; }
     this.musicDirector.startMusic(...args);
   }
   resumeMusic() {
@@ -584,6 +603,7 @@ export class Sound {
     this.musicDirector.fadeMusic(progress);
   }
   reset() {
+    this.pendingMusic = null;
     this.cycleOpeningAudio?.reset();
     this.multiplayerCountdown?.reset();
     this.multiplayerTeamVoice?.reset();
@@ -597,6 +617,7 @@ export class Sound {
     for (const s of this.sources) if (!s.loop) s.stop();
   }
   silence() {
+    this.pendingMusic = null;
     this.multiplayerTeamVoice?.stopPlayback();
     this.cycleExitVoice?.stopPlayback();
     this.musicDirector.silence();
