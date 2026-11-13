@@ -37,10 +37,10 @@ export class GameSession {
     this.debris?.clear();
     this.physics?.clear();
     // Arena damage belongs to this app session, not an individual match.
-    const breaches=this.run?.cycleRace?.breaches??[];
+    const breaches=this.run?.cycleRace?.breaches??[];const breachRounds=this.run?.cycleRace?.breachRounds??0;
     this.run = initialRun ?? createRun(seed, this.world, this.settings);
     this.run.cycleRace = createCycleRace(this.world, this.run.seed);
-    if(this.run.cycleRace){this.run.cycleRace.roadConfig=this.settings.roadCycle;this.run.cycleRace.breaches=breaches;}
+    if(this.run.cycleRace){this.run.cycleRace.roadConfig=this.settings.roadCycle;this.run.cycleRace.breaches=breaches;this.run.cycleRace.breachRounds=breachRounds;}
     if(this.run.cycleRace)this.run.cycleRace.phase='idle';
     this.previous = { ...this.run };
     return this.run;

@@ -2968,3 +2968,9 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Add FEEDBACK after CREDITS, using the existing mouse/touch selection and keyboard/controller navigation. Activation opens `mailto:steve@dekorte.com` with subject `ENCOM TERMINAL: USER FEEDBACK` and leaves the terminal ready.
 - Validation: JavaScript syntax and whitespace checks pass; documentation regenerated. Browser/mail-client handoff not exercised. Local only; not deployed.
+
+## Arena wall damage rules — November 12
+
+- [x] Multiplayer light cycles use a closed arena: perimeter wall impacts derez the rider without cutting a breach, so no escape route opens. The server room and client prediction both set `closedArena`, and the grid-step path honors it as the continuous path already did. This supersedes the October multiplayer breach and silent-escape behavior.
+- [x] Solo light-cycle breaches persist across rounds and session resets, then heal at the start of every `LIGHT_CYCLES.breachHealRounds` (2) rounds. The round count travels with the breaches; the renderer already restores and re-cuts walls on round change.
+- Validation: `npm test` — 713/713 passed on local macOS, including `tests/unit/multiplayer-breaches.test.js` (solid MP walls), `tests/unit/cycle-breach-heal.test.js`, and the updated session-persistence check in `tests/unit/arena-breaches.test.js`. Not yet checked in a live multiplayer session or by playing the solo game in a browser.

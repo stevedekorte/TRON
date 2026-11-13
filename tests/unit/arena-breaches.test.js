@@ -4,6 +4,7 @@ import * as T from 'three';
 import {tickCycleRace,resetCycleRound} from '../../shared/simulation/light-cycles.js';
 import {cutBreachGeometry} from '../../src/rendering/arena-breaches.js';
 import {arenaWallBlocked} from '../../shared/simulation/config/arena-breaches.js';
+import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
 const race=()=>{const r={time:0,seed:1982,scores:[0,0],round:0};resetCycleRound(r);r.phase='racing';return r;};
 test('wall crash opens a persistent gap; following cycle passes through and survives outside',()=>{
  const r=race(),b=r.cycles[0];Object.assign(b,{x:85,z:0,previousX:84,previousZ:0,dir:1});
@@ -41,16 +42,19 @@ test('arena outlines discard coplanar T-junction seams but preserve corners',asy
  for(const geometry of [g,edges,box,corners])geometry.dispose();
 });
 
-test('arena damage survives session resets but a new app session starts intact',async()=>{
+test('arena damage survives session resets until it heals, but a new app session starts intact',async()=>{
  const {GameSession}=await import('../../src/simulation/game-session.js');
  const {browserScenario}=await import('../../src/game/browser-scenario.js');
  const {world}=browserScenario({pathname:'/',search:'?layoutSeed=1982'});
  const session=new GameSession({world});
  const breach={axis:'x',sign:1,along:0,id:0,time:2};session.run.cycleRace.breaches.push(breach);
- for(let i=0;i<3;i++){
+ for(let i=0;i<LIGHT_CYCLES.breachHealRounds;i++){
   session.reset();assert.deepEqual(session.run.cycleRace.breaches,[breach]);
   resetCycleRound(session.run.cycleRace);assert(!arenaWallBlocked(session.run.cycleRace,90,0));
  }
+ // The heal interval counts rounds across session resets.
+ session.reset();resetCycleRound(session.run.cycleRace);
+ assert.deepEqual(session.run.cycleRace.breaches,[]);assert(arenaWallBlocked(session.run.cycleRace,90,0));
  const fresh=new GameSession({world});assert.deepEqual(fresh.run.cycleRace.breaches,[]);assert(arenaWallBlocked(fresh.run.cycleRace,90,0));
  session.dispose();fresh.dispose();
 });

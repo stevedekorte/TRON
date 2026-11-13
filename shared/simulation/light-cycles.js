@@ -54,7 +54,9 @@ export function configureCycleMatch(r,matchIndex){
 export function resetCycleRound(r){
   resetCycleAI(r);
   r.continuousTrails=false;r.arenaPaused=false;r.attemptResolved=false;r.pendingTurns=[];r.round++;r.phase='countdown';r.remaining=C.countdownSeconds;r.elapsed=0;r.accumulator=0;r.winner=null;
-  r.occupied=new Uint8Array(side*side);r.outerOccupied={};r.breaches??=[];r.trails=[];r.crashes=[];
+  r.occupied=new Uint8Array(side*side);r.outerOccupied={};r.breaches??=[];
+  // Breaches outlive a round, then heal; the count survives session resets with the breaches.
+  r.breachRounds=(r.breachRounds??0)+1;if(C.breachHealRounds>0&&r.breachRounds>C.breachHealRounds){r.breaches=[];r.breachRounds=1;}r.trails=[];r.crashes=[];
   if((r.startWithBreach??CYCLE_TESTING.startWithBreach)&&r.playerId!==undefined&&!r.breaches.some(b=>b.axis==='z'&&b.sign===-1&&b.along===0))r.breaches.push({axis:'z',sign:-1,along:0,id:r.breaches.length,time:r.time});
   const startRow=(ARENA_WALL.innerMeters-C.lengthMeters/2-C.lengthMeters*C.startWallClearanceLengths)/C.cellMeters;
   const teams=r.teamCount??2,count=r.cyclesPerTeam??3;
@@ -153,7 +155,7 @@ export function tickCycleRace(r,decide=chooseCycleDirection,moving=r.cycles){
   for(const p of proposals){
     const b=p.b;b.previousX=b.x;b.previousZ=b.z;
     if(crashes.has(b.id)){
-      if(arenaWallBlocked(r,p.x,p.z)){
+      if(!r.closedArena&&arenaWallBlocked(r,p.x,p.z)){
         const hit=wallImpact(p.x*C.cellMeters,p.z*C.cellMeters);
         r.breaches.push({...hit,id:r.breaches.length,time:r.time});
       }

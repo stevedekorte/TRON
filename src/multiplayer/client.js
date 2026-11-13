@@ -115,7 +115,7 @@ export class MultiplayerClient{
   if(!this.state)return false;
   this.remotePlayback??=new RemotePlayback();
   this.remotePlayback.push(this.state,this.received);
-  const previous=run.cycleRace,site=previous.site,race={closedArena:false,derezOnEscape:true,arenaPaused:false,breaches:[],accumulator:0,...this.state.race,site,
+  const previous=run.cycleRace,site=previous.site,race={closedArena:true,derezOnEscape:true,arenaPaused:false,breaches:[],accumulator:0,...this.state.race,site,
    cycles:this.state.race.cycles.map(b=>({...b,previousX:b.x,previousZ:b.z,progress:1,continuousArena:true})),trails:this.state.race.trails.slice(),
    occupied:previous.occupied,outerOccupied:{},pendingTurns:[],playerId:this.me.seat??0,localPlayerId:this.me.seat};
   if(race.phase==='countdown'&&!race.cameraStaging)race.remaining=Math.max(0,race.remaining-Math.min(.1,Math.max(0,(performance.now()-this.received)/1000)));

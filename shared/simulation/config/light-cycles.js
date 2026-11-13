@@ -18,6 +18,8 @@ export const LIGHT_CYCLES = Object.freeze({
   teammateRaceRangeMeters:120, teammateRaceLaneMeters:24,
   teammateTurboLeadMeters:24, teammateTurboReleaseLeadMeters:40, teammateRaceHeadingDot:.7,
   countdownSeconds: .3, restartSeconds: 6,
+  // Solo arena wall breaches heal at the start of every Nth round (rounds).
+  breachHealRounds: 2,
   lookAheadCells: 45, floodCells: 360,
   colors: [0xffc52e, 0x48baff, 0xff4545, 0x41db78],
   teamNames:['GOLD','BLUE','RED','GREEN'], maxCycles:12,
