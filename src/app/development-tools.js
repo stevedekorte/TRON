@@ -69,6 +69,9 @@ export function createDevelopmentTools({
           visible: view.arena.userData.cycleRace.root.visible,
           bikes: view.arena.userData.cycleRace.bikes.map(b=>({visible:b.visible,wheelReflection:b.userData.wheelReflection,position:b.getWorldPosition(view.camera.position.clone()).toArray()})),
           trailCounts: view.arena.userData.cycleRace.trails.map(m=>m.count),
+          playerMaterials: [...new Set((view.arena.userData.cycleRace.bikes[session.run.cycleRace?.playerId??0]??view.arena.userData.cycleRace.bikes[0]).getObjectsByProperty('isMesh',true).flatMap(o=>[].concat(o.material)))].filter(m=>['black','Color_D06','_LightGray_1'].includes(m.name)).map(m=>({name:m.name,window:m.name==='black',opacity:+m.opacity.toFixed(3)})),
+          playerStripe: (view.arena.userData.cycleRace.bikes[session.run.cycleRace?.playerId??0]??view.arena.userData.cycleRace.bikes[0]).userData.humanStripe?.value??null,
+          cockpitOutline: view.cockpitOutline?{visible:view.cockpitOutline.lines.visible,opacity:view.cockpitOutline.material.opacity,segments:view.cockpitOutline.segmentCount,color:view.cockpitOutline.material.color.toArray()}:null,
         } : null,
         camera: {
           cycleVisibility:view.cameraRig.cycleVisibility,cycleFirstPerson:view.cameraRig.cycleFirstPerson,cycleFirstPersonMix:view.cameraRig.cycleFirstPersonMix,

@@ -8,6 +8,7 @@ import {MazeWallDamage} from './maze-wall-damage.js';
 import {GAME_LIGHTING,createGameLights} from './game-lighting.js';
 import {interpolateCycleRace} from './cycle-poses.js';
 import {SurfaceImpacts} from './surface-impacts.js';
+import {CycleCockpitOutline,CYCLE_COCKPIT_BODY} from './cycle-cockpit-outline.js';
 import { createActiveTeleportPads as createTeleportPads } from '../levels/teleporters.js';
 import { carrierFor } from '../game/carrier.js';
 import { CarrierMaterialization } from './carrier-materialization.js';
@@ -541,17 +542,29 @@ export class View {
       cycleRace,
     });
     this.cluCannonBolts.update(run.projectiles,this.camera);
+    let outlined=false;
     for(const [id,bike] of (this.arena?.userData.cycleRace.bikes??[]).entries()){
       const mix=run.playerVehicle==='cycle'&&!run.cycleSpectating&&id===cycleRace?.playerId?1-this.cameraRig.cycleVisibility:0;
       bike.userData.cockpitMix=mix;
-      if(mix>.999)bike.visible=false;
+      if(mix>0){
+        // Built on first use from the materialized player cycle; geometry is shared by every seat.
+        this.cockpitOutline??=new CycleCockpitOutline(bike);
+        bike.userData.bodyMaterial??=bike.getObjectsByProperty('isMesh',true).flatMap(o=>[].concat(o.material)).find(m=>m.name==='Color_D06');
+        this.cockpitOutline.update(bike,mix,bike.userData.bodyMaterial?.color);outlined=true;
+        // The human-player stripe marks the cycle for others; fade it out from inside.
+        if(bike.userData.humanStripe)bike.userData.humanStripe.value*=1-Math.min(1,mix);
+      }
+      // From inside, the body stays as a faint double-sided shell in its outside
+      // colors; the window glass fades out completely.
       bike.traverse(o=>{if(o.isMesh)for(const material of [].concat(o.material)){
         if(mix>0){
-          material.userData.cockpitOriginal??={opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite};
-          material.opacity=material.userData.cockpitOriginal.opacity*(1-mix);material.transparent=true;material.depthWrite=false;
+          material.userData.cockpitOriginal??={opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite,side:material.side};
+          const floor=CYCLE_COCKPIT_BODY.windowMaterials.includes(material.name)?0:CYCLE_COCKPIT_BODY.opacity;
+          material.opacity=material.userData.cockpitOriginal.opacity*(1-mix*(1-floor));material.transparent=true;material.depthWrite=false;material.side=THREE.DoubleSide;
         }else if(material.userData.cockpitOriginal){Object.assign(material,material.userData.cockpitOriginal);delete material.userData.cockpitOriginal;}
       }});
     }
+    if(!outlined)this.cockpitOutline?.update(null,0);
     this.tank.root.visible = cameraResult.tankVisible && run.playerVehicle!=='cycle';
     if (gunner && this.cameraRig.mouseLook)
       this.mouseTarget = mouseTarget(run, this.cameraRig.mouseLook, this.camera, [
@@ -658,6 +671,7 @@ export class View {
   ensureRecognizers(count) {
     if (count <= this.recognizers.length) return;
     // Undo shader wrappers in reverse order before rebuilding receiver lists.
+    this.cockpitOutline?.dispose();this.cockpitOutline=null;
     this.carrierShadows?.dispose();
     this.mazeShadows.dispose();
     this.recognizerShadows.dispose();

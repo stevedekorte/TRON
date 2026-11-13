@@ -233,7 +233,9 @@ export class PovCycles {
   for(let i=0;i<this.proxies.length;i++){
    const source=this.raceView.bikes[i],proxy=this.proxies[i],rez=this.raceView.materializations[i];
    // Keep one analytic model throughout the wire sweep and solid fade.
-   proxy.visible=this.raceView.root.visible&&source.visible;
+   // From inside a cycle (first person) the ray-cast volume has no visible
+   // surface; that cycle draws its mesh, with the cockpit shell fade, instead.
+   proxy.visible=this.raceView.root.visible&&source.visible&&!(source.userData.cockpitMix>0);
    if(!proxy.visible)continue;
    const uniforms=proxy.material.uniforms;
    updateCycleAircraftShadowUniforms(uniforms,this.aircraftShadows());
