@@ -1,4 +1,4 @@
-FROM node:22.23.4-bookworm@sha256:63538dfe497cc29dfafdda25ada09b46db68a3f4cc205abf1f5d6bf0913f3384
+FROM node:26.13.0-bookworm@sha256:a546d3f8acd2af4382668a7e6acd3bc4418e6a27478373e3246f8162f5181509
 # npm 12.2.1 still bundles Undici 6.29.0; patch that package below until upstream includes 6.29.1.
 ARG NPM_VERSION=12.2.1
 ARG CODEX_VERSION=0.155.1
