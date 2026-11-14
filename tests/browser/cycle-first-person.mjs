@@ -14,7 +14,7 @@ try{
  await page.waitForFunction(()=>__tron.state.camera.cycleFirstPersonMix>.98);
  assert.equal(await page.evaluate(()=>__tron.state.camera.cycleFirstPerson),true);
  assert(Math.abs((await page.evaluate(()=>__tron.state.camera.y))-1.3)<.1);
- assert(Math.abs((await page.evaluate(()=>__tron.state.camera.fov))-85)<1,'wide first-person field of view');
+ assert(Math.abs((await page.evaluate(()=>__tron.state.camera.fov))-95)<1,'wide first-person field of view');
  await page.waitForTimeout(400);
  const shell=await page.evaluate(()=>__tron.state.cycleRendering.playerMaterials);
  assert(shell.length&&shell.every(m=>m.window?m.opacity<.01:Math.abs(m.opacity-.2)<.01),`body at 0.2, windows hidden: ${JSON.stringify(shell)}`);

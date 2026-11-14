@@ -27,8 +27,8 @@ const AERIAL_CAMERA = Object.freeze({
 });
 export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,turboDistanceChangePerSpeedRatio:.32,minDistanceScale:.55,maxDistanceScale:1.16,responsePerSecond:2.5});
 export const CYCLE_TURN_TRACKING=Object.freeze({nearDistanceMeters:12,farDistanceMeters:140,nearResponsePerSecond:30,farResponsePerSecond:1.2});
-// fovDegrees is vertical; 85 degrees is about 117 degrees horizontally at 16:9.
-export const CYCLE_FIRST_PERSON=Object.freeze({eyeHeightMeters:1.3,fovDegrees:85,forwardMeters:.25,lookAheadMeters:12,responsePerSecond:5,fadeSeconds:.3,clearanceHalfWidthMeters:.7,clearanceHalfLengthMeters:1.95,clearanceHeightMeters:1.75});
+// fovDegrees is vertical; 95 degrees is about 125 degrees horizontally at 16:9.
+export const CYCLE_FIRST_PERSON=Object.freeze({eyeHeightMeters:1.3,fovDegrees:95,forwardMeters:.25,lookAheadMeters:12,responsePerSecond:5,fadeSeconds:.3,clearanceHalfWidthMeters:.7,clearanceHalfLengthMeters:1.95,clearanceHeightMeters:1.75});
 const CYCLE_SWITCH_SECONDS=1.2;
 export const CYCLE_DEATH_HOLD_SECONDS=3;
 const GUNNER_TRANSITION_SECONDS = 0.75;
