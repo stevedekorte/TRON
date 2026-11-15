@@ -26,6 +26,10 @@ const AERIAL_CAMERA = Object.freeze({
   distance: Math.hypot(180, 320),
 });
 export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,turboDistanceChangePerSpeedRatio:.32,minDistanceScale:.55,maxDistanceScale:1.16,responsePerSecond:2.5});
+// Turbo widens and braking narrows the view (degrees, vertical FOV), keyed to
+// the rider's turbo/brake state rather than absolute speed, so the rising grid
+// speed does not keep widening it. First person is already wide; keep it subtle.
+export const CYCLE_SPEED_FOV=Object.freeze({turboDegrees:10,brakeDegrees:-8,firstPersonTurboDegrees:6,firstPersonBrakeDegrees:-8,responsePerSecond:6});
 export const CYCLE_TURN_TRACKING=Object.freeze({nearDistanceMeters:12,farDistanceMeters:140,nearResponsePerSecond:30,farResponsePerSecond:1.2});
 // fovDegrees is vertical; 95 degrees is about 125 degrees horizontally at 16:9.
 export const CYCLE_FIRST_PERSON=Object.freeze({eyeHeightMeters:1.3,fovDegrees:95,forwardMeters:.25,lookAheadMeters:12,responsePerSecond:5,fadeSeconds:.3,clearanceHalfWidthMeters:.7,clearanceHalfLengthMeters:1.95,clearanceHeightMeters:1.75});
@@ -78,7 +82,7 @@ export class CameraRig {
     this.cycleOverview = null;
     this.cycleAnchor = null;
     this.spectatorOrbit = null;
-    this.cycleSpeedDistanceScale=1;
+    this.cycleSpeedDistanceScale=1;this.cycleSpeedFov=0;
     this.cycleFirstPerson=false;this.cycleFirstPersonMix=0;this.cycleVisibility=1;this.cycleFirstPersonAge=0;this.wasCycleFirstPerson=false;
     this.cycleFollowedId=undefined;
     this.cycleDeathHold=null;
@@ -214,6 +218,8 @@ export class CameraRig {
       const speedResponse=speed>cruiseSpeed?CYCLE_SPEED_CAMERA.turboDistanceChangePerSpeedRatio:CYCLE_SPEED_CAMERA.distanceChangePerSpeedRatio;
       const speedScale=THREE.MathUtils.clamp(1+(1-speed/cruiseSpeed)*speedResponse,CYCLE_SPEED_CAMERA.minDistanceScale,CYCLE_SPEED_CAMERA.maxDistanceScale);
       if(mode!=='paused')this.cycleSpeedDistanceScale=THREE.MathUtils.lerp(this.cycleSpeedDistanceScale,speedScale,1-Math.exp(-dt*CYCLE_SPEED_CAMERA.responsePerSecond));
+      const fovTarget=this.reducedMotion?0:bike?.boosting?1:bike?.braking?-1:0;
+      if(mode!=='paused')this.cycleSpeedFov=this.reducedMotion?0:THREE.MathUtils.lerp(this.cycleSpeedFov,fovTarget,1-Math.exp(-dt*CYCLE_SPEED_FOV.responsePerSecond));
       const followDistance=CYCLE_CAMERA.distanceMeters*this.cycleSpeedDistanceScale;
       const glanceTarget=-(this.cycleGlanceInput||0)*CYCLE_CAMERA.glanceRadians;
       const glanceResponse=escaped?CYCLE_CAMERA.roadGlanceResponsePerSecond:CYCLE_CAMERA.glanceResponsePerSecond;
@@ -374,7 +380,11 @@ export class CameraRig {
         if(transition.mix===1)this.cycleSwitch=null;
       }
       this.camera.far=12000;
-      const cycleFov=THREE.MathUtils.lerp(config.fov,CYCLE_FIRST_PERSON.fovDegrees,this.cycleFirstPersonMix);
+      const speedFov=this.cycleSpeedFov,fp=this.cycleFirstPersonMix;
+      const speedFovDegrees=(1-aerialMix)*(speedFov>=0
+        ?speedFov*THREE.MathUtils.lerp(CYCLE_SPEED_FOV.turboDegrees,CYCLE_SPEED_FOV.firstPersonTurboDegrees,fp)
+        :-speedFov*THREE.MathUtils.lerp(CYCLE_SPEED_FOV.brakeDegrees,CYCLE_SPEED_FOV.firstPersonBrakeDegrees,fp));
+      const cycleFov=THREE.MathUtils.lerp(config.fov,CYCLE_FIRST_PERSON.fovDegrees,fp)+speedFovDegrees;
       this.camera.fov=this.cycleOpening===null?cycleFov:THREE.MathUtils.lerp(cycleFov,THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(CYCLE_FORMATION_CAMERA.fovDegrees/2))*Math.max(1,CYCLE_FORMATION_CAMERA.framingAspect/this.camera.aspect))),cycleFormationBlend(this.cycleOpening));
       this.camera.updateProjectionMatrix();this.freshCamera=false;
       return {tankVisible:false};

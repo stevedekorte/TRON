@@ -11,6 +11,16 @@ See also: /llms.txt (curated index) and /sitemap.xml.
 <!-- Page: (root) -->
 Source: /
 
+## Turbo and brake field of view — November 14
+
+- [x] Turbo widens and braking narrows the light-cycle camera's vertical field of view: chase +10° / −8° (63° → 73° / 55°), first person +6° / −8° (95° → 101° / 87°), blended by first-person mix and suppressed in aerial view. Keyed to the followed rider's turbo/brake state, not absolute speed, so the rising grid speed does not keep widening it; eases with `responsePerSecond: 6` (about 0.5 s to 95%). Disabled under reduced motion and frozen while paused. Values in `CYCLE_SPEED_FOV` (`src/rendering/camera-rig.js`). Road cycles widen on turbo only. The existing speed-based chase distance is unchanged.
+- Validation: macOS arm64, headless Chrome 1100×750: new `node tests/browser/cycle-speed-fov.mjs` measured chase 63.0/72.7/55.3° and first person 94.7/100.7/87.3° (cruise/turbo/brake); `cycle-first-person.mjs` still passes; turbo and brake screenshots inspected. Unit suite passes 715/715. Feel not yet judged in actual play.
+
+## Grid speed cap raised to 400% — November 14
+
+- [x] Raise the continuous light-cycle grid speed cap from 200% to 400% of initial speed. The ramp rate is unchanged at 1% of initial speed per racing second, so the cap is now reached at 300 seconds instead of 100. Solo, multiplayer authority/prediction and AI forecasts share `GRID_SPEED` in `shared/simulation/cycle-speed-ramp.js`; turbo and brake still scale with it (full turbo at the cap is 10× initial speed).
+- Validation: macOS arm64; complete unit suite passes 715/715, with the ramp checks updated for the new cap. Not yet play-tested at 300+ seconds.
+
 ## Faster closing credits — November 7
 
 - [x] Combine Wendy Carlos's two entries on one screen, and the ray-cast renderer credit with Carl N. Hoff's light-cycle model credit. Keep model previews individual through BIT, then present five entries per screen. Halve only the per-word reading time after BIT (240 → 480 words/minute); retain the original three-second minimum, 0.75-second settling time, all earlier pauses and typing cadence. This reduces the extended sequence from 34 to 19 screens; the tallest screen has 21 lines.
@@ -3002,10 +3012,9 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 <!-- Page: assets -->
 Source: /assets/
 
----
-title: Assets
-subtitle: Model, sound, and dependency inventory
----
+# Assets
+
+Model, sound, and dependency inventory
 
 ## Light cycle engine replacement — October 29
 
@@ -3204,11 +3213,9 @@ The grid cloud is no longer loaded or shown in the game or credits. The retained
 <!-- Page: cycle-ai -->
 Source: /cycle-ai/
 
----
-title: Fast, compelling cycle AI
-topTitle: TRON
-subtitle: Bounded JavaScript tactics, resource planning, and measured evolution
----
+# Fast, compelling cycle AI
+
+Bounded JavaScript tactics, resource planning, and measured evolution
 
 ## Higher weight on confirmed kills — October 26
 
@@ -3588,11 +3595,9 @@ Preserved [full weights, rows, configuration, validation and timing](experiments
 <!-- Page: history -->
 Source: /history/
 
----
-title: Project history
-topTitle: TRON
-subtitle: Original milestones and earlier development notes
----
+# Project history
+
+Original milestones and earlier development notes
 
 [← Current implementation plan](../index.html)
 
@@ -4252,10 +4257,9 @@ September 20 teleporter flyover check: added a fixed-step moving-Recognizer regr
 <!-- Page: jev -->
 Source: /jev/
 
----
-title: Jev enemy control
-subtitle: Current architecture, input/output contract, and limits
----
+# Jev enemy control
+
+Current architecture, input/output contract, and limits
 
 ## What Jev controls
 
@@ -4730,10 +4734,9 @@ The user requested that TypeSafe balance control total public usage. `wrangler.j
 <!-- Page: models -->
 Source: /models/
 
----
-title: Models
-subtitle: Imported vehicle sources and runtime adapters
----
+# Models
+
+Imported vehicle sources and runtime adapters
 
 Both files were supplied by the user on September 12, 2026 after downloading from Sketchfab. Embedded asset metadata identifies the following sources; original binaries remain unmodified.
 
@@ -4853,10 +4856,7 @@ The game and credits adapters omit the separate `DANIEL_PRETI` / `daniel_preti` 
 <!-- Page: models/carrier-shuttle -->
 Source: /models/carrier-shuttle/
 
----
-title: Carrier escape shuttle — retired
-topTitle: TRON
----
+# Carrier escape shuttle — retired
 
 The unused shuttle experiments, assets and preview tools were removed on November 7, 2026. No usable shuttle was adopted. Historical implementation notes elsewhere describe rejected experiments.
 
@@ -4866,11 +4866,9 @@ The unused shuttle experiments, assets and preview tools were removed on Novembe
 <!-- Page: multiplayer -->
 Source: /multiplayer/
 
----
-title: Multiplayer light cycles
-topTitle: TRON
-subtitle: Authoritative arena, bandwidth reduction, and staged low-latency hosting
----
+# Multiplayer light cycles
+
+Authoritative arena, bandwidth reduction, and staged low-latency hosting
 
 ## Revised proposal for review — October 22
 
@@ -5047,11 +5045,9 @@ No collision rollback or provisional death system is included. Inputs received a
 <!-- Page: multiplayer/webrtc -->
 Source: /multiplayer/webrtc/
 
----
-title: WebRTC light-cycle matches
-topTitle: TRON
-subtitle: Revised proposal for review — October 22, 2026
----
+# WebRTC light-cycle matches
+
+Revised proposal for review — October 22, 2026
 
 ## Recommendation and scope
 
@@ -5217,11 +5213,9 @@ These references support the transport capabilities. The topology, staging, thre
 <!-- Page: organization -->
 Source: /organization/
 
----
-title: Project organization plan
-topTitle: TRON
-subtitle: Clear ownership for code, assets, references and generated output
----
+# Project organization plan
+
+Clear ownership for code, assets, references and generated output
 
 ## Scope
 
@@ -5298,10 +5292,9 @@ Stage 7 remains deferred: retain compatibility paths for this release until depl
 <!-- Page: refactoring -->
 Source: /refactoring/
 
----
-title: Refactoring review and design
-subtitle: Explicit ownership, reproducible worlds and composed controllers
----
+# Refactoring review and design
+
+Explicit ownership, reproducible worlds and composed controllers
 
 ## Recommendation
 
@@ -5484,10 +5477,9 @@ Prettier is available for the extracted modules via `.prettierrc.json`; legacy m
 <!-- Page: references -->
 Source: /references/
 
----
-title: References
-subtitle: Visual direction and source images
----
+# References
+
+Visual direction and source images
 
 ## Reference folders
 
@@ -5600,11 +5592,9 @@ User-supplied `recognizers/spotlight/IMG_3514.jpeg` through `IMG_3520.jpeg` show
 <!-- Page: security -->
 Source: /security/
 
----
-title: Security review and remediation plan
-topTitle: TRON
-subtitle: TRON and related dekorte.com software — October 23, 2026
----
+# Security review and remediation plan
+
+TRON and related dekorte.com software — October 23, 2026
 
 ## Decision summary
 
@@ -5736,10 +5726,9 @@ No current audit match was reported for TRON's Three.js, Rapier, Transformers.js
 <!-- Page: sounds -->
 Source: /sounds/
 
----
-title: Sound library
-subtitle: 1982 TRON sounds, experiments and future resources
----
+# Sound library
+
+1982 TRON sounds, experiments and future resources
 
 Reviewed 2026-09-14. Personal-use resource shelf; retain attribution and source history; candidates are not automatically installed in gameplay.
 
@@ -6270,10 +6259,9 @@ The Serafine collections provide further design material, but no exact Recognize
 <!-- Page: validation -->
 Source: /validation/
 
----
-title: Validation
-subtitle: Browser checks, performance, and remaining work
----
+# Validation
+
+Browser checks, performance, and remaining work
 
 ## Shared diffuse vehicle shadows — November 6
 

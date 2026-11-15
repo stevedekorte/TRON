@@ -1,5 +1,5 @@
-// Add one percent of initial speed per second, smoothly, up to the existing cap.
-export const GRID_SPEED=Object.freeze({increasePerSecond:.01,maxMultiplier:2});
+// Add one percent of initial speed per second, smoothly, up to 4x initial speed (reached at 300 seconds).
+export const GRID_SPEED=Object.freeze({increasePerSecond:.01,maxMultiplier:4});
 export function gridSpeedAt(seconds=0){
  return Math.min(GRID_SPEED.maxMultiplier,1+Math.max(0,seconds)*GRID_SPEED.increasePerSecond);
 }

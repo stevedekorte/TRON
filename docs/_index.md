@@ -1,3 +1,13 @@
+## Turbo and brake field of view — November 14
+
+- [x] Turbo widens and braking narrows the light-cycle camera's vertical field of view: chase +10° / −8° (63° → 73° / 55°), first person +6° / −8° (95° → 101° / 87°), blended by first-person mix and suppressed in aerial view. Keyed to the followed rider's turbo/brake state, not absolute speed, so the rising grid speed does not keep widening it; eases with `responsePerSecond: 6` (about 0.5 s to 95%). Disabled under reduced motion and frozen while paused. Values in `CYCLE_SPEED_FOV` (`src/rendering/camera-rig.js`). Road cycles widen on turbo only. The existing speed-based chase distance is unchanged.
+- Validation: macOS arm64, headless Chrome 1100×750: new `node tests/browser/cycle-speed-fov.mjs` measured chase 63.0/72.7/55.3° and first person 94.7/100.7/87.3° (cruise/turbo/brake); `cycle-first-person.mjs` still passes; turbo and brake screenshots inspected. Unit suite passes 715/715. Feel not yet judged in actual play.
+
+## Grid speed cap raised to 400% — November 14
+
+- [x] Raise the continuous light-cycle grid speed cap from 200% to 400% of initial speed. The ramp rate is unchanged at 1% of initial speed per racing second, so the cap is now reached at 300 seconds instead of 100. Solo, multiplayer authority/prediction and AI forecasts share `GRID_SPEED` in `shared/simulation/cycle-speed-ramp.js`; turbo and brake still scale with it (full turbo at the cap is 10× initial speed).
+- Validation: macOS arm64; complete unit suite passes 715/715, with the ramp checks updated for the new cap. Not yet play-tested at 300+ seconds.
+
 ## Faster closing credits — November 7
 
 - [x] Combine Wendy Carlos's two entries on one screen, and the ray-cast renderer credit with Carl N. Hoff's light-cycle model credit. Keep model previews individual through BIT, then present five entries per screen. Halve only the per-word reading time after BIT (240 → 480 words/minute); retain the original three-second minimum, 0.75-second settling time, all earlier pauses and typing cadence. This reduces the extended sequence from 34 to 19 screens; the tallest screen has 21 lines.

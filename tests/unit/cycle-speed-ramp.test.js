@@ -13,14 +13,14 @@ test('grid adds 1% of initial speed per second smoothly and caps at double',()=>
  assert.equal(gridSpeedAt(0),1);assert.equal(gridSpeedAt(-1),1);
  assert.equal(gridSpeedAt(1),1.01);assert.equal(gridSpeedAt(15),1.15);
  assert.equal(gridSpeedAt(50),1.5);assert.equal(gridSpeedAt(50.5),1.505);
- assert.equal(gridSpeedAt(100),2);assert.equal(gridSpeedAt(10000),2);
+ assert.equal(gridSpeedAt(100),2);assert.equal(gridSpeedAt(300),4);assert.equal(gridSpeedAt(10000),4);
 });
 test('authority scales cruise, turbo and braking together; AI forecasts the scaled targets',()=>{
  for(const [pedal,speed] of [[0,1],[1,2.5],[-1,.5]]){
-  const r=fixture(121),b=r.cycles[0];b.speedMultiplier=speed;
+  const r=fixture(301),b=r.cycles[0];b.speedMultiplier=speed;
   updateCycleRace(r,1/120,0,pedal===1,pedal===-1);
-  assert(Math.abs(b.speedMultiplier-2*speed)<1e-10);assert(Math.abs(b.z+2*speed*8/120)<1e-10);
-  const forecast=forecastSpeed(b,pedal,.1,{});assert(Math.abs(forecast.speed-2*speed)<1e-10);
+  assert(Math.abs(b.speedMultiplier-4*speed)<1e-10);assert(Math.abs(b.z+4*speed*8/120)<1e-10);
+  const forecast=forecastSpeed(b,pedal,.1,{});assert(Math.abs(forecast.speed-4*speed)<1e-10);
  }
 });
 test('staging and paused arenas do not advance the escalation clock; new matches reset',()=>{
@@ -30,7 +30,7 @@ test('staging and paused arenas do not advance the escalation clock; new matches
 });
 test('indicator persists from countdown through results and at the cap',()=>{
  for(const phase of ['countdown','racing','result']){
-  for(const [elapsed,percent] of [[0,100],[1,101],[15,115],[100,200],[133,200]])
+  for(const [elapsed,percent] of [[0,100],[1,101],[15,115],[100,200],[133,233],[300,400],[333,400]])
    assert.equal(gridSpeedNotice({phase,elapsed}).text,`GRID SPEED: ${percent}%`);
  }
  assert.equal(gridSpeedNotice({phase:'racing',elapsed:50,arenaPaused:true}).text,'GRID SPEED: 150%');
