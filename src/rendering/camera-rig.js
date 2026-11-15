@@ -26,10 +26,10 @@ const AERIAL_CAMERA = Object.freeze({
   distance: Math.hypot(180, 320),
 });
 export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,turboDistanceChangePerSpeedRatio:.32,minDistanceScale:.55,maxDistanceScale:1.16,responsePerSecond:2.5});
-// Turbo widens and braking narrows the view (degrees, vertical FOV), keyed to
+// Turbo narrows and braking widens the view (degrees, vertical FOV), keyed to
 // the rider's turbo/brake state rather than absolute speed, so the rising grid
-// speed does not keep widening it. First person is already wide; keep it subtle.
-export const CYCLE_SPEED_FOV=Object.freeze({turboDegrees:10,brakeDegrees:-8,firstPersonTurboDegrees:6,firstPersonBrakeDegrees:-8,responsePerSecond:6});
+// speed does not keep changing it. First person is already wide; keep turbo subtle.
+export const CYCLE_SPEED_FOV=Object.freeze({turboDegrees:-10,brakeDegrees:8,firstPersonTurboDegrees:-6,firstPersonBrakeDegrees:8,responsePerSecond:6});
 export const CYCLE_TURN_TRACKING=Object.freeze({nearDistanceMeters:12,farDistanceMeters:140,nearResponsePerSecond:30,farResponsePerSecond:1.2});
 // fovDegrees is vertical; 95 degrees is about 125 degrees horizontally at 16:9.
 export const CYCLE_FIRST_PERSON=Object.freeze({eyeHeightMeters:1.3,fovDegrees:95,forwardMeters:.25,lookAheadMeters:12,responsePerSecond:5,fadeSeconds:.3,clearanceHalfWidthMeters:.7,clearanceHalfLengthMeters:1.95,clearanceHeightMeters:1.75});
