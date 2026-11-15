@@ -11,6 +11,11 @@ See also: /llms.txt (curated index) and /sitemap.xml.
 <!-- Page: (root) -->
 Source: /
 
+## Field of view follows cycle speed — November 15
+
+- [x] Key the light-cycle camera's field-of-view change to the cycle's actual speed instead of its turbo/brake state, at the user's request. `cycleSpeedFovPosition` (`src/rendering/cycle-speed-fov.js`) places the speed between the current minimum and maximum: −1 at the minimum (grid speed × `slowSpeedMultiplier`, 0.5), 0 at cruise (grid speed), 1 at the maximum (grid speed × `turboSpeedMultiplier`, 2.5), linear on each side of cruise and clamped. The minimum already scaled with grid speed (the brake target is grid speed × 0.5, so at 2× grid speed braking settles at 1× base speed); the FOV range scales with it, so the rising grid speed alone does not change the view. The view narrows as speed rises toward the maximum and widens as it falls toward the minimum, by the same amounts as below (chase 53° … 63° … 71°, first person 89° … 95° … 103°), so it now follows the speed's own ease in and out rather than snapping to the pedal. Road cycles: cruise to turbo speed limit narrows; slower than cruise leaves the view unchanged. Easing, aerial suppression, reduced motion and pause behavior are unchanged.
+- Validation: macOS arm64; new unit test `tests/unit/cycle-speed-fov.test.js` (positions at 1×/2×/4× grid speed, clamping, road); unit suite passes 718/718. Headless Chrome 1100×750: `node tests/browser/cycle-speed-fov.mjs` (now sets the cycle speed rather than only the pedal flags in chase; first person still drives the real W/S keys) measured chase 63.0/53.3/70.7° and first person 94.7/89.3/102.7° (cruise/full turbo/full brake); `cycle-first-person.mjs` passes. Feel not yet judged in actual play.
+
 ## Turbo narrows, braking widens the field of view — November 15
 
 - [x] Reverse the turbo/brake field-of-view change at the user's request: turbo now narrows and braking widens the light-cycle camera's vertical field of view, chase −10° / +8° (63° → 53° / 71°), first person −6° / +8° (95° → 89° / 103°). Same magnitudes, keying, easing, aerial suppression, reduced-motion and pause behavior as the November 14 entry below, which this supersedes. Values in `CYCLE_SPEED_FOV` (`src/rendering/camera-rig.js`).

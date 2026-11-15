@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-// Turbo narrows and braking widens the cycle view, in chase and first person.
+// The cycle view narrows toward full turbo speed and widens toward full brake speed, in chase and first person.
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1100,height:750}}),errors=[];
@@ -8,7 +8,7 @@ try{
  await page.route('**/api/jev/**',r=>r.fulfill({status:503,body:'{}'}));
  await page.goto('http://localhost:5173/');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
  await page.locator('#start-cycles').click();await page.waitForFunction(()=>__tron.state.cycleRace?.phase==='racing',null,{timeout:120000});
- const pedal=(boosting,braking)=>page.evaluate(([boosting,braking])=>{const r=__tron.state.cycleRace;r.arenaPaused=true;Object.assign(r.cycles[r.playerId],{boosting,braking});__tron.place({cycleRace:r});},[boosting,braking]);
+ const pedal=(boosting,braking)=>page.evaluate(([boosting,braking])=>{const r=__tron.state.cycleRace;r.arenaPaused=true;const b=r.cycles[r.playerId],g=b.gridSpeedMultiplier??1;Object.assign(b,{boosting,braking,speedMultiplier:g*(braking?.5:boosting?2.5:1)});__tron.place({cycleRace:r});},[boosting,braking]);
  const settle=async expected=>{await page.waitForFunction(e=>Math.abs(__tron.state.camera.fov-e)<.3,expected,{timeout:5000}).catch(()=>{});return page.evaluate(()=>__tron.state.camera.fov);};
  await pedal(false,false);const chase=await settle(63);assert(Math.abs(chase-63)<.5,`chase ${chase}`);
  await pedal(true,false);const turbo=await settle(53);assert(Math.abs(turbo-53)<.5,`chase turbo ${turbo}`);

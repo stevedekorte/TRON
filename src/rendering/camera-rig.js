@@ -1,6 +1,7 @@
 import {MultiplayerFormationCamera} from './multiplayer-formation-camera.js';
 import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
 import {ROAD_CYCLE} from '../../shared/simulation/config/cycle-road.js';
+import {cycleSpeedFovPosition} from './cycle-speed-fov.js';
 import {CycleResultCamera} from './cycle-result-camera.js';
 import {CluDeathCamera} from './clu-death-camera.js';
 import {ARENA_WALL} from '../../shared/simulation/config/arena-breaches.js';
@@ -26,9 +27,11 @@ const AERIAL_CAMERA = Object.freeze({
   distance: Math.hypot(180, 320),
 });
 export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,turboDistanceChangePerSpeedRatio:.32,minDistanceScale:.55,maxDistanceScale:1.16,responsePerSecond:2.5});
-// Turbo narrows and braking widens the view (degrees, vertical FOV), keyed to
-// the rider's turbo/brake state rather than absolute speed, so the rising grid
-// speed does not keep changing it. First person is already wide; keep turbo subtle.
+// Speed narrows the view toward the maximum and widens it toward the minimum
+// (degrees, vertical FOV, at full turbo / full brake speed). Keyed to where the
+// cycle's actual speed sits between its minimum and maximum at the current grid
+// speed (cycleSpeedFovPosition), so the rising grid speed does not by itself
+// change it. First person is already wide; keep the turbo end subtle.
 export const CYCLE_SPEED_FOV=Object.freeze({turboDegrees:-10,brakeDegrees:8,firstPersonTurboDegrees:-6,firstPersonBrakeDegrees:8,responsePerSecond:6});
 export const CYCLE_TURN_TRACKING=Object.freeze({nearDistanceMeters:12,farDistanceMeters:140,nearResponsePerSecond:30,farResponsePerSecond:1.2});
 // fovDegrees is vertical; 95 degrees is about 125 degrees horizontally at 16:9.
@@ -218,7 +221,7 @@ export class CameraRig {
       const speedResponse=speed>cruiseSpeed?CYCLE_SPEED_CAMERA.turboDistanceChangePerSpeedRatio:CYCLE_SPEED_CAMERA.distanceChangePerSpeedRatio;
       const speedScale=THREE.MathUtils.clamp(1+(1-speed/cruiseSpeed)*speedResponse,CYCLE_SPEED_CAMERA.minDistanceScale,CYCLE_SPEED_CAMERA.maxDistanceScale);
       if(mode!=='paused')this.cycleSpeedDistanceScale=THREE.MathUtils.lerp(this.cycleSpeedDistanceScale,speedScale,1-Math.exp(-dt*CYCLE_SPEED_CAMERA.responsePerSecond));
-      const fovTarget=this.reducedMotion?0:bike?.boosting?1:bike?.braking?-1:0;
+      const fovTarget=this.reducedMotion?0:cycleSpeedFovPosition(bike,cycleRace.roadConfig);
       if(mode!=='paused')this.cycleSpeedFov=this.reducedMotion?0:THREE.MathUtils.lerp(this.cycleSpeedFov,fovTarget,1-Math.exp(-dt*CYCLE_SPEED_FOV.responsePerSecond));
       const followDistance=CYCLE_CAMERA.distanceMeters*this.cycleSpeedDistanceScale;
       const glanceTarget=-(this.cycleGlanceInput||0)*CYCLE_CAMERA.glanceRadians;
