@@ -30,6 +30,7 @@ uniform sampler2D edgeMap;
 uniform vec2 edgeResolution;
 uniform float rezSolid,rezSweep,rezGrid,rezGlow;
 uniform float wheelPhase,wheelGlintStrength,cockpitMix;
+uniform int rayPasses;
 float wheelReflection(vec3 point,vec3 normal,int material){
  if(material!=2||abs(normal.x)<.9||wheelGlintStrength<=0.)return 0.;
  // Both wheel discs share the original analytic model's axle height and centers.
@@ -75,7 +76,33 @@ void main(){
 #if POV_DEBUG==1
  gl_FragDepth=gl_FragCoord.z;POV_FLAG(vec3(1,0,1))
 #endif
- Hit h=cycleHit(origin,direction);
+ vec3 key=normalize(vec3(-1.,2.,-1.));
+ Hit h=emptyHit();bool keyOccluded=false;
+#ifdef POV_SINGLE_TRACE
+ // Apple GPUs: one cycleHit call site traces the primary ray, then the
+ // self-shadow ray. Inlining the CSG kernel twice made the M5 Metal compiler
+ // abort (LLVM register-scavenger spill failure, XPC interrupted), losing the
+ // WebGL context. The uniform loop bound (always 2) prevents unrolling back
+ // into two copies. Every lane runs both passes; a pixel needing no shadow
+ // ray traces one that misses the bounds immediately. An early break rendered
+ // nondeterministic SIMD-tile noise on M5 Metal, so the loop stays
+ // non-divergent. Elsewhere this loop is slow to compile (SwiftShader took
+ // 160 s and lost the context), so other GPUs keep two call sites.
+ vec3 rayOrigin=origin,rayDirection=direction;
+ for(int pass=0;pass<rayPasses;pass++){
+  Hit traced=cycleHit(rayOrigin,rayDirection);
+  if(pass==0){
+   h=traced;
+   bool need=!(h.material==0||edgeNormalPass||rezSolid<=0.||dot(mat3(cycleWorld)*h.n,key)<=0.);
+   rayOrigin=need?origin+direction*h.t+h.n*.002:vec3(0.,1000.,0.);
+   rayDirection=need?normalize(mat3(inverseCycleWorld)*key):vec3(0.,1.,0.);
+  }else keyOccluded=traced.material!=0;
+ }
+#else
+ h=cycleHit(origin,direction);
+ if(!(h.material==0||edgeNormalPass||rezSolid<=0.||dot(mat3(cycleWorld)*h.n,key)<=0.))
+  keyOccluded=cycleHit(origin+direction*h.t+h.n*.002,normalize(mat3(inverseCycleWorld)*key)).material!=0;
+#endif
 #if POV_DEBUG==2
  if(h.material==0){gl_FragDepth=gl_FragCoord.z;POV_FLAG(vec3(.35,0,0))}
 #else
@@ -110,12 +137,7 @@ void main(){
  float alpha=formationAlpha*(1.-cockpitMix);
  if(alpha<.002)discard;
  // Transform the world light into this cycle's coordinates for self-occlusion.
- vec3 key=normalize(vec3(-1.,2.,-1.));
- float visibility=1.;
- if(rezSolid>0.&&dot(normal,key)>0.){
-  vec3 localKey=normalize(mat3(inverseCycleWorld)*key);
-  if(cycleHit(localPoint+h.n*.002,localKey).material!=0)visibility=${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)};
- }
+ float visibility=keyOccluded?${CYCLE_LIGHTING_CONFIG.occludedKeyIntensity.toFixed(2)}:1.;
  visibility=min(visibility,min(aircraftVisibility(worldPoint),arenaWallVisibility(worldPoint)));
  #if POV_DEBUG==3
  if(badf(visibility))POV_FLAG(vec3(1,1,0))
@@ -148,8 +170,10 @@ export function createPovCycleGeometry(){
  return new T.BoxGeometry(160*scale,230.1*scale,525.2*scale).translate(0,115*scale,0);
 }
 export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeometry()){
-   const uniforms={...createCycleAircraftShadowUniforms(),...arenaCycleShadows.createUniforms(),humanStripe:{value:0},cockpitMix:{value:0},wheelPhase:{value:0},wheelGlintStrength:{value:0},rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
+   const uniforms={...createCycleAircraftShadowUniforms(),...arenaCycleShadows.createUniforms(),humanStripe:{value:0},cockpitMix:{value:0},rayPasses:{value:2},wheelPhase:{value:0},wheelGlintStrength:{value:0},rezGrid:{value:1},rezGlow:{value:0},rezSolid:{value:1},rezSweep:{value:1},edgeNormalPass:{value:false},edgeMapReady:{value:false},edgeMap:{value:null},edgeResolution:{value:new T.Vector2()},bodyColor:{value:new T.Color(color)},inverseCycleWorld:{value:new T.Matrix4()},cycleWorld:{value:new T.Matrix4()},viewProjection:{value:new T.Matrix4()},sceneFogColor:{value:new T.Color()},sceneFogDensity:{value:0}};
    const material=new T.ShaderMaterial({defines:{SHOW_CYCLE:1,POV_DEBUG:povDebugMode()},uniforms,vertexShader,fragmentShader,side:T.BackSide});
+   // The renderer is known only at compile time; see POV_SINGLE_TRACE.
+   material.onBeforeCompile=(shader,renderer)=>{if(povSingleTrace(renderer))shader.fragmentShader='#define POV_SINGLE_TRACE\n'+shader.fragmentShader;};
    const mesh=new T.Mesh(geometry,material);mesh.name='CSG cycle';mesh.visible=false;
    mesh.onBeforeRender=(renderer,scene,camera)=>{
     uniforms.cycleWorld.value.copy(mesh.matrixWorld);uniforms.inverseCycleWorld.value.copy(mesh.matrixWorld).invert();
@@ -157,6 +181,13 @@ export function createPovCycleMesh(color=COLORS[0],geometry=createPovCycleGeomet
     uniforms.sceneFogColor.value.copy(scene.fog?.color??scene.background??new T.Color(0));uniforms.sceneFogDensity.value=scene.fog?.density??0;
    };
  return mesh;
+}
+/** Apple GPUs (Apple silicon, iPhone, iPad) need the single-call-site shader; see POV_SINGLE_TRACE.
+ ?povTrace=single|double overrides the choice for diagnostics. */
+export function povSingleTrace(renderer,search=globalThis.location?.search??''){
+ const forced=new URLSearchParams(search).get('povTrace');
+ if(forced==='single'||forced==='double')return forced==='single';
+ return /\bApple\b/.test(rendererName(renderer.getContext())??'');
 }
 function rendererName(gl){const info=gl.getExtension('WEBGL_debug_renderer_info');return info?gl.getParameter(info.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);}
 export function selfTestPovCycle(renderer,geometry=createPovCycleGeometry(),options=POV_SELF_TEST){

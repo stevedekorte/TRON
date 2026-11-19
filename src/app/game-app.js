@@ -48,6 +48,11 @@ import { Sound } from '../audio/sound.js';
 import { FLIGHT, FLIGHT_DEFAULTS } from '../simulation/flight.js';
 import { startPursuit, boostTank, stopTankTurbo } from '../simulation/run.js';
 import { config, defaults, GUNNER, AERIAL_ZOOM, FOLLOW_ZOOM } from '../game/config.js';
+// Browsers usually restore a lost WebGL context within a second or two. Some
+// losses are never restored (a driver shader-compiler crash leaves Chrome
+// refusing WebGL for the rest of the page); the page then reloads itself once,
+// back to the terminal with the same program selected.
+const GRAPHICS_RESTORE={timeoutMilliseconds:4000,reloadGuardMilliseconds:60000,reloadKey:'tron.graphicsReload',gameKey:'tron.graphicsReloadGame',retryKey:'tron.graphicsReloadRetries',retryIntervalMilliseconds:5000,maxRetries:6,blockedMessage:'The graphics driver failed and the browser is still blocking graphics for this site. Use the browser\'s reload prompt, or restart the browser.',failureMessage:'The graphics connection was interrupted. Reload to reconnect.'};
 
 export async function createGameApp() {
   const mobileTerminal=isMobileTerminal();
@@ -130,6 +135,7 @@ export async function createGameApp() {
   let deathElapsed = 0, deathHoldSeconds = DEATH_TERMINAL.holdSeconds,
     outroFade = 0;
   let disposed = false;
+  let graphicsRestoreTimer = 0;
   let tuningWasPlaying=false;
   const cycleTuning=import.meta.env.DEV?new CycleTuning({session,
     onOpen:()=>{tuningWasPlaying=['running','entering'].includes(mode);inputController.clear();releaseMouse();pause();},
@@ -354,7 +360,7 @@ export async function createGameApp() {
     $('error-home').focus({preventScroll:true});
   }
 
-  listen($('error-home'),'click',()=>view?.cameraRig?returnToProgramSelection():location.assign('./'));
+  listen($('error-home'),'click',()=>view?.cameraRig&&!view.renderer.getContext().isContextLost()?returnToProgramSelection():location.assign('./'));
 
   const exitConfirm=window.createExitConfirm({
     muted:()=>sound.muted,
@@ -879,11 +885,62 @@ export async function createGameApp() {
     }
   });
   listen(window, 'resize', () => view?.resize());
+  // A GPU fault (driver shader-compiler crash, GPU reset, watchdog) loses the
+  // context. preventDefault asks the browser to restore it; three.js rebuilds
+  // its GPU resources then, and the game continues. Only a context that stays
+  // lost, or one lost before the world exists, ends in the error screen.
   listen($('game'), 'webglcontextlost', (event) => {
     event.preventDefault();
     const pov=cycleRendererControl.noteContextLost();
-    if(pov)console.warn('Graphics context lost while POV-Ray cycles were active; the next load uses the normal cycle renderer.');
-    fail('The graphics connection was interrupted. Reload to reconnect.');
+    if(pov)console.warn('Graphics context lost while POV-Ray cycles were active; switched to the normal cycle renderer.');
+    clearTimeout(graphicsRestoreTimer);
+    if(mode==='error')return;
+    console.warn(`Graphics context lost; waiting up to ${GRAPHICS_RESTORE.timeoutMilliseconds/1000} s for the browser to restore it.`);
+    startGraphicsRestoreTimer();
+  });
+  // Mobile browsers may drop the context in the background and restore it on
+  // return; only count the wait while the page is visible.
+  function startGraphicsRestoreTimer(){
+    clearTimeout(graphicsRestoreTimer);
+    graphicsRestoreTimer=setTimeout(()=>{
+      graphicsRestoreTimer=0;
+      if(document.hidden){listen(document,'visibilitychange',()=>{if(!document.hidden&&view?.renderer.getContext().isContextLost())startGraphicsRestoreTimer();},{once:true});return;}
+      reloadAfterGraphicsLoss();
+    },GRAPHICS_RESTORE.timeoutMilliseconds);
+  }
+  function reloadAfterGraphicsLoss(){
+    if(disposed||mode==='error')return;
+    let last=0;try{last=Number(sessionStorage.getItem(GRAPHICS_RESTORE.reloadKey))||0;}catch{}
+    if(Date.now()-last<GRAPHICS_RESTORE.reloadGuardMilliseconds){fail(GRAPHICS_RESTORE.failureMessage);return;}
+    try{sessionStorage.setItem(GRAPHICS_RESTORE.reloadKey,String(Date.now()));sessionStorage.setItem(GRAPHICS_RESTORE.gameKey,selectedGame);}
+    catch{fail(GRAPHICS_RESTORE.failureMessage);return;}
+    console.warn('Graphics context was not restored; reloading.');
+    multiplayer?.close();
+    location.reload();
+  }
+  // After a GPU fault Chrome refuses WebGL to the site for a while. Following
+  // an automatic graphics reload, keep retrying instead of declaring WebGL 2
+  // unsupported.
+  function retryGraphicsAfterReload(){
+    let last=0,attempts=0;
+    try{last=Number(sessionStorage.getItem(GRAPHICS_RESTORE.reloadKey))||0;attempts=Number(sessionStorage.getItem(GRAPHICS_RESTORE.retryKey))||0;}catch{return null;}
+    if(Date.now()-last>GRAPHICS_RESTORE.reloadGuardMilliseconds+GRAPHICS_RESTORE.retryIntervalMilliseconds*GRAPHICS_RESTORE.maxRetries)return null;
+    if(attempts>=GRAPHICS_RESTORE.maxRetries){try{sessionStorage.removeItem(GRAPHICS_RESTORE.retryKey);}catch{}return 'exhausted';}
+    try{sessionStorage.setItem(GRAPHICS_RESTORE.retryKey,String(attempts+1));}catch{return null;}
+    const status=document.getElementById('boot-status');if(status)status.textContent='RECONNECTING GRAPHICS';
+    console.warn(`WebGL is still unavailable after a graphics fault; retry ${attempts+1} of ${GRAPHICS_RESTORE.maxRetries}.`);
+    setTimeout(()=>location.reload(),GRAPHICS_RESTORE.retryIntervalMilliseconds);
+    return 'retrying';
+  }
+  function takeGraphicsReloadGame(){
+    try{const game=sessionStorage.getItem(GRAPHICS_RESTORE.gameKey);sessionStorage.removeItem(GRAPHICS_RESTORE.gameKey);return game;}catch{return null;}
+  }
+  listen($('game'), 'webglcontextrestored', () => {
+    clearTimeout(graphicsRestoreTimer);graphicsRestoreTimer=0;
+    if(disposed||!view||mode==='error')return;
+    console.info('Graphics context restored.');
+    // three.js reinitializes in its own listener; resize after it has run.
+    setTimeout(()=>{if(!disposed&&view){view.resize();loop.reschedule();}},0);
   });
 
   const hud = new HudPresenter(map, systemWarnings);
@@ -1161,6 +1218,9 @@ export async function createGameApp() {
         antialias: true,
         powerPreference: 'high-performance',
       }));
+      const graphicsRetry=context?null:retryGraphicsAfterReload();
+      if(graphicsRetry==='retrying')return;
+      if(graphicsRetry==='exhausted')throw new Error(GRAPHICS_RESTORE.blockedMessage);
       if (!context)
         throw new Error(
           'This game needs WebGL 2. Try a current desktop browser with hardware acceleration enabled.',
@@ -1214,6 +1274,9 @@ export async function createGameApp() {
       $('start-credits').disabled = false;
       $('start-feedback').disabled = false;
       terminal.finish();
+      try{sessionStorage.removeItem(GRAPHICS_RESTORE.retryKey);}catch{}
+      const reloadGame=takeGraphicsReloadGame();
+      if(reloadGame&&gameChoices.some(button=>button.dataset.game===reloadGame))selectGame(reloadGame);
       setMode('ready');
       loadingTimings.checkpoint('Opening terminal ready');
       window.dispatchEvent(new Event('tron:ready'));
@@ -1389,6 +1452,7 @@ export async function createGameApp() {
     homeTransition.clear();
     if (disposed) return;
     disposed = true;
+    clearTimeout(graphicsRestoreTimer);
     carrierDiagnostics?.dispose();
     tribute.preview.dispose();
     cycleTuning?.dispose();
