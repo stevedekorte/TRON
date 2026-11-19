@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 const cacheDir=await mkdtemp(join(tmpdir(),'tron-optional-wasm-'));
 const server=await createServer({cacheDir,server:{host:'127.0.0.1',port:0,hmr:false}});await server.listen();
 const base=`http://127.0.0.1:${server.httpServer.address().port}`;
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  for(const mode of ['missing','denied','compile-blocked','init-failed']){
   const page=await browser.newPage({reducedMotion:'reduce',viewport:{width:1280,height:900}}),errors=[],backendRequests=[];

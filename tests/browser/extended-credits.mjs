@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage();
  await page.goto('http://127.0.0.1:5173');

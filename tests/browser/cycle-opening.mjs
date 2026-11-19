@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5181','--strictPort'],{stdio:'pipe'});
 await new Promise((resolve,reject)=>{server.stdout.on('data',chunk=>{if(chunk.toString().includes('Local:'))resolve();});server.on('exit',code=>reject(new Error('Server exited '+code)));});
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1250,height:1000}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));

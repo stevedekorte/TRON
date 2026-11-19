@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {TANK_HULL} from '../../src/simulation/tank-hull-collision.js';
 import {chromium} from '@playwright/test';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage();await page.route('**/hull-fixture',r=>r.fulfill({contentType:'text/html',body:'<body></body>'}));await page.goto('http://127.0.0.1:5173/hull-fixture');
  const hull=await page.evaluate(async()=>{

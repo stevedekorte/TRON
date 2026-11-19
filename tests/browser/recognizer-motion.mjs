@@ -6,7 +6,7 @@ import {join} from 'node:path';
 import assert from 'node:assert/strict';
 const cacheDir=await mkdtemp(join(tmpdir(),'tron-film-'));
 const server=await createServer({cacheDir,server:{host:'127.0.0.1',port:0,hmr:false}});await server.listen();
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/reference.html?maze=blueprint&shot=details`);

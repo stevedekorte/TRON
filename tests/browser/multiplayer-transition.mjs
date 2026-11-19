@@ -5,7 +5,7 @@ import {MP} from '../../shared/multiplayer/config.js';
 import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
 const base=process.env.TRON_URL||'http://127.0.0.1:5177/';
 const url=new URL('/api/multiplayer?v='+MP.protocol,base);url.protocol='ws:';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 const socket=new WebSocket(url,{origin:new URL(base).origin});let id,state;
 try{
  await new Promise((resolve,reject)=>{socket.on('error',reject);socket.on('message',raw=>{const d=JSON.parse(raw);if(d.type==='welcome')id=d.id;if(d.type==='state'){state=decodeSnapshot(d,state);resolve();}});});

@@ -3,7 +3,7 @@ const creditsText=readFileSync(new URL('../../docs/credits.txt',import.meta.url)
 const finalCredit=creditsText.split(/\n\n/).at(-1);
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{window.__sampleStarts=[];const nativeStart=AudioBufferSourceNode.prototype.start;AudioBufferSourceNode.prototype.start=function(...args){window.__sampleStarts.push({duration:this.buffer?.duration,time:performance.now()});return nativeStart.apply(this,args);};const NativeAudio=window.Audio;window.__testAudio=[];window.Audio=class extends NativeAudio{constructor(...args){super(...args);window.__testAudio.push(this);}};});

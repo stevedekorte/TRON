@@ -2,7 +2,7 @@ import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {cycleMaterializationPhase} from '../../src/game/cycle-materialization.js';
 assert.equal(cycleMaterializationPhase(.25).grid,0);assert.equal(cycleMaterializationPhase(.55).solid,0);assert(cycleMaterializationPhase(.8).glow>.9);assert.deepEqual(cycleMaterializationPhase(1),{contours:1,grid:1,solid:1,glow:0});
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1000,height:700}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/shader|WebGL|THREE/.test(m.text()))errors.push(m.text());});

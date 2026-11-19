@@ -18,7 +18,7 @@ const server=createServer((req,res)=>{
 });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const origin=`http://127.0.0.1:${server.address().port}`,url=origin+scope;
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  let context=await browser.newContext(),page=await context.newPage();
  await page.goto(url);await page.waitForFunction(()=>window.started);

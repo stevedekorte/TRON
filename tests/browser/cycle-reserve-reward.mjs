@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  await page.route('**/reward-preview',r=>r.fulfill({contentType:'text/html',body:`<link rel="stylesheet" href="/src/ui/style.css"><body class="cycle-mode"><div id="vehicle-meters"><div id="turbo" class="turbo-indicator"><span>W / TURBO</span><div class="turbo-meter"><i id="turbo-fill"></i></div></div><div id="cycle-brake" class="turbo-indicator"><span>S / BRAKE</span><div class="turbo-meter"><i id="cycle-brake-fill"></i></div></div></div></body>`}));

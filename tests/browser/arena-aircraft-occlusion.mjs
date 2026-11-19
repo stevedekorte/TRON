@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import assert from 'node:assert/strict';
 const cacheDir=await mkdtemp(join(tmpdir(),'tron-arena-occlusion-'));
 const server=await createServer({cacheDir,server:{host:'127.0.0.1',port:0,hmr:false}});await server.listen();
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:800,height:600}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.route('**/arena-aircraft-fixture',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0"></body>'}));

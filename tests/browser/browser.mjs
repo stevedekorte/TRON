@@ -22,7 +22,7 @@ if(process.argv.includes('--terminal')){await import('./terminal.mjs');process.e
 if(process.argv.includes('--soak')){await import('./soak.mjs');process.exit(0);}
 if(process.argv.includes('--compat')){await import('./compat.mjs');process.exit(0);}
 if(process.argv.includes('--lifecycle')){await import('./lifecycle.mjs');process.exit(0);}
-const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});
 const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
 try {

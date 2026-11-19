@@ -1,6 +1,6 @@
 import {chromium,devices} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({...devices['iPhone 13'],reducedMotion:'reduce'});page.setDefaultTimeout(45000);
  const base=process.env.TRON_URL??'http://127.0.0.1:5188/';

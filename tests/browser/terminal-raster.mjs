@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});try{
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});try{
  const page=await browser.newPage({viewport:{width:1300,height:850}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/raster-check',r=>r.fulfill({contentType:'text/html',body:`<link rel="stylesheet" href="/src/ui/terminal.css"><style>body{margin:0;background:#020204}.terminal-content{top:70px;left:70px;width:1160px}.samples{font:56px/1.04 FilmTerminal;text-shadow:none}.small{font-size:28px}.large{font-size:80px}.end-tribute{display:block!important;margin-top:1em}</style><body class="terminal detached"><section class="intro"><div class="terminal-content"><div class="samples">CLU PROGRAM DETACHED FROM SYSTEM<br>MADE TOGETHER, ACROSS THE INTERFACE.<br><span class="terminal-signoff">END OF LINE</span></div><div class="samples small">CLU PROGRAM · SMALL TEXT<br><span class="terminal-signoff">END OF LINE</span></div><div class="samples large">CLU<br><span class="terminal-signoff">END OF LINE</span></div></div></section></body>`}));
  await page.goto('http://127.0.0.1:5174/raster-check');await page.evaluate(()=>document.fonts.ready);

@@ -1,7 +1,7 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 const url=process.env.TRON_URL||'http://127.0.0.1:4187/fun/TRON/';
-const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});
 try {
  const page=await browser.newPage(),errors=[],assets=[];
  if(new URL(url).hostname==='127.0.0.1')await page.route('**/api/jev/decision',r=>r.fulfill({json:{actions:[]}}));

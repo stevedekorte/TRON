@@ -22,7 +22,7 @@ const server=createServer(async(req,res)=>{
  }catch{res.writeHead(404).end();}
 });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({reducedMotion:'reduce'});page.setDefaultTimeout(60000);
  const url=`http://127.0.0.1:${server.address().port}${scope}`;

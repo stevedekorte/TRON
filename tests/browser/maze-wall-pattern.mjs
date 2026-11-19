@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 const cacheDir=await mkdtemp(join(tmpdir(),'tron-pattern-vite-'));
 const server=await createServer({cacheDir,server:{host:'127.0.0.1',port:0,hmr:false}});await server.listen();
 const base=`http://127.0.0.1:${server.httpServer.address().port}`;
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1800,height:1100},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  const started=Date.now();await page.goto(`${base}/reference.html?maze=blueprint&shot=details`);

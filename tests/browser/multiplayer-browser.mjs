@@ -3,7 +3,7 @@ import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import WebSocket from 'ws';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 const sockets=[],deliveryTimers=new Set();
 const base=process.env.TRON_URL||'http://127.0.0.1:5173/';
 const socketUrl=new URL('/api/multiplayer?v='+MP.protocol,base);socketUrl.protocol=socketUrl.protocol==='https:'?'wss:':'ws:';

@@ -9,7 +9,7 @@ import {wallStudioPlugin} from '../../server/wall-studio.js';
 if(process.env.TRON_STUDIO_LIVE!=='1')throw Error('Set TRON_STUDIO_LIVE=1 to run one real Codex revision.');
 const storeDir=await mkdtemp(join(tmpdir(),'tron-workshop-live-'));
 const server=await createServer({configFile:false,root:process.cwd(),cacheDir:join(storeDir,'vite-cache'),plugins:[wallStudioPlugin({storeDir})],optimizeDeps:{noDiscovery:true,include:['three','three/addons/controls/OrbitControls.js','three/addons/exporters/GLTFExporter.js']},server:{host:'127.0.0.1',port:0,hmr:false}});
-await server.listen();const browser=await chromium.launch({channel:'chrome',headless:true});
+await server.listen();const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1500,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/wall-study.html`);await page.waitForFunction(()=>window.wallStudy?.state?.current.id===0);

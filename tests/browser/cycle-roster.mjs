@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800}});
  await page.route('**/roster-check',r=>r.fulfill({contentType:'text/html',body:'<link rel="stylesheet" href="/src/ui/style.css?direct"><body class="playing-cycle"><div id="cycle-roster"></div></body>'}));

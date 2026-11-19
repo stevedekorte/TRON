@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  for(const button of ['start','start-cycles','start-multiplayer']){
   const page=await browser.newPage({reducedMotion:'reduce'}),requests=[],errors=[];

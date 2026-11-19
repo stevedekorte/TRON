@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {writeFile,readFile} from 'node:fs/promises';
 const trial=process.argv.includes('--trial');
 const expectedPolicy=trial?JSON.parse(await readFile('test-results/cycle-ai-trained.json','utf8')).policy:null;
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:'reduce'}),errors=[];
  page.on('pageerror',error=>errors.push(error.message));

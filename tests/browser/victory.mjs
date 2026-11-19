@@ -2,7 +2,7 @@ import {chromium,webkit} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const expected=readFileSync(new URL('../../docs/victory.txt',import.meta.url),'utf8').trimEnd();
-const browser=await (process.env.TRON_BROWSER==='webkit'?webkit.launch({headless:true}):chromium.launch({channel:'chrome',headless:true}));
+const browser=await (process.env.TRON_BROWSER==='webkit'?webkit.launch({headless:true}):chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']}));
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/api/jev/decision',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"test"}'}));

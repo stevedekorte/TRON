@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage();let downloads=0;
  await page.route('**/music-cache-fixture',r=>r.fulfill({contentType:'text/html',body:'Music cache test'}));

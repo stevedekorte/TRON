@@ -6,7 +6,7 @@ import {join} from 'node:path';
 import assert from 'node:assert/strict';
 const cacheDir=await mkdtemp(join(tmpdir(),'tron-menu-tuning-'));
 const server=await createServer({cacheDir,server:{host:'127.0.0.1',port:0,hmr:false}});await server.listen();const base=`http://127.0.0.1:${server.httpServer.address().port}`;
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({reducedMotion:'reduce',viewport:{width:1280,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/api/jev/**',r=>r.fulfill({status:503,body:'{}'}));

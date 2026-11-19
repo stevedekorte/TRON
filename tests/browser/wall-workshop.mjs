@@ -17,7 +17,7 @@ const runner=async context=>{
 };
 const server=await createServer({configFile:false,root:process.cwd(),cacheDir:join(storeDir,'vite-cache'),plugins:[wallStudioPlugin({storeDir,runner})],optimizeDeps:{noDiscovery:true,include:['three','three/addons/controls/OrbitControls.js','three/addons/exporters/GLTFExporter.js']},server:{host:'127.0.0.1',port:0,hmr:false}});
 await server.listen();const url=`http://127.0.0.1:${server.httpServer.address().port}`;
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1500,height:1100}});page.on('pageerror',e=>errors.push(e.message));
  // Reproduce an older preview server returning HTML instead of the editor API.

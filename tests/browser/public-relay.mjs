@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 const origin='https://dekorte.com',base=origin+'/fun/TRON/';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage(),errors=[],decisions=[],requests=[];
  page.on('request',r=>{if(r.url().includes('/api/jev/decision'))requests.push(Date.now());});

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
-const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true});try{const page=await browser.newPage({viewport:{width:1500,height:700}});
+const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});try{const page=await browser.newPage({viewport:{width:1500,height:700}});
 page.on('console',m=>{if(m.type()==='error')console.log(m.text());});
 await page.goto('http://127.0.0.1:5174');
 await page.evaluate(async()=>{

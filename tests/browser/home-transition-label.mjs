@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage();
  await page.route('**/transition-label-test',r=>r.fulfill({contentType:'text/html',body:'<div id="intro"><div id="game-menu"><button id="clu">CLU <span id="note" hidden>(UNAVAILABLE ON MOBILE)</span></button><button id="cycles">LIGHT CYCLES</button></div></div>'}));

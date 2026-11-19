@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/shader|WebGL|THREE/.test(m.text()))errors.push(m.text());});
  await page.route('**/credit-preview-fixture',r=>r.fulfill({contentType:'text/html',body:`<link rel="stylesheet" href="/src/ui/terminal.css"><body class="terminal detached"><div class="terminal-content"><p class="end-tribute" id="end-tribute"><span class="tribute-measure"></span><span class="tribute-typed"><span id="tribute-text"></span></span></p></div></body>`}));

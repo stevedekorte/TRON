@@ -10,7 +10,7 @@ import {startingSceneModel} from '../../studies/outside-arena/workshop-model.js'
 const temp=await mkdtemp(join(tmpdir(),'tron-scene-workshop-'));let invocation;
 const runner=async context=>{invocation=context;const model=startingSceneModel();model.parts[0].parameters.heightMeters+=20;model.lighting.angleDegrees=-25;return {summary:'Raised walls 20 m and moved the light; approved floor unchanged.',model};};
 const server=await createServer({configFile:false,root:process.cwd(),cacheDir:join(temp,'cache'),optimizeDeps:{noDiscovery:true,include:['three','three/addons/controls/OrbitControls.js','three/addons/exporters/GLTFExporter.js']},plugins:[sceneStudioPlugin({storeDir:join(temp,'scene'),runner}),wallStudioPlugin({storeDir:join(temp,'wall'),runner:async()=>{throw Error('Scene request reached maze wall workspace');}})],server:{host:'127.0.0.1',port:0,hmr:false}});await server.listen();
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1500,height:1050}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/scene-workshop.html`);await page.waitForFunction(()=>window.wallStudy?.state&&document.querySelector('#submit').disabled===false);

@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import fs from 'node:fs/promises';
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800}});
  await page.route('**/api/jev/**',r=>r.fulfill({status:503,body:'test'}));
