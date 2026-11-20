@@ -15,7 +15,9 @@
     "test:browser": "node tests/browser/browser.mjs",
     "docs": "node tools/build/trace-blueprint.mjs && node tools/build/build-sound-library.mjs && node tools/build/build-docs.mjs",
     "worker:check": "wrangler deploy --dry-run",
-    "worker:deploy": "wrangler deploy"
+    "worker:deploy": "wrangler deploy",
+    "site:build": "VITE_JEV_API_BASE=https://tron-jev.tron-canyon-run.workers.dev npm run build",
+    "site:deploy": "wrangler deploy --config deploy/site/wrangler.jsonc"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.20.0",

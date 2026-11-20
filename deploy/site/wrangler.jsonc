@@ -1,0 +1,13 @@
+// Static hosting for the game at encomterminal.com (Workers static assets, no server code).
+// Separate from the root wrangler.jsonc, which deploys the tron-jev API Worker.
+// Build first with VITE_JEV_API_BASE set (see README), then run `npm run site:deploy`.
+{
+  "name": "encomterminal",
+  "compatibility_date": "2026-09-21",
+  "assets": {"directory": "../../dist"},
+  "workers_dev": true,
+  "routes": [
+    {"pattern": "encomterminal.com", "custom_domain": true},
+    {"pattern": "www.encomterminal.com", "custom_domain": true}
+  ]
+}

@@ -114,6 +114,10 @@ Sound audition: http://127.0.0.1:5173/audio.html. Headphones are useful for the 
 
 The dekorte.com Pages workflow checks out the pinned `fun/TRON` revision using its `TRON_DEPLOY_KEY` secret (a read-only deploy key for this repository), runs `npm ci` and `npm run build`, then publishes `dist` at `/fun/TRON/`. Push TRON changes, update the website submodule pointer, and push the website to deploy. The Vite relative base supports both root hosting and subdirectory hosting. `tests/production-path.mjs` checks a static build at that path; set `TRON_URL` to test the live site.
 
+### encomterminal.com
+
+The game is also served at the root of https://encomterminal.com (and www) by a static-assets-only Cloudflare Worker named `encomterminal`, configured in `deploy/site/wrangler.jsonc`. It has no server code or bindings and uses custom domains on the Cloudflare-registered `encomterminal.com` zone. Deploy with `npm run site:build && npm run site:deploy`; `site:build` sets the same `VITE_JEV_API_BASE` as the dekorte.com workflow. Build from a clean, committed tree, since `dist` is uploaded as-is. The `tron-jev` Worker's `ALLOWED_ORIGINS` must include both encomterminal.com origins for Jev, MCP and multiplayer to work there. Keep `deploy/site` separate from the root `wrangler.jsonc`, which deploys the API Worker.
+
 ## Isolated Codex and browser tests
 
 Development servers leave the running game intact when source files change.

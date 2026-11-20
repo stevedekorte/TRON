@@ -5,7 +5,7 @@
   "compatibility_date": "2026-09-21",
   "workers_dev": true,
   "vars": {
-    "ALLOWED_ORIGINS": "https://dekorte.com,https://www.dekorte.com",
+    "ALLOWED_ORIGINS": "https://dekorte.com,https://www.dekorte.com,https://encomterminal.com,https://www.encomterminal.com",
     "TYPESAFE_MODEL": "jev-latest",
     "JEV_ENABLED": "true",
     "MCP_ENABLED": "true",

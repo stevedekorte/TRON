@@ -1995,7 +1995,7 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 ## Finite light-cycle trails — September 29
 
-- [x] Cap each cycle's trail at the arena's inner perimeter: 8 × 409.06 m = 3272.48 m. Advance the oldest endpoint as new wall appears, discard exhausted segments, preserve active-segment references, and release expired collision cells. Retain stripe placement as the tail recedes. Account for rear-wheel attachment, fractional movement and discontinuous arena reentry.
+- [x] Cap each cycle's trail at the arena's inner perimeter: 8 × 409.06 m = 3272.48 m (doubled to 16 × on November 20). Advance the oldest endpoint as new wall appears, discard exhausted segments, preserve active-segment references, and release expired collision cells. Retain stripe placement as the tail recedes. Account for rear-wheel attachment, fractional movement and discontinuous arena reentry.
 - Validation: all 386 npm tests pass on the final run. The first full run had a crossing-Recognizer shooting failure; that test passed in the 69-test focused rerun and final full run. Production build passes with the existing chunk-size advisory. Chrome headless on macOS: tests/cycle-trail-limit.mjs verifies rendered length against the cap, reports no page errors, and produces an inspected aerial capture. Unit checks cover corner trimming, reclaimed cells, other cycles' ownership, active-segment remapping, fractional advance, death and reentry.
 
 ## Cycle death overview — September 29
@@ -3035,3 +3035,15 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Hold U/O in cycle follow or first-person view for a half glance (60 degrees, half of the 120-degree J/L glance) to the left/right, with the same level-horizon orbit and response rates. J/L take priority when held together with U/O; gamepad right stick is unchanged. `CYCLE_HALF_GLANCE_FRACTION` in `src/app/game-app.js` sets the fraction. O no longer does nothing in cycle mode; it still cycles gunner zoom in the Clu game, and U still toggles Clu autoplay. The controls help lists `U/O / HALF GLANCE`.
 - Validation: `npm test` passes and the production build succeeds (existing chunk-size advisory). Not yet checked in the browser or by hand.
+
+## Longer cycle trails — November 20
+
+- [x] Double the maximum cycle trail length from 8 to 16 inner arena widths (3272.48 m → 6544.96 m), via `CYCLE_TRAIL_LIMIT` in `shared/simulation/config/cycle-trails.js`. The multiplayer server shares this limit, so the Worker must be redeployed for multiplayer trails to match.
+- Validation: `npm test` 724 pass. The trail-limit unit test and `node tests/browser/cycle-trail-limit.mjs` now use a longer spiral path that exceeds the new limit; the rendered trail measures 6544.96 m in Chrome headless on macOS. Collision density, frame rate and play feel with the longer walls have not been checked by hand.
+
+## encomterminal.com hosting — November 20
+
+- [x] Register encomterminal.com through Cloudflare Registrar (user, dashboard) and serve the game at its root and www with a static-assets-only Worker, `encomterminal` (`deploy/site/wrangler.jsonc`, `npm run site:build && npm run site:deploy`). dekorte.com/fun/TRON remains published by the website's GitHub Pages workflow. The tron-jev Worker's `ALLOWED_ORIGINS` now includes both encomterminal.com origins.
+- Deployed commit `bd5507b` (U/O half glances), built from a clean export so the then-uncommitted trail-length change was excluded. The tron-jev Worker was redeployed from the same export with the new origins.
+- Note: `wrangler pages project create` in wrangler 4.152 deploys a Worker from any `wrangler.jsonc` in the working directory. It briefly published a copy of the jev relay (no API-key secret) as `encomterminal`, which was deleted before the static deploy. Use the separate site config rather than Pages commands from this repository.
+- Validation: encomterminal.com, www and the workers.dev address return the game (200, "ENCOM TERMINAL"). tron-jev returns `Access-Control-Allow-Origin` for both new origins and dekorte.com and rejects an unknown origin. Headless Chrome (macOS) loaded https://encomterminal.com, started a cycle game and rendered the race with no page errors or failed requests. Jev, MCP and online multiplayer from the new domain have not been exercised by hand.
