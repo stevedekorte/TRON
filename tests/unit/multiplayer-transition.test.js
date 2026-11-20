@@ -56,7 +56,8 @@ test('camera holds its formation position through moving launch before cutting t
   assert(rig.camera.position.distanceTo(shot.position)<1e-8,'camera stays fixed as bikes move');
  }
  for(let i=0;i<8;i++)rig.update(run,run,1,1/60,'running',{});
- assert.equal(rig.multiplayerFormationCamera.shot,null);assert(rig.camera.position.distanceTo(shot.position)>10);
+ // Seat-dependent: the follow camera ends 8.5-15 m from the formation shot.
+ assert.equal(rig.multiplayerFormationCamera.shot,null);assert(rig.camera.position.distanceTo(shot.position)>5,'cut away to follow');
 });
 
 test('all cameras ready immediately starts solo-timed materialization without a countdown',async()=>{

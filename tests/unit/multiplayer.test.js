@@ -100,6 +100,26 @@ test('client and server share the restart rule over snapshot state',()=>{
  assert.equal(restartAllowed(race,[{id:'a',seat:1}],'x'),false);
 });
 
+test('humans are grouped onto as few teams as possible, every round',()=>{
+ const humanTeams=room=>{const counts=new Map();for(const c of room.clients.values())if(c.seat!==null){const t=room.race.cycles[c.seat].team;counts.set(t,(counts.get(t)??0)+1);}return [...counts.values()].sort((a,b)=>b-a);};
+ const colors=new Set();
+ for(const [humans,expected] of [[1,[1]],[2,[2]],[3,[3]],[4,[3,1]],[7,[3,3,1]],[12,[3,3,3,3]]]){
+  const room=new CycleRoom({seed:1982+humans});join(room,humans);
+  for(let round=0;round<8;round++){
+   assert.deepEqual(humanTeams(room),expected,`${humans} humans, round ${round}`);
+   if(humans===2)colors.add(room.race.cycles[room.clients.get('u0').seat].team);
+   room.nextRound();
+  }
+ }
+ assert(colors.size>1,'the shared team still varies between rounds');
+ // A human arriving during grid preparation joins the existing humans' team.
+ const room=new CycleRoom();room.join('a');room.join('b');
+ const team=room.race.cycles[room.clients.get('a').seat].team;
+ assert.equal(room.race.cycles[room.clients.get('b').seat].team,team);
+ // Overflow humans still wait for a seat.
+ const full=new CycleRoom();join(full,14);assert.deepEqual(humanTeams(full),[3,3,3,3]);assert.equal(full.queue.length,2);
+});
+
 test('compact deltas reconstruct turns, deaths, rewards, joins and trail truncation',async()=>{
  const {projectState,compactSnapshot,decodeSnapshot}=await import('../../shared/multiplayer/snapshots.js');
  const room=new CycleRoom();join(room,12);racing(room);

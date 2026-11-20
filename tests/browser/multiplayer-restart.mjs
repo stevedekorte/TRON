@@ -29,6 +29,8 @@ try{
  await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing',null,{timeout:90000});
  for(let i=0;i<300&&!(socket.latest.clients.length===2&&socket.latest.clients.every(c=>c.seat!==null)&&socket.latest.race.phase==='racing');i++)await page.waitForTimeout(100);
  assert.equal(socket.latest.clients.length,2);
+ const teams=socket.latest.clients.map(c=>socket.latest.race.cycles[c.seat].team);
+ assert.equal(teams[0],teams[1],'both humans are placed on the same team');
  const round=await page.evaluate(()=>__tron.state.cycleRace.round);
  assert(humansAlive()>0);
  assert(!(await page.locator('#cycle-controls').textContent()).includes('NEW MATCH'),'no restart prompt while a human is alive');
@@ -42,6 +44,6 @@ try{
  await page.screenshot({path:'test-results/multiplayer-restart-prompt.png'});
  await page.keyboard.press('Enter');
  await page.waitForFunction(r=>__tron.state.cycleRace.round>r,round,{timeout:10000});
- console.log(`Round ${round}: Return blocked while a human was alive; once both humans were down, Return started round ${await page.evaluate(()=>__tron.state.cycleRace.round)}.`);
+ console.log(`Both humans on team ${teams[0]}. Round ${round}: Return blocked while a human was alive; once both humans were down, Return started round ${await page.evaluate(()=>__tron.state.cycleRace.round)}.`);
  assert.deepEqual(errors,[]);
 }finally{socket?.close();await browser.close();}

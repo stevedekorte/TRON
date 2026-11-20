@@ -3041,6 +3041,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] In multiplayer, any connected human (seated or waiting in the queue) can press Return (or tap NEW MATCH) to start a new match once no seated human's cycle is alive. A sole connected human can still restart at any time. One rule, `restartAllowed` in `shared/multiplayer/room.js`, drives the server authority, the client request, the `RETURN / NEW MATCH` prompt and the touch button. AI cycles still racing do not block it; a living human always does.
 - Validation: `npm test` 723 pass (new room and shared-rule tests in `tests/unit/multiplayer.test.js`). `node tests/browser/multiplayer-restart.mjs` passes against the dev server (one rendered client plus one wire client): Return is ignored while a human cycle is alive; after both crash, the prompt appears and Return starts the next round. `node tests/browser/multiplayer-browser.mjs` passes. The production Worker hosts the room, so it is deployed before the static client.
 
+## Multiplayer humans share a team — November 19
+
+- [x] Seat assignment groups human players onto as few teams as possible. Each human joins the team already holding the most humans that still has a free seat. With three cycles per team, 2 humans share a team, 4 split 3+1, 7 split 3+3+1, and 12 fill all four teams. Ties (including the first human) pick a random team, so the humans' color still varies between rounds; the slot within a team is random. AI cycles fill the remaining seats. It applies every round, to humans joining during grid preparation and to refills after someone leaves (`fillSeats`, `shared/multiplayer/room.js`).
+- Validation: `npm test` 724 pass. The new test covers 1–12 and 14 humans over eight rounds each, joins during grid preparation and a varying team color. The camera-cut assertion in `tests/unit/multiplayer-transition.test.js` was seat-dependent (it already failed for seats 0 and 5 under random seating), so it now checks for more than 5 m. `node tests/browser/multiplayer-restart.mjs` (both humans on one team) and `node tests/browser/multiplayer-browser.mjs` pass against the dev server. Not yet deployed.
+
 
 ---
 

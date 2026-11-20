@@ -40,12 +40,23 @@ export class CycleRoom{
   this.clients.delete(id);this.queue=this.queue.filter(x=>x!==id);
   if(this.race.phase==='countdown'&&this.race.cameraStaging)this.fillSeats();
  }
+ // Humans play together: each one joins the team already holding the most
+ // humans that still has a free seat, so 2 humans with 3-cycle teams share a
+ // team and a 4th starts a second team. Ties (including the first human) pick
+ // a random team, and the slot within a team is random.
  fillSeats(){
   const occupied=new Set([...this.clients.values()].map(c=>c.seat).filter(x=>x!==null));
-  const free=this.shuffle(this.race.cycles.filter(b=>!occupied.has(b.id)).map(b=>b.id));
-  while(this.queue.length&&free.length){
+  const humans=new Map(),teamOrder=this.shuffle([...new Set(this.race.cycles.map(b=>b.team))]);
+  for(const seat of occupied){const team=this.race.cycles[seat]?.team;if(team!==undefined)humans.set(team,(humans.get(team)??0)+1);}
+  while(this.queue.length){
+   const freeByTeam=new Map();
+   for(const b of this.race.cycles)if(!occupied.has(b.id))freeByTeam.set(b.team,[...(freeByTeam.get(b.team)??[]),b.id]);
+   if(!freeByTeam.size)break;
+   const team=teamOrder.filter(t=>freeByTeam.has(t)).reduce((best,t)=>(humans.get(t)??0)>(humans.get(best)??0)?t:best);
    const client=this.clients.get(this.queue.shift());if(!client)continue;
-   client.seat=free.pop();client.cameraReady=false;client.inputs=[];client.control={turbo:false,brake:false};client.lastTurnTick=-Infinity;
+   const seats=freeByTeam.get(team);
+   client.seat=seats[Math.floor(this.random()*seats.length)];occupied.add(client.seat);humans.set(team,(humans.get(team)??0)+1);
+   client.cameraReady=false;client.inputs=[];client.control={turbo:false,brake:false};client.lastTurnTick=-Infinity;
    Object.assign(this.race.cycles[client.seat],{human:true,operator:client.label});
   }
  }
