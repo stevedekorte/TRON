@@ -129,7 +129,7 @@ export class HudPresenter {
         race.phase==='countdown'?(race.cameraStaging?'PREPARING GRID':'MATERIALIZING'):
         race.phase==='result'?'SURVIVORS KEEP THEIR SEATS · NEXT MATCH SOON':`MULTIPLAYER · ${mp.ping} MS`;
     }
-    if(run.multiplayer?.connected&&run.multiplayer.players===1)cycleControls.textContent+=' · RETURN / NEW MATCH';
+    if(run.multiplayer?.connected&&run.multiplayer.canRestart)cycleControls.textContent+=' · RETURN / NEW MATCH';
     if(touch&&cycleMode){cycleControls.textContent=cycleControls.textContent.replace('ESC / RETURN HOME','MENU / RETURN HOME').replace('ARROWS / SPECTATE','TAP SIDES / FOLLOW').replace('RETURN / NEW MATCH','TAP NEW MATCH').replace('ARROW KEYS TO FOLLOW - ENTER TO RESTART','TAP SIDES TO FOLLOW - TAP NEW MATCH');$('controls-prompt').textContent='CONTROLS / TOUCH GUIDE';}
     const promptKey=cycleMode?`cycle:${race.round}`:'clu';
     if(this.promptRun!==run||this.promptKey!==promptKey){this.promptRun=run;this.promptKey=promptKey;this.promptSeconds=0;}

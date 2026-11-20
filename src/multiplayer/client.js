@@ -3,6 +3,7 @@ import {gridSpeedAt,applyGridSpeed} from '../../shared/simulation/cycle-speed-ra
 import {RemotePlayback,presentRemoteCycles} from './remote-playback.js';
 import {decodeSnapshot} from '../../shared/multiplayer/snapshots.js';
 import {MP} from '../../shared/multiplayer/config.js';
+import {restartAllowed} from '../../shared/multiplayer/room.js';
 import {LIGHT_CYCLES as C,CYCLE_DIRECTIONS as DIR} from '../../shared/simulation/config/light-cycles.js';
 import {cyclePlayerPose} from '../../shared/simulation/light-cycles.js';
 
@@ -73,9 +74,10 @@ export class MultiplayerClient{
   this.socket.send(JSON.stringify({type:'camera-ready',round,seat}));this.readyKey=key;
  }
  restart(){
-  if(!this.state||this.closed||this.disconnected||this.socket?.readyState!==1||this.state.clients.length!==1||performance.now()-this.received>2000)return false;
+  if(!this.state||this.closed||this.disconnected||this.socket?.readyState!==1||!this.canRestart()||performance.now()-this.received>2000)return false;
   this.socket.send(JSON.stringify({type:'restart',round:this.state.race.round}));return true;
  }
+ canRestart(){return !!this.state&&restartAllowed(this.state.race,this.state.clients,this.id);}
  estimatedRenderTick(){
   const now=performance.now(),round=this.state.race.round;
   // Leave room for two ordinary snapshot intervals before the extrapolation cap.
@@ -171,7 +173,7 @@ export class MultiplayerClient{
   run.won=false;run.crushed=false;run.speed=0;run.gunner=false;run.turretYaw=0;run.aimPitch=0;
   if(previous.round!==race.round){run.cycleFollowId=null;run.inspection=false;}
   run.cycleSpectating=waiting;
-  run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,unseatedWaiting:this.state.clients.filter(c=>c.seat===null&&c.queue>0).length,players:this.state.clients.length,ping:Math.round(this.rtt),round:race.round};
+  run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,unseatedWaiting:this.state.clients.filter(c=>c.seat===null&&c.queue>0).length,players:this.state.clients.length,canRestart:this.canRestart(),ping:Math.round(this.rtt),round:race.round};
   Object.assign(run,cyclePlayerPose(race));return true;
  }
  close(){if(typeof window!=='undefined'&&window.tronMultiplayerReport===this.report)delete window.tronMultiplayerReport;this.closed=true;this.cancelConnect?.();this.cancelConnect=null;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];this.remotePlayback?.reset();}

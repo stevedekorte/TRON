@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CycleRoom,wireState} from '../../shared/multiplayer/room.js';
+import {CycleRoom,wireState,restartAllowed} from '../../shared/multiplayer/room.js';
 import {MP} from '../../shared/multiplayer/config.js';
 const join=(room,n)=>{for(let i=0;i<n;i++)assert(room.join('u'+i));};
 function racing(room){room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();}
@@ -72,6 +72,32 @@ test('only the sole connected human can restart the authoritative match',()=>{
  const bike=room.race.cycles[room.clients.get('solo').seat];bike.alive=false;
  assert.equal(room.restart('solo',room.race.round),true,'eliminated sole player can restart');
  assert(room.race.cycles[room.clients.get('solo').seat].alive);
+});
+
+test('with several humans, anyone may start a new match once no human cycle is alive',()=>{
+ const room=new CycleRoom();join(room,3);racing(room);room.join('watcher');
+ const [a,b,c]=['u0','u1','u2'].map(id=>room.clients.get(id));
+ assert.equal(room.clients.get('watcher').seat,null);
+ let round=room.race.round;
+ assert.equal(room.restart('u0',round),false,'living humans block a restart');
+ kill(room,a);kill(room,b);
+ assert.equal(room.restart('u0',round),false,'one living human still blocks it');
+ assert.equal(room.restart('watcher',round),false);
+ kill(room,c);round=room.race.round;
+ assert.equal(room.restart('unknown',round),false,'only connected humans');
+ assert.equal(room.restart('watcher',round-1),false,'stale round');
+ assert.equal(room.restart('watcher',round),true,'a waiting human may restart once every human cycle is down');
+ assert.equal(room.race.round,round+1);assert(room.race.cameraStaging);
+ assert.equal(room.restart('u1',round),false,'duplicate request cannot restart again');
+ assert.equal(room.restart('u1',room.race.round),false,'humans are seated and alive in the new formation');
+});
+
+test('client and server share the restart rule over snapshot state',()=>{
+ const race={cycles:[{alive:true},{alive:false},{alive:true}]};
+ assert.equal(restartAllowed(race,[{id:'a',seat:1}],'a'),true,'a sole human may always restart');
+ assert.equal(restartAllowed(race,[{id:'a',seat:1},{id:'b',seat:0}],'a'),false,'another human is alive (AI seat 2 is irrelevant)');
+ assert.equal(restartAllowed(race,[{id:'a',seat:1},{id:'b',seat:null}],'b'),true,'dead and waiting humans');
+ assert.equal(restartAllowed(race,[{id:'a',seat:1}],'x'),false);
 });
 
 test('compact deltas reconstruct turns, deaths, rewards, joins and trail truncation',async()=>{

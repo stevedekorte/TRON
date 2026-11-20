@@ -1191,7 +1191,7 @@ export async function createGameApp() {
         visible:run.playerVehicle==='cycle'&&mode==='running'&&!homeTransition.active&&!run.arenaWaiting&&view.cameraRig.cycleOpening===null&&!exitConfirm.open&&!controlsHelpOpen,
         driving:run.cycleRace?.phase==='racing'&&!run.cycleSpectating&&!!run.cycleRace?.cycles[run.cycleRace.playerId]?.alive,
         spectating:!!run.cycleSpectating,
-        restart:multiplayer?run.multiplayer?.players===1:run.cycleRace?.phase==='result'||!run.cycleRace?.cycles[run.cycleRace.playerId]?.alive,
+        restart:multiplayer?!!(run.multiplayer?.connected&&run.multiplayer.canRestart):run.cycleRace?.phase==='result'||!run.cycleRace?.cycles[run.cycleRace.playerId]?.alive,
       });
       hud.update({
         dt,

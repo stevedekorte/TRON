@@ -1,6 +1,18 @@
 import {MP} from './config.js';
 import {resetCycleRound,updateCycleRace} from '../simulation/light-cycles.js';
 
+/**
+ * Whether connected human `id` may start a new match. A sole connected human
+ * always may. Otherwise any connected human (seated or waiting) may once no
+ * seated human's cycle is alive, so nobody's live run is reset. Shared by the
+ * server authority and client prompts. `clients`: [{id,seat}].
+ */
+export function restartAllowed(race,clients,id){
+ if(!race?.cycles||!clients.some(c=>c.id===id))return false;
+ if(clients.length===1)return true;
+ return !clients.some(c=>c.seat!==null&&c.seat!==undefined&&race.cycles[c.seat]?.alive);
+}
+
 // Transport-independent authority. Only this object decides seats, movement and deaths.
 export class CycleRoom{
  constructor({seed=1982}={}){
@@ -55,8 +67,7 @@ export class CycleRoom{
   this.fillSeats();
  }
  restart(id,round){
-  // Count every connected human, including spectators: nobody may reset a shared match.
-  if(this.clients.size!==1||!this.clients.has(id)||round!==this.race.round)return false;
+  if(round!==this.race.round||!restartAllowed(this.race,[...this.clients.values()],id))return false;
   this.nextRound();
   // The new camera/formation sequence replaces the old instant launch.
   return true;

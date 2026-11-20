@@ -2,14 +2,16 @@
 
 title: Implementation plan topTitle: TRON subtitle: Current simulation scope, decisions, and acceptance criteria
 
-See also: /llms.txt (curated index) and /sitemap.xml.
+See also: llms.txt (curated index) and sitemap.xml.
+
+Paths are relative to the site root.
 
 
 
 ---
 
 <!-- Page: (root) -->
-Source: /
+Source: ./
 
 ## Field of view follows cycle speed — November 15
 
@@ -3034,11 +3036,16 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] New browser checks: `tests/browser/context-restore.mjs`, `tests/browser/pov-engines.mjs`, `tests/browser/platform-smoke.mjs`, `tests/browser/raycast-study.mjs` (the deployed analytic study page compiles every variant on M5 in Chrome, WebKit and Firefox; it needed no change).
 - Not verified on real hardware: Windows (Direct3D), Android (Adreno/Mali), iPhone/iPad, M1–M4 Macs, Intel/AMD GPUs. Mobile results come from WebKit and Chrome device emulation on the M5. Validation: `docs/validation/_index.md`, November 19.
 
+## Multiplayer new match when no human is alive — November 19
+
+- [x] In multiplayer, any connected human (seated or waiting in the queue) can press Return (or tap NEW MATCH) to start a new match once no seated human's cycle is alive. A sole connected human can still restart at any time. One rule, `restartAllowed` in `shared/multiplayer/room.js`, drives the server authority, the client request, the `RETURN / NEW MATCH` prompt and the touch button. AI cycles still racing do not block it; a living human always does.
+- Validation: `npm test` 723 pass (new room and shared-rule tests in `tests/unit/multiplayer.test.js`). `node tests/browser/multiplayer-restart.mjs` passes against the dev server (one rendered client plus one wire client): Return is ignored while a human cycle is alive; after both crash, the prompt appears and Return starts the next round. `node tests/browser/multiplayer-browser.mjs` passes. The production Worker hosts the room, so it is deployed before the static client.
+
 
 ---
 
 <!-- Page: assets -->
-Source: /assets/
+Source: assets/
 
 # Assets
 
@@ -3054,7 +3061,7 @@ Model, sound, and dependency inventory
 
 
 
-The tank and Recognizers are user-supplied Sketchfab GLBs; Sark’s carrier is a user-supplied JIHS Collada model converted locally to GLB. All are served locally with the application. Maze geometry is generated locally; vehicle/cannon audio uses short edits from the user-supplied film clip, with synthesized fallback and impact effects. No purchase was made. See [Models](../models/index.html) for source credits and adapter details.
+The tank and Recognizers are user-supplied Sketchfab GLBs; Sark’s carrier is a user-supplied JIHS Collada model converted locally to GLB. All are served locally with the application. Maze geometry is generated locally; vehicle/cannon audio uses short edits from the user-supplied film clip, with synthesized fallback and impact effects. No purchase was made. See [Models](models/index.html) for source credits and adapter details.
 
 | Asset | Source / author | Format and size | Use / attribution | Status |
 | --- | --- | --- | --- | --- |
@@ -3101,17 +3108,17 @@ Sketchfab labels all four Free Standard; the arabinowitz descriptions additional
 
 ### Shriker1 tank preview
 
-![Shriker1 tank promotional preview](candidates/99f4ae8ce97445e8909c02d7481d12d9.jpeg)
+![Shriker1 tank promotional preview](assets/candidates/99f4ae8ce97445e8909c02d7481d12d9.jpeg)
 
 ### Shriker1 Recognizer preview
 
-![Shriker1 Recognizer promotional preview](candidates/ecb52608275c40a28d7d9dda1aed54f3.jpeg)
+![Shriker1 Recognizer promotional preview](assets/candidates/ecb52608275c40a28d7d9dda1aed54f3.jpeg)
 
 ### arabinowitz alternatives
 
-![arabinowitz tank promotional preview](candidates/b730d118f54b4a868339a4ddf11e09a7.jpeg)
+![arabinowitz tank promotional preview](assets/candidates/b730d118f54b4a868339a4ddf11e09a7.jpeg)
 
-![arabinowitz Recognizer promotional preview](candidates/897ad9061ab34a9885b8e874fe8a17e0.jpeg)
+![arabinowitz Recognizer promotional preview](assets/candidates/897ad9061ab34a9885b8e874fe8a17e0.jpeg)
 
 Also found [JIHS's TRON 1982 Tank on TurboSquid](https://www.turbosquid.com/3d-models/3d-tron-1982-tank-1811154), listed at $25, 49,152 polygons, with FBX/OBJ/glTF among the offered formats and an editorial-use restriction. It is a paid fallback; no purchase was made.
 
@@ -3171,7 +3178,7 @@ The supplied `Recognizer Explosion.m4a` edit matches video time 113.207 seconds 
 
 ## Sound resource library
 
-[Open the sound library](../sounds/index.html) for downloaded Syna-Max recreation previews, existing film edits, cleanup candidates, verified stock-effect catalog IDs and vendor metadata exports. The shelf preserves inactive resources, author/source links and licensing notes for this personal-use project. `docs/sounds/catalog.json` is the editable inventory; `scripts/build-sound-library.mjs` regenerates its page during the docs build. Public MP3 previews are clearly distinguished from original downloads and unacquired commercial-library audio.
+[Open the sound library](sounds/index.html) for downloaded Syna-Max recreation previews, existing film edits, cleanup candidates, verified stock-effect catalog IDs and vendor metadata exports. The shelf preserves inactive resources, author/source links and licensing notes for this personal-use project. `docs/sounds/catalog.json` is the editable inventory; `scripts/build-sound-library.mjs` regenerates its page during the docs build. Public MP3 previews are clearly distinguished from original downloads and unacquired commercial-library audio.
 
 ### MCP closing dialog
 
@@ -3239,7 +3246,7 @@ The grid cloud is no longer loaded or shown in the game or credits. The retained
 ---
 
 <!-- Page: cycle-ai -->
-Source: /cycle-ai/
+Source: cycle-ai/
 
 # Fast, compelling cycle AI
 
@@ -3326,7 +3333,7 @@ Reproduce with `node tools/ai/train.mjs --population=4 --generations=1 --trainSe
 
 ## Obstacle-aware training reward — October 15
 
-The offline trainers now include bounded approach credit based on navigable route distance, not Euclidean proximity. See the [current plan](../) for deployment state, checks and limitations. `tools/ai/approach.mjs` samples a swept-disc route graph once per simulated second, using the same active trail segments as collision. It credits the AI's own progress toward a frozen target, checks that the opponent is still reachable, and excludes passive closing and disconnected regions. A per-pair progress high-water mark limits repeated approach/retreat credit; initial enemy-pair normalization prevents team-size/death artifacts. The maximum approach bonus remains 0.15. Fitness version 2 now assigns one base point plus up to one early-confirmation point per eliminated enemy, shared between direct wall owners and successful trappers. Unfinished confinements no longer earn fitness. See the current plan for the bounded evolution results and limitations.
+The offline trainers now include bounded approach credit based on navigable route distance, not Euclidean proximity. See the [current plan](./) for deployment state, checks and limitations. `tools/ai/approach.mjs` samples a swept-disc route graph once per simulated second, using the same active trail segments as collision. It credits the AI's own progress toward a frozen target, checks that the opponent is still reachable, and excludes passive closing and disconnected regions. A per-pair progress high-water mark limits repeated approach/retreat credit; initial enemy-pair normalization prevents team-size/death artifacts. The maximum approach bonus remains 0.15. Fitness version 2 now assigns one base point plus up to one early-confirmation point per eliminated enemy, shared between direct wall owners and successful trappers. Unfinished confinements no longer earn fitness. See the current plan for the bounded evolution results and limitations.
 
 This is offline instrumentation only: it does not add pathfinding to the live controller or change the deployed policy. The 2.4 m graph is a conservative route estimate; it can miss narrow passages and does not predict future trails or enforce heading/turn dynamics. No Euclidean fallback is used. Training outputs record the reward configuration. All 583 unit tests and a four-seat tournament smoke pass; a subsequent two-generation run and fresh-seed comparison are recorded in the current plan. Its candidate improved trap assists and combined fitness but not direct kills, and remains unpromoted.
 
@@ -3543,7 +3550,7 @@ Validation on Apple M2 Max, Node 22.22.0 and Chrome: 561 unit tests pass, includ
 
 Completed `node tools/ai/train.mjs`: four policies × two generations × four training seeds × four spawn rotations (128 training matches), then eight fresh seeds × four rotations for both the selected candidate and baseline (64 evaluation matches). Each match allows 180 seconds. Mutations are seeded (44123); historical opponents remain in training. Three worker threads execute simulation matches without timing instrumentation. Serial, uncontended performance checks gate each generation winner and the final candidate. The neural scorer remains disabled.
 
-Selected policy: `aggression-1-0`. Full weights, training scores, per-match held-out results, configuration and serial timing are retained in [the experiment artifact](experiments/aggression-2026-10-14.json). No automatic policy promotion or deployment occurred.
+Selected policy: `aggression-1-0`. Full weights, training scores, per-match held-out results, configuration and serial timing are retained in [the experiment artifact](cycle-ai/experiments/aggression-2026-10-14.json). No automatic policy promotion or deployment occurred.
 
 | Fresh-seed results (32 matches each) | Baseline | Candidate |
 |---|---:|---:|
@@ -3571,7 +3578,7 @@ The earlier trial-only restriction no longer applies to these weights: normal lo
 
 `node tools/ai/evolve-until-plateau.mjs` completed four generations and stopped after three consecutive generations without a qualifying validation improvement. This is a plateau for this mutation/search setup, not proof that no better policy exists. The validation winner `plateau-0-0` scored 0.4484 mean fitness on 32 fresh matches, versus 0.4664 for the playtested `aggression-1-0` and 0.3781 for `bounded-v1`. The challenger had 5 wins, 24 draws and 3 losses; the playtested policy had 4 wins, 14 draws and 14 losses. More survival did not produce better combined aggression fitness. Neither the trial artifact nor gameplay default was replaced.
 
-Full results: [plateau experiment](experiments/plateau-2026-10-14.json). Serial M2 Max Node timing passed: AI p99 0.252 ms and full simulation tick p99 0.661 ms. Closed-arena evaluation and small seed count remain limitations. Shared default integration passes 562 unit tests, Chrome AI and two-client multiplayer checks, and the Worker dry run; production remains unchanged.
+Full results: [plateau experiment](cycle-ai/experiments/plateau-2026-10-14.json). Serial M2 Max Node timing passed: AI p99 0.252 ms and full simulation tick p99 0.661 ms. Closed-arena evaluation and small seed count remain limitations. Shared default integration passes 562 unit tests, Chrome AI and two-client multiplayer checks, and the Worker dry run; production remains unchanged.
 
 ## Research findings — October 14
 
@@ -3615,31 +3622,31 @@ Only five wins per policy contribute to mean winning duration, and they need not
 
 Serial runtime passes the existing gate: AI p99 0.235 ms and full tick p99 0.478 ms; maximum full tick 10.860 ms exceeds one 120 Hz tick budget, so the p99 result is not a guarantee of no overruns. Closed-arena fixtures do not establish performance with MP breaches or on slower/server hardware. Four fitness unit checks pass; script syntax and generated-document checks pass. No browser test or deployment was needed for this offline experiment.
 
-Preserved [full weights, rows, configuration, validation and timing](experiments/fast-wins-2026-10-14.json). Further work should change the training situations or available decision structure rather than claiming more repetitions of this search have found a better AI.
+Preserved [full weights, rows, configuration, validation and timing](cycle-ai/experiments/fast-wins-2026-10-14.json). Further work should change the training situations or available decision structure rather than claiming more repetitions of this search have found a better AI.
 
 
 ---
 
 <!-- Page: history -->
-Source: /history/
+Source: history/
 
 # Project history
 
 Original milestones and earlier development notes
 
-[← Current implementation plan](../index.html)
+[← Current implementation plan](index.html)
 
 This archive preserves the original plans and earlier implementation notes. Later decisions in the current plan take precedence.
 
 ## Historical structured-chase plan
 
-The following records the original M0/M1 work and decisions. Its timed escape, capture and scripted encounter requirements are superseded by the [current simulation plan](../index.html).
+The following records the original M0/M1 work and decisions. Its timed escape, capture and scripted encounter requirements are superseded by the [current simulation plan](index.html).
 
 Prepared 2026-09-12 from the [shared design conversation](https://chatgpt.com/share/6aa58280-6f74-83e9-a410-aa7c54032fe4). `../../Goal.md` defines the experience; `../../AGENTS.md` guides implementation.
 
 A first playable is implemented as of 2026-09-12. Open the game at http://127.0.0.1:5173 after `npm run dev`. It includes a roughly 75-second authored canyon, procedural tank/Recognizer models, driving and collision, chase camera, positional synthesized audio, pause/restart, capture, and cannon fire. The user explicitly added shooting during implementation; three projectile hits destroy a Recognizer.
 
-Technical prototype work is substantially complete; M0/M1 are not represented as fully signed off. The supplied multi-angle film stills have now been inspected and used for a second art pass. Remaining items include final asset fidelity, actual Safari and human playtesting, and the unchecked detailed items below. See [Validation](../validation/index.html) for evidence and limitations. Supporting documents: [Assets](../assets/index.html) · [References](../references/index.html).
+Technical prototype work is substantially complete; M0/M1 are not represented as fully signed off. The supplied multi-angle film stills have now been inspected and used for a second art pass. Remaining items include final asset fidelity, actual Safari and human playtesting, and the unchecked detailed items below. See [Validation](validation/index.html) for evidence and limitations. Supporting documents: [Assets](assets/index.html) · [References](references/index.html).
 
 ## High-level roadmap
 
@@ -3906,7 +3913,7 @@ Aerial camera: V still toggles the overview; wheel/two-finger scrolling smoothly
 - [x] Add a straight background flight at 360 m center altitude and 24 m/s, tied to simulation time.
 - [x] Fragment only the struck Recognizer body/leg section; let the other two sections fall apart whole.
 
-See [Models](../models/index.html) for source, parameters and limitations and [Validation](../validation/index.html) for checks.
+See [Models](models/index.html) for source, parameters and limitations and [Validation](validation/index.html) for checks.
 
 ## September 13 — explicit terminal start
 
@@ -4118,7 +4125,7 @@ Recognizers now burst into their 15 actual connected model blocks. Connectivity 
 ### Carrier escape shuttle — September 17
 
 - [x] Inspect supplied four-angle stills and the 2:34–2:57 escape sequence; construct an open shell model with ribbed trays, upright end blades and a single green-paneled side wall.
-- [x] Provide a standalone orbit/turntable studio at `shuttle.html`, six camera presets and GLB export. See [model notes](../models/carrier-shuttle/index.html) for uncertain dimensions and hidden surfaces.
+- [x] Provide a standalone orbit/turntable studio at `shuttle.html`, six camera presets and GLB export. See [model notes](models/carrier-shuttle/index.html) for uncertain dimensions and hidden surfaces.
 
 ### Maze music and presentation — September 17
 
@@ -4283,7 +4290,7 @@ September 20 teleporter flyover check: added a fixed-step moving-Recognizer regr
 ---
 
 <!-- Page: jev -->
-Source: /jev/
+Source: jev/
 
 # Jev enemy control
 
@@ -4623,7 +4630,7 @@ Shift+T shows AI mode, status and the latest decision details. The development s
 | `src/game/tactical.js` | Named tactical/request tunables. |
 | `src/app/game-app.js`, `development-tools.js` | Browser composition, preferences, lifecycle and detached development inspection. |
 
-Run `node --test tests/tactical.test.js tests/jev.test.js` for geometry, pursuit, hidden-information invariants, range gating, answer acceptance and relay/client behavior. `tests/tactical-browser.mjs` covers mode switching, wall-side attack, fallback and lifecycle; its optional `--live` mode permits one provider request. See [Validation](../validation/index.html) for commands, recorded results and unresolved human review.
+Run `node --test tests/tactical.test.js tests/jev.test.js` for geometry, pursuit, hidden-information invariants, range gating, answer acceptance and relay/client behavior. `tests/tactical-browser.mjs` covers mode switching, wall-side attack, fallback and lifecycle; its optional `--live` mode permits one provider request. See [Validation](validation/index.html) for commands, recorded results and unresolved human review.
 
 ## Where to give Jev more authority
 
@@ -4660,7 +4667,7 @@ The gameplay candidate/input/output contract remains unchanged. `AutoplayMission
 
 The client separates cancellation, scheduling reset and round reset. Provider cooldowns survive round reset; round statistics restart only for a new round, and late usage updates settle the original accounting object. Local and Worker error bodies carry typed timeout/cancelled/unavailable/limited/invalid codes; only timeouts receive the existing two retries. Legacy relay timeout text remains a compatibility fallback. The transport wraps browser fetch and timers to preserve their native calling convention, fixing the Safari “Window.fetch” receiver regression. No credentials enter shared modules or browser snapshots.
 
-The current implementation/validation and ownership map are maintained in [Refactoring](../refactoring/index.html) and [Validation](../validation/index.html). Live-provider decision quality and the later-maze autoplay stall remain separate from transport correctness.
+The current implementation/validation and ownership map are maintained in [Refactoring](refactoring/index.html) and [Validation](validation/index.html). Live-provider decision quality and the later-maze autoplay stall remain separate from transport correctness.
 
 
 ## Carrier duty and visible debris — September 22
@@ -4760,7 +4767,7 @@ The user requested that TypeSafe balance control total public usage. `wrangler.j
 ---
 
 <!-- Page: models -->
-Source: /models/
+Source: models/
 
 # Models
 
@@ -4787,7 +4794,7 @@ Vite packages both GLBs into local dist/assets URLs. There is no Sketchfab runti
 
 ## Verification
 
-node tests/models.mjs checks muzzle alignment across nine hull/turret combinations, Recognizer scale and independent materials, and writes test-results/imported-models.png for visual inspection. Browser controls and lifecycle checks are recorded in [Validation](../validation/index.html).
+node tests/models.mjs checks muzzle alignment across nine hull/turret combinations, Recognizer scale and independent materials, and writes test-results/imported-models.png for visual inspection. Browser controls and lifecycle checks are recorded in [Validation](validation/index.html).
 
 Recognizer articulation now splits the Base and Light triangle meshes into a body and two legs at the shoulder seam. Original normals, UVs and materials are retained. Each leg turns 180 degrees around its upright center while sliding inward to form the crush pose. Geometry is shared among aircraft; each has independent pose and hit-flash materials.
 
@@ -4817,7 +4824,7 @@ Retired: the unused shuttle experiments, assets and preview tools were removed o
 
 ## Grid cloud
 
-[cloud.glb](cloud.glb) contains one complete connected grid cloud extracted from `extra/tron_1982.glb`, with no neighboring cloud fragments. Original cyan emissive material and imported scale are preserved; source transforms are baked to Y-up and the cloud is centered at the origin. It contains 1,046 vertices and 846 triangles and spans approximately 735 × 695 meters in the XZ plane. [Preview](cloud-preview.png).
+[cloud.glb](models/cloud.glb) contains one complete connected grid cloud extracted from `extra/tron_1982.glb`, with no neighboring cloud fragments. Original cyan emissive material and imported scale are preserved; source transforms are baked to Y-up and the cloud is centered at the origin. It contains 1,046 vertices and 846 triangles and spans approximately 735 × 695 meters in the XZ plane. [Preview](models/cloud-preview.png).
 
 Source: **Tron 1982** by **jvouillon**, from the source file's embedded metadata: https://sketchfab.com/3d-models/tron-1982-d7b1e9a03bca4bb6aa636b56ae45ec88 — CC BY 4.0. Attribution and modification notes are retained in the exported GLB. Reproduce with `python3 scripts/extract-cloud.py`. The game reuses this asset for its decorative drifting cloud layer.
 
@@ -4833,7 +4840,7 @@ The first Solar Sailer pass starts at three simulation minutes and repeats every
 
 ## Extracted light cycle arena — September 23
 
-[Standalone GLB](extra/tron_1982_light_cycle_arena.glb) · [Preview](extra/tron_1982_light_cycle_arena-preview.png)
+[Standalone GLB](models/extra/tron_1982_light_cycle_arena.glb) · [Preview](models/extra/tron_1982_light_cycle_arena-preview.png)
 
 Extracted from the user-supplied `extra/tron_1982.glb`: seven architecture meshes (arena walls, broken-wall interiors, upper surfaces, lights, signs and graffiti), 9,329 triangles. Vehicles, light trails and surrounding scenery are excluded. Original materials, embedded textures, scale and proportions are preserved; the arena is centered in XZ with its base at Y=0. Bounds are approximately 168.05 × 12.33 × 168.05 in imported units. No new interior floor was fabricated.
 
@@ -4841,7 +4848,7 @@ Original: **Tron 1982**, **jvouillon**, [Sketchfab source](https://sketchfab.com
 
 ## Daniel Preti light cycle arena — September 23
 
-[Converted GLB](preti_light_cycle_arena.glb) · [Overview](preti-light-cycle-arena-preview.png) · [Interior](preti-light-cycle-arena-interior.png)
+[Converted GLB](models/preti_light_cycle_arena.glb) · [Overview](models/preti-light-cycle-arena-preview.png) · [Interior](models/preti-light-cycle-arena-interior.png)
 
 Source: Daniel Preti's **TRON 1982 — Games Grid Lightcycles**, supplied locally in `TRON Game Sector+LightCycles-Obj`. This is a purchased model, not the CC-licensed jvouillon scene above; retain its seller license. The OBJ states meters. The isolated arena spans approximately 931.44 × 60 × 931.43 meters and is centered in XZ. It is an inspection asset, not yet integrated into gameplay.
 
@@ -4857,7 +4864,7 @@ Reproduce with `python3 scripts/prepare-preti-arena.py` (Python standard library
 
 ## Standalone Preti light cycles — September 24
 
-The supplied Daniel Preti OBJ contains three complete bikes. Extracted [gold](preti_light_cycle_gold.glb), [blue](preti_light_cycle_blue.glb), and [red](preti_light_cycle_red.glb) GLBs retain their authored proportions and materials, with separate wheel details included and the old trails omitted. They are centered, grounded and face local -Z. Regenerate with `python3 scripts/prepare-preti-arena.py --cycle gold` (or `blue`, `red`). Original meter scale is retained in the files; the game adapter scales each bike uniformly to 3.6 m long.
+The supplied Daniel Preti OBJ contains three complete bikes. Extracted [gold](models/preti_light_cycle_gold.glb), [blue](models/preti_light_cycle_blue.glb), and [red](models/preti_light_cycle_red.glb) GLBs retain their authored proportions and materials, with separate wheel details included and the old trails omitted. They are centered, grounded and face local -Z. Regenerate with `python3 scripts/prepare-preti-arena.py --cycle gold` (or `blue`, `red`). Original meter scale is retained in the files; the game adapter scales each bike uniformly to 3.6 m long.
 
 These inherit the purchased arena asset's usage constraints and Daniel Preti attribution. The source references an absent `TRON___LIGHTCYCLE.png` texture on a small decal; that patch uses its source diffuse color. Gold and blue are loaded for the arena's two teams; red remains available as a separate model.
 
@@ -4882,7 +4889,7 @@ The game and credits adapters omit the separate `DANIEL_PRETI` / `daniel_preti` 
 ---
 
 <!-- Page: models/carrier-shuttle -->
-Source: /models/carrier-shuttle/
+Source: models/carrier-shuttle/
 
 # Carrier escape shuttle — retired
 
@@ -4892,7 +4899,7 @@ The unused shuttle experiments, assets and preview tools were removed on Novembe
 ---
 
 <!-- Page: multiplayer -->
-Source: /multiplayer/
+Source: multiplayer/
 
 # Multiplayer light cycles
 
@@ -4900,7 +4907,7 @@ Authoritative arena, bandwidth reduction, and staged low-latency hosting
 
 ## Revised proposal for review — October 22
 
-See [WebRTC private-match plan](webrtc/index.html) for a staged connectivity probe and three-human reliable-channel experiment with rotating hosts, precise-turn measurements, and a comparison with dedicated-server transports. This proposal does not supersede the public hosting plan below or authorize implementation.
+See [WebRTC private-match plan](multiplayer/webrtc/index.html) for a staged connectivity probe and three-human reliable-channel experiment with rotating hosts, precise-turn measurements, and a comparison with dedicated-server transports. This proposal does not supersede the public hosting plan below or authorize implementation.
 
 ## Selected low-latency hosting plan — October 14
 
@@ -5071,7 +5078,7 @@ No collision rollback or provisional death system is included. Inputs received a
 ---
 
 <!-- Page: multiplayer/webrtc -->
-Source: /multiplayer/webrtc/
+Source: multiplayer/webrtc/
 
 # WebRTC light-cycle matches
 
@@ -5231,7 +5238,7 @@ Seamless host migration, public peer matchmaking, persistent competitive ranking
 - [RTCDataChannel delivery options](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createDataChannel)
 - [WebRTC data channels and SCTP delivery/congestion behavior — RFC 8831](https://www.rfc-editor.org/rfc/rfc8831.html)
 - [WebRTC specification, including transferable RTCDataChannel](https://www.w3.org/TR/webrtc/)
-- [Existing multiplayer hosting plan](../index.html)
+- [Existing multiplayer hosting plan](multiplayer/index.html)
 
 These references support the transport capabilities. The topology, staging, thresholds, and acceptance criteria above are project proposals, not measured results.
 
@@ -5239,7 +5246,7 @@ These references support the transport capabilities. The topology, staging, thre
 ---
 
 <!-- Page: organization -->
-Source: /organization/
+Source: organization/
 
 # Project organization plan
 
@@ -5318,7 +5325,7 @@ Stage 7 remains deferred: retain compatibility paths for this release until depl
 ---
 
 <!-- Page: refactoring -->
-Source: /refactoring/
+Source: refactoring/
 
 # Refactoring review and design
 
@@ -5328,7 +5335,7 @@ Explicit ownership, reproducible worlds and composed controllers
 
 Refactor incrementally. The game has useful module boundaries already, but several objects now own too many decisions and lifetimes. The best use of OOP here is to give stateful responsibilities clear owners and small public APIs, while retaining plain simulation records and pure geometry functions.
 
-The findings below record the pre-refactor review on September 22, 2026. The implementation section describes the completed ownership extraction; it is not a claim that all runtime defects have been found. The authoritative implementation checklist is in the [project plan](../index.html). Existing behavior is the migration baseline; intentional gameplay changes should be separate commits.
+The findings below record the pre-refactor review on September 22, 2026. The implementation section describes the completed ownership extraction; it is not a claim that all runtime defects have been found. The authoritative implementation checklist is in the [project plan](index.html). Existing behavior is the migration baseline; intentional gameplay changes should be separate commits.
 
 ## Findings grounded in the code
 
@@ -5503,7 +5510,7 @@ Prettier is available for the extracted modules via `.prettierrc.json`; legacy m
 ---
 
 <!-- Page: references -->
-Source: /references/
+Source: references/
 
 # References
 
@@ -5516,7 +5523,7 @@ Reference material is grouped by subject, with stills, clips and studies kept to
 
 ## Central labyrinth trace — September 23
 
-The user supplied [Big labyrinth](mazes/Big%20labyrinth.png) as the fifth maze blueprint. [Trace overlay](mazes/labyrinth-trace.svg) shows the extracted contours against the source. Blue regions become walls; dark regions remain open. The image yields 116 wall islands and three interior holes, simplified to a one-pixel contour tolerance, then scaled at 2.4 m/pixel with 54 m walls. This keeps the finer passages usable by tanks while preserving the circular court.
+The user supplied [Big labyrinth](references/mazes/Big%20labyrinth.png) as the fifth maze blueprint. [Trace overlay](references/mazes/labyrinth-trace.svg) shows the extracted contours against the source. Blue regions become walls; dark regions remain open. The image yields 116 wall islands and three interior holes, simplified to a one-pixel contour tolerance, then scaled at 2.4 m/pixel with 54 m walls. This keeps the finer passages usable by tanks while preserving the circular court.
 
 `src/levels/labyrinth-outlines.js` contains the committed contour data. To retrace the PNG, run `scripts/trace-labyrinth.py` in a Python environment with `opencv-python-headless`. Normal builds require no Python: `npm run docs` regenerates the SVG from committed outlines. Both blueprint mazes share `src/levels/outline-maze.js` for collision and triangulation.
 
@@ -5542,7 +5549,7 @@ The user-supplied Maze Blue Print.png is traced as 20 roof outlines, including c
 
 The roof uses triangulation of each complete outline. Driving uses the original polygon perimeter; projectile and sight rays use the same triangulated solid, preserving open notches. Both layouts share the existing tank, aircraft AI, materials and wall detailing.
 
-[Open the trace overlay](mazes/maze-trace.svg): pale yellow outlines show the hand trace against the source. Regenerate it with `node scripts/trace-blueprint.mjs`.
+[Open the trace overlay](references/mazes/maze-trace.svg): pale yellow outlines show the hand trace against the source. Regenerate it with `node scripts/trace-blueprint.mjs`.
 
 ## Inspected images
 
@@ -5559,25 +5566,25 @@ The user supplied 15 reference images, including the new Maze Details image, and
 
 | Frame | Visual evidence |
 | --- | --- |
-| [Maze Blue Print](mazes/Maze%20Blue%20Print.png) | Top-down source for the optional traced layout. |
-| [Maze Top 1](mazes/Maze%20Top%201.png) | Broad blue roofs, diagonal tips and dark channels. |
-| [Maze Top 2](mazes/Maze%20Top%202.png) | Additional maze forms and wall faces. |
-| [Maze Entrance 1](mazes/Maze%20Entrance%201.png) | Entry geometry and tank approach. |
-| [Maze Entrance 2](mazes/Maze%20Entrance%202.png) | Grid-to-corridor transition. |
-| [Maze Details](mazes/Maze%20Details.png) | Faint vertical seams, thin blue-gray edge highlights and stepped, angled ledges. |
-| [CLU Close Up](clu-and-tanks/CLU%20Close%20Up.png) | Cannon, offset canopy, blue highlights and restrained red trim. |
-| [CLU POV](clu-and-tanks/CLU%20POV.png) | Tank point of view and nearby geometry. |
-| [CLU Firing](clu-and-tanks/CLU%20Firing.png) | Cannon firing reference. |
-| [CLU Persued](clu-and-tanks/CLU%20Persued.png) | Pursuit and relative vehicle scale. |
-| [Inside Maze](mazes/Inside%20Maze.png) | Rear/side tank proportions against dark walls and blue floor. |
-| [CLU Wall Collision](clu-and-tanks/CLU%20Wall%20Collision.png) | Tank and wall contact reference. |
-| [Recognizers Decend](recognizers/Recognizers%20Decend.png) | Recognizer approach and underside. |
-| [Opening Shot 1](terminals/Opening%20Shot%201.png) | Terminal/opening reference. |
-| [Opening Shot 2](terminals/Opening%20Shot%202.png) | Terminal/opening reference. |
+| [Maze Blue Print](references/mazes/Maze%20Blue%20Print.png) | Top-down source for the optional traced layout. |
+| [Maze Top 1](references/mazes/Maze%20Top%201.png) | Broad blue roofs, diagonal tips and dark channels. |
+| [Maze Top 2](references/mazes/Maze%20Top%202.png) | Additional maze forms and wall faces. |
+| [Maze Entrance 1](references/mazes/Maze%20Entrance%201.png) | Entry geometry and tank approach. |
+| [Maze Entrance 2](references/mazes/Maze%20Entrance%202.png) | Grid-to-corridor transition. |
+| [Maze Details](references/mazes/Maze%20Details.png) | Faint vertical seams, thin blue-gray edge highlights and stepped, angled ledges. |
+| [CLU Close Up](references/clu-and-tanks/CLU%20Close%20Up.png) | Cannon, offset canopy, blue highlights and restrained red trim. |
+| [CLU POV](references/clu-and-tanks/CLU%20POV.png) | Tank point of view and nearby geometry. |
+| [CLU Firing](references/clu-and-tanks/CLU%20Firing.png) | Cannon firing reference. |
+| [CLU Persued](references/clu-and-tanks/CLU%20Persued.png) | Pursuit and relative vehicle scale. |
+| [Inside Maze](references/mazes/Inside%20Maze.png) | Rear/side tank proportions against dark walls and blue floor. |
+| [CLU Wall Collision](references/clu-and-tanks/CLU%20Wall%20Collision.png) | Tank and wall contact reference. |
+| [Recognizers Decend](references/recognizers/Recognizers%20Decend.png) | Recognizer approach and underside. |
+| [Opening Shot 1](references/terminals/Opening%20Shot%201.png) | Terminal/opening reference. |
+| [Opening Shot 2](references/terminals/Opening%20Shot%202.png) | Terminal/opening reference. |
 
 ## Applied changes
 
-The tank and Recognizer now use user-supplied GLB models, with the scales and source credits recorded in [Models](../models/index.html). Tank red trim is subdued; Recognizer trim remains emissive.
+The tank and Recognizer now use user-supplied GLB models, with the scales and source credits recorded in [Models](models/index.html). Tank red trim is subdued; Recognizer trim remains emissive.
 
 The maze preserves the oblique branching slab layout. The new detail pass adds thin, non-glowing blue-gray perimeter/corner lines, sparse tall panel outlines, and shallow lower ledges with sloping highlight faces. Detail follows exposed wall faces; coplanar cell edges are joined to avoid drawing the underlying grid. Relief is cosmetic and at most 0.3 meters deep; the shared slab collision and sight volumes remain unchanged.
 
@@ -5618,7 +5625,7 @@ User-supplied `recognizers/spotlight/IMG_3514.jpeg` through `IMG_3520.jpeg` show
 ---
 
 <!-- Page: security -->
-Source: /security/
+Source: security/
 
 # Security review and remediation plan
 
@@ -5644,7 +5651,7 @@ On macOS arm64: TRON's 642 unit tests, production build/asset checks, Worker dry
 
 ### Remaining exposure and follow-up
 
-Trivy 0.76.1 found **844 high/critical package/advisory rows in the TRON development image and 63 in Max's image, with zero available fixes reported** after remediation. These counts include repeats across related Debian binary packages; they are not unique exploitable defects. Full compact inventories: [TRON container findings](evidence/tron-container-findings.json), [Max container findings](evidence/max-container-findings.json). Development/media tools should not process untrusted inputs with production credentials. Owner: project maintainer; review by **October 30, 2026**, or immediately when vendor patches appear. This is a temporary documented exposure, not a clean-image claim. Weekly CI fails on fixable high/critical findings; it does not silently certify unfixed findings as safe.
+Trivy 0.76.1 found **844 high/critical package/advisory rows in the TRON development image and 63 in Max's image, with zero available fixes reported** after remediation. These counts include repeats across related Debian binary packages; they are not unique exploitable defects. Full compact inventories: [TRON container findings](security/evidence/tron-container-findings.json), [Max container findings](security/evidence/max-container-findings.json). Development/media tools should not process untrusted inputs with production credentials. Owner: project maintainer; review by **October 30, 2026**, or immediately when vendor patches appear. This is a temporary documented exposure, not a clean-image claim. Weekly CI fails on fixable high/critical findings; it does not silently certify unfixed findings as safe.
 
 Historical key copies remain in Git history; rewriting shared history requires separate authorization. Current launcher use of these keys has been retired, but other trust-store entries, reuse, historical downloads and unavailable access logs have not been exhaustively established. Do not reuse any exposed key. No evidence establishes production TLS key exposure. Cloud-provider internals, other macOS software and vendored source are not covered by the completed package scans. New public dependency builds and CI results will be recorded after rollout; no backend protocol or gameplay change is intended.
 
@@ -5666,7 +5673,7 @@ TRON's public frontend is static; its configured public multiplayer/AI backend i
 
 These are npm dependency-node counts, including parent packages flagged through vulnerable dependencies. They are not unique vulnerability counts and must not be added together as independent exploits. Python OSV matched certifi 2026.7.22 to two identifiers for the same trust-store issue. No match for the other 36 queried packages is not proof that they are secure.
 
-Saved evidence: [inventory and lock hashes](evidence/inventory.json), [TRON npm](evidence/tron-npm-audit.json), [Max npm](evidence/max-npm-audit.json), [crawler npm](evidence/crawler-npm-audit.json), [Postcard npm](evidence/postcard-npm-audit.json), [legacy BIT npm](evidence/bit-npm-audit.json), [Python query](evidence/python-osv-query.json), and [Python results](evidence/python-osv-result.json). npm audit returned nonzero because it found vulnerabilities, not because the registry checks failed. Reports describe the review date; rerun them before patch selection.
+Saved evidence: [inventory and lock hashes](security/evidence/inventory.json), [TRON npm](security/evidence/tron-npm-audit.json), [Max npm](security/evidence/max-npm-audit.json), [crawler npm](security/evidence/crawler-npm-audit.json), [Postcard npm](security/evidence/postcard-npm-audit.json), [legacy BIT npm](security/evidence/bit-npm-audit.json), [Python query](security/evidence/python-osv-query.json), and [Python results](security/evidence/python-osv-result.json). npm audit returned nonzero because it found vulnerabilities, not because the registry checks failed. Reports describe the review date; rerun them before patch selection.
 
 ## P0 — Remove private keys from published artifacts
 
@@ -5752,7 +5759,7 @@ No current audit match was reported for TRON's Three.js, Rapier, Transformers.js
 ---
 
 <!-- Page: sounds -->
-Source: /sounds/
+Source: sounds/
 
 # Sound library
 
@@ -5760,7 +5767,7 @@ Source: /sounds/
 
 Reviewed 2026-09-14. Personal-use resource shelf; retain attribution and source history; candidates are not automatically installed in gameplay.
 
-[Game sound study](../../audio.html) · [Machine-readable catalog](catalog.json)
+[Game sound study](audio.html) · [Machine-readable catalog](sounds/catalog.json)
 
 Start with the Syna-Max Recognizer and derezz recreations. Four public HQ MP3 previews are saved locally; full original downloads use the creator’s Freesound pages. The shelf also retains current game sounds, cleanup experiments, six stock-effect leads, and two complete vendor metadata catalogs. Auditory comparison is pending; file verification is not a claim of film fidelity.
 
@@ -5770,7 +5777,7 @@ The user rejected the synthesized Recognizer and background ambience. Gameplay a
 
 ## New light cycle engine — October 29
 
-The game uses the user's light cycle sfx.mp4 34–35-second selection for world and cabin engine sound. A steady inner waveform grain (34.425–34.775) is looped with a 50 ms overlap and circular level smoothing, preserving the recording rather than resynthesizing its spectrum. In-game pitch follows actual speed multipliers; player audio excludes camera Doppler. Audition it on the [sound study](../../audio.html). Mixed soundtrack, no source-isolation or listening-approval claim. Source/timecodes/processing and hash are recorded in cycle-source.json. Older engine listings below remain historical.
+The game uses the user's light cycle sfx.mp4 34–35-second selection for world and cabin engine sound. A steady inner waveform grain (34.425–34.775) is looped with a 50 ms overlap and circular level smoothing, preserving the recording rather than resynthesizing its spectrum. In-game pitch follows actual speed multipliers; player audio excludes camera Doppler. Audition it on the [sound study](audio.html). Mixed soundtrack, no source-isolation or listening-approval claim. Source/timecodes/processing and hash are recorded in cycle-source.json. Older engine listings below remain historical.
 
 ## CycleInteriorSound1 engine — November 4
 
@@ -5786,7 +5793,7 @@ Synthesized recreation of the 1982 Recognizer; creator describes 3xOSC plus flan
 
 <audio controls preload="none" aria-label="Recognizer — Syna-Max" src="previews/syna-max-69757.mp3"></audio>
 
-[Open audio file](previews/syna-max-69757.mp3)
+[Open audio file](sounds/previews/syna-max-69757.mp3)
 
 [Source](https://freesound.org/people/Syna-Max/sounds/69757/) · Syna-Max · [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
 
@@ -5800,7 +5807,7 @@ Recreated 1982 derezz effects; audition individual events as alternatives to mix
 
 <audio controls preload="none" aria-label="Derezz — Syna-Max" src="previews/syna-max-69966.mp3"></audio>
 
-[Open audio file](previews/syna-max-69966.mp3)
+[Open audio file](sounds/previews/syna-max-69966.mp3)
 
 [Source](https://freesound.org/people/Syna-Max/sounds/69966/) · Syna-Max · [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
 
@@ -5814,7 +5821,7 @@ Recreated original-film lightcycle; retained for possible later vehicle experime
 
 <audio controls preload="none" aria-label="Lightcycle — Syna-Max" src="previews/syna-max-69764.mp3"></audio>
 
-[Open audio file](previews/syna-max-69764.mp3)
+[Open audio file](sounds/previews/syna-max-69764.mp3)
 
 [Source](https://freesound.org/people/Syna-Max/sounds/69764/) · Syna-Max · [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
 
@@ -5828,7 +5835,7 @@ Original futuristic ambience in the same pack; not claimed to be a specific movi
 
 <audio controls preload="none" aria-label="Synth ambience — Syna-Max" src="previews/syna-max-69967.mp3"></audio>
 
-[Open audio file](previews/syna-max-69967.mp3)
+[Open audio file](sounds/previews/syna-max-69967.mp3)
 
 [Source](https://freesound.org/people/Syna-Max/sounds/69967/) · Syna-Max · [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
 
@@ -5844,7 +5851,7 @@ Video time 10.750s; 0.580s prepared audio. Mixed film soundtrack; may include sc
 
 <audio controls preload="none" aria-label="Tank Drive" src="../../audio/tank-drive.wav"></audio>
 
-[Open audio file](../../audio/tank-drive.wav)
+[Open audio file](audio/tank-drive.wav)
 
 [Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5856,7 +5863,7 @@ Video time 124.000s; 1.880s prepared audio. Mixed film soundtrack; may include s
 
 <audio controls preload="none" aria-label="Recognizer Flight" src="../../audio/recognizer-flight.wav"></audio>
 
-[Open audio file](../../audio/recognizer-flight.wav)
+[Open audio file](audio/recognizer-flight.wav)
 
 [Source](../references/videos/1982 tron clu scene.m4a) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5868,7 +5875,7 @@ Video time 126.200s; 2.080s prepared audio. Mixed film soundtrack; may include s
 
 <audio controls preload="none" aria-label="Recognizer Approach" src="../../audio/recognizer-approach.wav"></audio>
 
-[Open audio file](../../audio/recognizer-approach.wav)
+[Open audio file](audio/recognizer-approach.wav)
 
 [Source](../references/videos/1982 tron clu scene.m4a) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5880,9 +5887,9 @@ User-supplied clue fire.mp3. Used unchanged at its original pitch; decoded durin
 
 <audio controls preload="none" aria-label="CLU cannon — supplied fire clip" src="../references/sounds/clue%20fire.mp3"></audio>
 
-[Open audio file](../references/sounds/clue%20fire.mp3)
+[Open audio file](references/sounds/clue%20fire.mp3)
 
-[Source](../references/sounds/clue%20fire.mp3) · User-supplied clip; original sound creator not identified · User-supplied reference for this project; redistribution rights not established
+[Source](references/sounds/clue%20fire.mp3) · User-supplied clip; original sound creator not identified · User-supplied reference for this project; redistribution rights not established
 
 ### Cannon
 
@@ -5892,7 +5899,7 @@ Video time 121.380s; 0.380s prepared audio. Mixed film soundtrack; may include s
 
 <audio controls preload="none" aria-label="Cannon" src="../../audio/cannon.wav"></audio>
 
-[Open audio file](../../audio/cannon.wav)
+[Open audio file](audio/cannon.wav)
 
 [Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5904,7 +5911,7 @@ Video time 107.840s; 0.850s prepared audio. Mixed film soundtrack; may include s
 
 <audio controls preload="none" aria-label="Recognizer Explosion" src="../../audio/recognizer-explosion.wav"></audio>
 
-[Open audio file](../../audio/recognizer-explosion.wav)
+[Open audio file](audio/recognizer-explosion.wav)
 
 [Source](../references/videos/1982 tron clu scene.m4a) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5916,7 +5923,7 @@ Video time 0.885s; 0.060s prepared audio. Mixed film soundtrack; may include sco
 
 <audio controls preload="none" aria-label="Terminal Key 1" src="../../audio/terminal-key-1.wav"></audio>
 
-[Open audio file](../../audio/terminal-key-1.wav)
+[Open audio file](audio/terminal-key-1.wav)
 
 [Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5928,7 +5935,7 @@ Video time 1.395s; 0.060s prepared audio. Mixed film soundtrack; may include sco
 
 <audio controls preload="none" aria-label="Terminal Key 2" src="../../audio/terminal-key-2.wav"></audio>
 
-[Open audio file](../../audio/terminal-key-2.wav)
+[Open audio file](audio/terminal-key-2.wav)
 
 [Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5940,7 +5947,7 @@ Video time 0.995s; 0.060s prepared audio. Mixed film soundtrack; may include sco
 
 <audio controls preload="none" aria-label="Terminal Key 3" src="../../audio/terminal-key-3.wav"></audio>
 
-[Open audio file](../../audio/terminal-key-3.wav)
+[Open audio file](audio/terminal-key-3.wav)
 
 [Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5952,7 +5959,7 @@ Video time 1.585s; 0.060s prepared audio. Mixed film soundtrack; may include sco
 
 <audio controls preload="none" aria-label="Terminal Key 4" src="../../audio/terminal-key-4.wav"></audio>
 
-[Open audio file](../../audio/terminal-key-4.wav)
+[Open audio file](audio/terminal-key-4.wav)
 
 [Source](../references/videos/1982 tron clu scene.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
@@ -5964,7 +5971,7 @@ Original 0.48-second stereo pressure thump, saturated electrical crack and falli
 
 <audio controls preload="none" aria-label="Recognizer armor hit" src="../../audio/recognizer-hit.wav"></audio>
 
-[Open audio file](../../audio/recognizer-hit.wav)
+[Open audio file](audio/recognizer-hit.wav)
 
 [Source](https://github.com/stevedekorte/TRON/blob/main/src/audio/recognizer-hit.js) · Project synthesis · Original project sound
 
@@ -5976,9 +5983,9 @@ Original 1.65-second low shock, electrical rupture, noise blast and scattered in
 
 <audio controls preload="none" aria-label="Tank destruction — layered electronic blast" src="../../audio/tank-explosion.wav"></audio>
 
-[Open audio file](../../audio/tank-explosion.wav)
+[Open audio file](audio/tank-explosion.wav)
 
-[Source](../../src/audio/tank-explosion.js) · Project synthesis · Original project sound
+[Source](src/audio/tank-explosion.js) · Project synthesis · Original project sound
 
 ### Carrier — steady machinery drone
 
@@ -5988,9 +5995,9 @@ Synthesized 16-second stereo loop: stable bass harmonics and quiet diffuse machi
 
 <audio controls preload="none" aria-label="Carrier — steady machinery drone" src="../../audio/carrier-drone.wav"></audio>
 
-[Open audio file](../../audio/carrier-drone.wav)
+[Open audio file](audio/carrier-drone.wav)
 
-[Source](undefined) · Project synthesis · Project-generated audio
+[Source](sounds/undefined) · Project synthesis · Project-generated audio
 
 ### Data transfer ring — forming
 
@@ -6000,9 +6007,9 @@ Sark and MCP.mp4, 52.75–54.25 s. Filtered mixed soundtrack, stretched to about
 
 <audio controls preload="none" aria-label="Data transfer ring — forming" src="../../audio/data-ring-close.wav"></audio>
 
-[Open audio file](../../audio/data-ring-close.wav)
+[Open audio file](audio/data-ring-close.wav)
 
-[Source](../references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
+[Source](references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
 
 ### Data transfer ring — opening
 
@@ -6012,9 +6019,9 @@ Sark and MCP.mp4, 52.75–54.25 s. Filtered mixed soundtrack, stretched to about
 
 <audio controls preload="none" aria-label="Data transfer ring — opening" src="../../audio/data-ring-open.wav"></audio>
 
-[Open audio file](../../audio/data-ring-open.wav)
+[Open audio file](audio/data-ring-open.wav)
 
-[Source](../references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
+[Source](references/videos/Sark%20and%20MCP.mp4) · TRON (1982) film soundtrack / Disney · User-supplied film reference; unofficial personal fan project
 
 ### Light cycle startup
 
@@ -6024,9 +6031,9 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 <audio controls preload="none" aria-label="Light cycle startup" src="../../public/assets/audio/cycle-startup.wav"></audio>
 
-[Open audio file](../../public/assets/audio/cycle-startup.wav)
+[Open audio file](public/assets/audio/cycle-startup.wav)
 
-[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+[Source](references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
 ### Light cycle launch
 
@@ -6036,9 +6043,9 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 <audio controls preload="none" aria-label="Light cycle launch" src="../../public/assets/audio/cycle-launch.wav"></audio>
 
-[Open audio file](../../public/assets/audio/cycle-launch.wav)
+[Open audio file](public/assets/audio/cycle-launch.wav)
 
-[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+[Source](references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
 ### Light cycle driving loop
 
@@ -6048,9 +6055,9 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 <audio controls preload="none" aria-label="Light cycle driving loop" src="../../public/assets/audio/cycle-drive.wav"></audio>
 
-[Open audio file](../../public/assets/audio/cycle-drive.wav)
+[Open audio file](public/assets/audio/cycle-drive.wav)
 
-[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+[Source](references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
 ### Light cycle turn
 
@@ -6060,9 +6067,9 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 <audio controls preload="none" aria-label="Light cycle turn" src="../../public/assets/audio/cycle-turn.wav"></audio>
 
-[Open audio file](../../public/assets/audio/cycle-turn.wav)
+[Open audio file](public/assets/audio/cycle-turn.wav)
 
-[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+[Source](references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
 ### Light cycle explosion
 
@@ -6072,9 +6079,9 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 <audio controls preload="none" aria-label="Light cycle explosion" src="../../public/assets/audio/cycle-explosion.wav"></audio>
 
-[Open audio file](../../public/assets/audio/cycle-explosion.wav)
+[Open audio file](public/assets/audio/cycle-explosion.wav)
 
-[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+[Source](references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
 ### Light cycle trail deactivation
 
@@ -6084,9 +6091,9 @@ Extracted from the supplied TRON light cycles.mp4 using scripts/extract-cycle-sf
 
 <audio controls preload="none" aria-label="Light cycle trail deactivation" src="../../public/assets/audio/cycle-wall-down.wav"></audio>
 
-[Open audio file](../../public/assets/audio/cycle-wall-down.wav)
+[Open audio file](public/assets/audio/cycle-wall-down.wav)
 
-[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+[Source](references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
 ### Light cycle player cabin loop
 
@@ -6096,9 +6103,9 @@ Restored film waveform after the synthesized drone was rejected as harsh and irr
 
 <audio controls preload="none" aria-label="Light cycle player cabin loop" src="../../public/assets/audio/cycle-drive-cabin.wav"></audio>
 
-[Open audio file](../../public/assets/audio/cycle-drive-cabin.wav)
+[Open audio file](public/assets/audio/cycle-drive-cabin.wav)
 
-[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+[Source](references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
 ### Light cycle materialization
 
@@ -6108,9 +6115,9 @@ Single materialization beat from 26.7–27.4 seconds in the supplied film clip; 
 
 <audio controls preload="none" aria-label="Light cycle materialization" src="../../public/assets/audio/cycle-materialize.wav"></audio>
 
-[Open audio file](../../public/assets/audio/cycle-materialize.wav)
+[Open audio file](public/assets/audio/cycle-materialize.wav)
 
-[Source](../references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
+[Source](references/videos/TRON%20light%20cycles.mp4) · TRON (1982), Walt Disney Productions · Film reference; no redistribution license supplied
 
 ## Experiments
 
@@ -6122,9 +6129,9 @@ Carrier and solar sailer video, 116.2–120.2 seconds; filtered and looped to 3.
 
 <audio controls preload="none" aria-label="Carrier rumble — archived film candidate" src="../../audio/carrier-rumble.wav"></audio>
 
-[Open audio file](../../audio/carrier-rumble.wav)
+[Open audio file](audio/carrier-rumble.wav)
 
-[Source](../references/videos/carrier%20and%20solar%20sailer.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
+[Source](references/videos/carrier%20and%20solar%20sailer.mp4) · TRON (1982) film soundtrack; local edit · User-supplied film reference; personal project
 
 ### Explosion cleanup — original
 
@@ -6134,9 +6141,9 @@ Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; strong
 
 <audio controls preload="none" aria-label="Explosion cleanup — original" src="../../audio/studies/recognizer-explosion-original.wav"></audio>
 
-[Open audio file](../../audio/studies/recognizer-explosion-original.wav)
+[Open audio file](audio/studies/recognizer-explosion-original.wav)
 
-[Source](../references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
+[Source](references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
 
 ### Explosion cleanup — balanced
 
@@ -6146,9 +6153,9 @@ Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; strong
 
 <audio controls preload="none" aria-label="Explosion cleanup — balanced" src="../../audio/studies/recognizer-explosion-balanced.wav"></audio>
 
-[Open audio file](../../audio/studies/recognizer-explosion-balanced.wav)
+[Open audio file](audio/studies/recognizer-explosion-balanced.wav)
 
-[Source](../references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
+[Source](references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
 
 ### Explosion cleanup — strong
 
@@ -6158,9 +6165,9 @@ Supplied short edit aligned at 113.207s. Shared stereo tonal suppression; strong
 
 <audio controls preload="none" aria-label="Explosion cleanup — strong" src="../../audio/studies/recognizer-explosion-strong.wav"></audio>
 
-[Open audio file](../../audio/studies/recognizer-explosion-strong.wav)
+[Open audio file](audio/studies/recognizer-explosion-strong.wav)
 
-[Source](../references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
+[Source](references/sounds/Recognizer%20Explosion.m4a) · Film soundtrack; project processing · User-supplied film reference; personal project
 
 ## Stock-library leads
 
@@ -6234,7 +6241,7 @@ General Frank Serafine collection, not a verified original TRON stems release. P
 
 [Source](https://sound-ideas.com/products/sci-fi-i-sound-effects-library-by-serafine) · Frank Serafine / Sound Ideas · Commercial library; no purchase made
 
-[Local catalog: 420 rows](catalogs/serafine-scifi-i.csv) · [Publisher CSV](https://portal.sound-ideas.com/CSVexport/product=476) · [Publisher audition page](https://soundideas.sourceaudio.com/album/3304227)
+[Local catalog: 420 rows](sounds/catalogs/serafine-scifi-i.csv) · [Publisher CSV](https://portal.sound-ideas.com/CSVexport/product=476) · [Publisher audition page](https://soundideas.sourceaudio.com/album/3304227)
 
 ### Serafine Sci-Fi II
 
@@ -6244,7 +6251,7 @@ General Frank Serafine collection, not a verified original TRON stems release. P
 
 [Source](https://sound-ideas.com/products/sci-fi-ii-sound-effects-library-by-serafine) · Frank Serafine / Sound Ideas · Commercial library; no purchase made
 
-[Local catalog: 1028 rows](catalogs/serafine-scifi-ii.csv) · [Publisher CSV](https://portal.sound-ideas.com/CSVexport/product=477) · [Publisher audition page](https://soundideas.sourceaudio.com/album/3304306)
+[Local catalog: 1028 rows](sounds/catalogs/serafine-scifi-ii.csv) · [Publisher CSV](https://portal.sound-ideas.com/CSVexport/product=477) · [Publisher audition page](https://soundideas.sourceaudio.com/album/3304306)
 
 ## Film-derived candidates
 
@@ -6256,9 +6263,9 @@ Second half of the original excerpt: 1.5 seconds from 2:38.5–2:40, high-pass 7
 
 <audio controls preload="none" aria-label="Carrier derezz — film excerpt" src="../../audio/carrier-derez.wav"></audio>
 
-[Open audio file](../../audio/carrier-derez.wav)
+[Open audio file](audio/carrier-derez.wav)
 
-[Source](../references/videos/Carrier%20derezed.mp4) · TRON (1982) film soundtrack; user-supplied reference · Film-derived reference; no standalone redistribution license supplied
+[Source](references/videos/Carrier%20derezed.mp4) · TRON (1982) film soundtrack; user-supplied reference · Film-derived reference; no standalone redistribution license supplied
 
 ### Carrier materialization — loop candidate
 
@@ -6268,9 +6275,9 @@ Second half of the original excerpt: 1.5 seconds from 2:38.5–2:40, high-pass 7
 
 <audio controls preload="none" aria-label="Carrier materialization — loop candidate" src="../../audio/carrier-derez-loop.wav"></audio>
 
-[Open audio file](../../audio/carrier-derez-loop.wav)
+[Open audio file](audio/carrier-derez-loop.wav)
 
-[Source](../references/videos/Carrier%20derezed.mp4) · TRON (1982) film soundtrack; user-supplied reference · Film-derived reference; no standalone redistribution license supplied
+[Source](references/videos/Carrier%20derezed.mp4) · TRON (1982) film soundtrack; user-supplied reference · Film-derived reference; no standalone redistribution license supplied
 
 ## Next auditions
 
@@ -6285,7 +6292,7 @@ The Serafine collections provide further design material, but no exact Recognize
 ---
 
 <!-- Page: validation -->
-Source: /validation/
+Source: validation/
 
 # Validation
 

@@ -3020,3 +3020,8 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Browser tests launch Chrome with `--mute-audio`; new tests also mute Firefox and WebKit (`tests/browser/silent.mjs`).
 - [x] New browser checks: `tests/browser/context-restore.mjs`, `tests/browser/pov-engines.mjs`, `tests/browser/platform-smoke.mjs`, `tests/browser/raycast-study.mjs` (the deployed analytic study page compiles every variant on M5 in Chrome, WebKit and Firefox; it needed no change).
 - Not verified on real hardware: Windows (Direct3D), Android (Adreno/Mali), iPhone/iPad, M1–M4 Macs, Intel/AMD GPUs. Mobile results come from WebKit and Chrome device emulation on the M5. Validation: `docs/validation/_index.md`, November 19.
+
+## Multiplayer new match when no human is alive — November 19
+
+- [x] In multiplayer, any connected human (seated or waiting in the queue) can press Return (or tap NEW MATCH) to start a new match once no seated human's cycle is alive. A sole connected human can still restart at any time. One rule, `restartAllowed` in `shared/multiplayer/room.js`, drives the server authority, the client request, the `RETURN / NEW MATCH` prompt and the touch button. AI cycles still racing do not block it; a living human always does.
+- Validation: `npm test` 723 pass (new room and shared-rule tests in `tests/unit/multiplayer.test.js`). `node tests/browser/multiplayer-restart.mjs` passes against the dev server (one rendered client plus one wire client): Return is ignored while a human cycle is alive; after both crash, the prompt appears and Return starts the next round. `node tests/browser/multiplayer-browser.mjs` passes. The production Worker hosts the room, so it is deployed before the static client.
