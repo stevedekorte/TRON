@@ -1,7 +1,7 @@
 import {LIGHT_CYCLES as C,cycleFraction} from './light-cycles.js';
 import {ARENA_WALL} from './arena-breaches.js';
 
-export const CYCLE_TRAIL_LIMIT=Object.freeze({lengthMeters:8*ARENA_WALL.innerMeters});
+export const CYCLE_TRAIL_LIMIT=Object.freeze({lengthMeters:16*ARENA_WALL.innerMeters});
 export const cycleTrailLength=t=>Math.hypot(t.x2-t.x1,t.z2-t.z1)*C.cellMeters;
 export function cycleTrailHeadTrim(r,b,fraction=cycleFraction(r,b)){
  if(!b.alive||b.escaped)return 0;

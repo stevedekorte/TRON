@@ -16,9 +16,9 @@ try{
   const r=__tron.state.cycleRace;r.arenaPaused=true;r.occupied.fill(0);r.crashes=[];
   const id=r.playerId,b=r.cycles[id];
   for(const bike of r.cycles)bike.segment=-1;
-  const points=[[-80,-80],[80,-80],[80,80],[-80,80],[-80,-70],[70,-70],[70,50]];
+  const points=[[-80,-80],[80,-80],[80,80],[-80,80],[-80,-70],[70,-70],[70,70],[-70,70],[-70,-60],[60,-60],[60,60],[-60,60],[-60,-50],[50,-50],[50,30]];
   r.trails=points.slice(1).map((p,i)=>({bikeId:id,team:0,x1:points[i][0],z1:points[i][1],x2:p[0],z2:p[1]}));
-  Object.assign(b,{x:70,previousX:70,z:50,previousZ:49,dir:2,progress:1,segment:5});
+  Object.assign(b,{x:50,previousX:50,z:30,previousZ:29,dir:2,progress:1,segment:13});
   trimCycleTrails(r);
   const root=new THREE.Group(),walls=new LightCycleWalls(root);walls.update(r,1);
   let length=0;for(const mesh of walls.meshes)for(let i=0;i<mesh.count;i++)length+=mesh.geometry.attributes.trailDistance.getX(i);
@@ -29,5 +29,5 @@ try{
  assert(Math.abs(result.length-result.limit)<.001,JSON.stringify(result));
  await page.keyboard.press('v');await page.waitForTimeout(1500);
  await page.screenshot({path:'test-results/cycle-trail-limit.png'});
- assert.deepEqual(errors,[]);console.log('Rendered trail length matches inner perimeter; Chrome has no page errors.',result);
+ assert.deepEqual(errors,[]);console.log('Rendered trail length matches 16x inner width; Chrome has no page errors.',result);
 }finally{await browser.close();}

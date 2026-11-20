@@ -107,12 +107,12 @@ test('cycle explosions follow film cadence and reset without allocating new effe
  disposeSceneResources(root);
 });
 
-test('trail length is the inner perimeter; oldest walls and collision cells expire together',async()=>{
+test('trail length is 16 inner arena widths; oldest walls and collision cells expire together',async()=>{
  const {trimCycleTrails}=await import('../../shared/simulation/cycle-trails.js');
  const {CYCLE_TRAIL_LIMIT,cycleTrailLength,cycleTrailHeadTrim}=await import('../../shared/simulation/config/cycle-trails.js');
  const r=race();r.phase='racing';r.occupied.fill(0);
- const b=r.cycles[0];Object.assign(b,{progress:.5,x:70,z:70,segment:5});
- const points=[[-80,-80],[80,-80],[80,80],[-80,80],[-80,-70],[70,-70],[70,70]];
+ const b=r.cycles[0];Object.assign(b,{progress:.5,x:50,z:50,segment:13});
+ const points=[[-80,-80],[80,-80],[80,80],[-80,80],[-80,-70],[70,-70],[70,70],[-70,70],[-70,-60],[60,-60],[60,60],[-60,60],[-60,-50],[50,-50],[50,50]];
  r.trails=points.slice(1).map((p,i)=>({bikeId:0,team:0,x1:points[i][0],z1:points[i][1],x2:p[0],z2:p[1]}));
  const active=r.trails[b.segment],other={bikeId:1,team:0,x1:0,z1:0,x2:1,z2:0};
  r.trails.splice(1,0,other);b.segment++;r.cycles[1].segment=1;
@@ -120,15 +120,15 @@ test('trail length is the inner perimeter; oldest walls and collision cells expi
  r.occupied[cell(-80,-80)]=1;r.occupied[cell(0,0)]=2;
  trimCycleTrails(r);
  const length=()=>r.trails.filter(t=>t.bikeId===0).reduce((n,t)=>n+cycleTrailLength(t),0)-cycleTrailHeadTrim(r,b);
- assert.equal(CYCLE_TRAIL_LIMIT.lengthMeters,8*ARENA_WALL.innerMeters);
+ assert.equal(CYCLE_TRAIL_LIMIT.lengthMeters,16*ARENA_WALL.innerMeters);
  assert(Math.abs(length()-CYCLE_TRAIL_LIMIT.lengthMeters)<1e-8);
  assert.equal(r.occupied[cell(-80,-80)],0);assert.equal(r.occupied[cell(70,0)],1);
  assert.equal(r.occupied[cell(0,0)],2);
  assert.equal(r.trails[b.segment],active);assert.equal(r.trails[r.cycles[1].segment],other);
- const tail=r.trails.find(t=>t.bikeId===0),oldZ=tail.z1;
+ const tail=r.trails.find(t=>t.bikeId===0),oldX=tail.x1,oldZ=tail.z1;
  b.progress=.75;trimCycleTrails(r);
  assert(Math.abs(length()-CYCLE_TRAIL_LIMIT.lengthMeters)<1e-8);
- assert(Math.abs(tail.z1-oldZ-.25)<1e-8);
+ assert(Math.abs(Math.hypot(tail.x1-oldX,tail.z1-oldZ)-.25)<1e-8);
  b.alive=false;trimCycleTrails(r);
  assert(Math.abs(length()-CYCLE_TRAIL_LIMIT.lengthMeters)<1e-8);
 });
