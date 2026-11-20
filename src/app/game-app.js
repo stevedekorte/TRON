@@ -53,6 +53,7 @@ import { config, defaults, GUNNER, AERIAL_ZOOM, FOLLOW_ZOOM } from '../game/conf
 // refusing WebGL for the rest of the page); the page then reloads itself once,
 // back to the terminal with the same program selected.
 const GRAPHICS_RESTORE={timeoutMilliseconds:4000,reloadGuardMilliseconds:60000,reloadKey:'tron.graphicsReload',gameKey:'tron.graphicsReloadGame',retryKey:'tron.graphicsReloadRetries',retryIntervalMilliseconds:5000,maxRetries:6,blockedMessage:'The graphics driver failed and the browser is still blocking graphics for this site. Use the browser\'s reload prompt, or restart the browser.',failureMessage:'The graphics connection was interrupted. Reload to reconnect.'};
+const CYCLE_HALF_GLANCE_FRACTION=.5; // U/O glance as a fraction of the full J/L glance angle (unitless)
 
 export async function createGameApp() {
   const mobileTerminal=isMobileTerminal();
@@ -405,7 +406,7 @@ export async function createGameApp() {
     const cycle=run.playerVehicle==='cycle',road=cycle&&run.cycleRace.cycles[run.cycleRace.playerId].escaped;
     const groups=cycle?[
       ['DRIVING',...(road?['W OR UP / ACCELERATE + TURBO','A/D OR ARROWS / STEER','S OR DOWN / BRAKE / REVERSE']:['A/D OR LEFT/RIGHT / TURN','W OR UP / TURBO','S OR DOWN / BRAKE'])],
-      ['CAMERA','P / FIRST PERSON','J/L / GLANCE','I/K / ZOOM','V / AERIAL'],
+      ['CAMERA','P / FIRST PERSON','J/L / GLANCE','U/O / HALF GLANCE','I/K / ZOOM','V / AERIAL'],
       ['AFTER DEATH','LEFT/RIGHT / FOLLOW CYCLES','ENTER / RESTART'],
       ['RENDERING','SHIFT-R / NORMAL OR POV-RAY CYCLES'],
     ]:[
@@ -576,6 +577,8 @@ export async function createGameApp() {
             'KeyJ',
             'KeyK',
             'KeyL',
+            'KeyU',
+            'KeyO',
           ].includes(event.code)
         )
           keys.add(event.code);
@@ -596,7 +599,8 @@ export async function createGameApp() {
         event.preventDefault();keys.add(key);if(!event.repeat)inputController.queueCycleTurn(['KeyA','ArrowLeft'].includes(key)?-1:1,run.cycleRace?.pendingTurns.length??0);return;
       }
       if(key==='KeyP'){event.preventDefault();if(!event.repeat&&!run.cycleSpectating&&run.cycleRace?.cycles[run.cycleRace.playerId]?.alive){view.cameraRig.cycleFirstPerson=!view.cameraRig.cycleFirstPerson;view.cameraRig.aerial=false;}return;}
-      if(['KeyF','KeyO','KeyX','KeyT','Space'].includes(key)){event.preventDefault();return;}
+      if(['KeyU','KeyO'].includes(key)){event.preventDefault();keys.add(key);return;}
+      if(['KeyF','KeyX','KeyT','Space'].includes(key)){event.preventDefault();return;}
     }
     if (
       !event.repeat &&
@@ -1116,7 +1120,7 @@ export async function createGameApp() {
       rig[field]=Math.max(limits.minScale,Math.min(limits.maxScale,rig[field]*Math.exp(direction*dt*limits.keyboardExponentPerSecond)));
     }
     view.cameraRig.cycleGlanceInput = mode === 'running' && !view.cameraRig.freeCamera.active
-      ? (Number(keys.has('KeyL')) - Number(keys.has('KeyJ'))) || controller.axes.turret || 0 : 0;
+      ? (Number(keys.has('KeyL')) - Number(keys.has('KeyJ'))) || CYCLE_HALF_GLANCE_FRACTION*(Number(keys.has('KeyO')) - Number(keys.has('KeyU'))) || controller.axes.turret || 0 : 0;
     if(mode==='running'&&view.cameraRig.cycleOpening!==null&&(!sound.context||sound.cycleSamplesReady)){
       view.cameraRig.cycleOpening+=dt/CYCLE_OPENING.durationSeconds;
       if(view.cameraRig.cycleOpening>=1+CYCLE_OPENING.formationSeconds/CYCLE_OPENING.durationSeconds){
