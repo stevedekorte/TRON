@@ -6,40 +6,40 @@ const dt=1/60;
 function fixture(){const r=createRun();Object.assign(r,{x:-5000,s:-5000});r.recognizers=[];r.enemyTanks=[];return r;}
 function idle(r,seconds){for(let i=0;i<Math.round(seconds/dt);i++)updateWeapons(r,{},dt);}
 function press(r){updateWeapons(r,{fire:true,firePressed:true},dt);}
-test('Clu starts with all three stored shots charged',()=>{
- assert.equal(fixture().extraShots,3);
+test('Clu starts with all four stored shots charged',()=>{
+ assert.equal(fixture().extraShots,4);
 });
-test('idle recharge adds exactly one stored shot at 5, 10 and 15 seconds',()=>{
- const r=fixture();r.extraShots=0;assert.equal(CLU_WEAPON.reserveRecharge,5);
- for(let count=1;count<=3;count++){
-  idle(r,5-dt);assert.equal(r.extraShots,count-1);
+test('idle recharge adds exactly one stored shot every 3.75 seconds, filling all four in 15',()=>{
+ const r=fixture();r.extraShots=0;assert.equal(CLU_WEAPON.reserveRecharge,3.75);
+ for(let count=1;count<=4;count++){
+  idle(r,3.75-dt);assert.equal(r.extraShots,count-1);
   idle(r,dt);assert.equal(r.extraShots,count);
  }
- idle(r,60);assert.equal(r.extraShots,3);assert.equal(r.shotRest,0);
+ idle(r,60);assert.equal(r.extraShots,4);assert.equal(r.shotRest,0);
 });
-test('three banked extras permit four rapid presses, then normal recharge resumes',()=>{
+test('four banked extras permit five rapid presses, then normal recharge resumes',()=>{
  const r=fixture();idle(r,30);
- for(let i=0;i<4;i++)press(r);
- assert.equal(r.shots,4);assert.equal(r.extraShots,0);
- press(r);assert.equal(r.shots,4);
- idle(r,CLU_WEAPON.recharge);press(r);assert.equal(r.shots,5);
- idle(r,4);assert.equal(r.extraShots,0);idle(r,1);assert.equal(r.extraShots,1);
+ for(let i=0;i<5;i++)press(r);
+ assert.equal(r.shots,5);assert.equal(r.extraShots,0);
+ press(r);assert.equal(r.shots,5);
+ idle(r,CLU_WEAPON.recharge);press(r);assert.equal(r.shots,6);
+ idle(r,3);assert.equal(r.extraShots,0);idle(r,.75);assert.equal(r.extraShots,1);
 });
 test('holding fire preserves extras and normal cadence; a fresh press bypasses cooldown',()=>{
  const r=fixture();idle(r,30);press(r);
  for(let i=0;i<10;i++)updateWeapons(r,{fire:true,firePressed:false},dt);
- assert.equal(r.shots,1);assert.equal(r.extraShots,3);
- press(r);assert.equal(r.shots,2);assert.equal(r.extraShots,2);
+ assert.equal(r.shots,1);assert.equal(r.extraShots,4);
+ press(r);assert.equal(r.shots,2);assert.equal(r.extraShots,3);
  for(let i=0;i<120;i++)updateWeapons(r,{fire:true,firePressed:false},dt);
- assert.equal(r.extraShots,2);assert.equal(r.shots,3);
+ assert.equal(r.extraShots,3);assert.equal(r.shots,3);
 });
 test('firing restarts only the next-shot timer; paused or destroyed tanks do not recharge',()=>{
- const r=fixture();r.extraShots=0;idle(r,9);assert.equal(r.extraShots,1);
- press(r);idle(r,4);assert.equal(r.extraShots,1);
+ const r=fixture();r.extraShots=0;idle(r,7);assert.equal(r.extraShots,1);
+ press(r);idle(r,3);assert.equal(r.extraShots,1);
  const rest=r.shotRest;updateWeapons(r,{},0);assert.equal(r.shotRest,rest);
- idle(r,1);assert.equal(r.extraShots,2);
+ idle(r,.75);assert.equal(r.extraShots,2);
  press(r);press(r);assert.equal(r.extraShots,1);
- idle(r,5);assert.equal(r.extraShots,2);
+ idle(r,3.75);assert.equal(r.extraShots,2);
  r.crushed=true;const shots=r.shots;idle(r,30);press(r);
  assert.equal(r.extraShots,2);assert.equal(r.shots,shots);
 });

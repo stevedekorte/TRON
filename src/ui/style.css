@@ -58,7 +58,7 @@ body.paused #health-fill{animation-play-state:paused}body.entering #clu-health{d
 @media(max-width:800px){.sim-hint{top:120px}}
 
 .shots-indicator{top:104px;z-index:4}
-#shots-meter{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;height:3px}
+#shots-meter{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;height:3px}
 #shots-meter i{background:#91a9c126}
 #shots-meter i::before{content:'';display:block;height:100%;background:#91bcd0;transform-origin:left;transform:scaleX(var(--charge,0))}
 body.entering #clu-shots{display:none}

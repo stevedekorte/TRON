@@ -3067,3 +3067,7 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] Firefox soak against encomterminal.com (build `50c5bad`) with Playwright Firefox 157 headless on Apple M1, random driving keys, muted: Light Cycles 90 s and 300 s, MCP 150 s. No page errors, error screens, context losses or error reports; only shader-compiler and deprecation warnings. The player's Firefox crashes remain unreproduced; we are waiting on real reports.
 - [x] BIT and MCP are hidden from the program menu (`HIDDEN_PROGRAMS` in `src/app/game-app.js`); their buttons stay disabled so arrow navigation skips them. Code is unchanged otherwise. `tests/browser/home-menu-order.mjs` now checks the visible order cycles, multiplayer, CLU, credits, feedback and passes in headless Chrome.
+
+## Four stored CLU shots — November 21
+
+- [x] CLU's stored-shot reserve holds four shots instead of three, with the same 15 s to refill it completely: each slot now recharges in 3.75 s (previously 5 s). The HUD meter has four segments. `npm test` covers startup, the 3.75 s recharge steps, five rapid presses and the timer reset. In Chrome, `node tests/browser/cannon-reserve.mjs` passes: real Space presses spend all four, pausing stops the refill and all four refill naturally in 15 s. That test now clicks CLU directly, because Return starts Light Cycles, the first menu item.
