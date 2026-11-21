@@ -97,6 +97,17 @@ test('buffer follows two exact corners rather than cutting diagonally',()=>{
  assert.deepEqual(sample,saved,'history stays immutable');
 });
 
+test('delayed remote trails keep the expired length from the same snapshot',()=>{
+ // Stripe phase is expired length plus distance from the tail. Mixing a newer expired
+ // length with older trimmed trails would slide every stripe on the wall.
+ const trails=[{bikeId:0,dir:1,x1:2,z1:0,x2:8,z2:0}];
+ const a=bike({x:7,segment:0,expiredTrailMeters:4.8}),b=bike({x:8,segment:0,expiredTrailMeters:9.6});
+ const race={round:1,cycles:[bike({x:9,segment:0,expiredTrailMeters:14.4})],trails:[{bikeId:0,dir:1,x1:3,z1:0,x2:9,z2:0}]};
+ presentRemoteCycles(race,{a:{race:{cycles:[a]}},b:{race:{round:1,phase:'racing',cycles:[b],trails}},fraction:.5},1);
+ assert.equal(race.trails[0].x1,2,'delayed tail');
+ assert.equal(race.cycles[0].expiredTrailMeters,9.6,'expired length matches the delayed trails');
+});
+
 test('playback holds at last confirmed pose on stalls, bounds history and resets for new rounds',()=>{
  const playback=new RemotePlayback();
  for(let i=0;i<200;i++){playback.push(state(i*6),i*50);playback.sample(i*50);}

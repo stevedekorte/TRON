@@ -92,7 +92,8 @@ export function presentRemoteCycles(race,sample,localId){
   if(!upper?.alive)continue;
   const pose=remotePose(lower,upper,b.race.trails,fraction);
   // Keep current authoritative HUD/identity data; only delay spatial presentation.
-  Object.assign(cycle,{x:pose.x,z:pose.z,previousX:pose.x,previousZ:pose.z,dir:pose.dir,progress:1});
+  // The expired length must match the delayed trails, or wall stripes slide once trails are trimmed.
+  Object.assign(cycle,{x:pose.x,z:pose.z,previousX:pose.x,previousZ:pose.z,dir:pose.dir,progress:1,expiredTrailMeters:upper.expiredTrailMeters??0});
   poses.set(cycle.id,pose);
  }
  if(!poses.size)return;
