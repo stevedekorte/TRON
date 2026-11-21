@@ -3078,6 +3078,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Prompted by a Firefox player's report of repeated crashes in both 3D games. Production builds send anonymous reports of uncaught errors, unhandled rejections, error-screen failures and WebGL context losses to `POST /api/errors` on tron-jev, stored in the `tron-error-reports` D1 database. Reports include message, trimmed stack, build commit, host, user agent, GPU, game, mode and renderer quality; no IP or identity. Limits: 5 distinct reports per page load, 20 per client hash per hour, 5000 per day, 90-day retention. `?analytics=off` disables reports. `npm run errors:recent` lists the latest.
 - Validation: `npm test` 728 pass, including Worker route tests against an in-memory SQLite D1 stand-in (validation, trimming, no stored IP, CORS preflight, 403/405/413/415/503, per-client rate limit). End-to-end with a local production build, `wrangler dev` and local D1 in headless Chrome: an uncaught error and a rejection each produced one stored report with build `4e3181e`, game, mode, GPU and quality; a duplicate error was suppressed; an opted-out browser sent none. Firefox has not been tested; the reported Firefox crashes are not reproduced or diagnosed.
 
+## Firefox soak and hidden programs — November 21
+
+- [x] Firefox soak against encomterminal.com (build `50c5bad`) with Playwright Firefox 157 headless on Apple M1, random driving keys, muted: Light Cycles 90 s and 300 s, MCP 150 s. No page errors, error screens, context losses or error reports; only shader-compiler and deprecation warnings. The player's Firefox crashes remain unreproduced; we are waiting on real reports.
+- [x] BIT and MCP are hidden from the program menu (`HIDDEN_PROGRAMS` in `src/app/game-app.js`); their buttons stay disabled so arrow navigation skips them. Code is unchanged otherwise. `tests/browser/home-menu-order.mjs` now checks the visible order cycles, multiplayer, CLU, credits, feedback and passes in headless Chrome.
+
 
 ---
 

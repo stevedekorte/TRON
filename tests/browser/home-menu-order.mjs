@@ -7,12 +7,12 @@ try{
  await page.goto('http://127.0.0.1:5173/');
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-cycles').disabled);
  await page.locator('#start-cycles').waitFor({state:'visible'});
- assert.deepEqual(await page.locator('#game-menu button').evaluateAll(bs=>bs.map(b=>b.dataset.game)),['cycles','space','bit','mcp','credits']);
+ assert.deepEqual(await page.locator('#game-menu button').evaluateAll(bs=>bs.filter(b=>!b.hidden&&b.offsetParent).map(b=>b.dataset.game)),['cycles','multiplayer','space','credits','feedback']);
  const selected=()=>page.locator('#game-menu [aria-pressed="true"]').getAttribute('data-game');
  assert.equal(await selected(),'cycles');
- await page.keyboard.press('ArrowUp');assert.equal(await selected(),'credits');
+ await page.keyboard.press('ArrowUp');assert.equal(await selected(),'feedback');
  await page.keyboard.press('ArrowDown');assert.equal(await selected(),'cycles');
- await page.keyboard.press('ArrowDown');assert.equal(await selected(),'space');
+ await page.keyboard.press('ArrowDown');assert.equal(await selected(),'multiplayer');await page.keyboard.press('ArrowDown');assert.equal(await selected(),'space');await page.keyboard.press('ArrowDown');assert.equal(await selected(),'credits');await page.keyboard.press('ArrowUp');assert.equal(await selected(),'space');await page.keyboard.press('ArrowUp');assert.equal(await selected(),'multiplayer');
  await page.keyboard.press('ArrowUp');assert.equal(await selected(),'cycles');
  await page.keyboard.press('Enter');
  await page.waitForFunction(()=>__tron.state.playerVehicle==='cycle',null,{timeout:60000});

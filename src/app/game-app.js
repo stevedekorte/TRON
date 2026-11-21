@@ -60,6 +60,9 @@ export async function createGameApp() {
   const mobileTerminal=isMobileTerminal();
   // CLU needs a keyboard; MCP is too slow to load on a phone.
   const mobileBlocked=game=>mobileTerminal&&(game==='space'||game==='mcp');
+  // Programs removed from the menu for now; their code stays in place.
+  const HIDDEN_PROGRAMS=new Set(['bit','mcp']);
+  for(const game of HIDDEN_PROGRAMS)document.querySelector(`#game-menu [data-game="${game}"]`).hidden=true;
   document.getElementById('clu-mobile-note').hidden=!mobileTerminal;
   document.getElementById('mcp-mobile-note').hidden=!mobileTerminal;
   document.getElementById('mcp-wip-note').hidden=mobileTerminal;
@@ -1281,8 +1284,8 @@ export async function createGameApp() {
       $('start').disabled = mobileTerminal;
       $('start-cycles').disabled = false;
       $('start-multiplayer').disabled = false;
-      $('start-bit').disabled = false;
-      $('start-mcp').disabled = mobileTerminal;
+      $('start-bit').disabled = HIDDEN_PROGRAMS.has('bit');
+      $('start-mcp').disabled = mobileTerminal||HIDDEN_PROGRAMS.has('mcp');
       $('start-credits').disabled = false;
       $('start-feedback').disabled = false;
       terminal.finish();
