@@ -2,11 +2,11 @@ import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
 
 export class CycleRoster{
  constructor(element){this.element=element;this.signature='';}
- update(race,visible,waiting=0){
+ update(race,visible,waiting=0,observedId=null){
   this.element.hidden=!visible;if(!visible||!race)return;
   const cycles=[...race.cycles].sort((a,b)=>a.team-b.team||a.id-b.id);
   const queueCount=visible?Math.max(0,Math.floor(waiting||0)):0;
-  const signature=queueCount+':'+cycles.map(c=>`${c.id}:${c.team}:${+c.alive}:${!!c.human}:${c.id===race.playerId}:${race.localPlayerId}:${[...(c.wallEliminations??[]),...(c.trapAssists??[]).map(h=>({...h,id:"assist"+h.id}))].map(hit=>`${hit.id}.${hit.team}`).join(",")}`).join('|');
+  const signature=queueCount+':'+observedId+':'+cycles.map(c=>`${c.id}:${c.team}:${+c.alive}:${!!c.human}:${c.id===race.playerId}:${race.localPlayerId}:${[...(c.wallEliminations??[]),...(c.trapAssists??[]).map(h=>({...h,id:"assist"+h.id}))].map(hit=>`${hit.id}.${hit.team}`).join(",")}`).join('|');
   if(signature===this.signature)return;this.signature=signature;
   const groups=new Map();
   for(const cycle of cycles){
@@ -23,6 +23,11 @@ export class CycleRoster{
    const eliminations=cycle.wallEliminations??[],assists=cycle.trapAssists??[];
    const description=label+(eliminations.length?` · ${eliminations.length} enemy trail elimination${eliminations.length===1?'':'s'}`:'')+(assists.length?` · ${assists.length} trap assist${assists.length===1?'':'s'}`:'');
    icon.setAttribute('role','img');icon.setAttribute('aria-label',description);icon.title=description;
+   if(cycle.id===observedId){
+    icon.classList.add('observed');
+    const marker=document.createElement('span');marker.className='cycle-roster-observed';marker.setAttribute('aria-hidden','true');icon.append(marker);
+    icon.setAttribute('aria-label',description+' · WATCHING');icon.title=description+' · WATCHING';
+   }
    if(eliminations.length||assists.length){
     const dots=document.createElement('span');dots.className='cycle-roster-kills';dots.setAttribute('aria-hidden','true');
     for(const hit of [...eliminations,...assists]){

@@ -108,7 +108,9 @@ export class HudPresenter {
     }
     document.body.classList.toggle('playing-cycle',cycleMode);
     document.body.classList.toggle('playing-multiplayer',cycleMode&&!!run.multiplayer);
-    this.cycleRoster.update(race,cycleMode&&!run.arenaWaiting&&rig.cycleOpening===null,run.multiplayer?.unseatedWaiting??0);
+    // Observer mode marks the followed cycle's roster circle; the free camera follows no cycle.
+    const observedCycleId=cycleMode&&run.cycleSpectating&&!rig.freeCamera.active?(run.cycleFollowId??rig.cycleOverview?.trackedId??race?.playerId):null;
+    this.cycleRoster.update(race,cycleMode&&!run.arenaWaiting&&rig.cycleOpening===null,run.multiplayer?.unseatedWaiting??0,observedCycleId);
     const speedNotice=cycleMode&&mode==='running'?gridSpeedNotice(race):null;
     $('cycle-speed-notice').hidden=!speedNotice;
     $('cycle-speed-notice').textContent=speedNotice?.text??'';
