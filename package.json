@@ -17,7 +17,9 @@
     "worker:check": "wrangler deploy --dry-run",
     "worker:deploy": "wrangler deploy",
     "site:build": "VITE_JEV_API_BASE=https://tron-jev.tron-canyon-run.workers.dev npm run build",
-    "site:deploy": "wrangler deploy --config deploy/site/wrangler.jsonc"
+    "site:deploy": "wrangler deploy --config deploy/site/wrangler.jsonc",
+    "errors:migrate": "wrangler d1 migrations apply tron-error-reports --remote",
+    "errors:recent": "wrangler d1 execute tron-error-reports --remote --command \"SELECT id, datetime(received_at/1000, 'unixepoch') AS utc, kind, game, mode, build, substr(user_agent, 1, 60) AS browser, gpu, substr(message, 1, 160) AS message FROM error_reports ORDER BY id DESC LIMIT 25\""
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.20.0",

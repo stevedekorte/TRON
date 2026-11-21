@@ -1,4 +1,6 @@
 import {isMobileTerminal} from './ui/mobile-terminal.js';
+import {installErrorReporter} from './analytics/error-reporter.js';
+installErrorReporter();
 import './pwa/launch.js';
 performance.mark('tron:entry');
 if(isMobileTerminal())document.body.classList.add('mobile-terminal');

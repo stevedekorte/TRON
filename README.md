@@ -118,6 +118,10 @@ The dekorte.com Pages workflow checks out the pinned `fun/TRON` revision using i
 
 The game is also served at the root of https://encomterminal.com (and www) by a static-assets-only Cloudflare Worker named `encomterminal`, configured in `deploy/site/wrangler.jsonc`. It has no server code or bindings and uses custom domains on the Cloudflare-registered `encomterminal.com` zone. Deploy with `npm run site:build && npm run site:deploy`; `site:build` sets the same `VITE_JEV_API_BASE` as the dekorte.com workflow. Build from a clean, committed tree, since `dist` is uploaded as-is. The `tron-jev` Worker's `ALLOWED_ORIGINS` must include both encomterminal.com origins for Jev, MCP and multiplayer to work there. Keep `deploy/site` separate from the root `wrangler.jsonc`, which deploys the API Worker.
 
+### Error reports
+
+Production builds report uncaught errors, unhandled rejections, error-screen failures and graphics-context losses to `POST /api/errors` on the tron-jev Worker (`src/analytics/error-reporter.js`, `workers/jev/errors.js`). Each report has the message, a trimmed stack, build commit, host, browser user agent, GPU string, game, mode and renderer quality. No IP or user identity is stored; a daily-rotating HMAC is used only for rate limits. Browsers opted out with `?analytics=off` send nothing; each page load sends at most 5 distinct reports. Reports go to the `tron-error-reports` D1 database (`ERROR_REPORTS` binding) and are pruned after 90 days. Apply schema changes with `npm run errors:migrate`; list the latest 25 with `npm run errors:recent`. Set `VITE_BUILD_ID` when building from an export without Git history.
+
 ## Isolated Codex and browser tests
 
 Development servers leave the running game intact when source files change.

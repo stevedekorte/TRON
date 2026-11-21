@@ -2,6 +2,7 @@ import { GamepadController } from './gamepad-controller.js';
 import {guardGameKey} from './game-keyboard.js';
 import {yieldStartup} from '../loading/yield-startup.js';
 import {markPlay} from '../analytics/mark-play.js';
+import {reportError,setErrorContext,describeGpu} from '../analytics/error-reporter.js';
 import {PlayTracker} from '../analytics/play-tracker.js';
 import {CycleTouchControls} from '../ui/cycle-touch-controls.js';
 import {isMobileTerminal} from '../ui/mobile-terminal.js';
@@ -143,6 +144,11 @@ export async function createGameApp() {
     onClose:()=>{inputController.clear();if(tuningWasPlaying&&!disposed)resume();},
   }):null;
   const cycleRendererControl=new CycleRendererControl({getView:()=>view,getRun:()=>run,getMode:()=>mode});
+  setErrorContext(()=>{
+    const quality=view?.adaptiveAA?.quality;
+    return {game:selectedGame,mode,gpu:describeGpu(view?.renderer),
+      detail:[run?.playerVehicle,multiplayer?'multiplayer':'',view?`cycles:${view.cycleRendererMode}`:'',quality?`aa:${quality.samples}x${quality.ratio}`:''].filter(Boolean).join(' ')};
+  });
   let arenaLoad=null,solarLoad=null,solarPlaySeconds=0;
   function loadSolarInBackground(){
     if(solarLoad||!SOLAR_SAILER.enabled)return solarLoad;
@@ -354,6 +360,7 @@ export async function createGameApp() {
   }
   function fail(message) {
     if(window.tronRecoverModuleFailure?.(message))return;
+    reportError('failure',message);
     $('error-title').textContent=/MULTIPLAYER/i.test(message)?'MULTIPLAYER UNAVAILABLE':'PROGRAM UNAVAILABLE';
     $('error-message').textContent = /(?:importing a module script failed|failed to fetch dynamically imported module|loading chunk|module script|preload.*(?:css|module))/i.test(message)
       ? 'PROGRAM FILES COULD NOT LOAD. RELOAD TO CHECK FOR AN UPDATE.' : message;
@@ -895,6 +902,7 @@ export async function createGameApp() {
   // lost, or one lost before the world exists, ends in the error screen.
   listen($('game'), 'webglcontextlost', (event) => {
     event.preventDefault();
+    reportError('context-lost','WebGL context lost');
     const pov=cycleRendererControl.noteContextLost();
     if(pov)console.warn('Graphics context lost while POV-Ray cycles were active; switched to the normal cycle renderer.');
     clearTimeout(graphicsRestoreTimer);

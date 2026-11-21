@@ -20,5 +20,6 @@
     "bindings": [{"name": "JEV_BUDGET", "class_name": "JevBudget"}, {"name":"MULTIPLAYER_ARENA", "class_name":"MultiplayerArena"}]
   },
   "migrations": [{"tag": "v1", "new_sqlite_classes": ["JevBudget"]}, {"tag":"v2", "new_sqlite_classes":["MultiplayerArena"]}],
+  "d1_databases": [{"binding": "ERROR_REPORTS", "database_name": "tron-error-reports", "database_id": "0b0900a5-2a2b-4ca5-8499-4d0f3a15131d", "migrations_dir": "workers/jev/migrations"}],
   "observability": {"enabled": false}
 }

@@ -3068,6 +3068,16 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] In observer mode, a small white downward triangle sits above the followed cycle's roster circle and moves with arrow-key follow changes and automatic replacements. It is hidden during play and in the free camera.
 - Validation: `npm test` 724 pass. New `node tests/browser/cycle-roster-observed.mjs` passes in headless Chrome on macOS (no triangle during play; one centered triangle above the followed circle across three follow changes). The existing `tests/browser/cycle-follow-spectator.mjs` failed 3 of 3 runs at the unmodified committed revision (follow-id waits at lines 19 and 28 time out). It is timing-sensitive, predates this change and remains unresolved.
 
+## Stationary wall stripes on trimmed multiplayer trails — November 20
+
+- [x] Keep wall stripes fixed in the world after a trail reaches its maximum length. Delayed remote cycles in multiplayer drew trails from an older snapshot but stripe phase from the newest `expiredTrailMeters`, sliding stripes by each trim. Remote presentation now takes the expired length from the same snapshot as the trails. Solo and the local multiplayer cycle already used matching values.
+- Validation: `npm test` 725 pass; the new playback test fails without the fix. A Node probe of the solo renderer held the stripe world position constant (mod 12 m) across 12 one-cell tail trims. Not yet observed in a live multiplayer match.
+
+## Automatic error reports — November 20
+
+- [x] Prompted by a Firefox player's report of repeated crashes in both 3D games. Production builds send anonymous reports of uncaught errors, unhandled rejections, error-screen failures and WebGL context losses to `POST /api/errors` on tron-jev, stored in the `tron-error-reports` D1 database. Reports include message, trimmed stack, build commit, host, user agent, GPU, game, mode and renderer quality; no IP or identity. Limits: 5 distinct reports per page load, 20 per client hash per hour, 5000 per day, 90-day retention. `?analytics=off` disables reports. `npm run errors:recent` lists the latest.
+- Validation: `npm test` 728 pass, including Worker route tests against an in-memory SQLite D1 stand-in (validation, trimming, no stored IP, CORS preflight, 403/405/413/415/503, per-client rate limit). End-to-end with a local production build, `wrangler dev` and local D1 in headless Chrome: an uncaught error and a rejection each produced one stored report with build `4e3181e`, game, mode, GPU and quality; a duplicate error was suppressed; an opted-out browser sent none. Firefox has not been tested; the reported Firefox crashes are not reproduced or diagnosed.
+
 
 ---
 

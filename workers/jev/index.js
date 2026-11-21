@@ -1,5 +1,6 @@
 export {MultiplayerArena} from './multiplayer.js';
 import {mcpRoute} from './mcp.js';
+import {errorRoute} from './errors.js';
 import {errorBody} from '../../shared/jev-errors.js';
 import {jevQuestion} from '../../shared/jev-protocol.js';
 import {PUBLIC_LIMITS} from './budget.js';
@@ -30,8 +31,9 @@ export function createWorker(fetchImpl=fetch){return {async fetch(request,env,ct
   if(env.MULTIPLAYER_ENABLED!=='true'||!env.MULTIPLAYER_ARENA)return send(503,{error:'Multiplayer unavailable'});
   return env.MULTIPLAYER_ARENA.get(env.MULTIPLAYER_ARENA.idFromName('public-arena-v1')).fetch(request);
  }
- if(!['/api/jev/decision','/api/jev/status','/api/mcp/chat','/api/mcp/status','/api/mcp/voice-status','/api/mcp/speech'].includes(path))return send(404,{error:'Not found'});
+ if(!['/api/jev/decision','/api/jev/status','/api/mcp/chat','/api/mcp/status','/api/mcp/voice-status','/api/mcp/speech','/api/errors'].includes(path))return send(404,{error:'Not found'});
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'86400'}});
+ if(path==='/api/errors')return errorRoute(request,env,ctx,{send,clientHash});
  if(path.startsWith('/api/mcp/'))return mcpRoute(request,env,ctx,{send,boundedJson,clientHash,fetchImpl});
  const configured=env.JEV_ENABLED==='true'&&!!env.TYPESAFE_API_KEY;
  if(path==='/api/jev/status'&&request.method==='GET')return send(200,{configured,model:env.TYPESAFE_MODEL||'jev-latest'});
