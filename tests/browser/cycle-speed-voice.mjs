@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-// Actual game: the arena announcer speaks once at 200% and again at 300%, from the decoded clips.
+// Actual game: the arena announcer speaks at 200% to the rider and at 300% after the rider becomes an observer.
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--autoplay-policy=no-user-gesture-required','--mute-audio']});
 try{
  const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -13,7 +13,10 @@ try{
  await page.waitForFunction(()=>__tron.state.cycleSpeedVoice.playing&&__tron.state.cycleSpeedVoice.sample==='200',null,{timeout:10000});
  await page.waitForFunction(()=>!__tron.state.cycleSpeedVoice.playing,null,{timeout:10000});
  assert.equal(await page.evaluate(()=>__tron.state.cycleSpeedVoice.level),1);
+ // The player is now an observer; the announcer still speaks.
+ await page.evaluate(()=>{const r=__tron.state.cycleRace;r.cycles[r.playerId].alive=false;__tron.place({cycleRace:r});});
+ await page.waitForFunction(()=>__tron.state.cycleSpectating);
  await jump(199.5);
  await page.waitForFunction(()=>__tron.state.cycleSpeedVoice.playing&&__tron.state.cycleSpeedVoice.sample==='300',null,{timeout:10000});
- assert.deepEqual(errors,[]);console.log('Arena speed announcer played the 200% and 300% clips in game.');
+ assert.deepEqual(errors,[]);console.log('Arena speed announcer played the 200% clip to the player and the 300% clip to an observer.');
 }finally{await browser.close();}

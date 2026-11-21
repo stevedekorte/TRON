@@ -13496,6 +13496,70 @@
       "sha256": "1198f810ebb0fc0e0584e620d811e25679ae0b2831864e3f1d7fbd467e885014",
       "deploymentPolicy": "source-only",
       "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-bd04eab4f14b7ff5",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-one-opponent-left.wav",
+      "sourcePath": "public/assets/audio/cycle-one-opponent-left.wav",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-one-opponent-left.wav",
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md",
+        "public/assets/audio/cycle-one-opponent-left-source.json"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 607848,
+      "sha256": "6a54151d57f38d0956e8d560eef996f02b0124a05972d3eeedf422aeebdfc143",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-db0d4a14606a759f",
+      "category": "support",
+      "path": "public/assets/audio/cycle-one-opponent-left-source.json",
+      "sourcePath": "public/assets/audio/cycle-one-opponent-left-source.json",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-one-opponent-left-source.json",
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 1756,
+      "sha256": "3c5c0f252a85e346fb8bac8eae886c0a938a0ad643cf6e99f469252abb32d987",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-f518a448d53fb3bc",
+      "category": "audio",
+      "path": "assets/source/audio/grid-announcer/one-opponent-left-dry.mp3",
+      "sourcePath": "assets/source/audio/grid-announcer/one-opponent-left-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 30137,
+      "sha256": "a0da33ea6bed1b155fd2486d88fb3c79bd36ac052917a5968bfba6b892a8d7bd",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
     }
   ],
   "duplicateContent": [
