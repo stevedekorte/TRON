@@ -3087,6 +3087,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 
 - [x] CLU's stored-shot reserve holds four shots instead of three, with the same 15 s to refill it completely: each slot now recharges in 3.75 s (previously 5 s). The HUD meter has four segments. `npm test` covers startup, the 3.75 s recharge steps, five rapid presses and the timer reset. In Chrome, `node tests/browser/cannon-reserve.mjs` passes: real Space presses spend all four, pausing stops the refill and all four refill naturally in 15 s. That test now clicks CLU directly, because Return starts Light Cycles, the first menu item.
 
+## Observer first person — November 21
+
+- [x] While observing and following a cycle with the arrow keys, P toggles first person from that cycle's cockpit. The cycle's body fades to the faint shell and its cockpit outline shows, as in the player's own first person. Observer first person stays on across follow switches and when the followed cycle dies; it shows the chase view until a living cycle is followed. P does nothing in the arena overview, and returning to the overview turns first person off.
+- Validation: `node tests/browser/cycle-observer-first-person.mjs` passes in headless Chrome. It checks that P is ignored in the overview, the camera reaches the 1.3 m eye height on the followed cycle with the cockpit outline shown, first person persists after switching cycles, and P returns to the chase camera. `cycle-first-person.mjs` and `cycle-roster-observed.mjs` still pass.
+
 
 ---
 

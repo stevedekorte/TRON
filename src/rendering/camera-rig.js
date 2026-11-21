@@ -173,7 +173,7 @@ export class CameraRig {
     if(this.deathCamera.update(this,run,dt,mode))return {tankVisible:false};
     if(this.cycleResultCamera.update(this,run,cycleRace,dt,mode))return {tankVisible:false};
     if(run.playerVehicle==='cycle'){
-      if(run.cycleSpectating){this.cycleFirstPerson=false;this.cycleFirstPersonMix=0;this.cycleVisibility=1;}
+      if(run.cycleSpectating&&run.cycleFollowId==null){this.cycleFirstPerson=false;this.cycleFirstPersonMix=0;this.cycleVisibility=1;}
       if(run.cycleSpectating){
         const watchedId=run.cycleFollowId??cycleRace.playerId;
         const watched=cycleRace.cycles.find(b=>b.id===watchedId);
@@ -328,8 +328,10 @@ export class CameraRig {
       // the wall. The raised anchor and rider eye are both inside the arena.
       if(this.cycleCockpitMix>.01)this.collisionRecovery.active=false;
       constrainCamera(cycleWorld,cycleAnchor,this.camera.position,previousCamera,CAMERA_CLEARANCE.radiusMeters,this.cycleOpening===null&&aerialMix===0&&!cockpitReturn,this.cycleCockpitMix>.01?null:this.collisionRecovery,dt);
-      const firstPerson=this.cycleFirstPerson&&!run.cycleSpectating&&bike?.alive&&this.cycleOpening===null;
-      if(!bike?.alive||run.cycleSpectating)this.cycleFirstPerson=false;
+      // An observer stays in first person across followed-cycle deaths and
+      // switches; the view returns to the chase camera until a live target.
+      const firstPerson=this.cycleFirstPerson&&bike?.alive&&this.cycleOpening===null;
+      if(!bike?.alive&&!run.cycleSpectating)this.cycleFirstPerson=false;
       if(firstPerson!==this.wasCycleFirstPerson){this.cycleFirstPersonAge=0;this.wasCycleFirstPerson=firstPerson;}
       if(mode!=='paused'){
         this.cycleFirstPersonAge+=dt;

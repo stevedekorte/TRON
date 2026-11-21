@@ -608,7 +608,7 @@ export async function createGameApp() {
       if(['KeyA','ArrowLeft','KeyD','ArrowRight'].includes(key)){
         event.preventDefault();keys.add(key);if(!event.repeat)inputController.queueCycleTurn(['KeyA','ArrowLeft'].includes(key)?-1:1,run.cycleRace?.pendingTurns.length??0);return;
       }
-      if(key==='KeyP'){event.preventDefault();if(!event.repeat&&!run.cycleSpectating&&run.cycleRace?.cycles[run.cycleRace.playerId]?.alive){view.cameraRig.cycleFirstPerson=!view.cameraRig.cycleFirstPerson;view.cameraRig.aerial=false;}return;}
+      if(key==='KeyP'){event.preventDefault();const riderId=run.cycleSpectating?run.cycleFollowId:run.cycleRace?.playerId;if(!event.repeat&&riderId!=null&&run.cycleRace?.cycles.find(b=>b.id===riderId)?.alive){view.cameraRig.cycleFirstPerson=!view.cameraRig.cycleFirstPerson;view.cameraRig.aerial=false;}return;}
       if(['KeyU','KeyO'].includes(key)){event.preventDefault();keys.add(key);return;}
       if(['KeyF','KeyX','KeyT','Space'].includes(key)){event.preventDefault();return;}
     }

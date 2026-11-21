@@ -544,7 +544,8 @@ export class View {
     this.cluCannonBolts.update(run.projectiles,this.camera);
     let outlined=false;
     for(const [id,bike] of (this.arena?.userData.cycleRace.bikes??[]).entries()){
-      const mix=run.playerVehicle==='cycle'&&!run.cycleSpectating&&id===cycleRace?.playerId?1-this.cameraRig.cycleVisibility:0;
+      const riderId=run.cycleSpectating?run.cycleFollowId:cycleRace?.playerId;
+      const mix=run.playerVehicle==='cycle'&&riderId!=null&&id===riderId?1-this.cameraRig.cycleVisibility:0;
       bike.userData.cockpitMix=mix;
       if(mix>0){
         // Built on first use from the materialized player cycle; geometry is shared by every seat.
