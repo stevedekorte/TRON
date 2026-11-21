@@ -1,3 +1,4 @@
+import {updateCycleArenaPatrol} from '../simulation/arena-patrol.js';
 import { GamepadController } from './gamepad-controller.js';
 import {guardGameKey} from './game-keyboard.js';
 import {yieldStartup} from '../loading/yield-startup.js';
@@ -55,6 +56,7 @@ import { config, defaults, GUNNER, AERIAL_ZOOM, FOLLOW_ZOOM } from '../game/conf
 // back to the terminal with the same program selected.
 const GRAPHICS_RESTORE={timeoutMilliseconds:4000,reloadGuardMilliseconds:60000,reloadKey:'tron.graphicsReload',gameKey:'tron.graphicsReloadGame',retryKey:'tron.graphicsReloadRetries',retryIntervalMilliseconds:5000,maxRetries:6,blockedMessage:'The graphics driver failed and the browser is still blocking graphics for this site. Use the browser\'s reload prompt, or restart the browser.',failureMessage:'The graphics connection was interrupted. Reload to reconnect.'};
 const CYCLE_HALF_GLANCE_FRACTION=.5; // U/O glance as a fraction of the full J/L glance angle (unitless)
+const MULTIPLAYER_PATROL_MAX_STEP_SECONDS=.1; // cap on one frame of local arena-guard flight in multiplayer (seconds)
 
 export async function createGameApp() {
   const mobileTerminal=isMobileTerminal();
@@ -1146,6 +1148,8 @@ export async function createGameApp() {
     if(multiplayer){
       const command=mode==='running'&&windowFocused&&!document.hidden&&!run.cycleSpectating?inputController.command(run,{mouseLook:false,mouseTarget:null}):{};
       multiplayer.input(command);inputController.consume();session.previous={...run};multiplayer.apply(run);
+      // The server does not simulate Recognizers; keep the arena guard flying locally (visual only).
+      if(mode==='running')updateCycleArenaPatrol(run,Math.min(dt,MULTIPLAYER_PATROL_MAX_STEP_SECONDS));
     }
     if (!multiplayer&&(mode === 'running'||mode==='entering'&&openingTransition)) {
       if (frameTimes.length >= 3600) frameTimes.shift();
