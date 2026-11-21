@@ -3092,6 +3092,12 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] While observing and following a cycle with the arrow keys, P toggles first person from that cycle's cockpit. The cycle's body fades to the faint shell and its cockpit outline shows, as in the player's own first person. Observer first person stays on across follow switches and when the followed cycle dies; it shows the chase view until a living cycle is followed. P does nothing in the arena overview, and returning to the overview turns first person off.
 - Validation: `node tests/browser/cycle-observer-first-person.mjs` passes in headless Chrome. It checks that P is ignored in the overview, the camera reaches the 1.3 m eye height on the followed cycle with the cockpit outline shown, first person persists after switching cycles, and P returns to the chase camera. `cycle-first-person.mjs` and `cycle-roster-observed.mjs` still pass.
 
+## Arena speed announcements — November 21
+
+- [x] The arena announcer says "Arena speed at 200%", "300%" and "400%" when grid speed first reaches each level (100, 200 and 300 s of racing). Everyone in the arena hears each line once per round, including observers, in solo and connected multiplayer. Late joins, muting and pauses never replay missed lines. A milestone that arrives while the illegal-exit line is playing is skipped, and the exit line interrupts a speed line. Mute, home and new rounds stop playback. `src/audio/cycle-speed-voice.js` holds `CYCLE_SPEED_VOICE` (gain 3.4, matching the exit line).
+- [x] Clips were generated with Runway `seed_audio` from the same clean grid-announcer reference as the illegal-exit line, with numbers spoken in words. They get the documented loudspeaker treatment and are loudness-matched to the exit clip (−21.4 LUFS). Dry masters are in `assets/source/audio/arena-speed`, with sidecars in `public/assets/audio/cycle-arena-speed-*-source.json`; all are catalogued with unresolved underlying rights. Spoken wording has not been verified by transcription or listening; the user's listening check is pending.
+- Validation: `npm test` with three new announcer unit tests. In headless Chrome, `node tests/browser/cycle-speed-voice.mjs` passes in game: the decoded 200% and 300% clips play when race time crosses 100 s and 200 s. Production build and asset audit pass.
+
 
 ---
 

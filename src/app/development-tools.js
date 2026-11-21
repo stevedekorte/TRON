@@ -133,6 +133,7 @@ export function createDevelopmentTools({
             z: p.group.position.z,
           })),
         })),
+        cycleSpeedVoice: sound.cycleSpeedVoice?{level:sound.cycleSpeedVoice.level,playing:sound.cycleSpeedVoice.playing,sample:sound.cycleSpeedVoice.voice?.source.buffer===sound.samples['cycle-arena-speed-200']?'200':sound.cycleSpeedVoice.voice?.source.buffer===sound.samples['cycle-arena-speed-300']?'300':sound.cycleSpeedVoice.voice?.source.buffer===sound.samples['cycle-arena-speed-400']?'400':null}:null,
         music: sound.musicDirector.music
           ? {
               transition: sound.musicDirector.musicTransition?.category || null,

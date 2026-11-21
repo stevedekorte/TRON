@@ -1,0 +1,23 @@
+{
+  "script": "Arena speed at 300%.",
+  "request": {
+    "model": "seed_audio",
+    "referenceAudios": [
+      "assets/source/audio/grid-announcer/prepare-transport-elevenlabs-clean.wav"
+    ],
+    "promptText": "Generate a single female voice speaking exactly this transcript, with every word intact: \"Arena speed at three hundred percent.\" Match the female speaking voice timbre, register, accent and precise formal delivery of @Audio1. Brisk, professional 1950s military flight-controller announcement, clear and authoritative without shouting. Clearly articulate ARENA SPEED and THREE HUNDRED PERCENT. Start speaking immediately and finish promptly, roughly two to three seconds. Use the reference only for vocal characteristics; do not say the reference words about transport. Dry clean isolated voice with steady volume. No music, machinery, drone, static, echo, reverb or loudspeaker effects.",
+    "speechRate": 0,
+    "outputFormat": "mp3"
+  },
+  "direction": "Same reference voice as the illegal-exit announcement; number spoken in words.",
+  "task": {
+    "id": "f6d087cb-ed4a-4d58-b8f6-119fd53789dc",
+    "estimatedCost": {
+      "credits": 5
+    }
+  },
+  "source": "assets/source/audio/arena-speed/arena-speed-300-dry.mp3",
+  "processing": "Mono to stereo; 320 Hz highpass, 4300 Hz lowpass, +3 dB at 1600 Hz, 3:1 compression, short reflections at 37/73/113/173/251 ms, subtle 240/480 ms echo; loudness matched to the illegal-exit clip (-21.4 LUFS) with peak limiter; trailing silence trimmed; no time stretching.",
+  "playback": "Everyone in the arena when grid speed first reaches 300% in a round, solo and MP.",
+  "useConstraints": "Generated using a TRON (1982) film voice reference; underlying rights remain with respective owners."
+}

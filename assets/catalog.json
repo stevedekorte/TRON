@@ -13304,6 +13304,198 @@
       "sha256": "39b46079e78c16b44488ce7f2ab0b0e9ab42a01c07c23f8555b680fec5f5266c",
       "deploymentPolicy": "reference-only",
       "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-80a282cf26386bc9",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-arena-speed-200.wav",
+      "sourcePath": "public/assets/audio/cycle-arena-speed-200.wav",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-arena-speed-200.wav",
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md",
+        "public/assets/audio/cycle-arena-speed-200-source.json"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 1064460,
+      "sha256": "1d254e3b41d752acf40d86d9152578b0ecddff5836c97d7c1cfa8bfea78a49c0",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-cc6e32a3b5f0cdda",
+      "category": "support",
+      "path": "public/assets/audio/cycle-arena-speed-200-source.json",
+      "sourcePath": "public/assets/audio/cycle-arena-speed-200-source.json",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-arena-speed-200-source.json",
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 1750,
+      "sha256": "043467878c45c6a97a442ded464983d0b84721c8dca4f879036d66d04f725333",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-56f06b040b3df631",
+      "category": "audio",
+      "path": "assets/source/audio/arena-speed/arena-speed-200-dry.mp3",
+      "sourcePath": "assets/source/audio/arena-speed/arena-speed-200-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 49363,
+      "sha256": "5228a83920725b4900f2c062d737ef596b5a9dd004436060fd779376a7f5ff05",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-120957d1a7d312fd",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-arena-speed-300.wav",
+      "sourcePath": "public/assets/audio/cycle-arena-speed-300.wav",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-arena-speed-300.wav",
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md",
+        "public/assets/audio/cycle-arena-speed-300-source.json"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 934998,
+      "sha256": "9f63285823de9d33451161bfd7771585f832aeb9a924037b2c21c20aa20e55e4",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-598007b4cbecc6ed",
+      "category": "support",
+      "path": "public/assets/audio/cycle-arena-speed-300-source.json",
+      "sourcePath": "public/assets/audio/cycle-arena-speed-300-source.json",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-arena-speed-300-source.json",
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 1754,
+      "sha256": "f14f08d156f849db311057b3c723c3968bef8e22b09217a98082b986fad2494b",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-2b141f61e503eb69",
+      "category": "audio",
+      "path": "assets/source/audio/arena-speed/arena-speed-300-dry.mp3",
+      "sourcePath": "assets/source/audio/arena-speed/arena-speed-300-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 41422,
+      "sha256": "d85c5a36f1bedb52c892e5537c29fd53cd015aa830d527232e67205bef69d232",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-d264f142c8bd6904",
+      "category": "audio",
+      "path": "public/assets/audio/cycle-arena-speed-400.wav",
+      "sourcePath": "public/assets/audio/cycle-arena-speed-400.wav",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-arena-speed-400.wav",
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md",
+        "public/assets/audio/cycle-arena-speed-400-source.json"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 952272,
+      "sha256": "6b16356efac8a17a161a913c8af6654ffc77590ce9639d49b3010e65c5a2fb4d",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-ad3637428bac9523",
+      "category": "support",
+      "path": "public/assets/audio/cycle-arena-speed-400-source.json",
+      "sourcePath": "public/assets/audio/cycle-arena-speed-400-source.json",
+      "legacyPaths": [],
+      "runtimeUrl": "assets/audio/cycle-arena-speed-400-source.json",
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 1752,
+      "sha256": "5666bb58c0a01894a021af9994ee7c748c164036cda487cf4f23dea9e0075626",
+      "deploymentPolicy": "runtime",
+      "unresolvedProvenance": true
+    },
+    {
+      "id": "asset-d251e193f27cc1e9",
+      "category": "audio",
+      "path": "assets/source/audio/arena-speed/arena-speed-400-dry.mp3",
+      "sourcePath": "assets/source/audio/arena-speed/arena-speed-400-dry.mp3",
+      "legacyPaths": [],
+      "runtimeUrl": null,
+      "creditId": "unresolved",
+      "author": null,
+      "sourceUrl": null,
+      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "provenanceRecords": [
+        "docs/assets/_index.md"
+      ],
+      "transformations": "Runway seed_audio generation from the grid-announcer reference; loudspeaker treatment and loudness match documented in the -source.json sidecar.",
+      "conversionCommands": [],
+      "bytes": 41422,
+      "sha256": "1198f810ebb0fc0e0584e620d811e25679ae0b2831864e3f1d7fbd467e885014",
+      "deploymentPolicy": "source-only",
+      "unresolvedProvenance": true
     }
   ],
   "duplicateContent": [

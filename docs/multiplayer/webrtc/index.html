@@ -246,6 +246,11 @@ p code, li code, p tt, li tt {
   border-bottom: 1px solid #ddd;
 }
 
+/* A markdown table column marked {.nowrap} in its header */
+.section-body .colvmn-table-nowrap {
+  white-space: nowrap;
+}
+
 .section-body th {
   font-weight: 600;
   color: #2a2a2a;
@@ -464,6 +469,96 @@ p code, li code, p tt, li tt {
   color: #999;
   margin-top: -8px;
   margin-bottom: 10px;
+}
+
+/* A listing table right after a section's text continues that section: no rule between them */
+.section + .section.listing-table {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* Folder listings as a table (folderLayout: table): the first column stays on one line */
+.listing-table td:first-child {
+  white-space: nowrap;
+}
+
+.listing-table td.listing-title a {
+  font-weight: 500;
+}
+
+/* File tables (fileLayout: table): names wrap; type, size and link stay on one line */
+.file-table td.listing-title {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.file-table td.listing-date {
+  white-space: nowrap;
+}
+
+.file-table td.listing-type, .file-table td.listing-size, .file-table td.listing-action {
+  white-space: nowrap;
+}
+
+.file-table td.listing-size {
+  text-align: right;
+}
+
+/* File cards (ContentFileCards): long file names wrap; images show a thumbnail */
+.file-card h3 {
+  overflow-wrap: anywhere;
+}
+
+.file-card-thumb {
+  display: block;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  margin-bottom: 14px;
+  background: #f2f2ef;
+}
+
+/* Drawings (SVG) are shown whole, not cropped */
+.file-card-thumb.drawing {
+  object-fit: contain;
+  background: #fff;
+}
+
+/* Folder listings: the last card in a partial row draws no divider into the empty space */
+.card-grid.listing > .card:last-child {
+  border-right: none !important;
+}
+
+/* ...and each card draws its own rules, so a partial row is closed off and no
+   line runs over the empty space beside it */
+.card-grid.listing {
+  border-top: none;
+  border-bottom: none;
+}
+
+.card-grid.listing > .card {
+  border-top: none !important;
+  border-bottom: 1px solid #ddd;
+}
+
+/* The top rule is a 1px shadow just above each card: over the first row it is
+   the grid's top line, and below a card it falls on that card's bottom rule,
+   so it never doubles, in any column count or on phones. */
+.card-grid.listing > .card {
+  box-shadow: 0 -1px 0 #ddd;
+}
+
+/* Every card has the same inset on both sides, first and last columns too
+   (one column on phones, flush with the text) */
+.card-grid.listing > .card {
+  padding-left: 30px !important;
+  padding-right: 30px !important;
+}
+@media (max-width: 700px) {
+  .card-grid.listing > .card {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
 }
 
 /* ── Timeline page layout ── */
@@ -999,6 +1094,9 @@ p code, li code, p tt, li tt {
 .colvmn-slideshow {
   margin: 20px 0;
   outline: none;
+  /* So max-height=…cqw is a share of the slideshow's own width: a cap that
+     keeps the same shape at any width (56.3cqw = a 16:9 image's height). */
+  container-type: inline-size;
 }
 .slideshow-frame {
   position: relative;
@@ -1015,6 +1113,7 @@ p code, li code, p tt, li tt {
   grid-area: 1 / 1;
   margin: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   opacity: 0;
@@ -1027,8 +1126,21 @@ p code, li code, p tt, li tt {
 .slideshow-frame .slide img {
   display: block;
   max-width: 100%;
+  /* max-height=… on the slideshow (--slideshow-max-height) caps tall images;
+     width follows, keeping each image's shape. */
+  max-height: var(--slideshow-max-height, none);
+  width: auto;
   height: auto;
+  min-height: 0;
   -webkit-user-drag: none;
+}
+/* An optional caption (the image's markdown title, or "caption" in JSON),
+   under its image and crossfading with it; styled like an image row's. */
+.slideshow-frame .slide figcaption {
+  margin-top: 8px;
+  font-size: 0.85em;
+  opacity: 0.7;
+  text-align: center;
 }
 /* The image's sides: with a mouse, an arrow fades in at each edge while the
    pointer is over the image; on touch screens each half is a tap target. */
@@ -1165,8 +1277,9 @@ p code, li code, p tt, li tt {
    .max-cols-3. layout/Columns.js then splits the sections, in order, into
    .col-set columns, moving whole subsections only; without JavaScript the
    browser's own columns do it (.has-cols without .js-columns). Everything
-   else (header, intro, contents, cards, tables, untitled text, the footer)
-   spans the page. Below 1200px, and in print, the page is one column. */
+   else (header, intro, contents, cards, tables, untitled text, a section
+   holding a table, the footer) spans the page. Below 1200px, and in print,
+   the page is one column. */
 
 /* Wrapping changes which <h2> is the first of its type, so every heading but
    the page's first keeps its top margin. */
@@ -1255,8 +1368,10 @@ p code, li code, p tt, li tt {
   .page.has-cols:not(.js-columns) > .col-group {
     margin-bottom: 30px;
   }
-  .page.has-cols:not(.js-columns) > :not(.header, .hero, .intro, .toc, .col-group) + .col-group {
-    margin-top: 60px;
+  /* The gap above the columns goes below what precedes them (it spans the
+     page), not on the first section, which would push down only the first column. */
+  .page.has-cols:not(.js-columns) > :not(.header, .hero, .intro, .toc, .col-group):has(+ .col-group) {
+    margin-bottom: 60px;
   }
   .page.has-cols:not(.js-columns) > .col-group + :not(.col-group) {
     margin-top: 60px;
