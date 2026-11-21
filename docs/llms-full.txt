@@ -3109,6 +3109,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] The arena-patrol Recognizer hung motionless in multiplayer: the client applies server cycle state each frame but never advanced the local session, the only place the guard flies. The client now steps `updateCycleArenaPatrol` locally after each snapshot, capped at `MULTIPLAYER_PATROL_MAX_STEP_SECONDS` (0.1 s). This is visual only; the server does not simulate Recognizers, so clients' guards are not synchronized. Solo patrol was already working: about 17 m/s around the arena.
 - Validation: `node tests/browser/multiplayer-arena-patrol.mjs` against the Vite multiplayer server in headless Chrome. The guard moved 0.0 m in 5 s before the fix and 84.7 m after.
 
+## Half-step arena speed announcements — November 21
+
+- [x] Added "Arena speed at 150%", "250%" and "350%", so the announcer now speaks at every half step from 150% to 400% (50, 100, 150, 200, 250 and 300 s of racing). The rules are unchanged: everyone in the arena hears each line, once per round, with no backlog. When one frame crosses two milestones, only the higher one plays. The clips were generated and processed like the earlier speed lines. For the 250% clip, Runway's output had a 1.5 s pause and a stray noise after the speech, so the dry master was trimmed to 2.7 s before processing. All six speed clips are matched to −21.4 LUFS. The user's listening check of the three new clips is pending.
+- Validation: updated unit test covers all six milestones in order. `tests/browser/cycle-speed-voice.mjs` and `cycle-opponent-voice.mjs` pass in headless Chrome.
+
 
 ---
 

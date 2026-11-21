@@ -3,8 +3,11 @@ import {gridSpeedAt} from '../../shared/simulation/cycle-speed-ramp.js';
 export const CYCLE_SPEED_VOICE=Object.freeze({
  gain:3.4,
  milestones:Object.freeze([
+  Object.freeze({multiplier:1.5,sample:'cycle-arena-speed-150'}),
   Object.freeze({multiplier:2,sample:'cycle-arena-speed-200'}),
+  Object.freeze({multiplier:2.5,sample:'cycle-arena-speed-250'}),
   Object.freeze({multiplier:3,sample:'cycle-arena-speed-300'}),
+  Object.freeze({multiplier:3.5,sample:'cycle-arena-speed-350'}),
   Object.freeze({multiplier:4,sample:'cycle-arena-speed-400'}),
  ]),
 });

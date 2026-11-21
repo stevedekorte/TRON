@@ -133,7 +133,7 @@ export function createDevelopmentTools({
             z: p.group.position.z,
           })),
         })),
-        cycleSpeedVoice: sound.cycleSpeedVoice?{level:sound.cycleSpeedVoice.level,playing:sound.cycleSpeedVoice.playing,sample:sound.cycleSpeedVoice.voice?.source.buffer===sound.samples['cycle-arena-speed-200']?'200':sound.cycleSpeedVoice.voice?.source.buffer===sound.samples['cycle-arena-speed-300']?'300':sound.cycleSpeedVoice.voice?.source.buffer===sound.samples['cycle-arena-speed-400']?'400':null}:null,
+        cycleSpeedVoice: sound.cycleSpeedVoice?{level:sound.cycleSpeedVoice.level,playing:sound.cycleSpeedVoice.playing,sample:Object.keys(sound.samples).find(k=>k.startsWith('cycle-arena-speed-')&&sound.samples[k]===sound.cycleSpeedVoice.voice?.source.buffer)?.slice('cycle-arena-speed-'.length)??null}:null,
         cycleOpponentVoice: sound.cycleOpponentVoice?{done:sound.cycleOpponentVoice.done,count:sound.cycleOpponentVoice.count,playing:sound.cycleOpponentVoice.playing}:null,
         music: sound.musicDirector.music
           ? {

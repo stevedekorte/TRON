@@ -6,12 +6,12 @@ function setup(){
  const samples=Object.fromEntries(CYCLE_SPEED_VOICE.milestones.map(m=>[m.sample,{name:m.sample}]));
  return {audio:new CycleSpeedVoice(context,{},samples),sources,race:{round:1,phase:'racing',elapsed:0}};
 }
-test('announces 200, 300 and 400 percent once each as the arena speeds up',()=>{
+test('announces every half step from 150 to 400 percent once each as the arena speeds up',()=>{
  const {audio,sources,race}=setup();audio.update(race,true,true);
- for(const t of [50,99.9])race.elapsed=t,audio.update(race,true,true);assert.equal(sources.length,0);
- race.elapsed=100;assert(audio.update(race,true,true));race.elapsed=150;audio.update(race,true,true);
- race.elapsed=200;audio.update(race,true,true);race.elapsed=300;audio.update(race,true,true);race.elapsed=400;audio.update(race,true,true);
- assert.deepEqual(sources.map(s=>s.buffer.name),['cycle-arena-speed-200','cycle-arena-speed-300','cycle-arena-speed-400']);
+ for(const t of [25,49.9])race.elapsed=t,audio.update(race,true,true);assert.equal(sources.length,0);
+ race.elapsed=50;assert(audio.update(race,true,true));race.elapsed=75;audio.update(race,true,true);
+ for(const t of [100,150,200,250,300,400])race.elapsed=t,audio.update(race,true,true);
+ assert.deepEqual(sources.map(s=>s.buffer.name),[150,200,250,300,350,400].map(n=>'cycle-arena-speed-'+n));
 });
 test('joining, muting or being blocked mid-round does not replay missed milestones later',()=>{
  const {audio,sources,race}=setup();race.elapsed=250;audio.update(race,true,true);

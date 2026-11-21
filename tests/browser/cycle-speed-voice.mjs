@@ -12,7 +12,7 @@ try{
  await jump(99.5);
  await page.waitForFunction(()=>__tron.state.cycleSpeedVoice.playing&&__tron.state.cycleSpeedVoice.sample==='200',null,{timeout:10000});
  await page.waitForFunction(()=>!__tron.state.cycleSpeedVoice.playing,null,{timeout:10000});
- assert.equal(await page.evaluate(()=>__tron.state.cycleSpeedVoice.level),1);
+ assert.equal(await page.evaluate(()=>__tron.state.cycleSpeedVoice.level),2,'150% and 200% milestones reached');
  // The player is now an observer; the announcer still speaks.
  await page.evaluate(()=>{const r=__tron.state.cycleRace;r.cycles[r.playerId].alive=false;__tron.place({cycleRace:r});});
  await page.waitForFunction(()=>__tron.state.cycleSpectating);
