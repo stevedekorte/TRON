@@ -65,8 +65,10 @@ export class ArenaHub{
     }
     this.previous=state;
   }
+  // A client that never reports its camera (background tab, slow loading) must not hold the
+  // arena: start without it. Truly dead connections still close via connectionTimeoutSeconds.
   if(this.room.race.cameraStaging&&this.room.race.stagingElapsed>MP.cameraReadyTimeoutSeconds){
-   for(const peer of this.peers.values())if(!this.room.clients.get(peer.id)?.cameraReady)peer.socket.close(1001,'Camera preparation timed out');
+   for(const client of this.room.clients.values())client.cameraReady=true;
   }
   for(const peer of this.peers.values())if(Date.now()-peer.seen>MP.connectionTimeoutSeconds*1000)peer.socket.close(1001,'Connection timed out');
  }

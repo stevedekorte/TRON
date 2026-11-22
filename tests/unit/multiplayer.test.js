@@ -209,3 +209,47 @@ test('MP presentation moves between ticks without applying a future turn early',
  assert.deepEqual(source,sourceBefore,'presentation does not mutate authority');
  now=5000;const stopped=pose();assert.equal(stopped.x,source.x);assert.equal(stopped.z,source.z,'stale state is not extrapolated');
 });
+
+test('an unready camera (background tab) delays the round only briefly and is never disconnected',async()=>{
+ const {ArenaHub}=await import('../../shared/multiplayer/hub.js');
+ function socket(){return {messages:[],listeners:{},send(raw){this.messages.push(JSON.parse(raw));},addEventListener(type,fn){this.listeners[type]=fn;},close(){if(!this.closed){this.closed=true;this.listeners.close?.();}}};}
+ const hub=new ArenaHub(),visible=socket(),hidden=socket();
+ try{
+  hub.add(visible,MP.protocol);hub.add(hidden,MP.protocol);
+  const room=hub.room,[id]=[...room.clients.keys()],client=room.clients.get(id);
+  assert(room.race.cameraStaging);
+  visible.listeners.message({data:JSON.stringify({type:'camera-ready',round:room.race.round,seat:client.seat})});
+  room.step();assert(room.race.cameraStaging,'waits while one camera is unready');
+  room.race.stagingElapsed=MP.cameraReadyTimeoutSeconds+.1;hub.last=performance.now()-20;hub.pump();room.step();
+  assert.equal(room.race.cameraStaging,false,'round starts without the unready client');
+  assert(!visible.closed&&!hidden.closed,'nobody is disconnected');
+  assert.equal(room.clients.size,2);
+ }finally{hub.dispose();}
+});
+
+test('a rider who loses connection mid-round rides on unattended, never holds the arena, and leaves at round end',()=>{
+ const room=new CycleRoom();join(room,2);racing(room);
+ const gone=room.clients.get('u0'),stay=room.clients.get('u1'),bike=room.race.cycles[gone.seat];
+ gone.control={turbo:true,brake:false};
+ room.leave('u0');
+ assert(bike.alive,'cycle is not derezzed on disconnect');assert(gone.disconnected);
+ assert.deepEqual(gone.control,{turbo:false,brake:false});assert(!room.queue.includes('u0'));
+ assert.equal(room.state().clients.find(c=>c.id==='u0').disconnected,true);
+ const before={x:bike.x,z:bike.z,dir:bike.dir},tick=room.tick;
+ for(let i=0;i<30&&bike.alive;i++)room.step();
+ assert(room.tick>tick,'arena keeps running');
+ assert(bike.x!==before.x||bike.z!==before.z||!bike.alive,'cycle carries on');
+ if(bike.alive)assert.equal(bike.dir,before.dir,'no input, no turns');
+ kill(room,stay);
+ assert(restartAllowed(room.race,room.state().clients,'u1'),'an unattended cycle does not block restart');
+ assert(!room.queue.includes('u0'),'disconnected rider is not queued when its cycle crashes');
+ room.nextRound();
+ assert(!room.clients.has('u0'),'removed when the round ends');
+ assert(room.join('u0-again'));assert.notEqual(room.clients.get('u0-again').seat,null,'reconnecting rider joins like a newcomer');
+});
+
+test('disconnecting before the round launches frees the seat immediately',()=>{
+ const room=new CycleRoom();join(room,2);assert(room.race.cameraStaging);
+ const seat=room.clients.get('u0').seat;room.leave('u0');
+ assert(!room.clients.has('u0'));assert(!room.race.cycles[seat]?.human);
+});

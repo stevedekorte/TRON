@@ -9,8 +9,9 @@ import {resetCycleRound,updateCycleRace} from '../simulation/light-cycles.js';
  */
 export function restartAllowed(race,clients,id){
  if(!race?.cycles||!clients.some(c=>c.id===id))return false;
- if(clients.length===1)return true;
- return !clients.some(c=>c.seat!==null&&c.seat!==undefined&&race.cycles[c.seat]?.alive);
+ if(clients.filter(c=>!c.disconnected).length===1)return true;
+ // A disconnected rider's cycle runs on unattended and never blocks a restart.
+ return !clients.some(c=>!c.disconnected&&c.seat!==null&&c.seat!==undefined&&race.cycles[c.seat]?.alive);
 }
 
 // Transport-independent authority. Only this object decides seats, movement and deaths.
@@ -24,7 +25,7 @@ export class CycleRoom{
  random(){this.seed=(Math.imul(this.seed,1664525)+1013904223)>>>0;return this.seed/4294967296;}
  shuffle(values){for(let i=values.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[values[i],values[j]]=[values[j],values[i]];}return values;}
  join(id){
-  if(this.clients.has(id)||this.clients.size>=MP.maxConnections)return false;
+  if(this.clients.has(id)||this.connectedCount()>=MP.maxConnections)return false;
   this.clients.set(id,{id,label:`USER ${++this.serial}`,seat:null,seq:0,ack:0,inputs:[],control:{turbo:false,brake:false},lastInputTick:this.tick,lastTurnTick:-Infinity});
   this.queue.push(id);if(this.race.phase==='countdown'&&this.race.cameraStaging){
    if(this.clients.size>this.race.cycles.length&&this.race.cycles.length<MP.maxPlayers){
@@ -35,9 +36,15 @@ export class CycleRoom{
  leave(id){
   const client=this.clients.get(id);if(!client)return;
   const bike=this.race.cycles[client.seat];
+  this.queue=this.queue.filter(x=>x!==id);
+  if(bike?.alive&&!(this.race.phase==='countdown'&&this.race.cameraStaging)){
+   // Lost connection mid-round: the round never waits. The cycle carries straight on
+   // with no input until it crashes; the rider is removed when the round ends.
+   Object.assign(client,{disconnected:true,cameraReady:true,inputs:[],control:{turbo:false,brake:false}});
+   return;
+  }
   if(bike&&this.race.phase==='countdown'&&this.race.cameraStaging){delete bike.human;delete bike.operator;}
-  else if(bike?.alive){bike.alive=false;this.race.crashes.push({id:bike.id,x:bike.x,z:bike.z,dir:bike.dir,team:bike.team,time:this.race.time});}
-  this.clients.delete(id);this.queue=this.queue.filter(x=>x!==id);
+  this.clients.delete(id);
   if(this.race.phase==='countdown'&&this.race.cameraStaging)this.fillSeats();
  }
  // Humans play together: each one joins the team already holding the most
@@ -60,7 +67,10 @@ export class CycleRoom{
    Object.assign(this.race.cycles[client.seat],{human:true,operator:client.label});
   }
  }
+ connectedCount(){let n=0;for(const c of this.clients.values())if(!c.disconnected)n++;return n;}
  nextRound(){
+  // Riders still disconnected at the end of a round leave; on reconnecting they join the queue.
+  for(const [id,c] of this.clients)if(c.disconnected)this.clients.delete(id);
   const survivors=[...this.clients.values()].filter(c=>c.seat!==null&&this.race.cycles?.[c.seat]?.alive);
   for(const c of this.clients.values()){
    if(!survivors.includes(c)&&!this.queue.includes(c.id))this.queue.push(c.id);
@@ -102,7 +112,7 @@ export class CycleRoom{
   c.inputs.push({...message,at});return true;
  }
  step(){
-  if(!this.clients.size)return;
+  if(!this.connectedCount())return;
   this.tick++;
   if(this.race.phase==='result'){
    this.race.time+=1/MP.tickHz;this.race.remaining-=1/MP.tickHz;
@@ -130,7 +140,7 @@ export class CycleRoom{
   const previousPhase=this.race.phase;
   updateCycleRace(this.race,1/MP.tickHz,0,false,false,{},controls);
   if(previousPhase!=='result'&&this.race.phase==='result'){this.race.remaining=MP.resultSeconds;this.urgentSnapshot=true;}
-  for(const c of this.clients.values())if(c.seat!==null&&!this.race.cycles[c.seat].alive&&!this.queue.includes(c.id))this.queue.push(c.id);
+  for(const c of this.clients.values())if(!c.disconnected&&c.seat!==null&&!this.race.cycles[c.seat].alive&&!this.queue.includes(c.id))this.queue.push(c.id);
   if(this.race.phase==='racing'&&(this.race.elapsed>=MP.maxMatchSeconds||this.race.trails.length>=MP.maxTrails)){
    this.race.phase='result';this.race.winner=null;this.race.remaining=MP.resultSeconds;
   }
@@ -138,7 +148,7 @@ export class CycleRoom{
  state(){
   const {occupied,outerOccupied,pendingTurns,...race}=this.race;
   return structuredClone({type:'state',protocol:MP.protocol,tick:this.tick,race,
-   clients:[...this.clients.values()].map(c=>({id:c.id,label:c.label,seat:c.seat,ack:c.ack,queue:this.queue.indexOf(c.id)+1})),waiting:this.queue.length});
+   clients:[...this.clients.values()].map(c=>({id:c.id,label:c.label,seat:c.seat,ack:c.ack,queue:this.queue.indexOf(c.id)+1,...(c.disconnected?{disconnected:true}:{})})),waiting:this.queue.length});
  }
 }
 
