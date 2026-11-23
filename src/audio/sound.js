@@ -1,6 +1,7 @@
 import {CycleExitVoice} from './cycle-exit-voice.js';
 import {CycleSpeedVoice,CYCLE_SPEED_VOICE} from './cycle-speed-voice.js';
 import {CycleOpponentVoice,CYCLE_OPPONENT_VOICE} from './cycle-opponent-voice.js';
+import {CycleLossCue} from './cycle-loss-cue.js';
 import {publicAssetUrl} from '../assets/public-url.js';
 import {MultiplayerTeamVoice,MP_TEAM_VOICE} from './multiplayer-team-voice.js';
 import {MultiplayerCountdown} from './multiplayer-countdown.js';
@@ -163,6 +164,7 @@ export class Sound {
     this.cycleExitVoice = new CycleExitVoice(c,this.master,this.samples);
     this.cycleSpeedVoice = new CycleSpeedVoice(c,this.master,this.samples);
     this.cycleOpponentVoice = new CycleOpponentVoice(c,this.master,this.samples);
+    this.cycleLossCue = new CycleLossCue(c,this.master);
     this.loading ??= this.loadSamples();
     this.startLoops();
     if (this.pendingMusic) { const args = this.pendingMusic; this.pendingMusic = null; this.startMusic(...args); }
@@ -313,6 +315,7 @@ export class Sound {
     if(this.cycleExitVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode)){this.multiplayerTeamVoice.stopPlayback();this.cycleSpeedVoice.stopPlayback();this.cycleOpponentVoice.stopPlayback();}
     if(this.cycleOpponentVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode,!!this.cycleExitVoice.voice)){this.multiplayerTeamVoice.stopPlayback();this.cycleSpeedVoice.stopPlayback();}
     if(this.cycleSpeedVoice.update(run.cycleRace,run.multiplayer?run.multiplayer.connected:cycleMode,playing&&!this.muted,!!this.cycleExitVoice.voice||!!this.cycleOpponentVoice.voice))this.multiplayerTeamVoice.stopPlayback();
+    this.cycleLossCue.update(run.cycleRace,run.multiplayer,playing&&!this.muted&&cycleMode,cycleMode);
     this.multiplayerCountdown.update(run.multiplayer?.connected?run.cycleRace:null,playing&&!this.muted);
     this.cycleVoices.update(run.cycleRace,playing,ear,this.cycleOpeningSeconds!==null&&this.cycleOpeningSeconds!==undefined);
     this.recognizerVoices.update(cycleMode ? {recognizers:run.recognizers.filter(e=>e.role==='arena-patrol')} : run, ear);
@@ -616,6 +619,7 @@ export class Sound {
     this.cycleExitVoice?.reset();
     this.cycleSpeedVoice?.reset();
     this.cycleOpponentVoice?.reset();
+    this.cycleLossCue?.reset();
     this.musicDirector.reset();
     this.cycleVoices?.reset();
     this.turretServo?.reset();
@@ -630,6 +634,7 @@ export class Sound {
     this.cycleExitVoice?.stopPlayback();
     this.cycleSpeedVoice?.stopPlayback();
     this.cycleOpponentVoice?.stopPlayback();
+    this.cycleLossCue?.stopPlayback();
     this.musicDirector.silence();
     this.cycleVoices?.stopPlayback();
     if (this.context) this.master.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
@@ -645,6 +650,7 @@ export class Sound {
     this.cycleExitVoice?.reset();
     this.cycleSpeedVoice?.reset();
     this.cycleOpponentVoice?.reset();
+    this.cycleLossCue?.reset();
     this.cycleVoices?.dispose();
     this.musicDirector.dispose();
     this.context?.close();

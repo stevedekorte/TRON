@@ -135,6 +135,7 @@ export function createDevelopmentTools({
         })),
         cycleSpeedVoice: sound.cycleSpeedVoice?{level:sound.cycleSpeedVoice.level,playing:sound.cycleSpeedVoice.playing,sample:Object.keys(sound.samples).find(k=>k.startsWith('cycle-arena-speed-')&&sound.samples[k]===sound.cycleSpeedVoice.voice?.source.buffer)?.slice('cycle-arena-speed-'.length)??null}:null,
         cycleOpponentVoice: sound.cycleOpponentVoice?{done:sound.cycleOpponentVoice.done,count:sound.cycleOpponentVoice.count,playing:sound.cycleOpponentVoice.playing}:null,
+        cycleLossCue: sound.cycleLossCue?{heard:sound.cycleLossCue.heard.size,played:sound.cycleLossCue.played??0}:null,
         music: sound.musicDirector.music
           ? {
               transition: sound.musicDirector.musicTransition?.category || null,
