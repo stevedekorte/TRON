@@ -35,7 +35,8 @@ export const CYCLE_SPEED_CAMERA=Object.freeze({distanceChangePerSpeedRatio:.16,t
 export const CYCLE_SPEED_FOV=Object.freeze({turboDegrees:-10,brakeDegrees:8,firstPersonTurboDegrees:-6,firstPersonBrakeDegrees:8,responsePerSecond:6});
 export const CYCLE_TURN_TRACKING=Object.freeze({nearDistanceMeters:12,farDistanceMeters:140,nearResponsePerSecond:30,farResponsePerSecond:1.2});
 // fovDegrees is vertical; 95 degrees is about 125 degrees horizontally at 16:9.
-export const CYCLE_FIRST_PERSON=Object.freeze({eyeHeightMeters:1.3,fovDegrees:95,forwardMeters:.25,lookAheadMeters:12,responsePerSecond:5,fadeSeconds:.3,clearanceHalfWidthMeters:.7,clearanceHalfLengthMeters:1.95,clearanceHeightMeters:1.75});
+// turn*: grid turns sweep to the new heading (eased) with a brief bank into the turn, instead of cutting.
+export const CYCLE_FIRST_PERSON=Object.freeze({turnSeconds:.14,turnBankRadians:.1,turnDetectRadians:.5,eyeHeightMeters:1.3,fovDegrees:95,forwardMeters:.25,lookAheadMeters:12,responsePerSecond:5,fadeSeconds:.3,clearanceHalfWidthMeters:.7,clearanceHalfLengthMeters:1.95,clearanceHeightMeters:1.75});
 const CYCLE_SWITCH_SECONDS=1.2;
 export const CYCLE_DEATH_HOLD_SECONDS=3;
 const GUNNER_TRANSITION_SECONDS = 0.75;
@@ -62,6 +63,24 @@ export class CameraRig {
     this.reducedMotion = false;
     this.reset();
   }
+  // First-person heading: follows steering directly, but a grid turn (a jump of
+  // at least turnDetectRadians) sweeps over turnSeconds with an eased yaw and a
+  // bank into the turn that peaks mid-sweep. A further turn mid-sweep retargets.
+  firstPersonTurn(target,dt){
+    const c=CYCLE_FIRST_PERSON,wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+    if(this.firstPersonYaw===undefined||this.freshCamera||this.cycleFirstPersonMix<.01){this.firstPersonYaw=target;this.firstPersonSweep=null;this.firstPersonRoll=0;return target;}
+    const delta=wrap(target-this.firstPersonYaw);
+    if(!this.firstPersonSweep&&Math.abs(delta)>=c.turnDetectRadians)this.firstPersonSweep={from:this.firstPersonYaw,elapsed:0};
+    const sweep=this.firstPersonSweep;
+    if(!sweep){this.firstPersonYaw=target;this.firstPersonRoll=0;return target;}
+    sweep.elapsed+=dt;
+    const u=Math.min(1,sweep.elapsed/c.turnSeconds),eased=u*u*(3-2*u),turn=wrap(target-sweep.from);
+    this.firstPersonYaw=sweep.from+turn*eased;
+    // Lean into the turn: a right turn (yaw decreasing) rolls the view clockwise.
+    this.firstPersonRoll=Math.sign(turn)*c.turnBankRadians*Math.sin(Math.PI*u);
+    if(u>=1){this.firstPersonSweep=null;this.firstPersonYaw=target;this.firstPersonRoll=0;}
+    return this.firstPersonYaw;
+  }
   reset() {
     if (this.freeCamera.active) this.freeCamera.exit();
     this.beamCamera.reset();
@@ -87,6 +106,7 @@ export class CameraRig {
     this.spectatorOrbit = null;
     this.cycleSpeedDistanceScale=1;this.cycleSpeedFov=0;
     this.cycleFirstPerson=false;this.cycleFirstPersonMix=0;this.cycleVisibility=1;this.cycleFirstPersonAge=0;this.wasCycleFirstPerson=false;
+    this.firstPersonYaw=undefined;this.firstPersonSweep=null;this.firstPersonRoll=0;
     this.cycleFollowedId=undefined;
     this.cycleDeathHold=null;
     this.cycleDeathsHeld=new Set();
@@ -339,8 +359,9 @@ export class CameraRig {
         this.cycleFirstPersonMix=THREE.MathUtils.lerp(this.cycleFirstPersonMix,cameraTarget,1-Math.exp(-dt*CYCLE_FIRST_PERSON.responsePerSecond));
         if(firstPerson)this.cycleVisibility=Math.max(0,this.cycleVisibility-dt/CYCLE_FIRST_PERSON.fadeSeconds);
       }
-      const eye=new THREE.Vector3(pose.x-Math.sin(pose.yaw)*CYCLE_FIRST_PERSON.forwardMeters,CYCLE_FIRST_PERSON.eyeHeightMeters,-pose.s-Math.cos(pose.yaw)*CYCLE_FIRST_PERSON.forwardMeters);
-      const eyeLook=eye.clone().add(new THREE.Vector3(-Math.sin(pose.yaw+this.cycleGlance),0,-Math.cos(pose.yaw+this.cycleGlance)).multiplyScalar(CYCLE_FIRST_PERSON.lookAheadMeters));
+      const eyeYaw=this.firstPersonTurn(pose.yaw,mode==='paused'?0:dt);
+      const eye=new THREE.Vector3(pose.x-Math.sin(eyeYaw)*CYCLE_FIRST_PERSON.forwardMeters,CYCLE_FIRST_PERSON.eyeHeightMeters,-pose.s-Math.cos(eyeYaw)*CYCLE_FIRST_PERSON.forwardMeters);
+      const eyeLook=eye.clone().add(new THREE.Vector3(-Math.sin(eyeYaw+this.cycleGlance),0,-Math.cos(eyeYaw+this.cycleGlance)).multiplyScalar(CYCLE_FIRST_PERSON.lookAheadMeters));
       this.camera.position.lerp(eye,this.cycleFirstPersonMix);
       if(!firstPerson&&mode!=='paused'){
         const dx=this.camera.position.x-pose.x,dz=this.camera.position.z+pose.s;
@@ -378,7 +399,7 @@ export class CameraRig {
       }
       cameraLook.lerp(eyeLook,this.cycleFirstPersonMix);
       this.camera.lookAt(cameraLook);
-      this.camera.rotateZ(openingRoll);
+      this.camera.rotateZ(openingRoll+this.firstPersonRoll*this.cycleFirstPersonMix);
       if(this.cycleSwitch){
         const transition=this.cycleSwitch,target=this.camera.quaternion.clone();
         this.camera.quaternion.slerpQuaternions(transition.rotation,target,transition.mix);

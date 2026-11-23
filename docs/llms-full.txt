@@ -3124,6 +3124,11 @@ Recognizers can thrust sideways and backward independently of yaw, in local/JEV 
 - [x] Per the user's direction: when the server loses a client mid-round, the round keeps running. The rider is marked `disconnected` and their cycle carries straight on with no input (turbo and brake released, no turns) until it crashes; that is the rider's bad luck. A disconnected rider never holds anything: it counts as camera-ready, its living cycle doesn't block Return-to-restart, and it is not queued when its cycle crashes. When the round ends (`nextRound`), riders still disconnected are removed. A reconnecting player arrives as a new connection and joins the queue like anyone else. Disconnecting before a round launches (camera staging) still frees the seat immediately. Snapshots add `disconnected:true` to that client's entry; protocol unchanged and older clients ignore the field. Connection-limit checks and empty-arena idling count only connected clients.
 - Validation: two new room unit tests (unattended ride, restart not blocked, removal at round end, reconnect as newcomer, staging-time seat release); all 71 multiplayer unit tests pass. In headless Chrome, `node tests/browser/multiplayer-disconnect.mjs` runs two players; one closes the page mid-round. The disconnected cycle was still alive and had moved 12.4 cells 1.5 s later, and the player list dropped to one when the next round began. `multiplayer-background-tab.mjs` (2.1 s staging) and `multiplayer-restart.mjs` still pass.
 
+## First-person turn sweep — November 22
+
+- [x] From a user-supplied film clip: in first person, a grid turn sweeps to the new heading over 0.14 s (smoothstep) with a bank into the turn of up to 0.1 rad that peaks mid-sweep, instead of cutting. Smooth road steering is followed directly; a further turn mid-sweep retargets. `CYCLE_FIRST_PERSON.turnSeconds/turnBankRadians/turnDetectRadians` in `src/rendering/camera-rig.js`.
+- [x] `tests/browser/cycle-first-person-turn.mjs` (headless Chrome): a right turn spans 5 frames with no frame step above 16° and a 5.6° peak bank, level afterwards. Feel in actual play is for the user to judge.
+
 
 ---
 
