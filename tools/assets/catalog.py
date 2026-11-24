@@ -26,7 +26,7 @@ credits={
 }
 def credit(path):
  l=path.lower()
- if 'povray-lightcycle' in l:return 'povray'
+ if 'povray-lightcycle' in l or 'pov_light_cycle' in l:return 'povray' # pov_light_cycle.glb: mesh converted from that CSG model
  if 'only solutions' in l:return 'journey'
  if '/music/' in l:return 'wendy-carlos'
  if 'double_turret' in l:return 'spring-society'
