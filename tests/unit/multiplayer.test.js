@@ -62,8 +62,8 @@ test('only the sole connected human can restart the authoritative match',()=>{
  assert.equal(room.restart('solo',round-1),false);
  assert.equal(room.restart('solo',round),true);
  assert.equal(room.race.round,round+1);assert.equal(room.race.phase,'countdown');
- assert(room.race.cameraStaging,'restart prepares cameras before formation');
- assert.equal(room.race.remaining,MP.countdownSeconds);
+ assert(room.race.materializing&&!room.race.cameraStaging,'restart materializes at once');
+ assert.equal(room.race.remaining,MP.materializationSeconds);
  assert.equal(room.restart('solo',round),false,'duplicate request cannot restart again');
  room.race.cameraStaging=false;room.race.materializing=true;room.race.remaining=0;room.step();room.join('spectator');
  assert.equal(room.clients.get('spectator').seat,null);
@@ -87,7 +87,7 @@ test('with several humans, anyone may start a new match once no human cycle is a
  assert.equal(room.restart('unknown',round),false,'only connected humans');
  assert.equal(room.restart('watcher',round-1),false,'stale round');
  assert.equal(room.restart('watcher',round),true,'a waiting human may restart once every human cycle is down');
- assert.equal(room.race.round,round+1);assert(room.race.cameraStaging);
+ assert.equal(room.race.round,round+1);assert(room.race.materializing);
  assert.equal(room.restart('u1',round),false,'duplicate request cannot restart again');
  assert.equal(room.restart('u1',room.race.round),false,'humans are seated and alive in the new formation');
 });
@@ -210,18 +210,18 @@ test('MP presentation moves between ticks without applying a future turn early',
  now=5000;const stopped=pose();assert.equal(stopped.x,source.x);assert.equal(stopped.z,source.z,'stale state is not extrapolated');
 });
 
-test('an unready camera (background tab) delays the round only briefly and is never disconnected',async()=>{
+test('a silent client (background tab) never holds the round and is never disconnected',async()=>{
  const {ArenaHub}=await import('../../shared/multiplayer/hub.js');
  function socket(){return {messages:[],listeners:{},send(raw){this.messages.push(JSON.parse(raw));},addEventListener(type,fn){this.listeners[type]=fn;},close(){if(!this.closed){this.closed=true;this.listeners.close?.();}}};}
  const hub=new ArenaHub(),visible=socket(),hidden=socket();
  try{
   hub.add(visible,MP.protocol);hub.add(hidden,MP.protocol);
-  const room=hub.room,[id]=[...room.clients.keys()],client=room.clients.get(id);
-  assert(room.race.cameraStaging);
-  visible.listeners.message({data:JSON.stringify({type:'camera-ready',round:room.race.round,seat:client.seat})});
-  room.step();assert(room.race.cameraStaging,'waits while one camera is unready');
-  room.race.stagingElapsed=MP.cameraReadyTimeoutSeconds+.1;hub.last=performance.now()-20;hub.pump();room.step();
-  assert.equal(room.race.cameraStaging,false,'round starts without the unready client');
+  const room=hub.room;
+  assert(room.race.materializing);
+  // An older client's camera-ready message is ignored harmlessly.
+  visible.listeners.message({data:JSON.stringify({type:'camera-ready',round:room.race.round,seat:0})});
+  for(let i=0;i<Math.ceil(MP.materializationSeconds*MP.tickHz)+2;i++)room.step();
+  assert.equal(room.race.phase,'racing','launches on time without either client reporting');
   assert(!visible.closed&&!hidden.closed,'nobody is disconnected');
   assert.equal(room.clients.size,2);
  }finally{hub.dispose();}
@@ -249,7 +249,7 @@ test('a rider who loses connection mid-round rides on unattended, never holds th
 });
 
 test('disconnecting before the round launches frees the seat immediately',()=>{
- const room=new CycleRoom();join(room,2);assert(room.race.cameraStaging);
+ const room=new CycleRoom();join(room,2);assert.equal(room.race.phase,'countdown');
  const seat=room.clients.get('u0').seat;room.leave('u0');
  assert(!room.clients.has('u0'));assert(!room.race.cycles[seat]?.human);
 });

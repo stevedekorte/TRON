@@ -181,3 +181,16 @@ test('adaptive buffer absorbs sustained delivery jitter then returns to its low-
  assert.equal(p.bufferSeconds,REMOTE_PLAYBACK.bufferSeconds);
  p.push(state(1,2),now+10);assert.equal(p.bufferSeconds,REMOTE_PLAYBACK.bufferSeconds);
 });
+test('after a delivery hold-up, remote playback catches up within seconds, not ten',()=>{
+ const p=new RemotePlayback(),state=tick=>({tick,race:{round:1,phase:'racing',cycles:[],trails:[]}});
+ let next=0;const lags={};
+ for(let now=0;now<9000;now+=16){
+  const held=now>=4000&&now<4300; // 300 ms with no snapshots while frames keep rendering
+  while(!held&&next<=now){p.push(state(Math.round(next*MP.tickHz/1000)),now);next+=1000/30;}
+  const s=p.sample(now),behind=(now*MP.tickHz/1000-p.bufferSeconds*MP.tickHz-s.tick)/MP.tickHz;
+  for(const t of [3900,6500,8900])if(now>=t&&lags[t]==null)lags[t]=behind;
+ }
+ assert(lags[3900]<.02,'steady before the hold');
+ assert(lags[6500]<.08,`2 s after the hold, ${Math.round(lags[6500]*1000)} ms behind`);
+ assert(lags[8900]<.03,`5 s after, ${Math.round(lags[8900]*1000)} ms behind`);
+});

@@ -1197,8 +1197,6 @@ export async function createGameApp() {
       if (!document.hidden && !(mode==='ready'&&endingStage==='victory')) {
         view.updateAntialiasing(dt,mode==='running'&&!background&&!document.hidden&&windowFocused&&view.cameraRig.opening===null&&view.cameraRig.cycleOpening===null&&!run.arenaWaiting);
         view.render(run, session.previous, mode === 'running'&&!multiplayer ? loop.alpha : 1, dt, mode);
-        const formation=view.cameraRig.multiplayerFormationCamera.shot;
-        if(multiplayer&&formation?.ready&&run.cycleRace.cameraStaging&&!cycleRendererControl.busy&&!homeTransition.active&&!document.hidden&&(!sound.context||sound.cycleSamplesReady))multiplayer.cameraReady(formation.round,formation.seat);
         if((mode==='running'||mode==='entering'&&openingTransition)&&!run.arenaWaiting&&!document.body.classList.contains('cycle-loading'))homeTransition.sceneReady();
       }
       sound.cycleOpeningSeconds=view.cameraRig.cycleOpening===null?null:view.cameraRig.cycleOpening*CYCLE_OPENING.durationSeconds;

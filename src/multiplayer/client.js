@@ -62,9 +62,8 @@ export class MultiplayerClient{
     if(this.state?.race.round!==data.race.round){this.pending=[];this.control={turbo:false,brake:false};this.lastSent=0;}
     this.pending=this.pending.filter(p=>p.seq>me.ack);this.state=data;this.me=me;this.received=performance.now();this.remotePlayback.push(data,this.received);
     // Background tabs stop animation frames and throttle timers, but socket messages
-    // still arrive: keep the connection alive and never hold the round for a hidden view.
+    // still arrive: keep the connection alive.
     if(this.received-this.pinged>=MP.heartbeatSeconds*1000)this.ping();
-    if(globalThis.document?.hidden&&data.race.cameraStaging)this.cameraReady(data.race.round,me.seat);
     this.onStatus('connected');clearTimeout(timeout);this.cancelConnect=null;resolve(this);
    };
    this.socket.onerror=()=>{clearTimeout(timeout);reject(Error('MULTIPLAYER CONNECTION UNAVAILABLE'));};
@@ -72,11 +71,6 @@ export class MultiplayerClient{
   });
  }
  ping(){if(this.socket?.readyState===1){this.pinged=performance.now();this.socket.send(JSON.stringify({type:'ping',sent:this.pinged}));}}
- cameraReady(round,seat){
-  const key=`${round}:${seat}`;
-  if(this.readyKey===key||this.socket?.readyState!==1||this.state?.race.round!==round)return;
-  this.socket.send(JSON.stringify({type:'camera-ready',round,seat}));this.readyKey=key;
- }
  restart(){
   if(!this.state||this.closed||this.disconnected||this.socket?.readyState!==1||!this.canRestart()||performance.now()-this.received>2000)return false;
   this.socket.send(JSON.stringify({type:'restart',round:this.state.race.round}));return true;

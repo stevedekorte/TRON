@@ -41,7 +41,10 @@ export class MultiplayerFormationCamera{
   }
   const shot=this.shot,target=multiplayerFormationShot(race,seat,rig.camera.aspect);
   if(mode==='running')shot.elapsed+=dt;
-  const t=rig.reducedMotion?1:Math.min(1,shot.elapsed/MP.cameraTravelSeconds),mix=MathUtils.smootherstep(t,0,1);
+  // The flight spans the materialization, which never waits for this client:
+  // follow the authority's clock too, so a late or slow client still lands at launch.
+  const age=Math.max(0,MP.materializationSeconds-(race.remaining??0));
+  const t=rig.reducedMotion?1:Math.min(1,Math.max(shot.elapsed,age)/MP.materializationSeconds),mix=MathUtils.smootherstep(t,0,1);
   rig.camera.position.lerpVectors(shot.position,target.position,mix);
   // Clear intervening walls while crossing the arena; zero offset and velocity
   // at either endpoint keep the formation shot and the departure continuous.

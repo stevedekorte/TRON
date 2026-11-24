@@ -15,20 +15,15 @@ try{
  await page.locator('#start-multiplayer').click();
  await page.waitForFunction(()=>window.__tron?.state.multiplayer&&__tron.state.mode==='running',{}, {timeout:60000});
  if(process.env.TRON_CYCLE_RENDERER)await page.evaluate(mode=>__tron.setCycleRenderer(mode),process.env.TRON_CYCLE_RENDERER);
- await page.waitForTimeout(4500);
- assert(state.race.cameraStaging,'slow second client holds formation');
- assert.equal(await page.evaluate(()=>__tron.state.cycleRendering.bikes.some(b=>b.visible)),false,'cycles stay hidden until everyone arrives');
- assert(!/TEAM/.test(await page.locator('#cycle-controls').textContent()));
- socket.send(JSON.stringify({type:'camera-ready',round:state.race.round,seat:state.clients.find(c=>c.id===id).seat}));
- await page.waitForFunction(()=>!__tron.state.cycleRace.cameraStaging);
- const before=await page.evaluate(()=>__tron.state.camera);
- assert(await page.evaluate(()=>__tron.state.cycleRace.materializing),'readiness immediately starts materialization');
+ // The silent socket client never holds the round. Start a fresh one so the page sees a whole formation.
+ for(let i=0;i<300&&!await page.evaluate(()=>__tron.state.multiplayer?.canRestart);i++)await page.waitForTimeout(500);
+ const round=await page.evaluate(()=>__tron.state.cycleRace.round);
+ await page.keyboard.press('Enter');await page.waitForFunction(r=>__tron.state.cycleRace.round>r,round);
+ assert(await page.evaluate(()=>__tron.state.cycleRace.materializing&&!__tron.state.cycleRace.cameraStaging),'a new round materializes at once');
  assert(!/MATCH STARTS IN/.test(await page.locator('#cycle-controls').textContent()));
- await page.waitForFunction(()=>__tron.state.cycleRace.materializing);
- await page.waitForTimeout(800);const during=await page.evaluate(()=>__tron.state.camera);
- await page.screenshot({path:'test-results/mp-team-materialization.png'});
- assert(Math.hypot(before.x-during.x,before.y-during.y,before.z-during.z)<.01,'formation camera holds');
- await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing');
+ await page.waitForTimeout(800);await page.screenshot({path:'test-results/mp-team-materialization.png'});
+ await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing',null,{timeout:4000});
+ const before=await page.evaluate(()=>__tron.state.camera);
  await page.waitForTimeout(300);
  const launch=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace}));
  assert(Math.hypot(launch.camera.x-before.x,launch.camera.y-before.y,launch.camera.z-before.z)<.01,'launch holds formation camera while bikes move');
@@ -38,5 +33,5 @@ try{
  await page.waitForTimeout(450);await page.screenshot({path:'test-results/mp-team-launch.png'});
  const after=await page.evaluate(()=>__tron.state.camera);
  assert(Math.hypot(after.x-before.x,after.y-before.y,after.z-before.z)>2,'launch cuts to player follow');
- assert.deepEqual(errors,[]);console.log('Camera arrival barrier, hidden formation, materialization hold and player launch passed.');
+ assert.deepEqual(errors,[]);console.log('Immediate materialization with a silent client, launch hold and player launch passed.');
 }finally{socket.close();await browser.close();}

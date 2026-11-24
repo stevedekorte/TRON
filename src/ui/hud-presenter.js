@@ -128,7 +128,7 @@ export class HudPresenter {
       cycleControls.hidden=false;
       cycleControls.textContent=!mp.connected?'CONNECTION LOST — ESC / RETURN HOME':
         run.cycleSpectating?`WAITING${mp.queue?' · QUEUE '+mp.queue:''} · ARROWS / SPECTATE`:
-        race.phase==='countdown'?(race.cameraStaging?'PREPARING GRID':'MATERIALIZING'):
+        race.phase==='countdown'?'MATERIALIZING':
         race.phase==='result'?'SURVIVORS KEEP THEIR SEATS · NEXT MATCH SOON':`MULTIPLAYER · ${mp.ping} MS`;
     }
     if(run.multiplayer?.connected&&run.multiplayer.canRestart)cycleControls.textContent+=' · RETURN / NEW MATCH';

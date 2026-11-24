@@ -15,7 +15,7 @@ try{
    }
   };
  });
- await page.goto('http://127.0.0.1:5173/');
+ await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173/');
  await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start-multiplayer').disabled,null,{timeout:120000});
  await page.locator('#start-multiplayer').click();
  await page.locator('#error').waitFor({state:'visible',timeout:60000});

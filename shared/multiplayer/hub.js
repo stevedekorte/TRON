@@ -20,7 +20,6 @@ export class ArenaHub{
    peer.seen=now;
    if(message?.type==='ping'&&Number.isFinite(message.sent))this.send(peer,{type:'pong',sent:message.sent,tick:this.room.tick,timing:{...this.timing}});
    else if(message?.type==='input')this.room.input(id,message);
-   else if(message?.type==='camera-ready')this.room.cameraReady(id,message.round,message.seat);
    else if(message?.type==='restart')this.room.restart(id,message.round);
    else if(message?.type==='resync'&&peer.protocol===MP.protocol){peer.baseline=projectState(this.room.state());this.send(peer,compactSnapshot(peer.baseline,null));}
   });
@@ -64,11 +63,6 @@ export class ArenaHub{
      this.send(peer,messages.get(key));if(peer.protocol===MP.protocol)peer.baseline=compact;
     }
     this.previous=state;
-  }
-  // A client that never reports its camera (background tab, slow loading) must not hold the
-  // arena: start without it. Truly dead connections still close via connectionTimeoutSeconds.
-  if(this.room.race.cameraStaging&&this.room.race.stagingElapsed>MP.cameraReadyTimeoutSeconds){
-   for(const client of this.room.clients.values())client.cameraReady=true;
   }
   for(const peer of this.peers.values())if(Date.now()-peer.seen>MP.connectionTimeoutSeconds*1000)peer.socket.close(1001,'Connection timed out');
  }

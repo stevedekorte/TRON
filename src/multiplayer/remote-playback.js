@@ -1,6 +1,10 @@
 import {MP} from '../../shared/multiplayer/config.js';
 
-export const REMOTE_PLAYBACK=Object.freeze({bufferSeconds:.075,maxBufferSeconds:.125,arrivalWindow:64,bufferMarginSeconds:.016,historySeconds:.5,maxRateAdjustment:.02,clockCorrectionSeconds:2,maxFrameSeconds:.2});
+export const REMOTE_PLAYBACK=Object.freeze({bufferSeconds:.075,maxBufferSeconds:.125,arrivalWindow:64,bufferMarginSeconds:.016,historySeconds:.5,maxRateAdjustment:.02,clockCorrectionSeconds:2,maxFrameSeconds:.2,
+ // After a delivery hold-up the clock waits at the newest pose and falls behind by the
+ // hold. At ±2% a 300 ms hold took ~10 s to recover, drawing remote cycles metres
+ // behind where they are. Behind by more than this, catch up faster.
+ catchUpThresholdSeconds:.05,maxCatchUpRateAdjustment:.25,catchUpCorrectionSeconds:1});
 
 // Remote presentation consumes confirmed paths on a continuous, monotonic clock.
 // Packet arrival can adjust playback speed slightly, but never resets the clock.
@@ -41,7 +45,9 @@ export class RemotePlayback{
   else{
    const dt=Math.max(0,Math.min(REMOTE_PLAYBACK.maxFrameSeconds,(now-this.lastNow)/1000));
    const expected=this.tick+dt*MP.tickHz;
-   const rate=1+Math.max(-REMOTE_PLAYBACK.maxRateAdjustment,Math.min(REMOTE_PLAYBACK.maxRateAdjustment,(target-expected)/(MP.tickHz*REMOTE_PLAYBACK.clockCorrectionSeconds)));
+   const behind=(target-expected)/MP.tickHz,catchUp=behind>REMOTE_PLAYBACK.catchUpThresholdSeconds;
+   const correction=catchUp?Math.min(REMOTE_PLAYBACK.maxCatchUpRateAdjustment,behind/REMOTE_PLAYBACK.catchUpCorrectionSeconds):Math.max(-REMOTE_PLAYBACK.maxRateAdjustment,Math.min(REMOTE_PLAYBACK.maxRateAdjustment,behind/REMOTE_PLAYBACK.clockCorrectionSeconds));
+   const rate=1+correction;
    this.tick+=dt*MP.tickHz*rate;
   }
   this.lastNow=now;
