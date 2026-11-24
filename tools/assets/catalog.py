@@ -26,6 +26,7 @@ credits={
 }
 def credit(path):
  l=path.lower()
+ if 'warrior-on-mesa' in l:return 'film' # the MCP's line, straight from the film
  if 'povray-lightcycle' in l or 'pov_light_cycle' in l:return 'povray' # pov_light_cycle.glb: mesh converted from that CSG model
  if 'only solutions' in l:return 'journey'
  if '/music/' in l:return 'wendy-carlos'

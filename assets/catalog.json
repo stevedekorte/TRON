@@ -6296,10 +6296,10 @@
       "sourcePath": "public/assets/audio/cycle-warrior-on-mesa-source.json",
       "legacyPaths": [],
       "runtimeUrl": "assets/audio/cycle-warrior-on-mesa-source.json",
-      "creditId": "unresolved",
-      "author": null,
+      "creditId": "film",
+      "author": "TRON (1982) filmmakers / respective rights holders, including Disney",
       "sourceUrl": null,
-      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "license": "Film-derived material, not open source; retained user-supplied excerpts and references.",
       "provenanceRecords": [
         "docs/assets/_index.md",
         "public/assets/audio/carrier-derez-source.json",
@@ -6329,10 +6329,10 @@
       ],
       "transformations": "No conversion performed during reorganization. Earlier modifications remain documented in credits/sidecars.",
       "conversionCommands": [],
-      "bytes": 858,
-      "sha256": "709021a9648c1465ba501477ab55d83ddba06dd5aeb4eff5d1b815df81a250e1",
+      "bytes": 1066,
+      "sha256": "3613967ec060e81cfc2e38a4fafb42e0de411d5cd48ea1dfc9fb35742bb42809",
       "deploymentPolicy": "runtime",
-      "unresolvedProvenance": true
+      "unresolvedProvenance": false
     },
     {
       "id": "asset-2817850cd59474eb",
@@ -6341,10 +6341,10 @@
       "sourcePath": "public/assets/audio/cycle-warrior-on-mesa.mp3",
       "legacyPaths": [],
       "runtimeUrl": "assets/audio/cycle-warrior-on-mesa.mp3",
-      "creditId": "unresolved",
-      "author": null,
+      "creditId": "film",
+      "author": "TRON (1982) filmmakers / respective rights holders, including Disney",
       "sourceUrl": null,
-      "license": "Unresolved; do not infer redistribution permission from presence in this catalog.",
+      "license": "Film-derived material, not open source; retained user-supplied excerpts and references.",
       "provenanceRecords": [
         "docs/assets/_index.md",
         "public/assets/audio/carrier-derez-source.json",
@@ -6377,7 +6377,7 @@
       "bytes": 68611,
       "sha256": "30bf509783bfc0886b7a00c2d42c17c86f6f1aa657e6197bc8d33d58ee69f759",
       "deploymentPolicy": "runtime",
-      "unresolvedProvenance": true
+      "unresolvedProvenance": false
     },
     {
       "id": "asset-16bb99c794ec5315",

@@ -54,7 +54,12 @@ try{
  // Next match end: M joins the arena; both riders already there hear the arrival.
  await endSoloMatch(solo);await solo.waitForFunction(()=>!document.querySelector('#multiplayer-offer').hidden,null,{timeout:3000});
  await first.waitForFunction(()=>document.querySelector('#arena-arrival-notice').hidden,null,{timeout:8000}); // the previous caption has cleared
- await solo.keyboard.press('KeyM');
+ // Like the Escape dialog: CONTINUE SOLO starts selected; Down moves the cursor; Return chooses.
+ const pressed=()=>solo.evaluate(()=>[...document.querySelectorAll('#multiplayer-offer button')].map(b=>b.getAttribute('aria-pressed')));
+ assert.deepEqual(await pressed(),['true','false']);
+ await solo.keyboard.press('ArrowDown');assert.deepEqual(await pressed(),['false','true']);
+ await solo.screenshot({path:`${out}/solo-offer-join-selected.png`});
+ await solo.keyboard.press('Enter');
  await solo.waitForFunction(()=>__tron.state.multiplayer?.connected,null,{timeout:30000});
  await solo.waitForFunction(()=>document.querySelector('#multiplayer-offer').hidden,null,{timeout:2000});
  // The second rider hears it; the first heard one under 15 s ago, so this arrival is skipped.

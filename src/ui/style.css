@@ -124,10 +124,18 @@ body.cycle-loading::after{content:'';position:fixed;inset:0;z-index:20;backgroun
 #cycle-result.gold-winner{color:#ffd45c}
 #arena-arrival-notice{position:fixed;top:106px;left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);letter-spacing:.08em;pointer-events:none;z-index:6}
 body.playing-multiplayer #arena-arrival-notice{top:130px}
-#multiplayer-offer{position:fixed;top:calc(20% + 3 * var(--game-font-size));left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);letter-spacing:.08em;z-index:7}
-#multiplayer-offer p{margin:0 0 .8em}
-#multiplayer-offer button{font:inherit;letter-spacing:inherit;color:#91bcd0;background:rgba(0,10,16,.55);border:1px solid rgba(145,188,208,.55);padding:.45em .9em;margin:0 .4em;cursor:pointer}
-#multiplayer-offer button:hover,#multiplayer-offer button:focus-visible{color:#e8f6ff;border-color:#e8f6ff;outline:none}
+/* End-of-match multiplayer offer: the same look as the Escape dialog (public/bit/exit-confirm.js). */
+#multiplayer-offer{position:fixed;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;background:#0009}
+#multiplayer-offer[hidden]{display:none}
+#multiplayer-offer .offer-panel{color:#159ddd;padding:28px;text-align:left;font:var(--terminal-font-size,22px)/1.12 FilmTerminal,VT323,monospace;letter-spacing:.025em;text-shadow:0 0 3px #0a91db,0 0 10px #005b9566;max-width:calc(100vw - 40px)}
+#multiplayer-offer p{margin:0 0 1.12em}
+#multiplayer-offer button{display:flex;align-items:center;gap:1ch;font:inherit;letter-spacing:inherit;text-shadow:inherit;color:inherit;background:none;border:0;border-radius:0;padding:0;margin:0;text-align:left;cursor:pointer;touch-action:manipulation;outline:none;box-shadow:none}
+#multiplayer-offer button:disabled{cursor:default}
+#multiplayer-offer .menu-marker{display:inline-block;flex:none;width:.48em;height:.78em;visibility:hidden;background:repeating-linear-gradient(to top,color-mix(in srgb,currentColor 68%,transparent) 0,color-mix(in srgb,currentColor 68%,transparent) .015em,currentColor .015em,currentColor .08em);box-shadow:0 0 5px #0a91db;animation:offer-cursor-blink .85s steps(1) infinite}
+#multiplayer-offer button[aria-pressed="true"] .menu-marker{visibility:visible}
+@keyframes offer-cursor-blink{50%{opacity:0}}
+@media(pointer:coarse){#multiplayer-offer .offer-panel{font-size:max(16px,var(--terminal-font-size,22px));line-height:1.4}#multiplayer-offer button{min-height:48px;width:100%;padding:6px 0}}
+@media(prefers-reduced-motion:reduce){#multiplayer-offer .menu-marker{animation:none}}
 body.terminal #arena-arrival-notice,body.terminal #multiplayer-offer{display:none}
 body.terminal #cycle-result{display:none}
 

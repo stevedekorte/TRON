@@ -502,6 +502,7 @@ export async function createGameApp() {
       event.preventDefault();if(!event.repeat)void cycleRendererControl.toggle();return;
     }
     if(mode==='running'&&(run.arenaWaiting||view.cameraRig.cycleOpening!==null)&&event.code!=='Escape'){event.preventDefault();return;}
+    if(mode==='running'&&offerKey(event))return;
     if(run.cycleSpectating&&['ArrowLeft','ArrowRight'].includes(event.code)){
       event.preventDefault();if(!event.repeat)followCycle(event.code==='ArrowLeft'?-1:1);return;
     }
@@ -512,7 +513,6 @@ export async function createGameApp() {
     if(multiplayer&&['Enter','NumpadEnter'].includes(event.code)&&mode==='running'){
       event.preventDefault();if(!event.repeat&&multiplayer.restart())inputController.clear();return;
     }
-    if(event.code==='KeyM'&&!event.repeat&&multiplayerOfferVisible()){event.preventDefault();void joinMultiplayerFromSolo();return;}
     if(!multiplayer&&event.code==='Enter'&&!event.repeat&&run.playerVehicle==='cycle'&&session.restartCycleMatch()){
       event.preventDefault();inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;
       if(mode==='paused')resume();return;
@@ -1007,11 +1007,25 @@ export async function createGameApp() {
     if(visible&&!offerConnecting&&performance.now()>=offerMessageUntil){
       const n=arenaPresence.players,text=`${n} ${n===1?'USER':'USERS'} IN MULTIPLAYER`;
       if($('multiplayer-offer-text').textContent!==text)$('multiplayer-offer-text').textContent=text;
-      $('offer-join-multiplayer').textContent=mobileTerminal?'JOIN MULTIPLAYER':'M / JOIN MULTIPLAYER';
-      $('offer-continue-solo').textContent=mobileTerminal?'CONTINUE SOLO':'RETURN / CONTINUE SOLO';
     }
+    // Each time it appears, CONTINUE SOLO is selected, as CONTINUE PLAYING is in the Escape dialog.
+    if(offer.hidden&&(visible||offerConnecting))selectOfferChoice('solo');
     offer.hidden=!visible&&!offerConnecting;
     $('offer-join-multiplayer').disabled=$('offer-continue-solo').disabled=offerConnecting;
+  }
+  // The offer works like the Escape dialog: a blinking cursor marks the choice;
+  // Up/Down (or W/S) move it, Return chooses, the pointer selects on hover. M joins directly.
+  const offerChoices={solo:$('offer-continue-solo'),multiplayer:$('offer-join-multiplayer')};
+  let offerChoice='solo';
+  function selectOfferChoice(choice){offerChoice=choice;for(const [name,button] of Object.entries(offerChoices))button.setAttribute('aria-pressed',String(name===choice));}
+  for(const [name,button] of Object.entries(offerChoices))listen(button,'pointerenter',()=>{if(!button.disabled)selectOfferChoice(name);});
+  function continueSolo(){if(soloCycles()&&session.restartCycleMatch()){inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;}}
+  function offerKey(event){
+    if(!multiplayerOfferVisible()&&!offerConnecting)return false;
+    if(['ArrowUp','ArrowDown','KeyW','KeyS'].includes(event.code)){event.preventDefault();if(!event.repeat&&!offerConnecting)selectOfferChoice(offerChoice==='solo'?'multiplayer':'solo');return true;}
+    if(['Enter','NumpadEnter','Space'].includes(event.code)){event.preventDefault();if(!event.repeat&&!offerConnecting){if(offerChoice==='multiplayer')void joinMultiplayerFromSolo();else continueSolo();}return true;}
+    if(event.code==='KeyM'){event.preventDefault();if(!event.repeat&&!offerConnecting){selectOfferChoice('multiplayer');void joinMultiplayerFromSolo();}return true;}
+    return false;
   }
   listen($('offer-join-multiplayer'),'click',event=>{event.stopPropagation();void joinMultiplayerFromSolo();});
   listen($('offer-continue-solo'),'click',event=>{event.stopPropagation();if(soloCycles()&&session.restartCycleMatch()){inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;}});
@@ -1145,7 +1159,7 @@ export async function createGameApp() {
     inputController.gamepadAxes=controllerPlaying?controller.axes:{};
     if(controller.active)idleTime=0;
     for(const code of controller.pressed){
-      if(controllerPlaying&&code.startsWith('Arrow')&&!run.cycleSpectating){
+      if(controllerPlaying&&code.startsWith('Arrow')&&!run.cycleSpectating&&!(multiplayerOfferVisible()&&['ArrowUp','ArrowDown'].includes(code))){
         if(run.arenaWaiting||view.cameraRig.cycleOpening!==null)continue;
         if(run.playerVehicle==='cycle'&&['ArrowLeft','ArrowRight'].includes(code))inputController.queueCycleTurn(code==='ArrowLeft'?-1:1,run.cycleRace?.pendingTurns.length??0);
         if(code==='ArrowUp')run.cruiseThrottle=false;
