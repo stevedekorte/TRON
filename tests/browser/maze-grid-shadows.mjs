@@ -31,7 +31,7 @@ try{
   let groundPixels=0,visibleGridPixels=0;
   for(let i=0;i<ground.length;i+=4){if(clearGround[i+2]>ground[i+2]+8)groundPixels++;if(clearGround[i]>240&&ground[i]>100&&ground[i]<225)visibleGridPixels++;}
   slabs.visible=true;renderer.render(scene,camera);return {wall,groundPixels,visibleGridPixels,overlapDifferences};
- });assert.equal(result.overlapDifferences,0);assert.ok(result.wall>500,JSON.stringify(result));assert.ok(result.groundPixels>1000,JSON.stringify(result));assert.ok(result.visibleGridPixels>100,JSON.stringify(result));assert.deepEqual(errors,[]);await page.screenshot({path:'test-results/maze-grid-shadows.png'});console.log(result);
+ });assert.equal(result.overlapDifferences,0);assert.ok(result.wall>500,JSON.stringify(result));assert.ok(result.groundPixels>1000,JSON.stringify(result));assert.ok(result.visibleGridPixels>100,JSON.stringify(result));assert.deepEqual(errors,[]);await page.screenshot({path:'test-results/maze-arena/maze-grid-shadows/maze-grid-shadows.png'});console.log(result);
  await page.evaluate(async()=>{
   const T=await import('/node_modules/three/build/three.module.js'),{createWorld}=await import('/src/rendering/world.js'),{MazeShadows}=await import('/src/rendering/maze-shadows.js'),{WALLS}=await import('/src/levels/maze.js');
   const scene=new T.Scene(),world=createWorld(scene),shadows=new MazeShadows(world);
@@ -39,11 +39,11 @@ try{
   const renderer=new T.WebGLRenderer({antialias:true,stencil:true});renderer.setSize(1000,700);renderer.setPixelRatio(1.5);document.body.replaceChildren(renderer.domElement);
   const camera=new T.PerspectiveCamera(55,1000/700,.1,20000);camera.position.set(tip.x+100,40,-tip.s+110);camera.lookAt(tip.x-15,12,-tip.s);
   shadows.update(renderer);renderer.render(scene,camera);
- });await page.screenshot({path:'test-results/maze-grid-production.png'});assert.deepEqual(errors,[]);
+ });await page.screenshot({path:'test-results/maze-arena/maze-grid-shadows/maze-grid-production.png'});assert.deepEqual(errors,[]);
  await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.waitForFunction(()=>window.__tron);if(process.env.TRON_CONTAINER)await page.evaluate(()=>__tron.configure({renderScale:.5,bloom:0}));await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__tron?.state.mode==='running');
  await page.keyboard.press('KeyW');
  await page.evaluate(async()=>{
   const {WALLS}=await import('/src/levels/maze.js');const tip=WALLS.filter(w=>w.mazeId===0).flatMap(w=>w.points).sort((a,b)=>b.x-a.x)[0];
   __tron.place({x:tip.x+80,s:tip.s-70,yaw:Math.PI*.75,speed:0,cruiseThrottle:false});
- });await page.waitForTimeout(300);await page.keyboard.press('Escape');await page.screenshot({path:'test-results/maze-grid-game.png'});assert.deepEqual(errors,[]);
+ });await page.waitForTimeout(300);await page.keyboard.press('Escape');await page.screenshot({path:'test-results/maze-arena/maze-grid-shadows/maze-grid-game.png'});assert.deepEqual(errors,[]);
 }finally{await browser.close();}

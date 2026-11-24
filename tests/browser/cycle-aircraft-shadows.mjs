@@ -33,8 +33,8 @@ try{
  });
  assert(result.shadow<result.lit*.9,'overhead caster must visibly darken ray-hit surfaces');
  assert.equal(result.restored,result.lit,'hiding the caster restores the original shading');
- await page.evaluate(()=>renderShadow(true));await page.screenshot({path:'test-results/cycle-aircraft-shadow.png'});
- await page.evaluate(()=>renderShadow(false));await page.screenshot({path:'test-results/cycle-aircraft-unshadowed.png'});
+ await page.evaluate(()=>renderShadow(true));await page.screenshot({path:'test-results/cycle-ai/cycle-aircraft-shadows/cycle-aircraft-shadow.png'});
+ await page.evaluate(()=>renderShadow(false));await page.screenshot({path:'test-results/cycle-ai/cycle-aircraft-shadows/cycle-aircraft-unshadowed.png'});
  await page.evaluate(()=>shadowFixtureDispose());assert.deepEqual(errors,[]);
  console.log('Aircraft atlas shadow reception and removal passed:',result);
 }finally{await browser.close();}

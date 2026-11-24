@@ -9,7 +9,7 @@ try{
  await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
  await page.keyboard.press('Enter');
  await page.waitForFunction(()=>document.querySelector('#system-warnings').textContent.includes('JEV unavailable'));
- await page.screenshot({path:'test-results/jev-brief-notice.png'});
+ await page.screenshot({path:'test-results/startup/system-warnings/jev-brief-notice.png'});
  await page.waitForFunction(()=>document.querySelector('#system-warnings').hidden,null,{timeout:10000});
  assert(logs.some(t=>t.includes('JEV AI selected.')));
  await page.keyboard.press('KeyN');await page.waitForTimeout(100);
@@ -22,12 +22,12 @@ try{
   for(let i=1;i<boxes.length;i++)assert(boxes[i].y>boxes[i-1].bottom);
   assert(boxes.every(b=>Math.abs(b.x+b.width-1416)<1&&b.width>size*9));
  }
- await page.screenshot({path:'test-results/clu-large-meters.png'});
+ await page.screenshot({path:'test-results/startup/system-warnings/clu-large-meters.png'});
  await page.keyboard.press('Escape');await page.getByRole('button',{name:/^RETURN HOME$/i}).click();
  await page.locator('#start-cycles').click();
  await page.waitForFunction(()=>__tron.state.cycleRace?.phase==='racing',null,{timeout:60000});
  const cycleBoxes=await page.locator('#vehicle-meters .turbo-indicator:visible').evaluateAll(nodes=>nodes.map(n=>{const b=n.getBoundingClientRect();return {y:b.y,bottom:b.bottom};}));
  assert.equal(cycleBoxes.length,2);assert(cycleBoxes[1].y>cycleBoxes[0].bottom);
- await page.screenshot({path:'test-results/cycle-large-meters.png'});
+ await page.screenshot({path:'test-results/startup/system-warnings/cycle-large-meters.png'});
  assert.deepEqual(errors,[]);console.log('JEV default migration, brief fading outage notice, console-only local status and large-font meters in both games passed.');
 }finally{await browser.close();}

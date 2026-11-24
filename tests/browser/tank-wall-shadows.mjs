@@ -15,7 +15,7 @@ try{
  const camera=new T.PerspectiveCamera(45,900/650,.1,1000);camera.position.set(13,16,23);camera.lookAt(0,2,0);shadows.update(renderer);renderer.render(scene,camera);
  window.disposeFixture=()=>{shadows.dispose();renderer.dispose();};
  },filtered);
- await page.screenshot({path:`test-results/tank-wall-shadow-${filtered?'filtered':'nearest'}.png`});await page.evaluate(()=>disposeFixture());
+ await page.screenshot({path:`test-results/clu-tank/tank-wall-shadows/tank-wall-shadow-${filtered?'filtered':'nearest'}.png`});await page.evaluate(()=>disposeFixture());
  }
  assert.deepEqual(errors,[]);console.log('Tank shadow comparison rendered without shader errors.');
 }finally{await browser.close();}

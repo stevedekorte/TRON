@@ -34,7 +34,7 @@ try{
    });
    assert(check.red>100,'wireframe remains bright red in distant ground fog');assert.equal(check.fog,false);assert(check.live>0);assert.equal(check.cut,check.wireCut);assert(check.bright>check.dim+1,'beacons keep blinking during wireframe phase');console.log(check);
   }
-  await page.screenshot({path:`test-results/carrier-rez-${time}.png`});
+  await page.screenshot({path:`test-results/carrier/carrier-materialization/carrier-rez-${time}.png`});
  }
  const pulse=await page.evaluate(()=>{
   const f=fixture,values=[];for(const t of [10,10+1/28,10+1/14,10+3/28,10+1/7]){f.rez.updateTransit(t,f.speed);values.push(f.rez.rectangle.material.uniforms.panelPulse.value);}return values;

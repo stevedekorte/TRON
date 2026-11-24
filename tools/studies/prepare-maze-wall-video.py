@@ -2,7 +2,7 @@
 import hashlib,json,pathlib,subprocess
 root=pathlib.Path(__file__).resolve().parents[2]
 source=root/'references/film/images/mazes/clu maze wall geometry'
-out=root/'test-results/maze-wall-video';out.mkdir(parents=True,exist_ok=True)
+out=root/'test-results/maze-arena/maze-wall-video';out.mkdir(parents=True,exist_ok=True)
 tone='zscale=t=linear:npl=100,format=gbrpf32le,tonemap=tonemap=hable,zscale=p=bt709:t=bt709:m=bt709:r=full,format=rgb24'
 metadata=[]
 for clip in [1,2]:

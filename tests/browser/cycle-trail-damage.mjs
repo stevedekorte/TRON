@@ -12,6 +12,6 @@ try{
   const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(1200,700);document.body.append(renderer.domElement);const camera=new T.PerspectiveCamera(48,1200/700,.1,100);camera.position.set(0,7,29);camera.lookAt(0,.6,0);
   window.renderDamage=time=>{r.time=time;expireDamagedTrails(r);walls.update(r,1);renderer.render(scene,camera);return r.trails.length;};
  });
- for(const [time,count] of [[0,2],[3.59,2],[4,1]]){assert.equal(await page.evaluate(time=>renderDamage(time),time),count);await page.screenshot({path:`test-results/cycle-trail-damage-${time}.png`});}
+ for(const [time,count] of [[0,2],[3.59,2],[4,1]]){assert.equal(await page.evaluate(time=>renderDamage(time),time),count);await page.screenshot({path:`test-results/cycles/cycle-trail-damage/cycle-trail-damage-${time}.png`});}
  assert.deepEqual(errors,[]);console.log('Impact gap, older wall lowering, and surviving newer wall rendered without errors.');
 }finally{await browser.close();}

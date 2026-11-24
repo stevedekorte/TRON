@@ -15,8 +15,8 @@ try{
   return {heads:v.cluCannonBolts.heads.count,trails:v.cluCannonBolts.trails.count,enemyShots:v.shots.count,trailVertices:v.cluCannonBolts.trails.geometry.attributes.position.count};
  });
  assert.equal(report.heads,1);assert.equal(report.trails,1);assert.equal(report.enemyShots,1);assert(report.trailVertices>=30);
- await mkdir('test-results/clu-cannon-bolts',{recursive:true});await page.locator('#viewport').screenshot({path:'test-results/clu-cannon-bolts/tank.png'});
+ await mkdir('test-results/clu-tank/clu-cannon-bolts',{recursive:true});await page.locator('#viewport').screenshot({path:'test-results/clu-tank/clu-cannon-bolts/tank.png'});
  await page.evaluate(()=>{const {v,r}=boltInspection;v.camera.position.set(r.x+7,5,-r.s-13);v.camera.lookAt(r.x,3,-r.s-21);v.cluCannonBolts.update(r.projectiles,v.camera);v.composer.render(0);});
- await page.locator('#viewport').screenshot({path:'test-results/clu-cannon-bolts/close.png'});
+ await page.locator('#viewport').screenshot({path:'test-results/clu-tank/clu-cannon-bolts/close.png'});
  const reset=await page.evaluate(()=>{const {v,session}=boltInspection;v.cluCannonBolts.update([],v.camera);session.dispose();return v.cluCannonBolts.heads.count+v.cluCannonBolts.trails.count;});assert.equal(reset,0);assert.deepEqual(errors,[]);console.log(JSON.stringify({...report,reset,errors}));
 }finally{await browser.close();}

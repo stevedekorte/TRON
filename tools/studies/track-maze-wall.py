@@ -1,13 +1,13 @@
 """Local, masked sparse reconstruction trial. No service uploads or game changes.
 Run with Python containing pycolmap 4.2.1, opencv-python-headless 5.0.0.93.
-Extracted HDR->SDR frames are expected in test-results/maze-wall-video/clip{1,2}.
+Extracted HDR->SDR frames are expected in test-results/maze-arena/maze-wall-video/clip{1,2}.
 """
 import json, pathlib, sqlite3, sys
 import cv2
 import numpy as np
 import pycolmap as pc
 root=pathlib.Path(__file__).resolve().parents[2]
-base=root/'test-results/maze-wall-video'
+base=root/'test-results/maze-arena/maze-wall-video'
 results=[]
 for clip in [1,2]:
  directory=base/f'clip{clip}'

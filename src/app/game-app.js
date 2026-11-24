@@ -6,6 +6,8 @@ import {markPlay} from '../analytics/mark-play.js';
 import {reportError,setErrorContext,describeGpu} from '../analytics/error-reporter.js';
 import {PlayTracker} from '../analytics/play-tracker.js';
 import {CycleTouchControls} from '../ui/cycle-touch-controls.js';
+import {ArenaPresence,arenaPlayersLabel} from '../multiplayer/arena-presence.js';
+import {ARENA_ARRIVAL_VOICE} from '../audio/arena-arrival-voice.js';
 import {isMobileTerminal} from '../ui/mobile-terminal.js';
 import {yieldToBrowser} from '../loading/yield-to-browser.js';
 import {clearLegacyMcpCache} from '../mcp/clear-legacy-cache.js';
@@ -308,7 +310,9 @@ export async function createGameApp() {
     if(selectedGame==='multiplayer'){
       try{
         const [{MultiplayerClient}]=await Promise.all([import('../multiplayer/client.js'),loadArenaInBackground()]);
-        multiplayer?.close();multiplayer=new MultiplayerClient();await multiplayer.connect();
+        // A solo player accepting the multiplayer offer arrives already connected.
+        const prepared=preparedMultiplayer;preparedMultiplayer=null;
+        multiplayer?.close();multiplayer=prepared??new MultiplayerClient();if(!prepared)await multiplayer.connect();
         if(disposed){multiplayer.close();return;}
         multiplayer.apply(run);run.projectiles=[];run.transferActive=false;inputController.clear();
         view.reset();view.cameraRig.opening=null;view.cameraRig.cycleOpening=null;
@@ -508,6 +512,7 @@ export async function createGameApp() {
     if(multiplayer&&['Enter','NumpadEnter'].includes(event.code)&&mode==='running'){
       event.preventDefault();if(!event.repeat&&multiplayer.restart())inputController.clear();return;
     }
+    if(event.code==='KeyM'&&!event.repeat&&multiplayerOfferVisible()){event.preventDefault();void joinMultiplayerFromSolo();return;}
     if(!multiplayer&&event.code==='Enter'&&!event.repeat&&run.playerVehicle==='cycle'&&session.restartCycleMatch()){
       event.preventDefault();inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;
       if(mode==='paused')resume();return;
@@ -962,6 +967,56 @@ export async function createGameApp() {
 
   const hud = new HudPresenter(map, systemWarnings);
 
+  // Multiplayer arena presence. The menu shows how many humans are in the arena;
+  // a solo game hears "a warrior is on the mesa" when it goes from empty to
+  // occupied, and at the end of the match is offered the multiplayer game.
+  // A multiplayer game hears the line for every arrival in the arena or its queue.
+  let arrivalCaptionUntil=0,multiplayerArrivals=0,lastMultiplayerArrival=-Infinity,preparedMultiplayer=null,offerConnecting=false,offerMessageUntil=0;
+  const soloCycles=()=>!multiplayer&&selectedGame==='cycles'&&['running','paused'].includes(mode)&&run.playerVehicle==='cycle';
+  const announceArenaArrival=()=>{sound.announceArenaArrival();arrivalCaptionUntil=performance.now()+ARENA_ARRIVAL_VOICE.captionSeconds*1000;};
+  const arenaPresence=new ArenaPresence({onChange:(players,previous)=>{
+    $('multiplayer-players').textContent=arenaPlayersLabel(players);
+    if(previous===0&&players>0&&soloCycles())announceArenaArrival();
+  }});
+  function multiplayerOfferVisible(){
+    return soloCycles()&&mode==='running'&&run.cycleRace?.phase==='result'&&arenaPresence.players>0&&!homeTransition.active;
+  }
+  // Connect first, so the solo match stays on screen until the arena answers.
+  async function joinMultiplayerFromSolo(){
+    if(!multiplayerOfferVisible()||offerConnecting)return;
+    offerConnecting=true;$('multiplayer-offer-text').textContent='CONNECTING TO MULTIPLAYER';
+    let client=null;
+    try{
+      const {MultiplayerClient}=await import('../multiplayer/client.js');
+      client=new MultiplayerClient();await client.connect();
+      if(disposed||!soloCycles()){client.close();return;}
+      preparedMultiplayer=client;selectGame('multiplayer');await start();
+      if(preparedMultiplayer===client){preparedMultiplayer=null;client.close();selectGame('cycles');}
+    }catch(error){client?.close();preparedMultiplayer=null;$('multiplayer-offer-text').textContent=error.message;offerMessageUntil=performance.now()+4000;}
+    finally{offerConnecting=false;}
+  }
+  function updateArenaPresence(){
+    const watching=!multiplayer&&!disposed&&(mode==='ready'&&!endingStage||soloCycles());
+    if(watching)arenaPresence.start();else arenaPresence.stop();
+    const arrivals=run.multiplayer?.arrivals??0;
+    if(multiplayer&&arrivals>multiplayerArrivals&&performance.now()-lastMultiplayerArrival>=ARENA_ARRIVAL_VOICE.multiplayerIntervalSeconds*1000){lastMultiplayerArrival=performance.now();announceArenaArrival();}
+    multiplayerArrivals=multiplayer?arrivals:0;
+    const caption=$('arena-arrival-notice'),showCaption=performance.now()<arrivalCaptionUntil&&mode==='running'&&run.playerVehicle==='cycle';
+    caption.hidden=!showCaption;caption.textContent=showCaption?ARENA_ARRIVAL_VOICE.caption:'';
+    const offer=$('multiplayer-offer'),visible=multiplayerOfferVisible();
+    if(visible&&!offerConnecting&&performance.now()>=offerMessageUntil){
+      const n=arenaPresence.players,text=`${n} ${n===1?'USER':'USERS'} IN MULTIPLAYER`;
+      if($('multiplayer-offer-text').textContent!==text)$('multiplayer-offer-text').textContent=text;
+      $('offer-join-multiplayer').textContent=mobileTerminal?'JOIN MULTIPLAYER':'M / JOIN MULTIPLAYER';
+      $('offer-continue-solo').textContent=mobileTerminal?'CONTINUE SOLO':'RETURN / CONTINUE SOLO';
+    }
+    offer.hidden=!visible&&!offerConnecting;
+    $('offer-join-multiplayer').disabled=$('offer-continue-solo').disabled=offerConnecting;
+  }
+  listen($('offer-join-multiplayer'),'click',event=>{event.stopPropagation();void joinMultiplayerFromSolo();});
+  listen($('offer-continue-solo'),'click',event=>{event.stopPropagation();if(soloCycles()&&session.restartCycleMatch()){inputController.clear();view.cameraRig.reset();view.cameraRig.aerial=false;}});
+  for(const id of ['offer-join-multiplayer','offer-continue-solo'])listen($(id),'pointerdown',event=>event.stopPropagation());
+
   function showVictoryScreen(){
     endingStage='victory';tribute.reset();outroFade=0;
     view.cameraRig.opening=null;
@@ -1083,6 +1138,7 @@ export async function createGameApp() {
 
   function frame(dt, background) {
     if (disposed||mcpPanel.active) return;
+    updateArenaPresence();
     const controllerPlaying=mode==='running'&&!controlsHelpOpen&&!exitConfirm.open&&!cycleTuning?.open&&!view.cameraRig.freeCamera.active;
     const controller=gamepadController.poll(navigator.getGamepads?.()??[],{active:windowFocused&&!document.hidden,cycle:run.playerVehicle==='cycle',playing:controllerPlaying});
     inputController.gamepadKeys=controllerPlaying?controller.held:new Set();
@@ -1464,7 +1520,7 @@ export async function createGameApp() {
   }
 
   function dispose() {
-    multiplayer?.close();
+    multiplayer?.close();arenaPresence.stop();
     mcpPanel.dispose();
     homeTransition.clear();
     if (disposed) return;

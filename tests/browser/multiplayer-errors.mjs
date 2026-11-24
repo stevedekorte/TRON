@@ -24,7 +24,7 @@ try{
   return {attempts:mpAttempts,terminal:document.body.classList.contains('terminal'),font:getComputedStyle(title).fontFamily,fontSize:parseFloat(getComputedStyle(title).fontSize),game:getComputedStyle(document.querySelector('#game')).visibility,overflow:content.scrollWidth>content.clientWidth,focus:document.activeElement.id};
  });
  assert.equal(state.attempts,3);assert(state.terminal);assert(state.font.includes('FilmTerminal'));assert(state.fontSize<30);assert.equal(state.game,'hidden');assert(!state.overflow);assert.equal(state.focus,'error-home');
- await page.screenshot({path:'test-results/multiplayer-error-terminal.png'});
+ await page.screenshot({path:'test-results/multiplayer/multiplayer-errors/multiplayer-error-terminal.png'});
  await page.setViewportSize({width:640,height:600});
  assert(await page.locator('#error .error-content').evaluate(el=>el.scrollWidth<=el.clientWidth));
  await page.locator('#error-home').click();await page.locator('#intro').waitFor({state:'visible'});assert.deepEqual(errors,[]);

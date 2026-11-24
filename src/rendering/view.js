@@ -547,13 +547,16 @@ export class View {
       const riderId=run.cycleSpectating?run.cycleFollowId:cycleRace?.playerId;
       const mix=run.playerVehicle==='cycle'&&riderId!=null&&id===riderId?1-this.cameraRig.cycleVisibility:0;
       bike.userData.cockpitMix=mix;
+      // POV-Ray mesh crease ink: once formed, and not from inside the cockpit.
+      if(bike.povInk)bike.povInk.visible=mix<.5&&(bike.userData.cycleFormationProgress??1)>=1;
       if(mix>0){
         // Built on first use from the materialized player cycle; geometry is shared by every seat.
         this.cockpitOutline??=new CycleCockpitOutline(bike);
         bike.userData.bodyMaterial??=bike.getObjectsByProperty('isMesh',true).flatMap(o=>[].concat(o.material)).find(m=>m.name==='Color_D06');
         this.cockpitOutline.update(bike,mix,bike.userData.bodyMaterial?.color);outlined=true;
-        // The human-player stripe marks the cycle for others; fade it out from inside.
-        if(bike.userData.humanStripe)bike.userData.humanStripe.value*=1-Math.min(1,mix);
+        // The human-player stripe marks the cycle for others; hide it from inside. The value
+        // is a pattern number, so it switches off halfway into the cockpit instead of scaling.
+        if(bike.userData.humanStripe&&mix>=.5)bike.userData.humanStripe.value=0;
       }
       // From inside, the body stays as a faint double-sided shell in its outside
       // colors; the window glass fades out completely.

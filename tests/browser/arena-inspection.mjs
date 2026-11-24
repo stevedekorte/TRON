@@ -17,7 +17,7 @@ try {
  assert(Math.hypot(moved.camera.x-initial.camera.x,moved.camera.z-initial.camera.z)>1);
  assert.equal(moved.time,initial.time);
  await page.keyboard.press('Home');await page.waitForTimeout(300);
- await page.screenshot({path:'test-results/arena-map-inspection.png'});
+ await page.screenshot({path:'test-results/maze-arena/arena-inspection/arena-map-inspection.png'});
  await page.keyboard.press('KeyC');
  await page.waitForFunction(()=>!__tron.state.camera.free&&__tron.state.mode==='running');
  assert.equal(await page.evaluate(()=>__tron.state.inspection),false);

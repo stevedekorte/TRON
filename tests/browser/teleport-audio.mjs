@@ -2,11 +2,11 @@ import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {teleportSamples} from '../../src/audio/teleport.js';
-await mkdir('test-results',{recursive:true});
+await mkdir('test-results/recognizers/teleport-audio',{recursive:true});
 const channels=teleportSamples(48000,'player'),frames=channels[0].length,wav=Buffer.alloc(44+frames*4);
 wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(2,22);wav.writeUInt32LE(48000,24);wav.writeUInt32LE(192000,28);wav.writeUInt16LE(4,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(frames*4,40);
 for(let i=0;i<frames;i++)for(let c=0;c<2;c++){assert(Number.isFinite(channels[c][i])&&Math.abs(channels[c][i])<1);wav.writeInt16LE(Math.round(channels[c][i]*32767),44+i*4+c*2);}
-await writeFile('test-results/teleport-preview.wav',wav);
+await writeFile('test-results/recognizers/teleport-audio/teleport-preview.wav',wav);
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));

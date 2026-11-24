@@ -1,7 +1,7 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
-await mkdir('test-results',{recursive:true});
+await mkdir('test-results/cycle-rendering/materialization',{recursive:true});
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1000,height:700},reducedMotion:'reduce'}),errors=[];
@@ -20,7 +20,7 @@ try{
  const phases=[];
  for(const age of [0,.3,1.5,2.4,2.575,2.8]){
   phases.push(await page.evaluate(age=>{const f=rezFixture;f.effect.update(age);f.renderer.render(f.scene,f.camera);const gl=f.renderer.getContext(),p=new Uint8Array(1000*700*4);gl.readPixels(0,0,1000,700,gl.RGBA,gl.UNSIGNED_BYTE,p);let red=0,solid=0,blueEnergy=0;for(let i=0;i<p.length;i+=4){if(p[i]>100&&p[i]>p[i+1]*2)red++;if(p[i+2]>20&&p[i+2]>p[i]*1.3)solid++;blueEnergy+=p[i+2];}return {age,red,solid,blueEnergy};},age));
-  await page.screenshot({path:`test-results/materialization-${age}.png`});
+  await page.screenshot({path:`test-results/cycle-rendering/materialization/materialization-${age}.png`});
  }
  assert.ok(phases[3].red>200);assert.equal(phases[3].solid,0);assert.ok(phases[4].solid>100);assert.ok(phases[5].blueEnergy>phases[4].blueEnergy);assert.deepEqual(errors,[]);console.log(phases);
  // Exercise the live game's growing render/audio/shadow lists and reset reuse.
@@ -34,10 +34,10 @@ try{
  }
  await page.keyboard.press('Escape');const paused=await page.evaluate(()=>({time:__tron.state.time,start:__tron.state.recognizers.at(-1).rezStarted}));await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.time),paused.time);
  await page.evaluate(()=>{const r=__tron.state,e=r.recognizers.at(-1);Object.assign(e,{x:-5000,s:-4940,y:45,yaw:0,state:'materializing',rezStarted:r.time-2.575});__tron.place({x:-5000,s:-5000,yaw:0,recognizers:r.recognizers});});
- await page.screenshot({path:'test-results/materialization-game.png'});
+ await page.screenshot({path:'test-results/cycle-rendering/materialization/materialization-game.png'});
  // More than twelve aircraft must not grow the dynamic shadow atlas indefinitely.
  await page.evaluate(()=>{const r=__tron.state,base=r.recognizers.at(-1);while(r.recognizers.length<15)r.recognizers.push({...base,id:2000+r.recognizers.length,x:-6000+r.recognizers.length*70,s:-4800,state:'investigate',rezStarted:undefined});__tron.place({recognizers:r.recognizers});});
- await page.waitForFunction(()=>__tron.state.audioSources===15);await page.screenshot({path:'test-results/materialization-many.png'});
+ await page.waitForFunction(()=>__tron.state.audioSources===15);await page.screenshot({path:'test-results/cycle-rendering/materialization/materialization-many.png'});
  await page.evaluate(()=>__tron.reset());await page.waitForFunction(count=>__tron.state.recognizers.length===count,initial);
  assert.equal(await page.evaluate(()=>__tron.state.reinforcementsSpawned),0);assert.deepEqual(errors,[]);
  console.log('Two reinforcements, rendering/audio/shadows, pause and reset passed.');

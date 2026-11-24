@@ -10,10 +10,10 @@ try {
   const partial=await page.locator('#terminal-text').textContent();
   assert.equal(partial,'REQUEST ACCESS TO CLU PROGRAM\nCODE 6 PASSWORD TO MEMORY 0222');
   assert.equal(await page.locator('#terminal-actions').isVisible(),false);
-  await page.screenshot({path:'test-results/terminal-typing.png'});
+  await page.screenshot({path:'test-results/terminal-ui/terminal/terminal-typing.png'});
   assert.equal(await page.locator('#terminal-text').textContent(),'REQUEST ACCESS TO CLU PROGRAM\nCODE 6 PASSWORD TO MEMORY 0222');
   assert.equal(await page.evaluate(()=>window.__tron.state.mode),'ready');
-  await page.screenshot({path:'test-results/terminal-complete.png'});
+  await page.screenshot({path:'test-results/terminal-ui/terminal/terminal-complete.png'});
   await page.keyboard.press('Enter');
   await page.waitForFunction(()=>window.__tron.state.mode==='entering');
   const initial=await page.evaluate(()=>window.__tron.state);
@@ -21,7 +21,7 @@ try {
   await page.waitForFunction(()=>window.__tron.state.opening>.03);
   const high=await page.evaluate(()=>window.__tron.state.camera.y);
   await page.waitForTimeout(650);
-  await page.screenshot({path:'test-results/opening-fade.png'});
+  await page.screenshot({path:'test-results/terminal-ui/terminal/opening-fade.png'});
   const tracking=await page.evaluate(()=>window.__tron.state);
   const pursuers=await page.evaluate(()=>window.__tron.state.recognizers.slice(0,2).map(e=>window.__tron.project({x:e.x,s:e.s,y:e.y})));
   for(const p of pursuers)assert.ok(Math.abs(p.x)<1&&Math.abs(p.y)<1&&p.z<1,JSON.stringify(p));
@@ -36,14 +36,14 @@ try {
   assert.equal(await page.evaluate(()=>window.__tron.state.time),pausedTime);
   await page.keyboard.press('Enter');
   await page.waitForTimeout(1800);
-  await page.screenshot({path:'test-results/opening-grid.png'});
+  await page.screenshot({path:'test-results/terminal-ui/terminal/opening-grid.png'});
   assert.ok(await page.evaluate(()=>window.__tron.state.camera.y)<high);
   const moving=await page.evaluate(()=>window.__tron.state);
   assert.ok(moving.time>initial.time);assert.equal(moving.x,initial.x);assert.ok(moving.s>initial.s);
   assert.ok(moving.recognizers.some((e,i)=>Math.hypot(e.x-initial.recognizers[i].x,e.s-initial.recognizers[i].s)>.1));
   await page.waitForFunction(()=>window.__tron.state.mode==='running');
-  await page.screenshot({path:'test-results/opening-clu.png'});
-  await page.evaluate(()=>__tron.place({turretYaw:Math.PI}));await page.waitForTimeout(1000);await page.screenshot({path:'test-results/recognizer-starting-line.png'});await page.evaluate(()=>__tron.place({turretYaw:0}));
+  await page.screenshot({path:'test-results/terminal-ui/terminal/opening-clu.png'});
+  await page.evaluate(()=>__tron.place({turretYaw:Math.PI}));await page.waitForTimeout(1000);await page.screenshot({path:'test-results/terminal-ui/terminal/recognizer-starting-line.png'});await page.evaluate(()=>__tron.place({turretYaw:0}));
   await page.evaluate(()=>__tron.reset());
   await page.waitForTimeout(250);assert.equal(await page.evaluate(()=>window.__tron.state.speed),22);
   await page.keyboard.down('KeyW');await page.keyboard.up('KeyW');
@@ -57,7 +57,7 @@ try {
   assert.equal(await page.evaluate(()=>window.__tron.state.opening),null);
   await page.reload();await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.waitForFunction(()=>window.__tron?.state.mode==='ready');
   await page.setViewportSize({width:640,height:700});
-  await page.screenshot({path:'test-results/terminal-narrow.png'});
+  await page.screenshot({path:'test-results/terminal-ui/terminal/terminal-narrow.png'});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   assert.deepEqual(errors,[]);
   console.log('Terminal: incremental typing, Enter skip/start, grid reveal, camera descent, intro pause/resume, reduced-motion, narrow viewport passed.');

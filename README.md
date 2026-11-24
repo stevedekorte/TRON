@@ -72,7 +72,7 @@ npm run test:browser -- --terminal
 npm run test:browser -- --soak --duration=180
 ```
 
-The smoke check exercises entry and branch driving, turret controls, five agents/audio sources, pause, radio/sighting memory, shooting and repeated resets. The sustained test steers through connected passages using actual keyboard events and checks collision, errors and resources. Screenshots/reports go to ignored `test-results/`.
+The smoke check exercises entry and branch driving, turret controls, five agents/audio sources, pause, radio/sighting memory, shooting and repeated resets. The sustained test steers through connected passages using actual keyboard events and checks collision, errors and resources. Screenshots/reports go to ignored `test-results/`, one folder per subproject (for example `test-results/multiplayer/`), then one per test or tool (for example `test-results/multiplayer/multiplayer-transition/`); each script writes into its own folder.
 
 `npm run test:browser -- --lifecycle` checks focus, settings, WebGL failures and production startup; both dev and preview servers must run. `--compat` checks available Playwright Firefox/WebKit executables. Actual Safari verification remains separate.
 
@@ -233,7 +233,7 @@ The top-right JEV readout shows requests this round, requests/sec over the last 
 
 Use `/?maze=blueprint&layoutSeed=1982&runSeed=1982` (or `maze=authored`) to replay the same layout and encounter. Restart reuses that scenario seed. Browser preferences still select the AI mode.
 
-`node scripts/replay-autoplay.mjs` runs an enemy-free local-controller replay without JEV calls and writes route diagnostics to `test-results/autoplay-replay.json`. Optional flags: `--layout`, `--layout-seed`, `--seed`, `--seconds`, `--output`. The later-maze hold remains a known issue.
+`node scripts/replay-autoplay.mjs` runs an enemy-free local-controller replay without JEV calls and writes route diagnostics to `test-results/jev-autoplay/autoplay-replay.json`. Optional flags: `--layout`, `--layout-seed`, `--seed`, `--seconds`, `--output`. The later-maze hold remains a known issue.
 
 `npm run test:browser -- --refactor` checks pause, view modes, detached debug state and restart resource counts. See `docs/refactoring/_index.md` for current ownership and `docs/validation/_index.md` for measured coverage and remaining human checks.
 

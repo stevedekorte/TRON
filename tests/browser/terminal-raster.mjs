@@ -6,7 +6,7 @@ const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'
  await page.goto('http://127.0.0.1:5174/raster-check');await page.evaluate(()=>document.fonts.ready);
  assert.ok(await page.evaluate(()=>document.fonts.check('56px FilmTerminal')));
  assert.equal(await page.locator('.intro').evaluate(e=>getComputedStyle(e,'::after').content),'none');
- const screenshot=await page.screenshot({path:'test-results/terminal-raster.png'});
+ const screenshot=await page.screenshot({path:'test-results/terminal-ui/terminal-raster/terminal-raster.png'});
  const colors=await page.evaluate(async base64=>{
   const image=new Image();image.src='data:image/png;base64,'+base64;await image.decode();const c=document.createElement('canvas');c.width=image.width;c.height=image.height;const ctx=c.getContext('2d');ctx.drawImage(image,0,0);const data=ctx.getImageData(0,0,c.width,c.height).data;
   const targets=[[21,157,221],[14,107,150],[255,48,37],[173,33,25]],counts=targets.map(()=>0);

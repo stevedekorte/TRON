@@ -22,7 +22,7 @@ function evaluate(policy,seeds,opponents,label){return new Promise((resolve,reje
 async function pool(items,fn){let cursor=0;const results=Array(items.length);await Promise.all(Array.from({length:Math.min(options.workers,items.length)},async()=>{while(cursor<items.length){const i=cursor++;results[i]=await fn(items[i],i);}}));return results;}
 // Timing is measured serially after parallel matches, never under tournament contention.
 function timing(policy){const result=match({seed:71000,mode:'bounded',seconds:options.seconds,policies:Array(4).fill(policy),measure:true});return {aiMs:result.aiMs,tickMs:result.tickMs,passes:result.aiMs.p99<=1&&result.tickMs.p99<1000/120};}
-await mkdir('test-results',{recursive:true});
+await mkdir('test-results/cycle-ai/training',{recursive:true});
 const history=initialPolicy.id===DEFAULT_POLICY.id?[DEFAULT_POLICY]:[DEFAULT_POLICY,initialPolicy],generations=[];let champion=initialPolicy;
 for(const policy of additionalOpponents)if(!history.some(p=>p.id===policy.id))history.push(policy);
 const trainingOpponents=history.slice();
@@ -33,7 +33,7 @@ for(let g=0;g<options.generations;g++){
  for(const entry of scores){entry.timing=timing(entry.policy);if(entry.timing.passes){champion=entry.policy;break;}}
  history.push(champion);generations.push(scores);
  console.log(JSON.stringify({generation:g,champion:champion.id,scores:scores.map(e=>({id:e.policy.id,...e.result,rows:undefined,timing:e.timing}))}));
- await writeFile(`test-results/${artifact}-checkpoint.json`,JSON.stringify({options,initialPolicy,opponentPaths,trainingOpponents,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,generations,champion},null,2));
+ await writeFile(`test-results/cycle-ai/training/${artifact}-checkpoint.json`,JSON.stringify({options,initialPolicy,opponentPaths,trainingOpponents,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,generations,champion},null,2));
 }
 const seeds=Array.from({length:options.heldOutSeeds},(_,i)=>options.seedOffset+90000+i);
 // Identical fixed opponents, seeds, and spawn rotations for both policies.
@@ -41,4 +41,4 @@ const [candidate,baseline]=await pool([champion,DEFAULT_POLICY],p=>evaluate(p,se
 const previous=initialPolicy.id===champion.id?candidate:initialPolicy.id===DEFAULT_POLICY.id?baseline:await evaluate(initialPolicy,seeds,[DEFAULT_POLICY],`heldout:${initialPolicy.id}`);
 const paired=seeds.map(seed=>{const a=candidate.rows.filter(r=>r.seed===seed),b=baseline.rows.filter(r=>r.seed===seed);return {seed,fitnessDelta:a.reduce((s,r,i)=>s+r.fitness-b[i].fitness,0)/4,killDelta:a.reduce((s,r,i)=>s+r.kills-b[i].kills,0)/4,assistDelta:a.reduce((s,r,i)=>s+r.assists-b[i].assists,0)/4};});
 const output={version:1,options,initialPolicy,opponentPaths,trainingOpponents,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,policy:champion,generations,heldOut:{candidate,baseline,previous,paired},timing:timing(champion),promoted:false,note:'Exploratory run. Seed is the comparison unit; four spawn rotations are correlated. Requires gameplay review. Parallel matches are not performance measurements.'};
-await writeFile(`test-results/${artifact}.json`,JSON.stringify(output,null,2));console.log(JSON.stringify({artifact:`test-results/${artifact}.json`,champion:champion.id,candidate:{...candidate,rows:undefined},baseline:{...baseline,rows:undefined},previous:{...previous,rows:undefined},paired,timing:output.timing,promoted:false}));
+await writeFile(`test-results/cycle-ai/training/${artifact}.json`,JSON.stringify(output,null,2));console.log(JSON.stringify({artifact:`test-results/cycle-ai/training/${artifact}.json`,champion:champion.id,candidate:{...candidate,rows:undefined},baseline:{...baseline,rows:undefined},previous:{...previous,rows:undefined},paired,timing:output.timing,promoted:false}));

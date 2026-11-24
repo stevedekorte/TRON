@@ -1,4 +1,5 @@
 import {LIGHT_CYCLES} from '../../shared/simulation/config/light-cycles.js';
+import {HUMAN_STRIPE_PATTERNS} from '../rendering/cycle-human-stripe.js';
 
 export class CycleRoster{
  constructor(element){this.element=element;this.signature='';}
@@ -6,7 +7,7 @@ export class CycleRoster{
   this.element.hidden=!visible;if(!visible||!race)return;
   const cycles=[...race.cycles].sort((a,b)=>a.team-b.team||a.id-b.id);
   const queueCount=visible?Math.max(0,Math.floor(waiting||0)):0;
-  const signature=queueCount+':'+observedId+':'+cycles.map(c=>`${c.id}:${c.team}:${+c.alive}:${!!c.human}:${c.id===race.playerId}:${race.localPlayerId}:${[...(c.wallEliminations??[]),...(c.trapAssists??[]).map(h=>({...h,id:"assist"+h.id}))].map(hit=>`${hit.id}.${hit.team}`).join(",")}`).join('|');
+  const signature=queueCount+':'+observedId+':'+cycles.map(c=>`${c.id}:${c.team}:${+c.alive}:${!!c.human}:${c.pattern??''}:${c.id===race.playerId}:${race.localPlayerId}:${[...(c.wallEliminations??[]),...(c.trapAssists??[]).map(h=>({...h,id:"assist"+h.id}))].map(hit=>`${hit.id}.${hit.team}`).join(",")}`).join('|');
   if(signature===this.signature)return;this.signature=signature;
   const groups=new Map();
   for(const cycle of cycles){
@@ -17,9 +18,9 @@ export class CycleRoster{
    const group=groups.get(cycle.team),icon=document.createElement('span');
    const soloPlayer=race.localPlayerId===undefined&&cycle.id===race.playerId;
    const human=cycle.human||soloPlayer;
-   icon.className='cycle-roster-icon'+(cycle.alive?'':' eliminated')+(human?' human':'')+(cycle.human&&cycle.id===race.localPlayerId?' local-player':'');icon.dataset.cycleId=String(cycle.id);
+   icon.className='cycle-roster-icon'+(cycle.alive?'':' eliminated')+(human?' human':'')+(cycle.human&&cycle.id===race.localPlayerId?' local-player':'')+(cycle.human&&cycle.pattern>1?' pattern-'+cycle.pattern:'');icon.dataset.cycleId=String(cycle.id);
    icon.style.color='#'+LIGHT_CYCLES.colors[cycle.team].toString(16).padStart(6,'0');
-   const label=`${team} cycle ${group.children.length+1} — ${cycle.alive?'active':'eliminated'}${soloPlayer?' · PLAYER':cycle.human?' · '+cycle.operator:' · AI'}`;
+   const label=`${team} cycle ${group.children.length+1} — ${cycle.alive?'active':'eliminated'}${soloPlayer?' · PLAYER':cycle.human?' · '+cycle.operator+' · '+(HUMAN_STRIPE_PATTERNS[(cycle.pattern??1)-1]??HUMAN_STRIPE_PATTERNS[0]).toUpperCase():' · AI'}`;
    const eliminations=cycle.wallEliminations??[],assists=cycle.trapAssists??[];
    const description=label+(eliminations.length?` · ${eliminations.length} enemy trail elimination${eliminations.length===1?'':'s'}`:'')+(assists.length?` · ${assists.length} trap assist${assists.length===1?'':'s'}`:'');
    icon.setAttribute('role','img');icon.setAttribute('aria-label',description);icon.title=description;

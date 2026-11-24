@@ -23,8 +23,8 @@ try{
  const stuck=await page.evaluate(()=>({x:__tron.state.x,s:__tron.state.s}));
  await page.waitForTimeout(350);assert.deepEqual(await page.evaluate(()=>({x:__tron.state.x,s:__tron.state.s})),stuck);
  assert((await page.locator('#system-warnings').textContent()).includes('BARREL LODGED'));
- await page.screenshot({path:'test-results/turret-lodged.png'});
+ await page.screenshot({path:'test-results/clu-tank/turret-wall/turret-lodged.png'});
  await page.keyboard.down('KeyS');await page.waitForFunction(()=>__tron.state.barrelJam===null,null,{timeout:10000});await page.keyboard.up('KeyS');
- await page.screenshot({path:'test-results/turret-freed.png'});
+ await page.screenshot({path:'test-results/clu-tank/turret-wall/turret-freed.png'});
  assert.deepEqual(errors,[]);console.log('Hard muzzle impact damages maze, lodges tank, shows hint and releases on reverse.');
 }finally{await browser.close();server.kill();}

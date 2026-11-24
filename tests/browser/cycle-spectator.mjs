@@ -11,7 +11,7 @@ try{
  assert.equal(await page.evaluate(()=>__tron.state.mode),'running');
  await page.waitForTimeout(500);
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.cycles[4].alive),false);
- await page.screenshot({path:'test-results/cycle-floor-shadows.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-spectator/cycle-floor-shadows.png'});
  const forward=await page.evaluate(()=>__tron.state.camera.rotation);
  const dot=(a,b)=>Math.abs(a.reduce((sum,v,i)=>sum+v*b[i],0));
  await page.keyboard.down('KeyJ');await page.waitForTimeout(300);
@@ -31,14 +31,14 @@ try{
  assert(riding.alive&&riding.roadSpeed>38.4&&riding.yaw<-Math.PI/2&&riding.lean<0);
  assert.equal(await page.evaluate(()=>JSON.stringify(__tron.state.cycleRace.trails.filter(t=>t.bikeId===1))),trailBefore);
  assert((await page.locator('#cycle-controls').textContent()).includes('FREE RIDE'));
- await page.screenshot({path:'test-results/cycle-road.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-spectator/cycle-road.png'});
  await page.keyboard.up('KeyI');await page.keyboard.up('KeyD');await page.keyboard.down('KeyX');await page.waitForTimeout(500);await page.keyboard.up('KeyX');
  assert((await page.evaluate(()=>__tron.state.cycleRace.cycles[1].roadSpeed))<riding.roadSpeed);
  await page.evaluate(()=>{const race=__tron.state.cycleRace;Object.assign(race.cycles[1],{roadSpeed:3,targetRoadSpeed:3,yaw:0,steering:0,lean:0});__tron.place({cycleRace:race});});
  await page.keyboard.down('KeyD');await page.waitForTimeout(500);await page.keyboard.up('KeyD');
  const slowTurn=await page.evaluate(()=>__tron.state.cycleRace.cycles[1]);
  assert(slowTurn.alive&&slowTurn.yaw<-.25&&Math.abs(slowTurn.lean)<.35);
- await page.screenshot({path:'test-results/cycle-slow-turn.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-spectator/cycle-slow-turn.png'});
  await page.keyboard.down('KeyX');await page.waitForTimeout(1000);await page.keyboard.up('KeyX');
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.cycles[1].roadSpeed),0);
  await page.keyboard.press('KeyX');await page.waitForTimeout(1000);
@@ -47,7 +47,7 @@ try{
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.cycles[1].roadSpeed),0);
  const stoppedPosition=await page.evaluate(()=>{const b=__tron.state.cycleRace.cycles[1];return [b.x,b.z];});
  await page.keyboard.down('KeyJ');await page.waitForTimeout(800);
- await page.screenshot({path:'test-results/cycle-road-glance.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-spectator/cycle-road-glance.png'});
  assert.deepEqual(await page.evaluate(()=>{const b=__tron.state.cycleRace.cycles[1];return [b.x,b.z];}),stoppedPosition);
  await page.keyboard.up('KeyJ');
 

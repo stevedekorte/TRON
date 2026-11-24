@@ -20,6 +20,6 @@ try{
  await page.waitForFunction(()=>window.tronLoadingReport().includes('Player entered cycle arena'),{},{timeout:120000});
  reports.push({navigation:'arena entry',report:await page.evaluate(()=>tronLoadingReport())});
  assert(logs.length>10);assert.deepEqual(errors,[]);
- await writeFile(`test-results/loading-${engine}.json`,JSON.stringify({engine,reports,errors},null,2));
+ await writeFile(`test-results/startup/loading-timings/loading-${engine}.json`,JSON.stringify({engine,reports,errors},null,2));
  console.log(JSON.stringify({engine,reports,errors},null,2));
 }finally{await browser.close();}

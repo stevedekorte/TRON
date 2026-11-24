@@ -10,7 +10,7 @@ try{
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.goto('http://127.0.0.1:5186/raycast-cycle.html');await page.waitForFunction(()=>window.raycastStudy?.ready);
  await page.waitForTimeout(1500);assert.deepEqual(errors,[]);
- await page.screenshot({path:'test-results/raycast-cycle-first.png'});
+ await page.screenshot({path:'test-results/cycle-rendering/raycast-cycle/raycast-cycle-first.png'});
  const results=[];
  for(const mode of ['analytic','mesh']){
   await page.evaluate(mode=>raycastStudy.setMode(mode),mode);
@@ -18,19 +18,19 @@ try{
    await page.evaluate(h=>raycastStudy.resize(h),height);await page.waitForTimeout(1000);
    results.push(await page.evaluate(()=>raycastStudy.measure(8000)));
   }
-  await page.screenshot({path:`test-results/raycast-cycle-${mode}.png`});
+  await page.screenshot({path:`test-results/cycle-rendering/raycast-cycle/raycast-cycle-${mode}.png`});
  }
  await page.locator('#analytic').click();await page.locator('#shadows').check();
  results.push(await page.evaluate(()=>raycastStudy.measure(8000)));
- await page.screenshot({path:'test-results/raycast-cycle-shadow.png'});
+ await page.screenshot({path:'test-results/cycle-rendering/raycast-cycle/raycast-cycle-shadow.png'});
  await page.locator('#shadows').uncheck();
  await page.evaluate(()=>raycastStudy.resize(720));
  for(const [name,position] of [['side',[5,1.2,0]],['opposite',[-4.8,2.9,-5.3]],['front',[.3,1.5,-5.5]]]){
   await page.evaluate(p=>{raycastStudy.camera.position.set(...p);raycastStudy.controls.update();},position);
-  await page.waitForTimeout(250);await page.screenshot({path:`test-results/pov-cycle-${name}.png`});
+  await page.waitForTimeout(250);await page.screenshot({path:`test-results/cycle-rendering/raycast-cycle/pov-cycle-${name}.png`});
  }
  await page.locator('#color').selectOption('#086ac4');await page.waitForTimeout(250);
- await page.screenshot({path:'test-results/pov-cycle-blue.png'});
+ await page.screenshot({path:'test-results/cycle-rendering/raycast-cycle/pov-cycle-blue.png'});
  console.log(JSON.stringify({results,modelBounds:await page.evaluate(()=>raycastStudy.modelBounds),errors},null,2));
- await writeFile('test-results/raycast-cycle-performance.json',JSON.stringify(results,null,2));assert.deepEqual(errors,[]);
+ await writeFile('test-results/cycle-rendering/raycast-cycle/raycast-cycle-performance.json',JSON.stringify(results,null,2));assert.deepEqual(errors,[]);
 }finally{await browser.close();server.kill();}

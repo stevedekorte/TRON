@@ -18,11 +18,11 @@ try{
  await page.waitForFunction(()=>__tron.state.csgCycleCount>0);
  assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'pov');
  await page.addStyleTag({content:'#exit-confirm{visibility:hidden!important}'});
- await page.screenshot({path:'test-results/cycle-renderer-pov.png'});
+ await page.screenshot({path:'test-results/cycle-rendering/cycle-renderer/cycle-renderer-pov.png'});
  assert.deepEqual(await page.evaluate(()=>__tron.state.cycleRace),before.race,'switching cannot reset the race');
  await page.evaluate(()=>__tron.setCycleRenderer('normal'));await page.waitForTimeout(100);
  assert.equal(await page.evaluate(()=>__tron.state.csgCycleCount),0);assert.equal(await page.evaluate(()=>__tron.state.cycleRendererMode),'normal');
- await page.screenshot({path:'test-results/cycle-renderer-normal.png'});
+ await page.screenshot({path:'test-results/cycle-rendering/cycle-renderer/cycle-renderer-normal.png'});
  const after=await page.evaluate(()=>__tron.state.renderer);
  assert.equal(after.geometries,before.rendering.geometries,'CSG geometry is released');
  assert.equal(after.calls,before.rendering.calls,'normal draw count is unchanged');
@@ -35,7 +35,7 @@ try{
  await page.keyboard.press('Shift+KeyR');await page.waitForFunction(()=>__tron.state.cycleRendererMode==='normal');
  await page.keyboard.press('Shift+KeyR');await page.waitForFunction(()=>__tron.state.cycleRendererMode==='pov');
  assert(await page.locator('#cycle-renderer').isHidden());
- await page.screenshot({path:'test-results/cycle-renderer-playing.png'});
+ await page.screenshot({path:'test-results/cycle-rendering/cycle-renderer/cycle-renderer-playing.png'});
  console.log('Renderer switch:',await page.evaluate(()=>({mode:__tron.state.cycleRendererMode,count:__tron.state.csgCycleCount,performance:__tron.performance})));
  await page.goto('http://127.0.0.1:5173/?layoutSeed=1982&cycleStart=1');
  await page.waitForFunction(()=>{try{return window.__tron?.state.cycleRendererMode==='pov';}catch{return false;}},{},{timeout:120000});

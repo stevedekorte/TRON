@@ -34,14 +34,14 @@ if(process.argv[1]?.endsWith('analyze-recognizer-segments.mjs')){
   method:'Separate contiguous-window FFTs; harmonic study subtracts mean background power in matched bands before amplitude normalization. No phase recovery or source isolation; residual is an estimate.',groups,harmonics};
  writeFileSync('tools/audio/results/recognizer-segmented-fft.json',JSON.stringify(report,null,2));
  // Ignored local-only comparison clips. No references or excerpts enter dist.
- mkdirSync('test-results/recognizer-reference',{recursive:true});
+ mkdirSync('test-results/recognizers/recognizer-reference',{recursive:true});
  const previews=[];
  for(const [group,range] of [['active',study.active],['background',study.background]]){
   const name=`${group}-${range[0]}-${range[1]}.wav`;
-  const result=spawnSync('ffmpeg',['-y','-v','error','-ss',String(range[0]),'-i',input,'-t',String(range[1]-range[0]),'-vn','-c:a','pcm_s16le','test-results/recognizer-reference/'+name]);
+  const result=spawnSync('ffmpeg',['-y','-v','error','-ss',String(range[0]),'-i',input,'-t',String(range[1]-range[0]),'-vn','-c:a','pcm_s16le','test-results/recognizers/recognizer-reference/'+name]);
   if(result.status)throw Error(result.stderr.toString());
-  previews.push({group,rangeSeconds:range,url:'/test-results/recognizer-reference/'+name});
+  previews.push({group,rangeSeconds:range,url:'/test-results/recognizers/recognizer-reference/'+name});
  }
- writeFileSync('test-results/recognizer-reference/segments.json',JSON.stringify({status:selections.status,previews}));
+ writeFileSync('test-results/recognizers/recognizer-reference/segments.json',JSON.stringify({status:selections.status,previews}));
  console.log(harmonics.map(r=>({harmonic:r.harmonic,amplitude:+r.relativeAmplitude.toFixed(3)})));
 }

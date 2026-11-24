@@ -1,7 +1,7 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
-await mkdir('test-results',{recursive:true});
+await mkdir('test-results/cycle-rendering/materialization-shadows',{recursive:true});
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1000,height:700}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
@@ -24,5 +24,5 @@ try{
   for(const c of crafts){c.root.visible=true;c.rez.update(null);}shadows.update(renderer,[],camera.position);renderer.render(scene,camera);
   let realShadowPixels=0;for(let i=0;i<original.length;i+=4)if(empty[i]-original[i]>2)realShadowPixels++;
   return {different,ghosts,realShadowPixels};
- });console.log(result);await page.screenshot({path:'test-results/materialization-shadow-check.png'});assert.deepEqual(errors,[]);assert.equal(result.different,0);assert.equal(result.ghosts,0);assert.ok(result.realShadowPixels>1000);
+ });console.log(result);await page.screenshot({path:'test-results/cycle-rendering/materialization-shadows/materialization-shadow-check.png'});assert.deepEqual(errors,[]);assert.equal(result.different,0);assert.equal(result.ghosts,0);assert.ok(result.realShadowPixels>1000);
 }finally{await browser.close();}

@@ -28,7 +28,7 @@ try{
    }
    const triangles=shadows.wallShadow?.geometry.attributes.position.count/3;
    return {mode,wrong,shadowed,triangles};
-  },mode));await page.screenshot({path:`test-results/wall-edge-${mode}.png`});
+  },mode));await page.screenshot({path:`test-results/maze-arena/wall-shadow-edges/wall-edge-${mode}.png`});
  }
  assert.ok(results[0].wrong>100,JSON.stringify(results));assert.ok(results[1].wrong<30,JSON.stringify(results));assert.ok(results[1].shadowed>10000);assert.deepEqual(errors,[]);console.log(results);
  await page.evaluate(async()=>{
@@ -52,6 +52,6 @@ try{
   const {center,eye}=best;
   const renderer=new T.WebGLRenderer({antialias:true,stencil:true});renderer.setSize(1000,700);document.body.replaceChildren(renderer.domElement);
   const camera=new T.PerspectiveCamera(65,1000/700,.1,20000);camera.position.copy(eye);camera.lookAt(center);shadows.update(renderer);renderer.render(scene,camera);
- });await page.screenshot({path:'test-results/wall-edge-maze.png'});assert.deepEqual(errors,[]);
+ });await page.screenshot({path:'test-results/maze-arena/wall-shadow-edges/wall-edge-maze.png'});assert.deepEqual(errors,[]);
 
 }finally{await browser.close();}

@@ -32,6 +32,6 @@ try{
  assert(state.cycleRace.cycles[1].alive);
  assert(state.cycleRace.trails.some(t=>t.bikeId===1&&t.startsRun));
  assert(state.cycleRendering.trailCounts.some(n=>n>0));
- await page.screenshot({path:'test-results/cycle-reentry.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-reentry/cycle-reentry.png'});
  assert.deepEqual(errors,[]);console.log('Chrome: breach reentry, arcade turn, turbo, S/X slowing without destruction, and rendered trails passed.');
 }finally{await browser.close();}

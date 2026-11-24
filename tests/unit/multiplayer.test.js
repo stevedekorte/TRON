@@ -253,3 +253,34 @@ test('disconnecting before the round launches frees the seat immediately',()=>{
  const seat=room.clients.get('u0').seat;room.leave('u0');
  assert(!room.clients.has('u0'));assert(!room.race.cycles[seat]?.human);
 });
+
+test('human stripe patterns are unique within a team and follow each rider across rounds',async()=>{
+ const {projectState}=await import('../../shared/multiplayer/snapshots.js');
+ for(const humans of [1,2,3,4,5,7,12]){
+  const room=new CycleRoom({seed:300+humans});join(room,humans);
+  let previous=new Map();
+  for(let round=0;round<12;round++){
+   const seated=[...room.clients.values()].filter(c=>c.seat!==null);
+   const byTeam=new Map();
+   for(const c of seated){
+    const bike=room.race.cycles[c.seat];
+    assert(bike.human&&[1,2,3].includes(bike.pattern),`${humans} humans: seat ${c.seat} has pattern ${bike.pattern}`);
+    assert.equal(bike.pattern,c.pattern);
+    byTeam.set(bike.team,[...(byTeam.get(bike.team)??[]),bike.pattern]);
+    // A rider changes pattern only when a teammate already holds their old one.
+    const old=previous.get(c.id);
+    if(old&&old!==bike.pattern)assert(seated.some(o=>o!==c&&room.race.cycles[o.seat].team===bike.team&&room.race.cycles[o.seat].pattern===old),`${humans} humans: ${c.id} lost pattern ${old} needlessly`);
+   }
+   for(const [team,patterns] of byTeam)assert.equal(new Set(patterns).size,patterns.length,`${humans} humans, team ${team}: ${patterns}`);
+   assert(room.race.cycles.every(b=>b.human||b.pattern===undefined),'AI cycles carry no pattern');
+   if(humans<=3)for(const c of seated)if(previous.has(c.id))assert.equal(c.pattern,previous.get(c.id),'a single team of humans never reshuffles patterns');
+   previous=new Map(seated.map(c=>[c.id,c.pattern]));
+   room.nextRound();
+  }
+ }
+ const room=new CycleRoom();join(room,1);
+ assert.equal(room.race.cycles[room.clients.get('u0').seat].pattern,1,'a lone human keeps the original single slash');
+ assert.equal(projectState(room.state()).race.cycles[room.clients.get('u0').seat].pattern,1,'snapshots carry the pattern');
+ room.join('second');const seat=room.clients.get('u0').seat;room.leave('u0');
+ assert.equal(room.race.cycles[seat].pattern,undefined,'leaving before launch frees the pattern');
+});

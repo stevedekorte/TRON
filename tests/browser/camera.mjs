@@ -19,7 +19,7 @@ try {
    await page.waitForTimeout(3200);
    const points=await page.evaluate(y=>[window.__tron.project({x:-1800,s:-1800,y:2}),window.__tron.project({x:-1800,s:-1800,y:y+4})],height);
    for(const p of points){assert.ok(Math.abs(p.x)<1&&Math.abs(p.y)<.98&&p.z<1,JSON.stringify({height,p}));}
-   await page.screenshot({path:'test-results/camera-recognizer-'+height+'.png'});
+   await page.screenshot({path:'test-results/rendering/camera/camera-recognizer-'+height+'.png'});
  }
  for(const turretYaw of [Math.PI/2,Math.PI,-Math.PI/2]){
    await page.evaluate(turretYaw=>window.__tron.place({x:-1800,s:-1800,yaw:0,turretYaw,recognizers:window.__tron.state.recognizers.map(e=>({...e,state:'destroyed'}))}),turretYaw);

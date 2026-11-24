@@ -24,6 +24,6 @@ try{
  await page.evaluate(()=>{boot.beginBootStage('Carrier model (fetch, decode, adapt)');boot.printBootLine('Carrier model (fetch, decode, adapt)',700);});
  assert.equal(await page.locator('#boot-status').textContent(),'CARRIER RECORDS LOADED');
  await page.evaluate(()=>{document.querySelector('#intro').hidden=true;document.querySelector('#loading').hidden=false;});
- await page.screenshot({path:'test-results/boot-terminal.png'});
+ await page.screenshot({path:'test-results/startup/boot-terminal/boot-terminal.png'});
  assert.deepEqual(errors,[]);console.log('Single-line replacement and 500 ms threshold verified; console report retained.');
 }finally{await browser.close();}

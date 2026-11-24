@@ -28,6 +28,6 @@ try{
  const box=await page.locator('.cycle-roster-observed').boundingBox(),circle=await page.locator('.cycle-roster-icon.observed').boundingBox();
  assert(box.y+box.height<=circle.y,'triangle sits above its circle');
  assert(Math.abs(box.x+box.width/2-(circle.x+circle.width/2))<1,'triangle is centered on its circle');
- await page.screenshot({path:'test-results/cycle-roster-observed.png',clip:{x:440,y:0,width:400,height:70}});
+ await page.screenshot({path:'test-results/cycles/cycle-roster-observed/cycle-roster-observed.png',clip:{x:440,y:0,width:400,height:70}});
  assert.deepEqual(errors,[]);console.log('Observer roster triangle follows the watched cycle.');
 }finally{await browser.close();}

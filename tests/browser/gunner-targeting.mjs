@@ -10,7 +10,7 @@ try{
   __tron.configure({enemySpeed:0});__tron.place({...player,speed:0,gunner:true,aimPitch:0,recognizers:r.recognizers.map(e=>({...e,state:'destroyed'})),enemyTanks:r.enemyTanks.map((e,i)=>({...e,x:pose.x,s:pose.s+80,yaw:0,turretYaw:0,speed:0,vx:0,vs:0,state:i?'destroyed':'patrol',nextSense:Infinity,memory:null,partHits:{'left-track':2,'right-track':2}}))});
  });
  await page.waitForFunction(()=>__tron.state.gunnerHit?.id===100&&!__tron.state.camera.gunnerTransition);assert.equal(await page.evaluate(()=>__tron.state.enemyOutlines),true);await page.waitForFunction(()=>Math.abs(new DOMMatrix(getComputedStyle(document.querySelector('#gunner-center')).transform).b-.5)<.001);assert.equal(await page.locator('#gunner-center').evaluate(e=>getComputedStyle(e).color),'rgb(255, 228, 92)');assert.equal(await page.locator('#gunner-target-cue').count(),0);
- await page.screenshot({path:'test-results/gunner-tank-outline.png'});
+ await page.screenshot({path:'test-results/clu-tank/gunner-targeting/gunner-tank-outline.png'});
  await page.evaluate(()=>__tron.place({turretYaw:1}));await page.waitForFunction(()=>!__tron.state.gunnerHit&&Math.abs(new DOMMatrix(getComputedStyle(document.querySelector('#gunner-center')).transform).a-1)<.001);
  await page.keyboard.press('Escape');
  await page.evaluate(async()=>{

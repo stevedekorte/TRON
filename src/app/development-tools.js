@@ -164,11 +164,37 @@ export function createDevelopmentTools({
         aerialZoom: view.cameraRig.aerialZoom,
         followZoom: view.cameraRig.followZoom,
         cycleOpening: view.cameraRig.cycleOpening,
+        arenaWallShadow: (({sources,entries,ready})=>({casters:sources.length,radius:entries[0].camera.right,ready}))(view.arena.userData.cycleRace.wallShadows),
       });
     },
     place(data) {
       session.place(data);
       getView().reset();
+    },
+    /** Holds the camera at a fixed review pose (free camera, no key input). */
+    reviewCamera({position,target,fov=60}) {
+      const view=getView(),free=view.cameraRig.freeCamera;
+      if(!free.active)free.enter();
+      view.camera.position.set(...position);view.camera.lookAt(...target);
+      free.rotation.setFromQuaternion(view.camera.quaternion,'YXZ');
+      view.camera.fov=fov;view.camera.updateProjectionMatrix();
+    },
+    /** Review aid: hold every cycle's wheel glint at one phase (0–1 flashes; null resumes). */
+    reviewWheelGlint(phase) {
+      const race=getView().arena.userData.cycleRace;if(race)race.reviewWheelPhase=phase;
+    },
+    /** Review aid: mark solo cycles as human riders with stripe patterns, {cycleId: pattern (1–3, or 0 for AI)}. */
+    reviewHumanStripes(patterns) {
+      for(const [id,pattern] of Object.entries(patterns)){
+        const b=session.run.cycleRace?.cycles[id];if(!b)continue;
+        if(pattern){b.human=true;b.pattern=pattern;}else{delete b.human;delete b.pattern;}
+      }
+    },
+    /** Review aid: show or hide scene objects whose names match a pattern. Returns the count. */
+    reviewVisibility(pattern,visible) {
+      const re=new RegExp(pattern);let count=0;
+      getView().scene.traverse(o=>{if(re.test(o.name)){o.visible=visible;count++;}});
+      return count;
     },
     project({ x, y, s }) {
       const view = getView(),

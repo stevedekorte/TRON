@@ -26,6 +26,6 @@ try{
  const download=page.waitForEvent('download');await page.locator('#download').click();assert.equal((await download).suggestedFilename(),'outside-arena-revision-1.glb');
  await page.reload();await page.waitForFunction(()=>wallStudy.state?.current.id===1);
  await page.locator('[data-restore="0"]').click();await page.waitForFunction(()=>wallStudy.state.current.id===2);assert.equal(await page.evaluate(()=>wallStudy.design.parts[0].parameters.heightMeters),150);
- await mkdir('test-results/scene-workshop',{recursive:true});await page.screenshot({path:'test-results/scene-workshop/workshop.png'});
+ await mkdir('test-results/outside-arena/scene-workshop',{recursive:true});await page.screenshot({path:'test-results/outside-arena/scene-workshop/workshop.png'});
  assert.deepEqual(errors,[]);console.log('Scene prompt/revision, lighting, immutable floor, camera preservation, isolated maze history, reload, restore, wireframe, brightness and GLB download passed.');
 }finally{await browser.close();await server.close();await rm(temp,{recursive:true,force:true});}

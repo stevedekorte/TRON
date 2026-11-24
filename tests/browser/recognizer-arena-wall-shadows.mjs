@@ -32,6 +32,6 @@ try{
   return {lit,ordinary,dark,rebuilt,patches};
  });
  assert(result.dark<result.ordinary&&result.ordinary<result.lit);assert.equal(result.rebuilt,result.dark);assert.equal(result.patches,1);
- await page.evaluate(()=>showWallShadow());await page.screenshot({path:'test-results/recognizer-arena-wall-shadow.png'});
+ await page.evaluate(()=>showWallShadow());await page.screenshot({path:'test-results/recognizers/recognizer-arena-wall-shadows/recognizer-arena-wall-shadow.png'});
  await page.evaluate(()=>disposeWallShadow());assert.deepEqual(errors,[]);console.log('Late arena receivers, darker aircraft shadows and atlas rebuild:',result);
 }finally{await browser.close();}

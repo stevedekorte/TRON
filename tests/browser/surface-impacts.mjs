@@ -16,7 +16,7 @@ try{
   const fixed=JSON.stringify(before)===JSON.stringify(effects.effects[0].effect.mesh.quaternion.toArray());
   window.fixture={renderer,scene,camera,effects,wall};return {fixed};
  });
- assert.ok(result.fixed);await page.screenshot({path:'test-results/surface-impact-wall.png'});
+ assert.ok(result.fixed);await page.screenshot({path:'test-results/clu-tank/surface-impacts/surface-impact-wall.png'});
  await page.evaluate(()=>{const f=window.fixture;f.effects.clear();f.renderer.render(f.scene,f.camera);f.wall.geometry.dispose();f.wall.material.dispose();f.renderer.dispose();});
  assert.deepEqual(errors,[]);console.log('Surface-aligned rings render without shader errors and retain orientation across camera changes.');
 }finally{await browser.close();}

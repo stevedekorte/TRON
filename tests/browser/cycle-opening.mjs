@@ -40,7 +40,7 @@ try{
  assert.equal(await page.locator('#cycle-controls').evaluate(el=>getComputedStyle(el).visibility),'hidden');
  const start=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace,guard:__tron.state.recognizers.find(e=>e.role==='arena-patrol')}));
  assert(start.camera.y>100&&start.camera.y<=111);
- await page.screenshot({path:'test-results/cycle-opening-first-frame.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-opening/cycle-opening-first-frame.png'});
  assert.equal(await page.evaluate(()=>__tron.state.tankVisible),false);
  assert.deepEqual(await page.evaluate(()=>__tron.state.carrierMaterialization),{opacity:1,panel:false});
  assert.equal(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
@@ -49,14 +49,14 @@ try{
  assert(middle.camera.y<start.camera.y);
  assert.equal(middle.race.time,start.race.time);
  assert(middle.guard.s<start.guard.s-1,'patrol moves screen-left while race is held');
- await page.screenshot({path:'test-results/cycle-opening.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-opening/cycle-opening.png'});
  await page.locator('#home-transition').waitFor({state:'detached'});
  await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.cycleOpening);
  await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>__tron.state.cycleOpening),paused);
  await page.keyboard.press('Enter');
  for(const [name,progress] of [['rim',4/16],['bank',7/16]]){
    await page.waitForFunction(p=>__tron.state.cycleOpening>=p,progress);
-   await page.screenshot({path:`test-results/cycle-opening-${name}.png`});
+   await page.screenshot({path:`test-results/cycles/cycle-opening/cycle-opening-${name}.png`});
  }
  await page.waitForFunction(()=>__tron.state.cycleOpeningAudio.includes('prepare-transport'));
  await page.keyboard.press('Escape');
@@ -64,14 +64,14 @@ try{
  await page.keyboard.press('Enter');
  await page.waitForFunction(()=>__tron.state.cycleOpeningAudio.includes('prepare-transport'));
  await page.waitForFunction(()=>__tron.state.cycleOpening>=10.5/16);
- await page.screenshot({path:'test-results/cycle-opening-grid.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-opening/cycle-opening-grid.png'});
  await page.waitForFunction(()=>__tron.state.cycleOpening>=14/16);
- await page.screenshot({path:'test-results/cycle-opening-arrival.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-opening/cycle-opening-arrival.png'});
  await page.waitForFunction(()=>__tron.state.cycleOpening>1.07);
  const formation=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace,bikes:__tron.state.cycleRendering.bikes}));
  assert.deepEqual(formation.bikes.map(b=>b.visible),[true,true,true,...Array(9).fill(false)]);
  assert.equal(formation.race.time,start.race.time,'race remains held while gold team materializes');
- await page.screenshot({path:'test-results/cycle-opening-formation.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-opening/cycle-opening-formation.png'});
  await page.waitForTimeout(300);
  const heldCamera=await page.evaluate(()=>__tron.state.camera);
  for(const axis of ['x','y','z'])assert.equal(heldCamera[axis],formation.camera[axis],'formation camera stays at the approach endpoint');
@@ -81,10 +81,10 @@ try{
  const launched=await page.evaluate(()=>({camera:__tron.state.camera,race:__tron.state.cycleRace}));
  assert(launched.race.time>formation.race.time,'cycles launch before the cut');
  for(const axis of ['x','y','z'])assert.equal(launched.camera[axis],formation.camera[axis],'launch shot stays fixed');
- await page.screenshot({path:'test-results/cycle-launch-trails.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-opening/cycle-launch-trails.png'});
  await page.waitForFunction(()=>__tron.state.cycleOpening===null&&!document.body.classList.contains('cycle-intro'));
  await page.waitForTimeout(600);
- await page.screenshot({path:'test-results/cycle-opening-handoff.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-opening/cycle-opening-handoff.png'});
  assert.deepEqual(await page.evaluate(()=>__tron.state.cycleOpeningAudio),[]);
  assert.equal(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
  assert((await page.evaluate(()=>__tron.state.camera.y))<20);

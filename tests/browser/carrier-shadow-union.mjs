@@ -24,5 +24,5 @@ try{
   let staticPixels=0,wrong=0;for(let y=25;y<255;y++)for(let x=25;x<375;x++){const i=(y*400+x)*4;if(staticOnly[i]<200)staticPixels++;if(Math.abs(together[i]-Math.min(staticOnly[i],movingOnly[i]))>3)wrong++;}
   renderer.render(scene,camera);return {staticPixels,wrong};
  });assert(result.staticPixels>1000,JSON.stringify(result));assert.equal(result.wrong,0,JSON.stringify(result));assert.deepEqual(errors,[]);
- await page.screenshot({path:'test-results/carrier-shadow-union.png'});console.log(result);
+ await page.screenshot({path:'test-results/carrier/carrier-shadow-union/carrier-shadow-union.png'});console.log(result);
 }finally{await browser.close();}

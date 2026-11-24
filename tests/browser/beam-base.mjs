@@ -17,5 +17,5 @@ const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'
    results.push({height,min:Math.min(...counts),max:Math.max(...counts)});
   }
   const box=new T.Mesh(new T.BoxGeometry(20,8,20),new T.MeshBasicMaterial({color:0x19304b}));box.position.copy(group.position);box.position.y=4;scene.add(box);const occluded=count();return {results,occluded,centered};
- });console.log(result);await page.screenshot({path:"test-results/beam-base.png"});assert.ok(result.centered);assert.equal(result.occluded,0);for(const r of result.results){assert.ok(r.min>30);assert.ok((r.max-r.min)/r.min<.03,JSON.stringify(r));}assert.deepEqual(errors,[]);console.log(result);
+ });console.log(result);await page.screenshot({path:"test-results/carrier/beam-base/beam-base.png"});assert.ok(result.centered);assert.equal(result.occluded,0);for(const r of result.results){assert.ok(r.min>30);assert.ok((r.max-r.min)/r.min<.03,JSON.stringify(r));}assert.deepEqual(errors,[]);console.log(result);
 }finally{await browser.close();}

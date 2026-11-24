@@ -17,6 +17,6 @@ try{
  assert(launchedAfter<4,`launched ${launchedAfter.toFixed(1)} s after entering`);
  release();await page.waitForFunction(()=>__tron.state.cycleRendererMode==='pov',null,{timeout:60000});
  await page.waitForFunction(()=>!document.querySelector('#home-transition'),null,{timeout:10000});
- await page.screenshot({path:'test-results/mp-first-materialization.png'});
+ await page.screenshot({path:'test-results/multiplayer/multiplayer-first-formation/mp-first-materialization.png'});
  assert.deepEqual(errors,[]);console.log(JSON.stringify({delayedRendererMs:'until launch',launchedAfter,renderer:'pov',errors}));
 }finally{await browser.close();}

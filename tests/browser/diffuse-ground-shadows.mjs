@@ -23,7 +23,7 @@ try{
   window.shadowTest={shadows,renderer,target};return report;
  });
  assert(result.ready);assert(result.min<120);assert(result.max>245);assert(result.levels>80);assert(result.transitionPixels>50);assert.deepEqual(errors,[]);
- await mkdir('test-results/diffuse-ground-shadows',{recursive:true});await page.screenshot({path:'test-results/diffuse-ground-shadows/soft.png'});
+ await mkdir('test-results/rendering/diffuse-ground-shadows',{recursive:true});await page.screenshot({path:'test-results/rendering/diffuse-ground-shadows/soft.png'});
  await page.evaluate(()=>{const {shadows,renderer,target}=window.shadowTest;shadows.dispose();target.dispose();renderer.dispose();});
  console.log(JSON.stringify({...result,errors}));
 }finally{await browser.close();}

@@ -1,7 +1,7 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
-await mkdir('test-results',{recursive:true});
+await mkdir('test-results/recognizers/recognizer-intercept',{recursive:true});
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1000,height:700},reducedMotion:'reduce'}),errors=[];
@@ -19,8 +19,8 @@ try{
  await page.waitForFunction(()=>__tron.state.recognizers[0].attack?.phase==='fold');
  const strike=await page.evaluate(()=>{const r=__tron.state,e=r.recognizers[0];return {lead:e.s-r.s,phase:e.attack.phase,target:e.attack.target};});
  assert.ok(strike.lead>0,'Recognizer must overtake Clu before committing: '+JSON.stringify(strike));
- await page.screenshot({path:'test-results/recognizer-intercept-fold.png'});
+ await page.screenshot({path:'test-results/recognizers/recognizer-intercept/recognizer-intercept-fold.png'});
  await page.waitForFunction(()=>__tron.state.crushed);
- await page.screenshot({path:'test-results/recognizer-intercept-impact.png'});
+ await page.screenshot({path:'test-results/recognizers/recognizer-intercept/recognizer-intercept-impact.png'});
  assert.deepEqual(errors,[]);console.log({strike,crushed:true});
 }finally{await browser.close();}

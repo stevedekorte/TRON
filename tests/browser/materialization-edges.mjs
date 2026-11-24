@@ -23,5 +23,5 @@ try{
   window.cleanup=()=>{effect.dispose();warm.dispose();disposeSceneResources(scene);renderer.dispose();};
   return {vertices,litPixels:before.filter((v,i)=>i%4!==3&&v>20).length};
  });
- assert(result.vertices>0);assert(result.litPixels>100);await page.screenshot({path:'test-results/materialization-edges.png'});await page.evaluate(()=>cleanup());assert.deepEqual(errors,[]);console.log('Cached and original wireframe pixels identical:',result);
+ assert(result.vertices>0);assert(result.litPixels>100);await page.screenshot({path:'test-results/cycle-rendering/materialization-edges/materialization-edges.png'});await page.evaluate(()=>cleanup());assert.deepEqual(errors,[]);console.log('Cached and original wireframe pixels identical:',result);
 }finally{await browser.close();}

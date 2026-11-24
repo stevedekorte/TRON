@@ -52,7 +52,7 @@ try{
   assert.equal(result.reset[kind],result.shadow[kind],`${kind} restores shadow on geometry reset`);
  }
  assert.equal(result.cachedCalls,0,'unchanged walls do not redraw the shadow map');
- await page.evaluate(()=>captureArenaShadow('ray'));await page.screenshot({path:'test-results/arena-wall-shadow-ray.png'});
- await page.evaluate(()=>captureArenaShadow('floor'));await page.screenshot({path:'test-results/arena-wall-shadow-floor.png'});
+ await page.evaluate(()=>captureArenaShadow('ray'));await page.screenshot({path:'test-results/maze-arena/arena-wall-shadows/arena-wall-shadow-ray.png'});
+ await page.evaluate(()=>captureArenaShadow('floor'));await page.screenshot({path:'test-results/maze-arena/arena-wall-shadows/arena-wall-shadow-floor.png'});
  await page.evaluate(()=>disposeArenaShadow());assert.deepEqual(errors,[]);console.log('Arena wall shadows:',result);
 }finally{await browser.close();}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Render reproducible MCP film/clone comparisons (requires NumPy, SciPy, FFmpeg).
-Generate dry.wav and the word-timed Whisper transcripts in test-results/mcp-voice-match first.
+Generate dry.wav and the word-timed Whisper transcripts in test-results/mcp/mcp-voice-match first.
 Pitch and pause-energy measurements are guides, not perceptual similarity scores.
 """
 import importlib.util,json,pathlib,subprocess
@@ -8,7 +8,7 @@ import numpy as np
 from scipy import signal
 from scipy.io import wavfile
 spec=importlib.util.spec_from_file_location('pitch','scripts/mcp-pitch.py');mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
-work=pathlib.Path('test-results/mcp-voice-match');out=pathlib.Path('public/assets/audio/mcp-match');out.mkdir(parents=True,exist_ok=True)
+work=pathlib.Path('test-results/mcp/mcp-voice-match');out=pathlib.Path('public/assets/audio/mcp-match');out.mkdir(parents=True,exist_ok=True)
 original=pathlib.Path('public/assets/audio/mcp-reference.wav');dry=work/'dry.wav'
 sr=24000
 

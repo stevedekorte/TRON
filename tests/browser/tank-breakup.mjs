@@ -16,7 +16,7 @@ try{
  const state=await page.evaluate(()=>window.__tron.state);
  assert.equal(state.tankVisible,false);assert.equal(state.breakups.length,1);assert.equal(state.breakups[0].subject,'tank');
  assert.ok(state.breakups[0].pieces.length>=8);assert.ok(state.breakups[0].pieces.every(p=>p.fragmented&&p.part==='tank'));
- await page.screenshot({path:'test-results/clu-breakup.png'});
+ await page.screenshot({path:'test-results/clu-tank/tank-breakup/clu-breakup.png'});
  await page.waitForTimeout(150);assert.deepEqual((await page.evaluate(()=>window.__tron.state)).breakups,state.breakups);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>window.__tron.state.breakups.length===0,{},{timeout:15000});
  assert.equal(await page.evaluate(()=>window.__tron.state.tankVisible),false);

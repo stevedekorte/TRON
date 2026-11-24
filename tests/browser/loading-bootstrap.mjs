@@ -16,7 +16,7 @@ try{
   }
   assert.equal(states.size,4,`all dot states animate before scripts/styles with ${reducedMotion}`);
   assert.equal(await page.evaluate(()=>typeof window.tronLoadingReport),'undefined');
-  await page.screenshot({path:`test-results/loading-bootstrap-${process.env.TRON_TEST_ENGINE??'chrome'}-${reducedMotion}.png`});
+  await page.screenshot({path:`test-results/startup/loading-bootstrap/loading-bootstrap-${process.env.TRON_TEST_ENGINE??'chrome'}-${reducedMotion}.png`});
   await page.close();
  }
  console.log('Initial dots animate with scripts and styles blocked, including reduced motion.');

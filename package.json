@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "manifold-3d": "^3.5.5",
     "prettier": "^3.9.8",
     "wrangler": "^4.152.0"
   },

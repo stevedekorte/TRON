@@ -9,7 +9,7 @@ try{
  const rows=await page.locator('#hint span').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().width>0).map(n=>n.getBoundingClientRect().top));
  assert.ok(rows.every(y=>Math.abs(y-rows[0])<1));assert.ok(rows[0]<40);
  await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('#hint')).opacity)>.95);
- await page.screenshot({path:'test-results/idle-controls.png'});
+ await page.screenshot({path:'test-results/cycles/turbo-hints/idle-controls.png'});
  await page.keyboard.press('KeyW'); // Release the opening cruise latch.
  await page.evaluate(()=>__tron.place({x:-5000,s:-5000,speed:0,cruiseThrottle:false}));
  await page.keyboard.press('KeyT');await page.waitForFunction(()=>window.__tron.state.turboRemaining>0);

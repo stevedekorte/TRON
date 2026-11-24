@@ -27,9 +27,16 @@ function measure(milliseconds=8000){if(benchmark)return Promise.reject(Error('Be
 $('benchmark').onclick=async()=>{const r=await measure();$('status').textContent=`${r.width} × ${r.height}: ${r.fps.toFixed(1)} FPS · p95 ${r.frameP95Milliseconds.toFixed(1)} ms${r.gpuMedianMilliseconds!==null?' · GPU '+r.gpuMedianMilliseconds.toFixed(2)+' ms':''}`;};
 window.raycastStudy={setMode,resize:h=>{$('resolution').value=String(h);resize();},measure,stats,camera,controls,renderer,get ready(){return ready;}};
 try{
- const models=await loadLightCycles(),model=models[0];disposeSceneResources(models[1]);
- model.position.y=model.userData.groundOffsetMeters;
- const bounds=new T.Box3().setFromObject(model),center=bounds.getCenter(new T.Vector3());model.position.x-=center.x;model.position.z-=center.z;
+ // ?mesh=pov: the mesh converted from this same CSG (tools/assets/pov-cycle-mesh.mjs). It is
+ // authored in the ray shader's own coordinates, so it needs no placement.
+ const povMesh=new URLSearchParams(location.search).get('mesh')==='pov';
+ let model;
+ if(povMesh){const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');model=(await new GLTFLoader().loadAsync((await import('../../assets/runtime/models/pov_light_cycle.glb?url')).default)).scene;}
+ else{
+  const models=await loadLightCycles();model=models[0];disposeSceneResources(models[1]);
+  model.position.y=model.userData.groundOffsetMeters;
+  const bounds=new T.Box3().setFromObject(model),center=bounds.getCenter(new T.Vector3());model.position.x-=center.x;model.position.z-=center.z;
+ }
  const originalMaterials=new Set();model.traverse(o=>{if(o.isMesh){o.material=[].concat(o.material).map(m=>{originalMaterials.add(m);return new T.ShaderMaterial({uniforms:{...shared,albedo:{value:m.color?.clone()||new T.Color(.3,.3,.3)},painted:{value:['Color_D06','_1','Color_L12'].includes(m.name)}},vertexShader:meshVertex,fragmentShader:meshFragment,side:T.DoubleSide});});if(o.material.length===1)o.material=o.material[0];}});originalMaterials.forEach(m=>m.dispose());scene.add(model);
  window.raycastStudy.modelBounds=new T.Box3().setFromObject(model).getSize(new T.Vector3()).toArray();
  ready=true;$('status').textContent='Ready. Toggle views to compare; measure at each resolution.';

@@ -16,7 +16,7 @@ try{
   },count);
   await page.waitForTimeout(1500);
   assert.equal(await page.evaluate(()=>__tron.state.cycleRace.cycles.length),4*count);
-  await page.screenshot({path:`test-results/cycle-four-teams-${count}.png`});
+  await page.screenshot({path:`test-results/cycles/cycle-teams/cycle-four-teams-${count}.png`});
  }
  for(const winner of [2,3]){
   await page.evaluate(winner=>{const r=__tron.state.cycleRace;r.arenaPaused=false;r.phase='result';r.winner=winner;__tron.place({cycleRace:r});},winner);

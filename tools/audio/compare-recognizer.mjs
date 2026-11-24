@@ -13,5 +13,5 @@ for(const kind of ['flight','ambience']){
  const l1=a=>reference.bands.reduce((s,b,i)=>s+Math.abs(b.energyFraction-a.bands[i].energyFraction),0);
  report.layers[kind]={before,after,referenceBandAbsoluteErrorBefore:l1(before),referenceBandAbsoluteErrorAfter:l1(after)};
 }
-writeFileSync(process.argv[3]||'test-results/recognizer-synth-fft-comparison.json',JSON.stringify(report,null,2));
+writeFileSync(process.argv[3]||'test-results/recognizers/compare-recognizer/recognizer-synth-fft-comparison.json',JSON.stringify(report,null,2));
 console.log(JSON.stringify({reference:report.reference,bands:reference.bands,after:report.layers.flight.after.bands},null,2));

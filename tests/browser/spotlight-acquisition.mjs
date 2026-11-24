@@ -24,7 +24,7 @@ try{
  const acquiring=await page.evaluate(()=>__tron.state);assert.equal(acquiring.recognizers[0].canSee,false);assert.equal(acquiring.radio.length,0);
  await page.waitForFunction(()=>__tron.state.recognizers[0].spotlight?.phase==='track');
  const tracking=await page.evaluate(()=>__tron.state);assert.equal(tracking.recognizers[0].state,'pursue');assert(tracking.searchlights[0].visible);assert(tracking.searchlights[0].strength>.5);
- await page.screenshot({path:'test-results/spotlight-lock.png'});
+ await page.screenshot({path:'test-results/recognizers/spotlight-acquisition/spotlight-lock.png'});
  await page.keyboard.press('Escape');const frozen=await page.evaluate(()=>__tron.state.recognizers[0].spotlight);
  await page.waitForTimeout(200);assert.deepEqual(await page.evaluate(()=>__tron.state.recognizers[0].spotlight),frozen);
  await page.keyboard.press('Enter');await page.waitForTimeout(2200);assert.equal(await page.evaluate(()=>__tron.state.recognizers[0].spotlight?.phase),'track');

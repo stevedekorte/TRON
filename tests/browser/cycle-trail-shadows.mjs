@@ -49,7 +49,7 @@ try{
  assert(result.collapsedFloor>result.floorShadow,'collapsing caster shortens floor shadows');
  assert.equal(result.clearedFloor,result.floorLit,'last removed trail leaves no stale floor shadow');
  assert.equal(result.idleCalls,0,'idle trails do not redraw');
- await page.evaluate(()=>showTrailShadow());await page.screenshot({path:'test-results/cycle-trail-shadow.png'});
+ await page.evaluate(()=>showTrailShadow());await page.screenshot({path:'test-results/cycles/cycle-trail-shadows/cycle-trail-shadow.png'});
  await page.evaluate(()=>disposeTrailShadow());
  assert.deepEqual(errors,[]);console.log('Trail floor shadows, unshadowed walls, collapse and removal:',result);
 }finally{await browser.close();}

@@ -23,7 +23,7 @@ try{
  assert.equal((await page.locator('#clu-health').textContent()).trim(),'HEALTH');
  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('#health-fill').evaluate(el=>getComputedStyle(el).animationName),'none');
  await page.emulateMedia({reducedMotion:'no-preference'});
- await page.screenshot({path:'test-results/health-meter.png'});
+ await page.screenshot({path:'test-results/terminal-ui/health-meter/health-meter.png'});
  await page.evaluate(()=>{const r=__tron.state;__tron.place({health:.5,projectiles:[{x:r.x,y:2.3,s:r.s-3.6,vx:0,vs:165,vy:0,life:2,faction:'enemy',owner:100}]});});
  await page.waitForFunction(()=>__tron.state.crushed);assert.equal(await page.evaluate(()=>__tron.state.health),0);
  assert.deepEqual(errors,[]);console.log('Health HUD reflects fractional regeneration, freezes on pause, stays visible in gunner view, and death remains final.');

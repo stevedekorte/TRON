@@ -12,9 +12,9 @@ try{
   const {loadLightCycles,LightCycleRaceView}=await import('/src/rendering/light-cycles.js');
   const {createGameLights,GAME_LIGHTING}=await import('/src/rendering/game-lighting.js');
   const scene=new T.Scene();scene.background=new T.Color(0x02050c);scene.add(createGameLights());
-  const models=await loadLightCycles({refineWheels});
+  const models=await loadLightCycles({refineWheels,model:'preti'});
   if(refineWheels){
-   const originals=await loadLightCycles({refineWheels:false});
+   const originals=await loadLightCycles({refineWheels:false,model:'preti'});
    models.forEach((model,i)=>{
     const returns=[];model.traverse(m=>{if(m.name==='Sealed rear body return')returns.push(m);});
     if(returns.length!==2)throw Error('Both rear body returns must be sealed');
@@ -51,13 +51,13 @@ try{
   document.body.replaceChildren(renderer.domElement);document.body.style.margin='0';
   window.shadowPreview={renderer,scene,camera,view};
  },process.env.ORIGINAL_WHEELS!=='1');
- await page.screenshot({path:`test-results/cycle-self-shadow-${process.env.SHADOW_CAPTURE||'smooth'}.png`});
+ await page.screenshot({path:`test-results/cycles/cycle-self-shadows/cycle-self-shadow-${process.env.SHADOW_CAPTURE||'smooth'}.png`});
  for(const [name,position] of [['front',[3,1.5,-4]],['left',[-4,1.6,1]],['rear',[1,1.3,4]]]){
   await page.evaluate(position=>{const {renderer,scene,camera}=window.shadowPreview;camera.position.set(...position);camera.lookAt(0,.65,0);renderer.render(scene,camera);},position);
-  await page.screenshot({path:`test-results/cycle-surface-${name}.png`});
+  await page.screenshot({path:`test-results/cycles/cycle-self-shadows/cycle-surface-${name}.png`});
  }
  await page.evaluate(()=>{const {renderer,scene,camera,view}=window.shadowPreview;view.bikes[0].traverse(m=>{if(m.isMesh)m.material.wireframe=true;});camera.position.set(3,1.5,-4);camera.lookAt(0,.65,0);renderer.render(scene,camera);});
- await page.screenshot({path:'test-results/cycle-wheel-wireframe.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-self-shadows/cycle-wheel-wireframe.png'});
  assert.deepEqual(errors,[]);
  console.log('Trimmed overlapping triangles per model:',await page.evaluate(()=>window.overlapRepairs));
  console.log('Actual cycle model and self-shadow shader rendered without WebGL errors.');

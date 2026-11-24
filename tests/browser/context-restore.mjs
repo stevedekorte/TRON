@@ -36,7 +36,7 @@ try{
  state=await page.evaluate(()=>({mode:__tron.state.mode,renderer:__tron.state.cycleRendererMode,csg:__tron.state.csgCycleCount,time:__tron.state.time,lost:document.querySelector('#game').getContext('webgl2').isContextLost()}));
  assert.equal(state.lost,false);assert.notEqual(state.mode,'error');assert.equal(state.renderer,'normal');assert.equal(state.csg,0);
  assert(state.time>raceTime,'the game keeps running');
- const lit=await litFraction(page,'test-results/context-restored.png');
+ const lit=await litFraction(page,'test-results/startup/context-restore/context-restored.png');
  assert(lit>.02,`the restored scene renders (${(lit*100).toFixed(1)}% lit)`);
  console.log(`Restored: POV dropped, normal renderer drawing ${(lit*100).toFixed(1)}% lit pixels.`);
 

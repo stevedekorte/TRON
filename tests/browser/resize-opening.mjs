@@ -32,7 +32,7 @@ try{
   for(const t of result.buffers){assert.deepEqual([t.width,t.height],result.expected);assert.equal(t.samples,0);}
   assert.equal(result.error,0);
   assert.deepEqual(result.invalidColors,[0,0],'Bloom/composer colors must stay finite');
-  await page.screenshot({path:`test-results/resize-opening-${process.env.TRON_BROWSER||'webkit'}-${width}.png`});
+  await page.screenshot({path:`test-results/startup/resize-opening/resize-opening-${process.env.TRON_BROWSER||'webkit'}-${width}.png`});
  }
  assert.deepEqual(errors,[]);console.log('Solo opening resize: separate resolved buffers, retained scene MSAA, valid ping-pong buffers, no WebGL errors.');
 }finally{await browser.close();}

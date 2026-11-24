@@ -39,7 +39,7 @@ try{
  for(const name of ['recognizer','sailer'])for(const ratio of [1,1.5]){
   const result=await page.evaluate(([name,ratio])=>captureAircraft(name,ratio),[name,ratio]);
   assert.equal(result.quality.ratio,1.5);assert.equal(result.pixels,700000*ratio*ratio);
-  await page.screenshot({path:`test-results/aa-${name}-${ratio}.png`});
+  await page.screenshot({path:`test-results/rendering/aircraft-antialiasing/aa-${name}-${ratio}.png`});
  }
  assert.deepEqual(errors,[]);console.log('Recognizer and Solar Sailer comparisons rendered at 1x and restored 1.5x with the game lighting and MSAA/bloom/SMAA/output pipeline.');
 }finally{await browser.close();}

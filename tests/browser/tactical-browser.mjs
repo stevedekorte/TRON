@@ -1,7 +1,7 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
-await mkdir('test-results',{recursive:true});
+await mkdir('test-results/recognizers/tactical-browser',{recursive:true});
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:'reduce'}),errors=[];let requests=0;
@@ -19,7 +19,7 @@ try{
  await page.keyboard.press('Shift+T');await page.selectOption('#enemy-ai','local');await page.check('#ai-small-encounter');await page.click('#apply-ai');
  await page.waitForFunction(()=>__tron.state.aiMode==='local'&&__tron.state.recognizers.length===2&&__tron.state.enemyTanks.length===1);
  await page.waitForFunction(()=>__tron.state.recognizers.every(e=>e.tactical?.plan));assert.equal(requests,0);
- await page.screenshot({path:'test-results/tactical-controls.png'});
+ await page.screenshot({path:'test-results/recognizers/tactical-browser/tactical-controls.png'});
  // Put a real aircraft over a wall-side target that fails the old circular test.
  await page.evaluate(async()=>{
   const {WALLS,freePosition}=await import('/src/levels/maze.js'),{aircraftPoseClear,SAFE_ALTITUDE,AIR_HULL}=await import('/src/simulation/maneuver-geometry.js');let site;
@@ -28,19 +28,19 @@ try{
   const r=__tron.state,e=r.recognizers[0];Object.assign(e,{x:site.x,s:site.s,y:SAFE_ALTITUDE,yaw:site.yaw+Math.PI/2,vx:0,vs:0,vy:0,yawVelocity:0,nextSense:0,tactical:null,memory:{x:site.x,s:site.s,vx:0,vs:0,seenAt:r.time,source:e.id},canSee:true});
   __tron.place({x:site.x,s:site.s,yaw:site.yaw,speed:0,cruiseThrottle:false,recognizers:[e],enemyTanks:[],dataBeams:[]});
  });
- await page.keyboard.press('Shift+T');await page.keyboard.press('KeyV');await page.waitForFunction(()=>__tron.state.recognizers[0].attack?.phase==='drop');await page.screenshot({path:'test-results/tactical-wall-descent.png'});
+ await page.keyboard.press('Shift+T');await page.keyboard.press('KeyV');await page.waitForFunction(()=>__tron.state.recognizers[0].attack?.phase==='drop');await page.screenshot({path:'test-results/recognizers/tactical-browser/tactical-wall-descent.png'});
  await page.waitForFunction(()=>__tron.state.crushed);assert.equal(requests,0);
  // Switch to Jev without a key: the planner remains active and explicitly labels fallback.
  await page.keyboard.press('Shift+T');await page.selectOption('#enemy-ai','jev');await page.click('#apply-ai');
  await page.waitForFunction(()=>__tron.state.aiStatus.includes('Local fallback'));assert.ok(requests>0);
- await page.screenshot({path:'test-results/tactical-no-key.png'});
+ await page.screenshot({path:'test-results/recognizers/tactical-browser/tactical-no-key.png'});
  await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.time);await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.time),paused);
  if(process.argv.includes('--live')){
   await page.unroute('**/api/jev/decision');let liveCalls=0;
   await page.route('**/api/jev/decision',route=>++liveCalls===1?route.continue():route.fulfill({status:503,contentType:'application/json',body:'{"error":"Live smoke budget reached"}'}));
   await page.click('#apply-ai');await page.waitForFunction(()=>__tron.state.aiHistory.length>0);
   const result=await page.evaluate(()=>{const h=__tron.state.aiHistory[0];return {accepted:h.accepted,latencyMs:h.latencyMs,response:h.response};});console.log('Live Jev browser result:',result);
-  await page.locator('#tuning details').evaluate(e=>e.open=true);await page.screenshot({path:'test-results/tactical-live-jev.png'});
+  await page.locator('#tuning details').evaluate(e=>e.open=true);await page.screenshot({path:'test-results/recognizers/tactical-browser/tactical-live-jev.png'});
   assert.equal((await page.request.get(new URL('/credentials/Typesafe.txt',page.url()).href)).status(),403);
  }
  // Return through the visible switch. No more requests may be scheduled.

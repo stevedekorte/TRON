@@ -3,7 +3,7 @@ import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {writeFile,readFile} from 'node:fs/promises';
 const trial=process.argv.includes('--trial');
-const expectedPolicy=trial?JSON.parse(await readFile('test-results/cycle-ai-trained.json','utf8')).policy:null;
+const expectedPolicy=trial?JSON.parse(await readFile('test-results/cycle-ai/training/cycle-ai-trained.json','utf8')).policy:null;
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:'reduce'}),errors=[];
@@ -35,7 +35,7 @@ try{
   requestAnimationFrame(sample);
  }));
  assert(frameAI.p99<1,'AI work per rendered frame stays under 1 ms');
- await page.screenshot({path:trial?'test-results/cycle-ai-trial.png':'test-results/cycle-ai-arena.png'});
+ await page.screenshot({path:trial?'test-results/cycle-ai/training/cycle-ai-trial.png':'test-results/cycle-ai/training/cycle-ai-arena.png'});
  // Browser CPU-only stress, isolated from the animation loop; includes geometry.
  const report=await page.evaluate(async policy=>{
   const {resetCycleRound,updateCycleRace}=await import('/shared/simulation/light-cycles.js');
@@ -49,5 +49,5 @@ try{
   samples.sort((a,b)=>a-b);return {browser:navigator.userAgent,p95:samples[Math.floor(samples.length*.95)],p99:samples[Math.floor(samples.length*.99)],max:samples.at(-1)};
  },expectedPolicy);
  assert(report.p99<1,'dense browser AI p99 under 1 ms');assert.deepEqual(errors,[]);
- await writeFile(trial?'test-results/cycle-ai-trial-browser.json':'test-results/cycle-ai-browser.json',JSON.stringify({state,frameAI,report,errors},null,2));console.log(JSON.stringify({state,frameAI,report,errors}));
+ await writeFile(trial?'test-results/cycle-ai/training/cycle-ai-trial-browser.json':'test-results/cycle-ai/training/cycle-ai-browser.json',JSON.stringify({state,frameAI,report,errors},null,2));console.log(JSON.stringify({state,frameAI,report,errors}));
 }finally{await browser.close();}

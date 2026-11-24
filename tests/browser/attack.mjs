@@ -16,9 +16,9 @@ try {
  await place();
  await page.waitForFunction(()=>window.__tron.state.recognizers[0].state==='fold');
  await page.waitForTimeout(650);
- await page.screenshot({path:'test-results/attack-fold.png'});
+ await page.screenshot({path:'test-results/clu-tank/attack/attack-fold.png'});
  await page.waitForFunction(()=>window.__tron.state.crushed,{},{timeout:8000});
- await page.screenshot({path:'test-results/attack-impact.png'});
+ await page.screenshot({path:'test-results/clu-tank/attack/attack-impact.png'});
  await page.keyboard.down('KeyW');await page.waitForTimeout(500);await page.keyboard.up('KeyW');
  assert.equal(await page.evaluate(()=>window.__tron.state.speed),0);
  await page.evaluate(()=>__tron.reset());
@@ -42,7 +42,7 @@ try {
  });
  assert.ok(crowd.crushed);assert.ok(crowd.turns.every(angle=>angle<2*Math.PI));
  await page.keyboard.press('KeyV');await page.waitForTimeout(300);
- await page.screenshot({path:'test-results/attack-crowd.png'});
+ await page.screenshot({path:'test-results/clu-tank/attack/attack-crowd.png'});
  console.log('Five-craft close approach and ENCOM TERMINAL title verified.');
  assert.deepEqual(errors,[]);console.log('Crush, escape after commitment, disabled wreck and reset passed in Chrome.');
 }finally{await browser.close();}

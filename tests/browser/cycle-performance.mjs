@@ -23,7 +23,7 @@ try{
   const byId=new Map(profile.nodes.map(n=>[n.id,n]));const sums=new Map();
   for(let i=0;i<profile.samples.length;i++){const n=byId.get(profile.samples[i]);const key=n.callFrame.functionName+' '+n.callFrame.url.split('/').slice(-2).join('/');sums.set(key,(sums.get(key)||0)+profile.timeDeltas[i]/1000);}
   results.push({mode,...metrics,hotspots:[...sums].sort((a,b)=>b[1]-a[1]).slice(0,18)});
-  await fs.writeFile(`test-results/cycle-${mode}.cpuprofile`,JSON.stringify(profile));
+  await fs.writeFile(`test-results/cycles/cycle-performance/cycle-${mode}.cpuprofile`,JSON.stringify(profile));
  }
- await fs.writeFile('test-results/cycle-performance.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));
+ await fs.writeFile('test-results/cycles/cycle-performance/cycle-performance.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));
 }finally{await browser.close();}

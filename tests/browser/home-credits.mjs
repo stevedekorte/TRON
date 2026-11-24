@@ -6,7 +6,7 @@ try{
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://localhost:5173/');
  await page.waitForFunction(()=>!document.querySelector('#start-credits').disabled);
- await page.screenshot({path:'test-results/home-credits-menu.png'});
+ await page.screenshot({path:'test-results/startup/home-credits/home-credits-menu.png'});
  await page.keyboard.press('ArrowUp');
  assert.equal(await page.locator('#start-credits').getAttribute('aria-pressed'),'true');
  await page.keyboard.press('Enter');
@@ -15,7 +15,7 @@ try{
  assert.equal(await page.locator('#game-menu').isVisible(),false);
  assert.match(await page.locator('#end-tribute').getAttribute('aria-label'),/EXTENDED CREDITS/);
  await page.waitForFunction(()=>document.querySelector('#tribute-text').textContent.length>0);
- await page.screenshot({path:'test-results/home-credits.png'});
+ await page.screenshot({path:'test-results/startup/home-credits/home-credits.png'});
  for(const key of ['KeyA','ArrowDown','KeyC']){await page.keyboard.press(key);assert.equal(await page.locator('#game-menu').isVisible(),false);}
  await page.keyboard.press('Space');
  assert.match(await page.locator('#tribute-text').textContent(),/A USER AND A PROGRAM/);

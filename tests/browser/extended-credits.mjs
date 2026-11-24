@@ -61,7 +61,7 @@ try{
  });
  assert(rendering.rows<=21);assert.equal(rendering.removed,0);assert(rendering.stable);assert.equal(rendering.text,rendering.expected);
  assert(Math.abs(rendering.left-rendering.right)<1);assert.equal(rendering.left,rendering.originalLeft);
- await page.screenshot({path:'test-results/extended-credits-layout.png'});
+ await page.screenshot({path:'test-results/terminal-ui/extended-credits/extended-credits-layout.png'});
  console.log('Credits append cost, early/late ms:',rendering.earlyMs,rendering.lateMs);
  await page.setViewportSize({width:390,height:844});
  const mobile=await page.locator('#end-tribute').evaluate(e=>{const b=e.getBoundingClientRect();return {left:b.left,right:innerWidth-b.right,overflow:e.scrollWidth>e.clientWidth+1};});

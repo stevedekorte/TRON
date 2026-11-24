@@ -40,7 +40,7 @@ try{
   for(const dot of el.querySelectorAll('.cycle-roster-kill')){const r=dot.getBoundingClientRect();const row=rows.get(r.top)||[];row.push(r);rows.set(r.top,row);}
   return [...rows.values()].every(row=>Math.abs((row[0].left+row.at(-1).right)/2-(box.left+box.width/2))<.1)&&rows.size===2;
  });assert(centered,'each dot row stays centered, including wrapped rows');
- await page.screenshot({path:'test-results/cycle-roster.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-roster/cycle-roster.png'});
  await page.evaluate(()=>roster.update(race,true,1));assert.equal(await page.locator('.cycle-waiting-queue .cycle-roster-icon').count(),1);
  await page.evaluate(()=>roster.update(race,true,0));assert.equal(await page.locator('.cycle-waiting-queue').count(),0);
  assert.deepEqual(await page.locator('[data-cycle-id="0"]').boundingBox(),before);

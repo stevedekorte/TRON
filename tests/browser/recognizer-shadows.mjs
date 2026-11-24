@@ -31,6 +31,6 @@ try{
    for(let i=0;i<before.length;i+=4)if(before[i]-after[i]>4)darker++;counts.push(darker);
   }
   craft.root.visible=true;roof.visible=wall.visible=true;shadows.update(renderer);renderer.render(scene,camera);return counts;
- });assert.ok(result.every(n=>n>100),JSON.stringify(result));await page.screenshot({path:'test-results/recognizer-wall-shadows.png'});assert.deepEqual(errors,[]);console.log({shadowPixels:{roof:result[0],wall:result[1],debrisRoof:result[2],debrisWall:result[3]}});
+ });assert.ok(result.every(n=>n>100),JSON.stringify(result));await page.screenshot({path:'test-results/recognizers/recognizer-shadows/recognizer-wall-shadows.png'});assert.deepEqual(errors,[]);console.log({shadowPixels:{roof:result[0],wall:result[1],debrisRoof:result[2],debrisWall:result[3]}});
  await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);await page.waitForFunction(()=>window.__tron.state.mode==='ready');await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');await page.waitForTimeout(500);assert.deepEqual(errors,[]);
 }finally{await browser.close();}

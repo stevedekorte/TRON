@@ -7,3 +7,12 @@ export const MP=Object.freeze({
  maxMessageBytes:512,maxMessagesPerSecond:80,maxBufferedBytes:512*1024,
  maxCatchupSteps:24,startFormationSpacingCells:1,
 });
+// Arena presence: menus and solo games learn how many humans are in the multiplayer
+// arena without joining it. Watchers get {type:'arena',players} now and on every change.
+export const MP_PRESENCE=Object.freeze({
+ statusPath:'/api/multiplayer/status',watchPath:'/api/multiplayer/watch',
+ maxWatchers:1000,          // presence sockets per arena; extra watchers fall back to polling
+ pingSeconds:30,            // watcher keep-alive ('ping' -> 'pong', answered without waking the arena)
+ reconnectSeconds:[2,5,15,30], // watcher reconnect backoff; each attempt also polls the status endpoint
+});
+export const presenceMessage=players=>JSON.stringify({type:'arena',players});

@@ -25,5 +25,5 @@ try{
   const coarse=await measure(false),focused=await measure(true);target.dispose();renderer.dispose();return {coarse,focused};
  });
  assert(report.coarse.high-report.coarse.low>50);assert(report.focused.high-report.focused.low>50);assert(report.focused.transition<report.coarse.transition/4);assert(report.focused.transition<8);assert(report.focused.follows);assert.deepEqual(errors,[]);
- await mkdir('test-results/clu-wall-shadows',{recursive:true});console.log(JSON.stringify({...report,errors}));
+ await mkdir('test-results/clu-tank/clu-wall-shadows',{recursive:true});console.log(JSON.stringify({...report,errors}));
 }finally{await browser.close();}

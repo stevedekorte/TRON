@@ -26,6 +26,6 @@ try{
  });
  assert(result.alive);assert.equal(result.turns,result.start.turns+1);
  assert(Math.abs(result.corner.x-result.start.x)<1e-8);assert(Math.abs(result.corner.z-result.start.z)<1e-8);
- await page.screenshot({path:'test-results/cycle-immediate-turn.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-input-latency/cycle-immediate-turn.png'});
  assert.deepEqual(errors,[]);console.log(result);
 }finally{await browser.close();}

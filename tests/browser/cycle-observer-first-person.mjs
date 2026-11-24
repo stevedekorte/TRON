@@ -21,7 +21,7 @@ try{
  assert(Math.abs((await page.evaluate(()=>__tron.state.camera.y))-1.3)<.1,'observer camera at rider eye height');
  await page.waitForTimeout(400);
  assert(await page.evaluate(()=>__tron.state.cycleRendering.cockpitOutline.visible),'followed cycle shows the cockpit outline');
- await page.screenshot({path:'test-results/cycle-observer-first-person.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-observer-first-person/cycle-observer-first-person.png'});
  await page.keyboard.press('ArrowRight');await page.waitForFunction(()=>__tron.state.cycleFollowId===2);
  await page.waitForTimeout(600);
  assert.equal(await page.evaluate(()=>__tron.state.camera.cycleFirstPerson),true,'first person persists across follow switches');

@@ -1,0 +1,7 @@
+{
+  "script": "A warrior is on the mesa.",
+  "source": "Clip from TRON (1982), supplied by the user (WarriorOnTheMesa.wav, 48 kHz 24-bit stereo, 2.92 s).",
+  "processing": "Trimmed to 0.10–2.90 s; 130 ms quarter-sine fade-in ending just before the first word; 320 ms quarter-sine fade-out from the decay of 'mesa' (the clip began and ended mid-sound, at 3% and 1.6% of full scale); +2.0 dB to match the other announcer lines (-21.4 LUFS integrated, peak -8.7 dBFS); stereo kept (film ambience differs between channels); MP3 192 kb/s. No time stretching or noise reduction.",
+  "playback": "Multiplayer: every human who enters the arena or its queue after the listener. Solo: when the multiplayer arena goes from empty to occupied. See src/audio/arena-arrival-voice.js.",
+  "useConstraints": "Film audio; underlying rights remain with respective owners."
+}

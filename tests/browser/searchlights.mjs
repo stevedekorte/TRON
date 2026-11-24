@@ -14,7 +14,7 @@ try{
  await page.waitForTimeout(500);await page.keyboard.press('Escape');
  const beams=await page.evaluate(()=>window.__tron.state.searchlights);
  assert.equal(beams[0].visible,true);assert.ok(beams.slice(1).every(b=>!b.visible));assert.ok(beams[0].length>0&&beams[0].length<=260);
- await page.screenshot({path:'test-results/recognizer-searchlight.png'});
+ await page.screenshot({path:'test-results/recognizers/searchlights/recognizer-searchlight.png'});
  await page.waitForTimeout(150);assert.deepEqual(await page.evaluate(()=>window.__tron.state.searchlights.map(b=>b.strength)),beams.map(b=>b.strength));
  const clipping=await page.evaluate(async()=>{
   const T=await import('/node_modules/three/build/three.module.js');const {clippedBeamEnd,beamPose}=await import('/src/rendering/searchlights.js');

@@ -5,7 +5,7 @@ import pathlib,json,sqlite3
 import cv2
 import numpy as np
 import pycolmap as pc
-base=pathlib.Path(__file__).resolve().parents[2]/'test-results/maze-wall-video'
+base=pathlib.Path(__file__).resolve().parents[2]/'test-results/maze-arena/maze-wall-video'
 reports=[]
 for clip in [1,2]:
  source=base/f'sfm-clip{clip}'; output=base/f'flow-clip{clip}';output.mkdir(exist_ok=True)

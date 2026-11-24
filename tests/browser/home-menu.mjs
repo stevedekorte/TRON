@@ -26,7 +26,7 @@ try{
  await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-multiplayer').getAttribute('aria-pressed'),'true');
  await page.keyboard.press('ArrowUp');assert.equal(await page.locator('#start-cycles').getAttribute('aria-pressed'),'true');
  await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');
- await page.screenshot({path:'test-results/home-menu.png'});
+ await page.screenshot({path:'test-results/startup/home-menu/home-menu.png'});
  const terminalTop=await page.locator('.terminal-content').last().evaluate(e=>e.getBoundingClientRect().top);
  await page.keyboard.press('Enter');
  await page.waitForFunction(()=>__tron.state.mode==='entering');
@@ -48,18 +48,18 @@ try{
  }
  assert(await page.locator('#autoplay-toggle').isVisible());
  assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
- await page.screenshot({path:'test-results/clu-terminal-size-hud.png'});
+ await page.screenshot({path:'test-results/startup/home-menu/clu-terminal-size-hud.png'});
  await home();await page.keyboard.press('Enter');await arena();
  assert.equal(await page.locator('#cycle-controls').evaluate(e=>getComputedStyle(e).fontSize),typography[0]);
  assert.equal(await page.locator('#turbo span').evaluate(e=>getComputedStyle(e).fontSize),typography[0]);
- await page.screenshot({path:'test-results/cycle-terminal-size-hud.png'});
+ await page.screenshot({path:'test-results/startup/home-menu/cycle-terminal-size-hud.png'});
  await page.evaluate(()=>{const race=__tron.state.cycleRace;race.cycles[1].alive=false;race.phase='result';__tron.place({cycleRace:race});});
  await page.keyboard.press('Enter');await arena();
  await home();await page.locator('#start-cycles').tap();await arena();
  await home();await page.locator('#start').click();
  await page.waitForFunction(()=>__tron.state.mode==='running');
  assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
- await page.screenshot({path:'test-results/clu-terminal-size-hud.png'});
+ await page.screenshot({path:'test-results/startup/home-menu/clu-terminal-size-hud.png'});
  for(const dismiss of [()=>page.keyboard.press('Enter'),()=>page.mouse.click(600,400),()=>page.touchscreen.tap(600,400)]){
   await page.keyboard.press('Shift+Digit8');
   await page.waitForFunction(()=>document.body.classList.contains('victory'));
@@ -86,7 +86,7 @@ try{
  const opacity=await page.locator('#intro .terminal-content').evaluate(e=>Number(getComputedStyle(e).opacity));
  assert(opacity>0&&opacity<1);
  assert.notDeepEqual(await page.evaluate(()=>[__tron.state.camera.x,__tron.state.camera.y,__tron.state.camera.z]),cameraBefore);
- await page.screenshot({path:'test-results/clu-access-transition.png'});
+ await page.screenshot({path:'test-results/startup/home-menu/clu-access-transition.png'});
  const drivingBefore=await page.evaluate(()=>({speed:__tron.state.speed,yaw:__tron.state.yaw,turret:__tron.state.turretYaw,shots:__tron.state.shots,cruise:__tron.state.cruiseThrottle}));
  const maxSpeed=await page.evaluate(async()=>(await import('/src/game/config.js')).config.maxSpeed);
  assert.equal(drivingBefore.cruise,true);assert(Math.abs(drivingBefore.speed-maxSpeed)<.01);
@@ -129,6 +129,6 @@ try{
  await page.evaluate(()=>{const r=__tron.state;__tron.place({dataBeams:r.dataBeams.map(b=>({...b,collectedAt:r.time})),recognizers:[],enemyTanks:[]});});
  await page.waitForFunction(()=>document.body.classList.contains('victory'));
  assert.notEqual(await page.evaluate(()=>__tron.state.playerVehicle),'cycle');
- await page.screenshot({path:'test-results/clu-terminal-size-hud.png'});
+ await page.screenshot({path:'test-results/startup/home-menu/clu-terminal-size-hud.png'});
  assert.deepEqual(errors,[]);console.log('Home menu: keyboard selection, Return, mouse, touch, normal Clu start, intact six-bike arena, restart, and keyboard/mouse/touch credits dismissal passed.');
 }finally{await browser.close();}

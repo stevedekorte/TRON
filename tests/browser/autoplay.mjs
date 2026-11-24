@@ -30,7 +30,7 @@ try{
   await page.keyboard.down('KeyI');await page.waitForTimeout(150);await page.keyboard.up('KeyI');assert((await zoom()).aerial<farther.aerial);
   await page.keyboard.press('KeyV');const returned=await zoom();
   await page.keyboard.down('KeyK');await page.waitForTimeout(200);await page.keyboard.up('KeyK');assert.deepEqual(await zoom(),returned);
-  await page.screenshot({path:'test-results/clu-autoplay-disabled.png'});
+  await page.screenshot({path:'test-results/jev-autoplay/autoplay/clu-autoplay-disabled.png'});
   assert.deepEqual(errors,[]);console.log('Clu autoplay unavailable through keys and button; autoplay and statistics UI hidden; no player API calls.');
  }else{
  // Real browser-default blueprint opening, after the pursuers are gone.
@@ -61,7 +61,7 @@ try{
  await page.waitForFunction(()=>__tron.state.time>8&&Math.abs(__tron.state.turretYaw)<.03);
  const samples=[];for(let i=0;i<12;i++){samples.push(await page.evaluate(()=>__tron.state.speed));await page.waitForTimeout(250);}
  assert(Math.min(...samples)>19,`Cruise speed dropped: ${samples}`);
- await page.screenshot({path:'test-results/autoplay-jev.png'});
+ await page.screenshot({path:'test-results/jev-autoplay/autoplay/autoplay-jev.png'});
  await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.time),count=calls;await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>__tron.state.time),paused);assert.equal(calls,count);
  await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>__tron.state.autoplay.enabled),true);
  const position=await page.evaluate(()=>__tron.state.s);

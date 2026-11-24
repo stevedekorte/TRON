@@ -1,14 +1,30 @@
 import * as THREE from 'three';
 
-export const HUMAN_STRIPE = Object.freeze({halfWidthMeters:.22, slope:.5, centerHeightMeters:.95, bodyLimitMeters:.61});
+export const HUMAN_STRIPE = Object.freeze({halfWidthMeters:.22, slope:.5, centerHeightMeters:.95, bodyLimitMeters:.61,
+ // Pattern 2: two thinner parallel slashes, centred this far either side of the single slash's centre line.
+ doubleHalfWidthMeters:.09, doubleOffsetMeters:.17,
+ // Pattern 3: a chevron, the same from either side of the cycle (a mirrored slash would not be).
+ chevronSlope:1.1, chevronHalfWidthMeters:.15, chevronOffsetMeters:-.12});
+/** Identifying patterns for human riders, unique within a team (the server assigns 1–3). */
+export const HUMAN_STRIPE_PATTERNS = Object.freeze(['single slash','double slash','chevron']);
+const f=value=>Number(value).toFixed(4);
+// humanStripe: 0 none, 1 single slash, 2 double slash, 3 chevron. Each band is half black, half white.
 export const humanStripeGLSL = `
 uniform float humanStripe;
 vec3 humanPaint(vec3 paint,vec3 p){
- float d=p.z-${HUMAN_STRIPE.slope}*(p.y-${HUMAN_STRIPE.centerHeightMeters});
- float aa=max(fwidth(d),.001);
- float mask=(1.-smoothstep(${HUMAN_STRIPE.halfWidthMeters}-aa,${HUMAN_STRIPE.halfWidthMeters}+aa,abs(d)))
-  *(1.-smoothstep(${HUMAN_STRIPE.bodyLimitMeters}-.01,${HUMAN_STRIPE.bodyLimitMeters},abs(p.z)))*humanStripe;
- vec3 stripe=mix(vec3(.008),vec3(.9),smoothstep(-aa,aa,d));
+ float y=p.y-${f(HUMAN_STRIPE.centerHeightMeters)};
+ float slash=p.z-${f(HUMAN_STRIPE.slope)}*y;
+ float chevron=p.z-${f(HUMAN_STRIPE.chevronSlope)}*abs(y)-(${f(HUMAN_STRIPE.chevronOffsetMeters)});
+ float aa=max(fwidth(slash),.001),aaChevron=max(fwidth(chevron),.001);
+ float d=slash,halfWidth=${f(HUMAN_STRIPE.halfWidthMeters)},edge=aa;
+ if(humanStripe>2.5){d=chevron;halfWidth=${f(HUMAN_STRIPE.chevronHalfWidthMeters)};edge=aaChevron;}
+ else if(humanStripe>1.5){
+  float a=slash-${f(HUMAN_STRIPE.doubleOffsetMeters)},b=slash+${f(HUMAN_STRIPE.doubleOffsetMeters)};
+  d=abs(a)<abs(b)?a:b;halfWidth=${f(HUMAN_STRIPE.doubleHalfWidthMeters)};
+ }
+ float mask=(1.-smoothstep(halfWidth-edge,halfWidth+edge,abs(d)))
+  *(1.-smoothstep(${f(HUMAN_STRIPE.bodyLimitMeters-.01)},${f(HUMAN_STRIPE.bodyLimitMeters)},abs(p.z)))*step(.5,humanStripe);
+ vec3 stripe=mix(vec3(.008),vec3(.9),smoothstep(-edge,edge,d));
  return mix(paint,stripe,mask);
 }
 `;
@@ -41,7 +57,7 @@ export function installHumanStripe(root){
    shader.fragmentShader='varying vec3 stripePosition;\n'+humanStripeGLSL+shader.fragmentShader;
    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=humanPaint(diffuseColor.rgb,stripePosition);');
   };
-  material.customProgramCacheKey=()=>previousKey+'-human-stripe-v1';
+  material.customProgramCacheKey=()=>previousKey+'-human-stripe-v2';
  }
 }
 
@@ -69,5 +85,5 @@ export function installHumanWireStripe(root,rez){
   shader.fragmentShader='varying vec3 stripePosition;\n'+humanStripeGLSL+shader.fragmentShader;
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=humanPaint(diffuseColor.rgb,stripePosition);');
  };
- material.customProgramCacheKey=()=>key+'-human-wire-stripe-v1';material.needsUpdate=true;
+ material.customProgramCacheKey=()=>key+'-human-wire-stripe-v2';material.needsUpdate=true;
 }

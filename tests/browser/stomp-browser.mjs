@@ -26,7 +26,7 @@ try{
  }
  await page.keyboard.press('v');
  try{await page.waitForFunction(()=>__tron.state.recognizers.some(e=>e.attack?.phase==='drop'),{},{timeout:60000});}catch(error){console.log(await page.evaluate(()=>({time:__tron.state.time,speed:__tron.state.speed,units:__tron.state.recognizers.slice(0,5).map(e=>({d:Math.hypot(e.x-__tron.state.x,e.s-__tron.state.s),state:e.state,kind:e.tactical?.plan?.kind,role:e.attackAssignment?.role}))})));throw error;}
- await page.screenshot({path:approaching?'test-results/approaching-stomp.png':'test-results/opening-stomp.png'});
+ await page.screenshot({path:approaching?'test-results/clu-tank/stomp-browser/approaching-stomp.png':'test-results/clu-tank/stomp-browser/opening-stomp.png'});
  await page.waitForFunction(()=>__tron.state.crushed,{},{timeout:10000});
  const state=await page.evaluate(()=>__tron.state),attacker=state.recognizers.find(e=>e.attack?.phase==='hold');
  assert.ok(attacker);assert.equal(attacker.health,3);assert.ok(state.aiHistory.some(h=>h.accepted));assert.deepEqual(errors,[]);

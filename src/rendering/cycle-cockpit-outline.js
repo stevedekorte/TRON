@@ -51,7 +51,8 @@ export function cycleOutlineGeometry(root,options=CYCLE_COCKPIT_OUTLINE){
 }
 
 export class CycleCockpitOutline{
- constructor(model,options=CYCLE_COCKPIT_OUTLINE){
+ // A model may carry its own wheel positions (model.userData.cockpitOutline).
+ constructor(model,options=model.userData?.cockpitOutline??CYCLE_COCKPIT_OUTLINE){
   this.options=options;
   this.material=new THREE.LineBasicMaterial({transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,fog:false});
   this.lines=new THREE.LineSegments(cycleOutlineGeometry(model,options),this.material);

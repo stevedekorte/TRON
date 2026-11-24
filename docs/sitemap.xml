@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://dekorte.com/fun/TRON/docs/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/assets/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/cycle-ai/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/history/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/jev/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/models/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/models/carrier-shuttle/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/multiplayer/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/multiplayer/webrtc/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/organization/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/refactoring/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/references/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/security/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/sounds/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/validation/</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/llms.txt</loc></url>
-  <url><loc>https://dekorte.com/fun/TRON/docs/llms-full.txt</loc></url>
+  <url><loc>/</loc></url>
+  <url><loc>/assets/</loc></url>
+  <url><loc>/cycle-ai/</loc></url>
+  <url><loc>/history/</loc></url>
+  <url><loc>/jev/</loc></url>
+  <url><loc>/models/</loc></url>
+  <url><loc>/models/carrier-shuttle/</loc></url>
+  <url><loc>/multiplayer/</loc></url>
+  <url><loc>/multiplayer/webrtc/</loc></url>
+  <url><loc>/organization/</loc></url>
+  <url><loc>/refactoring/</loc></url>
+  <url><loc>/references/</loc></url>
+  <url><loc>/security/</loc></url>
+  <url><loc>/sounds/</loc></url>
+  <url><loc>/validation/</loc></url>
+  <url><loc>/llms.txt</loc></url>
+  <url><loc>/llms-full.txt</loc></url>
 </urlset>

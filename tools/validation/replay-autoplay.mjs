@@ -17,6 +17,6 @@ for(let i=0;i<seconds*60;i++){
  if(i%600===0||idle===180)events.push(pilot.diagnostics(r));
  if(idle>=1200)break; // Diagnostic stop, not a claim that all beams should be reachable.
 }
-const output=args.get('--output')||'test-results/autoplay-replay.json';mkdirSync(dirname(output),{recursive:true});
+const output=args.get('--output')||'test-results/jev-autoplay/replay-autoplay/autoplay-replay.json';mkdirSync(dirname(output),{recursive:true});
 writeFileSync(output,JSON.stringify({scenario:session.run.scenario,seconds:session.run.time,captures,stalledSeconds:idle/60,final:pilot.diagnostics(session.run),events},null,2));
 console.log(JSON.stringify({output,seconds:session.run.time,captures,stalledSeconds:idle/60}));

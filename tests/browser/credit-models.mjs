@@ -31,14 +31,14 @@ try{
   assert(framing.right<=1560&&framing.bottom<=750,'respect page and logo margins');
   if(entry.model==='cycle')assert(await page.evaluate(()=>{let ray=false;tribute.preview.model.traverse(o=>{if(o.material?.isShaderMaterial&&o.material.fragmentShader.includes('cycleHit'))ray=true;});return ray;}),'cycle credit uses CSG shader');
   if(entry.model==='recognizer')assert.equal(framing.faceColor,0x05070a);
-  await page.screenshot({path:`test-results/credit-model-${entry.model}.png`});
+  await page.screenshot({path:`test-results/terminal-ui/credit-models/credit-model-${entry.model}.png`});
   if(entry.model==='sailer'){
    const state=await page.evaluate(()=>{
     const p=tribute.preview;p.age=16;p.update(tribute,0);
     let beams=0,sails=0;p.model.traverse(o=>{if(o.name==='Credit transit beam')beams++;if(o.material?.name.startsWith('Translucent sail')&&o.material.opacity===1)sails++;});
     return {beams,sails};
    });assert.equal(state.beams,4);assert(state.sails>0);
-   await page.screenshot({path:'test-results/credit-model-sailer-full.png'});
+   await page.screenshot({path:'test-results/terminal-ui/credit-models/credit-model-sailer-full.png'});
   }
   await page.evaluate(()=>{tribute.typed.style.opacity='.4';tribute.phase='fade';tribute.preview.update(tribute,0);});assert.equal(await page.evaluate(()=>Number(tribute.preview.element.style.opacity)),.4);
  }
@@ -54,7 +54,7 @@ try{
   if(await page.locator('#tribute-text').textContent().then(text=>text.startsWith('ARABIN')))break;
  }
  await page.waitForFunction(()=>document.querySelector('.credit-model-preview')?.dataset.model==='tank'&&!document.querySelector('.credit-model-preview').hidden);
- await page.waitForTimeout(1600);await page.screenshot({path:'test-results/credit-model-in-game.png'});
+ await page.waitForTimeout(1600);await page.screenshot({path:'test-results/terminal-ui/credit-models/credit-model-in-game.png'});
  await page.keyboard.press('Enter');assert(await page.locator('.credit-model-preview').evaluate(e=>e.hidden));
  assert.deepEqual(errors,[]);
  }

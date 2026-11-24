@@ -59,5 +59,5 @@ export function decodeAudio(input) {
 if(process.argv[1]?.endsWith('analyze-recognizer.mjs')){
  const input=process.argv[2];if(!input)throw Error('Usage: node tools/audio/analyze-recognizer.mjs source.mp4 [report.json]');
  const samples=decodeAudio(input);
- const result=analyze(samples);writeFileSync(process.argv[3]||'test-results/recognizer-reference-fft.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
+ const result=analyze(samples);writeFileSync(process.argv[3]||'test-results/recognizers/analyze-recognizer/recognizer-reference-fft.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
 }

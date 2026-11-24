@@ -37,7 +37,7 @@ for(const name of names){
    let diff=0;for(let f=1;f<3;f++)for(let i=0;i<frames[0].length;i++)if(frames[f][i]!==frames[0][i])diff++;
    return {gpu,singleTrace:povSingleTrace(renderer),ok:!lost,warmMs,drawn:+selfTest.solid.drawnFraction.toFixed(3),lit:+selfTest.solid.litFraction.toFixed(3),nondeterministic:diff,lost};
   });
-  await page.screenshot({path:`test-results/pov-engine-${name}.png`});
+  await page.screenshot({path:`test-results/cycle-rendering/pov-engines/pov-engine-${name}.png`});
   const pass=r.ok&&r.nondeterministic===0&&!errors.length;failed||=!pass;
   console.log(`${pass?'PASS':'FAIL'} ${name}`,JSON.stringify(r),errors.length?errors:'');
  }finally{await browser.close();}

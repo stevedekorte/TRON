@@ -29,5 +29,5 @@ try{
   return result;
  });
  assert(results.every(r=>r.covered>1000&&(r.angle===-Math.PI/4?r.patches===0:r.patches>1000)),JSON.stringify(results));assert.deepEqual(errors,[]);
- await page.screenshot({path:'test-results/carrier-grazing-wall.png'});console.log(results);
+ await page.screenshot({path:'test-results/carrier/carrier-grazing-shadow/carrier-grazing-wall.png'});console.log(results);
 }finally{await browser.close();}

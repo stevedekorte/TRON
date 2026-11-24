@@ -43,9 +43,9 @@ try{
    renderer.render(scene,camera);
   };window.renderMaze();
  });
- await page.screenshot({path:'test-results/labyrinth-top.png'});
- await page.evaluate(()=>renderMaze(false,true));await page.screenshot({path:'test-results/labyrinth-3d.png'});
- await page.evaluate(()=>renderMaze(true));await page.screenshot({path:'test-results/five-mazes.png'});
- await page.evaluate(()=>renderWall());await page.screenshot({path:'test-results/labyrinth-wall-shadow.png'});
+ await page.screenshot({path:'test-results/maze-arena/labyrinth/labyrinth-top.png'});
+ await page.evaluate(()=>renderMaze(false,true));await page.screenshot({path:'test-results/maze-arena/labyrinth/labyrinth-3d.png'});
+ await page.evaluate(()=>renderMaze(true));await page.screenshot({path:'test-results/maze-arena/labyrinth/five-mazes.png'});
+ await page.evaluate(()=>renderWall());await page.screenshot({path:'test-results/maze-arena/labyrinth/labyrinth-wall-shadow.png'});
  assert.deepEqual(errors,[]);console.log('Five-maze game startup, beams/pads, and traced 3D labyrinth rendering passed.');
 }finally{await browser.close();}

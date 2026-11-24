@@ -14,7 +14,7 @@ try{
    __tron.place({cycleRace:r});},speed);
   await page.waitForTimeout(3500);
   distances.push(await page.evaluate(()=>{const s=__tron.state,r=s.cycleRace,b=r.cycles[r.playerId];return Math.hypot(s.camera.x-r.site.x-b.x*4.8,s.camera.z+r.site.s-b.z*4.8);}));
-  await page.screenshot({path:`test-results/cycle-speed-${speed}.png`});
+  await page.screenshot({path:`test-results/cycles/cycle-speed-camera/cycle-speed-${speed}.png`});
  }
  assert(distances[1]<distances[0]-2);assert(distances[2]>distances[0]+.7);assert.deepEqual(errors,[]);console.log({distances});
 }finally{await browser.close();}

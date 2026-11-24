@@ -18,9 +18,9 @@ try{
  const original=await page.evaluate(()=>{const s=__tron.state;const x=s.recognizers[0].x;s.recognizers[0].x=999999;return {x,current:__tron.state.recognizers[0].x};});
  assert.equal(original.x,original.current,'debug snapshots cannot mutate the run');
  await page.keyboard.press('Escape');const time=await page.evaluate(()=>__tron.state.time);await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>__tron.state.time),time);
- await mkdir('test-results',{recursive:true});await page.screenshot({path:'test-results/refactor-follow.png'});
- await page.keyboard.press('Escape');await page.keyboard.press('KeyV');await page.waitForTimeout(100);await page.screenshot({path:'test-results/refactor-aerial.png'});
- await page.keyboard.press('KeyP');await page.waitForTimeout(100);await page.screenshot({path:'test-results/refactor-gunner.png'});
+ await mkdir('test-results/rendering/refactor-browser',{recursive:true});await page.screenshot({path:'test-results/rendering/refactor-browser/refactor-follow.png'});
+ await page.keyboard.press('Escape');await page.keyboard.press('KeyV');await page.waitForTimeout(100);await page.screenshot({path:'test-results/rendering/refactor-browser/refactor-aerial.png'});
+ await page.keyboard.press('KeyP');await page.waitForTimeout(100);await page.screenshot({path:'test-results/rendering/refactor-browser/refactor-gunner.png'});
  const resources=[];
  for(let i=0;i<3;i++){await page.evaluate(()=>__tron.reset());await page.waitForTimeout(100);resources.push(await page.evaluate(()=>({geometries:__tron.state.renderer.geometries,textures:__tron.state.renderer.textures,contexts:__tron.state.audioContexts})));}
  assert.equal(resources[0].geometries,resources[2].geometries);assert.equal(resources[0].textures,resources[2].textures);assert.equal(resources[2].contexts,1);

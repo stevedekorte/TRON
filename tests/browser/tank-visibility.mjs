@@ -15,9 +15,9 @@ try{
   let enemyTrim;enemy.root.traverse(o=>{if(o.material?.name==='Wheels_Red_Emission')enemyTrim=o.material;});
   window.inspection={T,tank,enemy,scene,camera,renderer};return {isolated:tank.turboTrim.every(m=>m!==enemyTrim),trimCount:tank.turboTrim.length};
  });assert.ok(result.isolated&&result.trimCount>0);
- await page.screenshot({path:'test-results/enemy-tank-low-angle.png'});
+ await page.screenshot({path:'test-results/clu-tank/tank-visibility/enemy-tank-low-angle.png'});
  await page.evaluate(()=>{const {tank,enemy,scene,camera,renderer}=window.inspection;scene.remove(enemy.root);scene.add(tank.root);camera.position.set(12,5,18);camera.lookAt(0,1.5,0);tank.turboTrim.forEach(m=>{m.emissive.setHex(0xff0301);m.emissiveIntensity=2.4;});renderer.render(scene,camera);});
- await page.screenshot({path:'test-results/tank-turbo-trim.png'});
+ await page.screenshot({path:'test-results/clu-tank/tank-visibility/tank-turbo-trim.png'});
  await page.goto('http://127.0.0.1:5174');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');await page.keyboard.up('KeyW');
  await page.evaluate(()=>__tron.place({x:-5000,s:-5000,recognizers:[],enemyTanks:[]}));

@@ -26,7 +26,7 @@ try{
   const state=await page.evaluate(()=>{const s=__tron.state,b=s.cycleRendering.bikes[s.cycleRace.playerId];return {camera:s.camera,bike:b.position,visible:b.visible,screen:__tron.project({x:b.position[0],y:1,s:-b.position[2]})};});
   assert.equal(state.visible,true,'keep own cycle visible in close-wall view');
   assert(state.camera.y<3.2&&state.camera.y>2.8,'camera settles just above the cycle');
-  if(!key)await page.screenshot({path:'test-results/arena-camera-close-wall.png'});
+  if(!key)await page.screenshot({path:'test-results/maze-arena/arena-camera/arena-camera-close-wall.png'});
   if(key)await page.keyboard.up(key);
  }
  await page.keyboard.down('KeyK');await page.waitForFunction(()=>__tron.state.camera.y>20,null,{timeout:20000});await page.keyboard.up('KeyK');
@@ -36,7 +36,7 @@ try{
   return {down:Math.asin(-d.y),fov:c.fov};
  });
  assert(followPitch.down<followPitch.fov*Math.PI/360,'I/K follow view includes the horizon without glancing');
- await page.screenshot({path:'test-results/cycle-zoom-follow-horizon.png'});
+ await page.screenshot({path:'test-results/maze-arena/arena-camera/cycle-zoom-follow-horizon.png'});
  await page.keyboard.down('KeyJ');await page.waitForTimeout(1000);
  const pitch=await page.evaluate(async()=>{
   const {Vector3,Quaternion}=await import('/node_modules/three/build/three.module.js');
@@ -45,7 +45,7 @@ try{
  });
  assert(pitch.y>20,'K raises the cycle camera');
  assert(pitch.down<pitch.fov*Math.PI/360,'zoomed glance includes the horizon');
- await page.screenshot({path:'test-results/cycle-zoom-glance-horizon.png'});
+ await page.screenshot({path:'test-results/maze-arena/arena-camera/cycle-zoom-glance-horizon.png'});
  await page.keyboard.up('KeyJ');
  assert.deepEqual(errors,[]);console.log('Arena camera: model/wall clearance and zoomed glance horizon passed.');
 }finally{await browser.close();}

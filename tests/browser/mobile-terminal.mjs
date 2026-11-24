@@ -13,7 +13,7 @@ try{
   await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-cycles').getAttribute('aria-pressed'),'true');
   await page.keyboard.press('ArrowDown');assert.equal(await page.locator('#start-bit').getAttribute('aria-pressed'),'true','keyboard skips CLU');
   await page.locator('#start').dispatchEvent('click');assert.equal(await page.evaluate(()=>__tron.state.mode),'ready');
-  await page.screenshot({path:'test-results/mobile-menu-'+name.replaceAll(' ','-')+'.png'});
+  await page.screenshot({path:'test-results/startup/mobile-terminal/mobile-menu-'+name.replaceAll(' ','-')+'.png'});
   await page.locator('#start-credits').tap();
   await page.waitForFunction(()=>document.body.classList.contains('victory-credits')&&!document.body.classList.contains('home-opening'));
   await page.touchscreen.tap(15,15);

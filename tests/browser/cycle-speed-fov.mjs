@@ -18,10 +18,10 @@ try{
  await page.keyboard.press('KeyP');await page.waitForFunction(()=>__tron.state.camera.cycleFirstPersonMix>.99);
  const fp=await settle(95);assert(Math.abs(fp-95)<.5,`first-person cruise ${fp}`);
  await page.keyboard.down('KeyW');const fpTurbo=await settle(89);
- await page.screenshot({path:'test-results/cycle-speed-fov-turbo.png'});await page.keyboard.up('KeyW');
+ await page.screenshot({path:'test-results/cycles/cycle-speed-fov/cycle-speed-fov-turbo.png'});await page.keyboard.up('KeyW');
  assert(Math.abs(fpTurbo-89)<.5,`first-person turbo ${fpTurbo}`);
  await page.keyboard.down('KeyS');const fpBrake=await settle(103);
- await page.screenshot({path:'test-results/cycle-speed-fov-brake.png'});await page.keyboard.up('KeyS');
+ await page.screenshot({path:'test-results/cycles/cycle-speed-fov/cycle-speed-fov-brake.png'});await page.keyboard.up('KeyS');
  assert(Math.abs(fpBrake-103)<.5,`first-person brake ${fpBrake}`);
  assert.deepEqual(errors,[]);console.log(`FOV chase ${chase.toFixed(1)}/${turbo.toFixed(1)}/${brake.toFixed(1)}, first person ${fp.toFixed(1)}/${fpTurbo.toFixed(1)}/${fpBrake.toFixed(1)} (cruise/turbo/brake).`);
 }finally{await browser.close();}

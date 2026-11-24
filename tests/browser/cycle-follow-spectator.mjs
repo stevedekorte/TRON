@@ -17,7 +17,7 @@ try{
  await page.waitForFunction(()=>__tron.state.cycleSpectating&&__tron.state.cycleFollowId===null);
  await page.waitForTimeout(3300);
  await page.waitForFunction(()=>document.querySelector('#turbo-fill').style.transform==='scaleX(0.1)'&&document.querySelector('#cycle-brake-fill').style.transform==='scaleX(0.6)');
- await page.screenshot({path:'test-results/cycle-death-overview.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-follow-spectator/cycle-death-overview.png'});
  await page.keyboard.press('ArrowRight');
  await page.waitForFunction(()=>__tron.state.cycleFollowId===0);
  await page.waitForFunction(()=>document.querySelector('#cycle-controls').textContent.includes('ENTER TO RESTART'));
@@ -38,7 +38,7 @@ try{
  await page.waitForTimeout(1000);assert.equal(await page.evaluate(()=>__tron.state.cycleFollowId),0,'hold dead survivor before automatic replacement');
  await page.waitForFunction(()=>__tron.state.cycleFollowId===2);
  await page.waitForFunction(()=>document.querySelector('#turbo-fill').style.transform==='scaleX(0.3)'&&document.querySelector('#cycle-brake-fill').style.transform==='scaleX(0.4)');
- await page.screenshot({path:'test-results/cycle-follow-spectator.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-follow-spectator/cycle-follow-spectator.png'});
  const round=await page.evaluate(()=>__tron.state.cycleRace.round);
  await page.keyboard.press('Enter');
  await page.waitForFunction(round=>__tron.state.cycleRace.round===round+1&&!__tron.state.cycleSpectating,round);

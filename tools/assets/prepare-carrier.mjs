@@ -34,8 +34,8 @@ try {
   await writeFile('assets/runtime/models/tron_1982_carrier.glb',Buffer.from(base64,'base64'));
   await page.goto('http://127.0.0.1:5173/carrier.html');
   await page.waitForFunction(()=>window.carrierReady===true);
-  await mkdir('test-results',{recursive:true});
-  await page.screenshot({path:'test-results/carrier-preview.png'});
+  await mkdir('test-results/carrier/prepare-carrier',{recursive:true});
+  await page.screenshot({path:'test-results/carrier/prepare-carrier/carrier-preview.png'});
   if(errors.length)throw new Error(errors.join('\n'));
   console.log(JSON.stringify(stats,null,2));
 } finally {await browser.close();}

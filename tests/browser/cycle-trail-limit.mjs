@@ -28,6 +28,6 @@ try{
  });
  assert(Math.abs(result.length-result.limit)<.001,JSON.stringify(result));
  await page.keyboard.press('v');await page.waitForTimeout(1500);
- await page.screenshot({path:'test-results/cycle-trail-limit.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-trail-limit/cycle-trail-limit.png'});
  assert.deepEqual(errors,[]);console.log('Rendered trail length matches 16x inner width; Chrome has no page errors.',result);
 }finally{await browser.close();}

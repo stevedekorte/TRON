@@ -20,7 +20,7 @@ try{
  await page.waitForTimeout(250);
  assert.equal(await page.locator('#assist-marker').evaluate(el=>getComputedStyle(el).opacity),'0.5');
  assert.equal(await page.locator('#assist-marker').evaluate(el=>el.getAnimations().length),0);
- await page.screenshot({path:'test-results/assist-marker.png'});
+ await page.screenshot({path:'test-results/cycles/assist-marker/assist-marker.png'});
  await page.evaluate(()=>__tron.place({turretYaw:Math.PI/2}));await page.locator('#assist-marker').waitFor({state:'hidden'});
  await page.evaluate(()=>__tron.place({turretYaw:0}));
  await page.locator('#assist-marker').waitFor({state:'visible'});

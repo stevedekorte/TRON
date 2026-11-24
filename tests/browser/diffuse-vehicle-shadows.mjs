@@ -27,7 +27,7 @@ try{
   window.vehicleShadowTest={shadows,renderer,target};return {sharp,diffuse,restored};
  });
  assert(result.sharp.max-result.sharp.min>50);assert(result.diffuse.transition>result.sharp.transition*4);assert(result.diffuse.transition>20);assert.deepEqual(result.restored,result.sharp);assert.deepEqual(errors,[]);
- await mkdir('test-results/diffuse-vehicle-shadows',{recursive:true});await page.screenshot({path:'test-results/diffuse-vehicle-shadows/soft.png'});
+ await mkdir('test-results/rendering/diffuse-vehicle-shadows',{recursive:true});await page.screenshot({path:'test-results/rendering/diffuse-vehicle-shadows/soft.png'});
  await page.evaluate(()=>{const {shadows,renderer,target}=window.vehicleShadowTest;shadows.dispose();target.dispose();renderer.dispose();});
  console.log(JSON.stringify({...result,errors}));
 }finally{await browser.close();}

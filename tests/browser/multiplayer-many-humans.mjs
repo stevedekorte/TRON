@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import {mkdirSync,writeFileSync} from 'node:fs';
 const base=process.env.TRON_URL||'http://127.0.0.1:5173/';
 const humans=Number(process.env.TRON_MP_HUMANS||4),rounds=Number(process.env.TRON_MP_ROUNDS||3);
-const out='test-results/multiplayer-many-humans';mkdirSync(out,{recursive:true});
+const out='test-results/multiplayer/multiplayer-many-humans';mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--mute-audio']});
 const problems=[],log=[],note=(kind,detail)=>{const key=kind+JSON.stringify(detail);if(!problems.some(p=>p.key===key)){problems.push({key,kind,detail});console.log('PROBLEM',kind,JSON.stringify(detail));}};
 try{
@@ -26,7 +26,7 @@ try{
   const s=__tron.state,r=s.cycleRace,m=s.multiplayer;
   return {mode:s.mode,round:r.round,phase:r.phase,staging:!!r.cameraStaging,seat:m?.seat,playerId:r.playerId,players:m?.players,connected:m?.connected,
    spectating:!!s.cycleSpectating,follow:s.cycleFollowId,teamCount:r.teamCount,cycles:r.cycles.length,
-   alive:r.cycles.filter(b=>b.alive).map(b=>b.id),humans:r.cycles.filter(b=>b.human).map(b=>b.id),
+   alive:r.cycles.filter(b=>b.alive).map(b=>b.id),humans:r.cycles.filter(b=>b.human).map(b=>b.id),patterns:r.cycles.map(b=>b.human?b.pattern??null:null),
    teams:r.cycles.map(b=>b.team),pos:r.cycles.map(b=>[+(b.x).toFixed(2),+(b.z).toFixed(2)]),
    prompt:document.querySelector('#cycle-controls')?.textContent??'',canRestart:m?.canRestart};
  });
@@ -58,6 +58,13 @@ try{
      if(s.players!==humans)note('player count',{round,client:states.indexOf(s),players:s.players});
      if(s.seat!=null&&s.alive.includes(s.seat)&&s.spectating)note('spectating while alive',{round,client:states.indexOf(s)});
     }
+    // Stripe patterns: the same on every client, 1–3, unique among a team's humans.
+    if(new Set(states.map(s=>JSON.stringify(s.patterns))).size>1)note('clients disagree on stripe patterns',{round,patterns:states.map(s=>s.patterns)});
+    for(const team of new Set(states[0].teams)){
+     const p=states[0].patterns.filter((x,i)=>x!=null&&states[0].teams[i]===team);
+     if(p.some(x=>![1,2,3].includes(x))||new Set(p).size!==p.length)note('stripe patterns not unique within a team',{round,team,patterns:p});
+    }
+    if(states.every(s=>s.seat!=null)&&!log.some(l=>l.patternsLogged===round)){log.at(-1).patternsLogged=round;console.log('  patterns by seat',JSON.stringify(Object.fromEntries(seats.map((x,i)=>['client'+i,states[0].patterns[x]]))));}
     const teamsOf=states[0].teams,ht=seats.map(x=>teamsOf[x]);
     const perTeam={};for(const team of ht)perTeam[team]=(perTeam[team]??0)+1;
     if(states[0].phase==='racing'&&!log.some(l=>l.teamsLogged===round)){log.at(-1).teamsLogged=round;console.log(`  human teams ${JSON.stringify(perTeam)}`);}

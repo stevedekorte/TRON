@@ -18,7 +18,7 @@ try {
   assert.equal(await page.locator('.masthead').isVisible(),false);
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#paused input,#paused button').count(),0);
-  await page.screenshot({path:'test-results/standby.png'});
+  await page.screenshot({path:'test-results/startup/lifecycle/standby.png'});
   const before=await page.evaluate(()=>window.__tron.state);
   await page.keyboard.press('Space');await page.waitForTimeout(100);
   assert.equal(await page.evaluate(()=>window.__tron.state.mode),'running');
@@ -57,6 +57,6 @@ try {
   const production=await browser.newPage();const prodErrors=[];production.on('pageerror',e=>prodErrors.push(e.message));
   await production.goto('http://127.0.0.1:4173');await production.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await production.keyboard.press('Enter');await production.waitForFunction(()=>document.body.classList.contains('playing'));await production.keyboard.press('KeyH');await production.keyboard.down('KeyW');await production.waitForTimeout(1200);await production.keyboard.up('KeyW');
   assert.ok(Number(await production.locator('#speed').textContent())>20);assert.equal(await production.evaluate(()=>typeof window.__tron),'undefined');assert.equal(prodErrors.length,0,prodErrors.join('\n'));checks.push('production preview driving, no development hooks');
-  await production.screenshot({path:'test-results/production.png'});await production.close();
-  assert.equal(errors.length,0,errors.join('\n'));console.log(checks);await writeFile('test-results/lifecycle.json',JSON.stringify({checks,errors},null,2));
+  await production.screenshot({path:'test-results/startup/lifecycle/production.png'});await production.close();
+  assert.equal(errors.length,0,errors.join('\n'));console.log(checks);await writeFile('test-results/startup/lifecycle/lifecycle.json',JSON.stringify({checks,errors},null,2));
 }finally{await browser.close();}

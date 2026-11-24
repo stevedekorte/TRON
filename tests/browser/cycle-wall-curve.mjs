@@ -24,5 +24,5 @@ try{
   }
   return walls.meshes[1].count;
  });
- assert.equal(count,17);await page.screenshot({path:'test-results/cycle-wall-curve.png'});assert.deepEqual(errors,[]);console.log('Rounded wall connection stays at the rear axle across irregular turbo-speed interpolation frames.');
+ assert.equal(count,17);await page.screenshot({path:'test-results/cycles/cycle-wall-curve/cycle-wall-curve.png'});assert.deepEqual(errors,[]);console.log('Rounded wall connection stays at the rear axle across irregular turbo-speed interpolation frames.');
 }finally{await browser.close();}

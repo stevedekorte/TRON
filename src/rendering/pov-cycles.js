@@ -7,7 +7,7 @@ import * as T from 'three';
 import {cycleMaterializationPhase} from '../game/cycle-materialization.js';
 import {cycleSceneGLSL,CYCLE_EDGE_CONFIG,CYCLE_LIGHTING_CONFIG} from '../experiments/cycle-ray-shader.js';
 import {POV_CYCLE_SCALE} from '../experiments/pov-cycle-model.js';
-import {CYCLE_WHEEL_REFLECTIONS as WHEEL_GLINT} from './cycle-wheel-reflections.js';
+import {CYCLE_WHEEL_REFLECTIONS as WHEEL_GLINT,wheelReflectionGLSL} from './cycle-wheel-reflections.js';
 const EDGE_FILTER={radiusPixels:1.2,creaseStart:.18,creaseFull:.65,strength:.8,paintStrength:.22};
 export const CYCLE_REZ={sectionSpacingMeters:[.22,.24,.32],lineHalfWidthMeters:.003,contourRadiusPixels:.65,haloRadiusPixels:1.8,haloStrength:.16,lineIntensity:2.2,bodyGlowIntensity:5,frontMeters:-1.8,rearMeters:1.8};
 const COLORS=[0xe6bd14,0x086ac4,0xb50910,0x178c42];
@@ -29,23 +29,9 @@ uniform bool edgeNormalPass,edgeMapReady;
 uniform sampler2D edgeMap;
 uniform vec2 edgeResolution;
 uniform float rezSolid,rezSweep,rezGrid,rezGlow;
-uniform float wheelPhase,wheelGlintStrength,cockpitMix;
+uniform float cockpitMix;
 uniform int rayPasses;
-float wheelReflection(vec3 point,vec3 normal,int material){
- if(material!=2||abs(normal.x)<.9||wheelGlintStrength<=0.)return 0.;
- // Both wheel discs share the original analytic model's axle height and centers.
- float center=point.z<0.?-${177.5*POV_CYCLE_SCALE}:${177.5*POV_CYCLE_SCALE};
- vec2 radial=vec2(point.z-center,point.y-${85*POV_CYCLE_SCALE});
- float radius=length(radial),aa=max(fwidth(radius),.0005);
- float ring=smoothstep(${WHEEL_GLINT.innerRadiusMeters}-aa,${WHEEL_GLINT.innerRadiusMeters}+aa,radius)*(1.-smoothstep(${WHEEL_GLINT.outerRadiusMeters}-aa,${WHEEL_GLINT.outerRadiusMeters}+aa,radius));
- float angle=-2.1+.12*sin(wheelPhase*.7);
- float delta=abs(atan(sin(atan(radial.y,radial.x)-angle),cos(atan(radial.y,radial.x)-angle)));
- float edge=max(fwidth(delta),.001);
- float spoke=1.-smoothstep(${WHEEL_GLINT.halfWidthRadians}-edge,${WHEEL_GLINT.halfWidthRadians}+edge,delta);
- float phase=fract(wheelPhase);
- float flash=smoothstep(0.,.04,phase)*(1.-smoothstep(.46,.5,phase));
- return ring*spoke*flash*wheelGlintStrength;
-}
+${wheelReflectionGLSL}
 float edgeCoverageAt(vec3 normal,float radius){
  vec2 uv=gl_FragCoord.xy/edgeResolution;
  float coverage=0.;
@@ -273,7 +259,7 @@ export class PovCycles {
    arenaCycleShadows.update(uniforms,this.raceView.wallShadows);
    const phase=cycleMaterializationPhase(source.userData.cycleFormationProgress??1);
    uniforms.cockpitMix.value=source.userData.cockpitMix??0;
-   uniforms.humanStripe.value=source.userData.human?1:0;
+   uniforms.humanStripe.value=source.userData.human?source.userData.humanPattern??1:0;
    uniforms.wheelPhase.value=source.userData.wheelReflection?.phase??0;
    uniforms.wheelGlintStrength.value=source.userData.wheelReflection?.strength??0;
    uniforms.rezSolid.value=phase.solid;

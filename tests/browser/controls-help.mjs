@@ -36,7 +36,7 @@ try{
    assert.equal(await page.evaluate(()=>__tron.state.shots),before.shots);
    assert.equal(await page.locator('#exit-confirm').isVisible(),false);
   }
-  await page.keyboard.press('KeyY');await page.screenshot({path:`test-results/controls-help-${game}.png`});
+  await page.keyboard.press('KeyY');await page.screenshot({path:`test-results/terminal-ui/controls-help/controls-help-${game}.png`});
  }
  assert.deepEqual(errors,[]);console.log('Clu/cycle controls: paused simulation; keyboard, Escape, Y, click and touch resume without firing or opening exit confirmation.');
 }finally{await browser.close();}

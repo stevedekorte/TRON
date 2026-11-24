@@ -40,6 +40,6 @@ try{
  await page.keyboard.press('KeyP');await page.waitForTimeout(900);await page.keyboard.press('KeyP');await page.waitForTimeout(1000);
  const samples=await page.evaluate(()=>{window.cameraWallSampling=false;return window.cameraWallSamples;});
  assert(samples.length>30);assert(samples.every(s=>!s.inside&&!s.crossed),'rendered camera must stay outside walls, including between frames');
- await page.screenshot({path:'test-results/clu-camera-wall-clearance.png'});
+ await page.screenshot({path:'test-results/rendering/camera-walls/clu-camera-wall-clearance.png'});
  assert.deepEqual(errors,[]);console.log(`Clu wall clearance: ${samples.length} rendered frames through zoom, turret rotation and gunner transitions passed.`);
 }finally{await browser.close();}

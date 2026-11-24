@@ -37,7 +37,7 @@ try{
  await page.keyboard.press('NumpadEnter');
  await page.waitForFunction(round=>__tron.state.cycleRace.round>round&&__tron.state.cycleRace.phase==='racing',restartedRound);
  assert((await page.locator('#cycle-controls').textContent()).includes('RETURN / NEW MATCH'));
- await page.screenshot({path:'test-results/multiplayer-player.png'});
+ await page.screenshot({path:'test-results/multiplayer/multiplayer-browser/multiplayer-player.png'});
  await page.waitForFunction(()=>__tron.state.mode==='running'&&!document.body.classList.contains('home-transition'));
  await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
  await page.waitForTimeout(100);
@@ -62,9 +62,9 @@ try{
  const before=await page.evaluate(()=>({round:__tron.state.cycleRace.round,player:__tron.state.cycleRace.playerId}));
  await page.keyboard.press('Enter');await page.waitForTimeout(300);
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.round),before.round,'Return cannot reset the public match');
- await page.screenshot({path:'test-results/multiplayer-racing.png'});
+ await page.screenshot({path:'test-results/multiplayer/multiplayer-browser/multiplayer-racing.png'});
  await page.evaluate(()=>__tron.setCycleRenderer('normal'));await page.waitForTimeout(250);
- await page.screenshot({path:'test-results/multiplayer-normal.png'});
+ await page.screenshot({path:'test-results/multiplayer/multiplayer-browser/multiplayer-normal.png'});
  assert(await page.locator('.cycle-roster-icon.human').count()>0,'human players have roster stripes');
  assert.equal(await page.locator('.human-cycle-marker').count(),0,'no floating human markers');
  assert(packets.some(p=>p.protocol===MP.protocol&&p.compact&&!p.full),'browser receives compact field deltas');

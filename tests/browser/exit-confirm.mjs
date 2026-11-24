@@ -35,7 +35,7 @@ try{
   assert.equal(await page.locator('#exit-confirm [data-confirm] .menu-marker').evaluate(e=>getComputedStyle(e).animationDuration),'0.85s');
   await page.keyboard.press('ArrowUp');
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.screenshot({path:`test-results/exit-confirm-${game}.png`});
+  await page.screenshot({path:`test-results/terminal-ui/exit-confirm/exit-confirm-${game}.png`});
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#exit-confirm').evaluate(e=>e.open),false);
   if(bit)assert(await page.evaluate(()=>!bitPaused&&!VizApp._objects[0]._listeningPaused));

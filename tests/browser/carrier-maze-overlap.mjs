@@ -28,5 +28,5 @@ try{
   return {fixedDifferences,oldDifferences};
  });
  assert.equal(result.fixedDifferences,0);assert(result.oldDifferences>1000,JSON.stringify(result));assert.deepEqual(errors,[]);
- await page.screenshot({path:'test-results/carrier-maze-overlap.png'});console.log(result);
+ await page.screenshot({path:'test-results/carrier/carrier-maze-overlap/carrier-maze-overlap.png'});console.log(result);
 }finally{await browser.close();}

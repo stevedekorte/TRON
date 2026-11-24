@@ -34,6 +34,6 @@ try{
   return {base64:btoa(str),meshes,triangles,materials,size:size.toArray(),bounds:{min:bounds.min.toArray(),max:bounds.max.toArray()}};
  });
  const {base64,...stats}=result;await writeFile(output,Buffer.from(base64,'base64'));
- await mkdir('test-results',{recursive:true});await page.screenshot({path:'assets/source/models/extra/tron_1982_light_cycle_arena-preview.png'});
+ await mkdir('test-results/maze-arena/extract-light-cycle-arena',{recursive:true});await page.screenshot({path:'assets/source/models/extra/tron_1982_light_cycle_arena-preview.png'});
  console.log(JSON.stringify({output,...stats},null,2));
 }finally{await browser.close();}

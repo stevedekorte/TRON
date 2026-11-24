@@ -21,7 +21,7 @@ try{
  await page.keyboard.press('Enter');await page.waitForFunction(r=>__tron.state.cycleRace.round>r,round);
  assert(await page.evaluate(()=>__tron.state.cycleRace.materializing&&!__tron.state.cycleRace.cameraStaging),'a new round materializes at once');
  assert(!/MATCH STARTS IN/.test(await page.locator('#cycle-controls').textContent()));
- await page.waitForTimeout(800);await page.screenshot({path:'test-results/mp-team-materialization.png'});
+ await page.waitForTimeout(800);await page.screenshot({path:'test-results/multiplayer/multiplayer-transition/mp-team-materialization.png'});
  await page.waitForFunction(()=>__tron.state.cycleRace.phase==='racing',null,{timeout:4000});
  const before=await page.evaluate(()=>__tron.state.camera);
  await page.waitForTimeout(300);
@@ -29,8 +29,8 @@ try{
  assert(Math.hypot(launch.camera.x-before.x,launch.camera.y-before.y,launch.camera.z-before.z)<.01,'launch holds formation camera while bikes move');
  assert(launch.race.elapsed>0,'cycles are racing during the camera hold');
  assert(launch.race.trails.some(t=>Math.hypot(t.x2-t.x1,t.z2-t.z1)>.5),'launch draws growing cycle walls');
- await page.screenshot({path:'test-results/mp-team-launch-hold.png'});
- await page.waitForTimeout(450);await page.screenshot({path:'test-results/mp-team-launch.png'});
+ await page.screenshot({path:'test-results/multiplayer/multiplayer-transition/mp-team-launch-hold.png'});
+ await page.waitForTimeout(450);await page.screenshot({path:'test-results/multiplayer/multiplayer-transition/mp-team-launch.png'});
  const after=await page.evaluate(()=>__tron.state.camera);
  assert(Math.hypot(after.x-before.x,after.y-before.y,after.z-before.z)>2,'launch cuts to player follow');
  assert.deepEqual(errors,[]);console.log('Immediate materialization with a silent client, launch hold and player launch passed.');

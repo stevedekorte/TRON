@@ -23,7 +23,7 @@ try{
  assert.equal(await frame.locator('.mcp-panel-lamp').count(),6);
  assert.equal(await frame.locator('.mcp-panel-lamp').first().evaluate(e=>getComputedStyle(e).animationName),'mcp-lamp-pulse');
  await frame.locator('#encom-panel').evaluate(e=>{e.style.width='600px';e.style.animation='none';});
- await frame.locator('#encom-panel').screenshot({path:'test-results/mcp-active-panel.png'});
+ await frame.locator('#encom-panel').screenshot({path:'test-results/mcp/mcp-game-launch/mcp-active-panel.png'});
  await frame.locator('#encom-panel').evaluate(e=>{e.style.width='';e.style.animation='';});
  await frame.evaluate(()=>testRecognition.onresult({resultIndex:0,results:[[{transcript:'I am an unauthorized user.'}]]}));
  await frame.waitForFunction(()=>document.querySelector('#encom-panel').dataset.activity==='llm');

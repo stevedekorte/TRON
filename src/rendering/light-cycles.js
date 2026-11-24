@@ -8,6 +8,8 @@ import {repairCyclePanelOverlaps} from './cycle-panel-overlaps.js';
 import {CarrierMaterialization} from './carrier-materialization.js';
 import {CYCLE_OPENING,CYCLE_FORMATION_MATERIALIZATION} from './cycle-opening.js';
 import {CycleTireTraces} from './cycle-tire-traces.js';
+import {CYCLE_COCKPIT_OUTLINE} from './cycle-cockpit-outline.js';
+import {applyPovMeshLighting,createPovMeshInk,POV_MESH_INK} from './pov-mesh-lighting.js';
 import {materializationDuration,materializationPhase} from '../game/materialization.js';
 import { CycleExplosions } from './cycle-explosions.js';
 import { RecognizerShadows } from './recognizer-shadows.js';
@@ -17,11 +19,46 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import goldUrl from '../../assets/runtime/models/preti_light_cycle_gold.glb?url';
 import blueUrl from '../../assets/runtime/models/preti_light_cycle_blue.glb?url';
+import povMeshUrl from '../../assets/runtime/models/pov_light_cycle.glb?url';
 import { LIGHT_CYCLES as C, cycleFraction } from '../../shared/simulation/config/light-cycles.js';
 export const CYCLE_SELF_SHADOW=Object.freeze({size:1024,prefix:'cycleShadow',darkness:.65,maxCrafts:6,filterEdges:'soft',depthBias:.002});
 export const CYCLE_FLOOR_SHADOW=Object.freeze({darkness:.88});
 export const CYCLE_MODEL_STYLE=Object.freeze({blueBody:0x086ac4,blueTrim:0x084b92,redBody:0xb50910,redTrim:0xd5161d,ambientScale:.35});
-export async function loadLightCycles({refineWheels=true}={}){
+/**
+ * Fallback (normal-renderer) cycle model. 'pov': the mesh converted from the POV-Ray
+ * CSG cycle (tools/assets/pov-cycle-mesh.mjs), authored in the POV-Ray renderer's own
+ * coordinates and needing no repair. 'preti': the earlier imported model, kept for
+ * comparison with ?cycleModel=preti.
+ */
+export const CYCLE_FALLBACK_MODEL=Object.freeze({
+ model:'pov',
+ // POV-Ray wheel centres (source x 355 and 0, y 85, radius 85, at 3.6/525 m per unit).
+ // POV-Ray blocks the key light entirely in self-shadow, leaving only a trace of ambient/fill.
+ selfShadowDarkness:.93,
+ wheels:Object.freeze({centerY:85*3.6/525,centersZ:Object.freeze([-177.5*3.6/525,177.5*3.6/525]),radius:.6}),
+});
+export function cycleFallbackModel(search=globalThis.location?.search??''){
+  return new URLSearchParams(search).get('cycleModel')==='preti'?'preti':CYCLE_FALLBACK_MODEL.model;
+}
+async function loadPovLightCycles(){
+  const {scene}=await new GLTFLoader().loadAsync(povMeshUrl);
+  return [0,1].map(team=>{
+    const root=team===0?scene:scene.clone(true);
+    root.name=`POV-Ray light cycle mesh (${team===0?'gold':'blue'})`;
+    root.traverse(o=>{if(o.isMesh){
+      o.material=o.material.clone();
+      if(team===1&&o.material.name==='Color_D06')o.material.color.setHex(CYCLE_MODEL_STYLE.blueBody);
+    }});
+    root.userData.groundOffsetMeters=-new THREE.Box3().setFromObject(root).min.y;
+    root.userData.rearTireContact=[0,0,CYCLE_FALLBACK_MODEL.wheels.centersZ[1]];
+    root.userData.cycleModel='pov';
+    root.userData.cockpitOutline={...CYCLE_COCKPIT_OUTLINE,wheel:CYCLE_FALLBACK_MODEL.wheels};
+    createPovMeshInk(root);
+    return root;
+  });
+}
+export async function loadLightCycles({refineWheels=true,model=cycleFallbackModel()}={}){
+  if(model==='pov')return loadPovLightCycles();
   return Promise.all([goldUrl,blueUrl].map(async(url,team)=>{
     const {scene}=await new GLTFLoader().loadAsync(url);
     removeCycleInscriptions(scene);
@@ -60,7 +97,7 @@ export class LightCycleRaceView {
   async initialize(models,arena,floorReceivers=[],{arenaFloor,groundFloor}={}){
     this.arenaFloor=arenaFloor;this.groundFloor=groundFloor;
     this.root=new THREE.Group();this.root.name='Light cycle competition';arena.add(this.root);
-    this.bikes=Array.from({length:C.maxCycles},(_,id)=>{const root=models[0].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;c.userData.originalCycleColor=m.color?.clone();materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});this.root.add(root);installHumanStripe(root);return root;});
+    this.bikes=Array.from({length:C.maxCycles},(_,id)=>{const root=models[0].clone(true);root.name=`Light cycle ${id+1}`;const materials=new Map();root.traverse(o=>{if(o.isMesh){const clone=m=>{if(!materials.has(m)){const c=m.clone();c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;c.userData.originalCycleColor=m.color?.clone();materials.set(m,c);}return materials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);}});if(root.userData.cycleModel==='pov'){applyPovMeshLighting(root);root.povInk=root.getObjectByName(POV_MESH_INK.name);root.povInk.traverse(o=>{if(o.material)o.material=o.material.clone();});/* per cycle: later patches wrap each material once */}this.root.add(root);installHumanStripe(root);return root;});
     this.materializations=[];
     for(const root of this.bikes){
       await yieldToBrowser();
@@ -70,7 +107,7 @@ export class LightCycleRaceView {
     await yieldToBrowser();
     const receivers=[...floorReceivers];
     const crafts=this.bikes.map(root=>{const casters=[];root.traverse(o=>{if(o.isMesh&&!o.userData.breakupExclude){casters.push(o);receivers.push(o);}});return {root,casters,radius:2.6,distance:8};});
-    this.shadows=new RecognizerShadows(crafts,receivers,0,{...CYCLE_SELF_SHADOW,darknessForReceiver:receiver=>floorReceivers.includes(receiver)?CYCLE_FLOOR_SHADOW.darkness:CYCLE_SELF_SHADOW.darkness});
+    this.shadows=new RecognizerShadows(crafts,receivers,0,{...CYCLE_SELF_SHADOW,darknessForReceiver:receiver=>floorReceivers.includes(receiver)?CYCLE_FLOOR_SHADOW.darkness:models[0].userData.cycleModel==='pov'?CYCLE_FALLBACK_MODEL.selfShadowDarkness:CYCLE_SELF_SHADOW.darkness});
     this.wallRenderer=new LightCycleWalls(this.root);
     this.trails=this.wallRenderer.meshes;
     this.explosions=new CycleExplosions(this.root);
@@ -84,7 +121,7 @@ export class LightCycleRaceView {
     this.root.visible=!!r&&r.phase!=='idle';if(!this.root.visible){this.tireTraces.update(null);return;}
     for(const mesh of this.bikes)mesh.visible=false;
     const fraction=r.phase==='racing'?r.accumulator/(C.cellMeters/C.speedMetersPerSecond):1;
-    for(const b of r.cycles){const fraction=cycleFraction(r,b);const mesh=this.bikes[b.id];mesh.visible=b.alive;mesh.userData.human=!!b.human;mesh.userData.humanStripe.value=b.human?1:0;
+    for(const b of r.cycles){const fraction=cycleFraction(r,b);const mesh=this.bikes[b.id];mesh.visible=b.alive;mesh.userData.human=!!b.human;mesh.userData.humanPattern=b.human?b.pattern??1:0;mesh.userData.humanStripe.value=mesh.userData.humanPattern;
       if(mesh.userData.team!==b.team){
         mesh.userData.team=b.team;
         const palette=[null,[CYCLE_MODEL_STYLE.blueBody,CYCLE_MODEL_STYLE.blueTrim],[CYCLE_MODEL_STYLE.redBody,CYCLE_MODEL_STYLE.redTrim],[0x178c42,0x46bd65]][b.team];
@@ -98,7 +135,7 @@ export class LightCycleRaceView {
       const x=THREE.MathUtils.lerp(b.previousX,b.x,fraction)*C.cellMeters,z=THREE.MathUtils.lerp(b.previousZ,b.z,fraction)*C.cellMeters;
       const onArena=this.arenaFloor&&Math.abs(x)<=this.arenaFloor.geometry.parameters.width/2&&Math.abs(z)<=this.arenaFloor.geometry.parameters.height/2;
       const floor=onArena?this.arenaFloor:this.groundFloor;
-      mesh.position.set(x,(floor?.position.y??0)+(mesh.userData.groundOffsetMeters??0),z);mesh.rotation.set(0,b.yaw??-b.dir*Math.PI/2,b.lean??0);
+      mesh.position.set(x,(floor?.position.y??0)+(mesh.userData.groundOffsetMeters??0)+(b.fallY??0),z);mesh.rotation.set(0,b.yaw??-b.dir*Math.PI/2,b.lean??0);
       const rez=this.materializations[b.id];
       const multiplayerFormation=r.cameraStaging!==undefined;
       const formationDuration=multiplayerFormation?MP.formationSeconds:openingFormationAge===null?C.countdownSeconds:CYCLE_OPENING.formationSeconds;
@@ -114,6 +151,8 @@ export class LightCycleRaceView {
       const reflectionKey=`${r.round}:${b.id}`;
       if(mesh.userData.reflectionKey!==reflectionKey||r.time<(mesh.userData.wheelReflection?.time??0)){mesh.userData.reflectionKey=reflectionKey;mesh.userData.wheelReflection=null;}
       mesh.userData.wheelReflection=advanceWheelReflection(mesh.userData.wheelReflection,r.time,speed);
+      if(this.reviewWheelPhase!=null)mesh.userData.wheelReflection={...mesh.userData.wheelReflection,phase:this.reviewWheelPhase,strength:1}; // development review only
+      const povUniforms=mesh.userData.povUniforms;if(povUniforms){povUniforms.wheelPhase.value=mesh.userData.wheelReflection.phase;povUniforms.wheelGlintStrength.value=mesh.userData.wheelReflection.strength;}
       if(age===null)rez.update(null);
       else {
         const timing=openingFormationAge===null&&!multiplayerFormation?undefined:CYCLE_FORMATION_MATERIALIZATION;

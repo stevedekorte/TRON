@@ -32,9 +32,9 @@ try{
  });
  assert(report.changed>1000);assert(report.blueRedDeviation>.3);assert(report.blueRedDeviation<5);
  await page.evaluate(()=>{const v=__reference.view,f=v.world.slabs.userData.damageFaces.find(f=>f.length>=108&&f.reliefBoxes?.length),x=f.a.x+f.ux*f.length/2,z=-f.a.s+f.uz*f.length/2;v.camera.position.set(x+f.nx*105-f.ux*50,87,z-f.ns*105-f.uz*50);v.camera.lookAt(x,20,z);v.composer.render(0);});
- await mkdir('test-results/film-finish',{recursive:true});
- await page.locator('#viewport').screenshot({path:'test-results/film-finish/with-finish.png'});
+ await mkdir('test-results/maze-arena/film-finish',{recursive:true});
+ await page.locator('#viewport').screenshot({path:'test-results/maze-arena/film-finish/with-finish.png'});
  await page.evaluate(()=>{const v=__reference.view;v.film.uniforms.grainStrength.value=0;v.film.uniforms.mottleStrength.value=0;v.composer.render(0);});
- await page.locator('#viewport').screenshot({path:'test-results/film-finish/without-finish.png'});
+ await page.locator('#viewport').screenshot({path:'test-results/maze-arena/film-finish/without-finish.png'});
  assert.deepEqual(errors,[]);console.log(JSON.stringify({...report,errors}));
 }finally{await browser.close();await server.close();await rm(cacheDir,{recursive:true,force:true});}

@@ -9,7 +9,7 @@ try{
  await page.mouse.wheel(0,1200);await page.mouse.wheel(0,1200);
  await page.waitForFunction(()=>window.__tron.state.camera.y>2300);
  assert.equal(await page.evaluate(()=>window.__tron.state.aerialZoom),4);
- await page.screenshot({path:'test-results/aerial-zoom-out.png'});
+ await page.screenshot({path:'test-results/rendering/aerial-zoom/aerial-zoom-out.png'});
  for(let i=0;i<4;i++)await page.mouse.wheel(0,-1200);
  await page.waitForFunction(()=>window.__tron.state.camera.y<160);
  assert.equal(await page.evaluate(()=>window.__tron.state.aerialZoom),.25);

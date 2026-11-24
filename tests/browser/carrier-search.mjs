@@ -9,7 +9,7 @@ try{
   __tron.place({x:CARRIER.startX+CARRIER.speed*r.time,s:CARRIER.s,yaw:0,turretYaw:0,speed:0,recognizers:r.recognizers.map(e=>({...e,state:'destroyed'})),enemyTanks:r.enemyTanks.map(e=>({...e,state:'destroyed'}))});
  });
  await page.waitForFunction(()=>__tron.state.carrierSearch.illuminated&&__tron.state.carrierBeamVisuals.every(b=>b.visible&&b.strength>.5));
- await page.keyboard.press('KeyV');await page.waitForTimeout(1500);await page.screenshot({path:'test-results/carrier-search.png'});
+ await page.keyboard.press('KeyV');await page.waitForTimeout(1500);await page.screenshot({path:'test-results/carrier/carrier-search/carrier-search.png'});
  await page.evaluate(()=>__tron.place({crushed:true}));await page.waitForFunction(()=>__tron.state.carrierBeamVisuals.every(b=>!b.visible));
  assert.deepEqual(errors,[]);console.log('Two carrier tracking lights render, acquire CLU and fade out on destruction without browser errors.');
 }finally{await browser.close();}

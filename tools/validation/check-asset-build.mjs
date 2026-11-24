@@ -20,8 +20,8 @@ for(const [old,current] of Object.entries(aliases))if(old.startsWith('public/')|
  const a=await readFile(deployed),b=await readFile(current);if(!a.equals(b))throw Error('Compatibility asset differs: '+old);
 }
 const report={files:output.length,bytes:output.reduce((n,f)=>n+f.bytes,0),assets:output};
-await mkdir('test-results',{recursive:true});
-await writeFile('test-results/asset-build.json',JSON.stringify(report,null,2)+'\n');
+await mkdir('test-results/releases/check-asset-build',{recursive:true});
+await writeFile('test-results/releases/check-asset-build/asset-build.json',JSON.stringify(report,null,2)+'\n');
 console.log(`Asset build audit: ${report.files} files, ${(report.bytes/1024/1024).toFixed(1)} MiB; all shipped binaries catalogued, aliases identical, no reference footage/editable masters.`);
 
 const media=JSON.parse(await readFile('dist/asset-manifest.json','utf8'));

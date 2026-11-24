@@ -12,6 +12,6 @@ try{
  await prepare();await shoot(0,6);await page.waitForFunction(()=>__tron.state.recognizers[0].state==='destroyed');assert.equal(await page.evaluate(()=>__tron.state.recognizers[0].health),0);
  await prepare();await shoot(-14,-12);await page.waitForFunction(()=>__tron.state.recognizers[0].health===2.5);
  await shoot(-14,-12);await page.waitForFunction(()=>__tron.state.recognizers[0].stompDisabled);assert.equal(await page.evaluate(()=>__tron.state.recognizers[0].health),2);
- await page.waitForTimeout(500);await page.screenshot({path:'test-results/disabled-recognizer-leg.png'});
+ await page.waitForTimeout(500);await page.screenshot({path:'test-results/clu-tank/part-damage/disabled-recognizer-leg.png'});
  assert.deepEqual(errors,[]);console.log('Crown hit kills in one shot; two leg hits leave the Recognizer alive with stomp disabled; damaged rendering has no page errors.');
 }finally{await browser.close();}

@@ -30,6 +30,6 @@ try{
  assert.equal(await owner.locator('.cycle-roster-kill.trap-assist').count(),1);
  assert.match(await owner.getAttribute('aria-label'),/1 trap assist/);
  assert.equal(await page.locator('[data-cycle-id="0"] .cycle-roster-kill').count(),0);
- await page.screenshot({path:'test-results/cycle-trap-credit.png'});assert.deepEqual(errors,[]);
+ await page.screenshot({path:'test-results/cycles/cycle-trap-credit/cycle-trap-credit.png'});assert.deepEqual(errors,[]);
  console.log('Immediate self-wall death credits enclosing opponent through collision, MP delta and roster.');
 }finally{await browser.close();}

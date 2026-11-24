@@ -8,7 +8,7 @@ try{
  await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173');await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.waitForFunction(()=>window.__tron.state.mode==='ready');
  await page.keyboard.press('Enter');await page.keyboard.press('KeyP');await page.waitForFunction(()=>__tron.state.mode==='running');await page.keyboard.press('KeyP');await page.keyboard.down('KeyW');await page.keyboard.up('KeyW');
  await page.evaluate(()=>{const r=__tron.state;__tron.place({speed:0,recognizers:r.recognizers.map(e=>({...e,state:'destroyed'})),enemyTanks:r.enemyTanks.map(e=>({...e,state:'destroyed'}))});});
- await page.waitForTimeout(1000);await page.screenshot({path:'test-results/maze-distance.png'});
+ await page.waitForTimeout(1000);await page.screenshot({path:'test-results/carrier/data-beams/maze-distance.png'});
  await page.waitForFunction(()=>['data-ring-close','data-ring-open'].every(k=>__tron.state.audioSamples.includes(k)));
  const count=await page.evaluate(()=>__tron.state.dataBeams.length);assert.equal(count,4);
  const captureCount=process.argv.includes('--preview')?1:count;
@@ -19,15 +19,15 @@ try{
    if(!p)throw Error('No clear beam approach');__tron.place({...p,turretYaw:0,speed:0});
   },i);
   await page.waitForTimeout(900);
-  if(i===0)await page.screenshot({path:'test-results/data-beam.png'});
+  if(i===0)await page.screenshot({path:'test-results/carrier/data-beams/data-beam.png'});
   await page.evaluate(i=>{const b=__tron.state.dataBeams[i];__tron.place({x:b.x,s:b.s,speed:0});},i);
   await page.waitForFunction(i=>__tron.state.dataBeams[i].transferStartedAt!==null,i);
-  if(i===0){await page.waitForTimeout(1700);await page.screenshot({path:'test-results/data-transfer.png'});assert.equal(await page.evaluate(()=>__tron.state.dataCollected),0);}
+  if(i===0){await page.waitForTimeout(1700);await page.screenshot({path:'test-results/carrier/data-beams/data-transfer.png'});assert.equal(await page.evaluate(()=>__tron.state.dataCollected),0);}
   await page.waitForFunction(i=>__tron.state.dataBeams[i].collectedAt!==null,i);
   await page.waitForFunction(i=>__tron.state.beamVisuals[i].color===0x168aff,i);
   assert.equal(await page.evaluate(i=>__tron.state.beamVisuals[i].visible,i),true);
   assert.equal(await page.evaluate(i=>__tron.state.beamVisuals[i].curtain,i),false);
-  if(i===0)await page.screenshot({path:'test-results/data-beam-shutdown.png'});
+  if(i===0)await page.screenshot({path:'test-results/carrier/data-beams/data-beam-shutdown.png'});
 
  }
  assert.equal(await page.evaluate(()=>__tron.state.dataCollected),captureCount);

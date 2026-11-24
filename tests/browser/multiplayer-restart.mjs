@@ -41,7 +41,7 @@ try{
  assert.equal(socket.latest.race.round,round,'the round is still on when the last human falls');
  assert.equal(humansAlive(),0,'both human cycles are down');
  await page.waitForFunction(()=>document.querySelector('#cycle-controls').textContent.includes('RETURN / NEW MATCH'),null,{timeout:5000});
- await page.screenshot({path:'test-results/multiplayer-restart-prompt.png'});
+ await page.screenshot({path:'test-results/multiplayer/multiplayer-restart/multiplayer-restart-prompt.png'});
  await page.keyboard.press('Enter');
  await page.waitForFunction(r=>__tron.state.cycleRace.round>r,round,{timeout:10000});
  console.log(`Both humans on team ${teams[0]}. Round ${round}: Return blocked while a human was alive; once both humans were down, Return started round ${await page.evaluate(()=>__tron.state.cycleRace.round)}.`);

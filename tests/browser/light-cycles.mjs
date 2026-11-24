@@ -17,7 +17,7 @@ try{
  assert(await page.evaluate(()=>__tron.state.recognizers.some(e=>e.role==='arena-patrol')));
  assert(await page.evaluate(()=>__tron.state.cycleRendering.visible));
  await page.keyboard.down('KeyW');await page.waitForTimeout(5500);await page.keyboard.up('KeyW');
- await page.screenshot({path:'test-results/light-cycle-match.png'});
+ await page.screenshot({path:'test-results/cycles/light-cycles/light-cycle-match.png'});
  await page.route('**/cycle-preview',r=>r.fulfill({contentType:'text/html',body:'<body style="margin:0;background:black"></body>'}));
  await page.goto('http://127.0.0.1:5173/cycle-preview');
  const stats=await page.evaluate(async()=>{
@@ -46,9 +46,9 @@ try{
   return {sizes:models.map(m=>new T.Box3().setFromObject(m).getSize(new T.Vector3()).toArray()),tank:appearance(tank.root),enemy:appearance(enemy.root)};
  });
  assert.deepEqual(stats.tank,stats.enemy);assert(stats.sizes.every(s=>Math.abs(s[2]-3.6)<.01));
- await page.screenshot({path:'test-results/light-cycle-models.png'});
+ await page.screenshot({path:'test-results/cycles/light-cycles/light-cycle-models.png'});
  await page.evaluate(()=>{const {renderer,scene,camera}=window.cyclePreview;camera.position.set(-7,1.4,1);camera.lookAt(-1.5,.75,.5);renderer.render(scene,camera);});
- await page.screenshot({path:'test-results/light-cycle-wheel-closeup.png'});
+ await page.screenshot({path:'test-results/cycles/light-cycles/light-cycle-wheel-closeup.png'});
  await page.evaluate(async()=>{
   const {CycleExplosions}=await import('/src/rendering/cycle-explosions.js');
   const {scene,camera,renderer}=window.cyclePreview;
@@ -58,7 +58,7 @@ try{
  });
  for(const frame of [0,5,8,12,20]){
   await page.evaluate(frame=>{const {scene,camera,renderer}=window.cyclePreview;window.explosionPreview.update({time:frame/24,crashes:[{id:0,x:0,z:0,time:0,dir:0}]});renderer.render(scene,camera);},frame);
-  await page.screenshot({path:`test-results/cycle-explosion-${frame}.png`});
+  await page.screenshot({path:`test-results/cycles/light-cycles/cycle-explosion-${frame}.png`});
  }
  assert.deepEqual(errors,[]);console.log('Six cycles racing, spectator pause/resume, arena patrol, imported model dimensions and matching tank materials passed.');
 }finally{await browser.close();}

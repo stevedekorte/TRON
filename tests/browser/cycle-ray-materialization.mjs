@@ -39,21 +39,21 @@ try{
   const expected=cycleMaterializationPhase(progress);
   const phase=await page.evaluate(p=>capturePhase(p),progress);
   assert(phase.rayVisible&&phase.meshHidden&&phase.restored);assert.equal(phase.solid,expected.solid);assert.equal(phase.sweep,expected.contours);assert.equal(phase.depthWrite,expected.solid===1);
-  await page.screenshot({path:`test-results/cycle-ray-rez-${name}.png`});
+  await page.screenshot({path:`test-results/cycles/cycle-ray-materialization/cycle-ray-rez-${name}.png`});
  }
  for(const team of [1,2,3]){
   await page.evaluate(team=>capturePhase(.6,team),team);
-  await page.screenshot({path:`test-results/cycle-ray-rez-team-${team}.png`});
+  await page.screenshot({path:`test-results/cycles/cycle-ray-materialization/cycle-ray-rez-team-${team}.png`});
  }
  for(const progress of [.6,1]){
   await page.evaluate(p=>capturePhase(p,1,false),progress);const ai=await page.screenshot();
-  await page.evaluate(p=>capturePhase(p,1,true),progress);const human=await page.screenshot({path:`test-results/cycle-human-rez-${progress}.png`});
+  await page.evaluate(p=>capturePhase(p,1,true),progress);const human=await page.screenshot({path:`test-results/cycles/cycle-ray-materialization/cycle-human-rez-${progress}.png`});
   assert(!ai.equals(human),'human slash is visible in both wireframe and solid stages');
  }
  await page.evaluate(()=>{setWheelReflection(.25,1);capturePhase(1);});
- const glint=await page.screenshot({path:'test-results/cycle-wheel-glint-on.png'});
+ const glint=await page.screenshot({path:'test-results/cycles/cycle-ray-materialization/cycle-wheel-glint-on.png'});
  await page.evaluate(()=>{setWheelReflection(.75,1);capturePhase(1);});
- const dark=await page.screenshot({path:'test-results/cycle-wheel-glint-off.png'});
+ const dark=await page.screenshot({path:'test-results/cycles/cycle-ray-materialization/cycle-wheel-glint-off.png'});
  assert(!glint.equals(dark),'moving wheel reflections alternate visibly');
  await page.evaluate(()=>{setWheelReflection(.25,0);capturePhase(1);});
  const stopped=await page.screenshot();assert(stopped.equals(dark),'stopped wheels have no artificial reflection');

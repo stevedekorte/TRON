@@ -8,10 +8,10 @@ try{
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');await page.keyboard.up('KeyW');await page.keyboard.press('Escape');
  await page.evaluate(()=>__tron.place({x:-1800,s:-1800,speed:0,yaw:0,turretYaw:1,recoil:.8,shots:1,gunner:false}));
  await page.waitForFunction(()=>__tron.state.weaponVisual.muzzleFlashVisible);
- await page.screenshot({path:'test-results/clu-muzzle-flash.png'});
+ await page.screenshot({path:'test-results/clu-tank/muzzle-flash/clu-muzzle-flash.png'});
  const age=await page.evaluate(()=>__tron.state.weaponVisual.muzzleFlashAge);await page.waitForTimeout(100);assert.equal(await page.evaluate(()=>__tron.state.weaponVisual.muzzleFlashAge),age);
  await page.evaluate(()=>__tron.place({gunner:true,aimPitch:.2,recoil:.8}));await page.waitForFunction(()=>__tron.state.gunner&&!__tron.state.tankVisible);
- await page.screenshot({path:'test-results/clu-muzzle-flash-gunner.png'});
+ await page.screenshot({path:'test-results/clu-tank/muzzle-flash/clu-muzzle-flash-gunner.png'});
  assert.equal(await page.evaluate(()=>__tron.state.weaponVisual.muzzleFlashVisible),false);
  await page.keyboard.press('Enter');await page.waitForFunction(()=>!__tron.state.weaponVisual.muzzleFlashVisible);
  await page.keyboard.press('KeyP');await page.keyboard.press('Space');await page.waitForFunction(()=>__tron.state.weaponVisual.muzzleFlashVisible);

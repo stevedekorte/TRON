@@ -122,6 +122,13 @@ body.cycle-loading::after{content:'';position:fixed;inset:0;z-index:20;backgroun
 
 #cycle-result{position:fixed;top:20%;left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);letter-spacing:.08em;pointer-events:none;z-index:5}
 #cycle-result.gold-winner{color:#ffd45c}
+#arena-arrival-notice{position:fixed;top:106px;left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);letter-spacing:.08em;pointer-events:none;z-index:6}
+body.playing-multiplayer #arena-arrival-notice{top:130px}
+#multiplayer-offer{position:fixed;top:calc(20% + 3 * var(--game-font-size));left:0;right:0;text-align:center;color:#91bcd0;font-size:var(--game-font-size);letter-spacing:.08em;z-index:7}
+#multiplayer-offer p{margin:0 0 .8em}
+#multiplayer-offer button{font:inherit;letter-spacing:inherit;color:#91bcd0;background:rgba(0,10,16,.55);border:1px solid rgba(145,188,208,.55);padding:.45em .9em;margin:0 .4em;cursor:pointer}
+#multiplayer-offer button:hover,#multiplayer-offer button:focus-visible{color:#e8f6ff;border-color:#e8f6ff;outline:none}
+body.terminal #arena-arrival-notice,body.terminal #multiplayer-offer{display:none}
 body.terminal #cycle-result{display:none}
 
 /* Match roster: each cycle retains its team color after elimination. */
@@ -142,6 +149,8 @@ body.playing-cycle #controls-prompt,body.playing-cycle #cycle-controls{top:58px;
 }
 
 .cycle-roster-icon.human::before{content:"";position:absolute;inset:calc(-1 * var(--roster-border));border-radius:50%;background:linear-gradient(135deg,transparent calc(50% - var(--roster-border)),#050505 calc(50% - var(--roster-border)),#050505 50%,#fff 50%,#fff calc(50% + var(--roster-border)),transparent calc(50% + var(--roster-border)))}
+.cycle-roster-icon.human.pattern-2::before{background:linear-gradient(135deg,transparent calc(50% - 5px),#050505 calc(50% - 5px),#050505 calc(50% - 3.5px),#fff calc(50% - 3.5px),#fff calc(50% - 2px),transparent calc(50% - 2px),transparent calc(50% + 2px),#050505 calc(50% + 2px),#050505 calc(50% + 3.5px),#fff calc(50% + 3.5px),#fff calc(50% + 5px),transparent calc(50% + 5px))}
+.cycle-roster-icon.human.pattern-3::before{background:linear-gradient(45deg,transparent calc(50% - var(--roster-border)),#fff calc(50% - var(--roster-border)),#fff 50%,#050505 50%,#050505 calc(50% + var(--roster-border)),transparent calc(50% + var(--roster-border))) left/50% 100% no-repeat,linear-gradient(-45deg,transparent calc(50% - var(--roster-border)),#fff calc(50% - var(--roster-border)),#fff 50%,#050505 50%,#050505 calc(50% + var(--roster-border)),transparent calc(50% + var(--roster-border))) right/50% 100% no-repeat}
 .cycle-roster-icon.local-player{outline:1px solid #fff;outline-offset:3px}
 
 body.playing-multiplayer #controls-prompt{top:82px}

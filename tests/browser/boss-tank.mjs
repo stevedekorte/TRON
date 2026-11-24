@@ -31,6 +31,6 @@ try{
   return {error,flashes:flashes.length,width:new T.Box3().setFromObject(craft.root).getSize(new T.Vector3()).x};
  });
  assert.equal(dimensions.flashes,2);assert(dimensions.error<1e-8);assert(Math.abs(dimensions.width-6.5)<.001);
- await page.screenshot({path:'test-results/boss-tank.png'});
+ await page.screenshot({path:'test-results/clu-tank/boss-tank/boss-tank.png'});
  console.log('Boss tank: startup, roster, paired muzzle alignment and rendered adapter passed.');
 }finally{await browser.close();}

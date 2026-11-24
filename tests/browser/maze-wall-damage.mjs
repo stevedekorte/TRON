@@ -17,12 +17,12 @@ try{
  await page.waitForTimeout(1800);
  const hit=async()=>page.keyboard.press('Space');
  await hit();await page.waitForFunction(()=>__tron.state.wallDamage.cavities===1);await page.waitForTimeout(150);
- await page.screenshot({path:'test-results/maze-wall-damage-impact.png'});
+ await page.screenshot({path:'test-results/maze-arena/maze-wall-damage/maze-wall-damage-impact.png'});
  const initialRadius=await page.evaluate(()=>__tron.state.wallDamage.radii[0]);
  for(let i=0;i<3;i++){await hit();await page.waitForTimeout(150);}
  await page.waitForTimeout(3200);assert.equal(await page.evaluate(()=>__tron.state.wallDamage.fragments),0);assert.equal(await page.evaluate(()=>__tron.state.wallDamage.cavities),1);
  assert((await page.evaluate(()=>__tron.state.wallDamage.radii[0]))>initialRadius);
- await page.screenshot({path:'test-results/maze-wall-damage-settled.png'});assert.deepEqual(errors,[]);console.log(await page.evaluate(()=>__tron.state.wallDamage));
+ await page.screenshot({path:'test-results/maze-arena/maze-wall-damage/maze-wall-damage-settled.png'});assert.deepEqual(errors,[]);console.log(await page.evaluate(()=>__tron.state.wallDamage));
  await page.keyboard.down('KeyW');await page.keyboard.press('KeyT');await page.waitForFunction(()=>__tron.state.turboRemaining>0);
  await page.keyboard.up('KeyW');await page.waitForFunction(()=>__tron.state.turboRemaining===0);assert((await page.evaluate(()=>__tron.state.turboCooldown))<60);
  await page.evaluate(()=>__tron.reset());await page.waitForFunction(()=>__tron.state.wallDamage.cavities===0);

@@ -17,10 +17,10 @@ try{
  const acceleration=panel.locator('[data-value="accelerationMetersPerSecondSquared"]');await acceleration.fill('12');await acceleration.press('Tab');
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.roadConfig.accelerationMetersPerSecondSquared),12);
  await page.keyboard.press('KeyW');await page.keyboard.press('KeyY');assert.equal(await page.evaluate(()=>__tron.state.mode),'paused');
- await panel.screenshot({path:'test-results/cycle-tuning.png'});
+ await panel.screenshot({path:'test-results/cycles/cycle-tuning/cycle-tuning.png'});
  await page.keyboard.press('Escape');await panel.waitFor({state:'hidden'});await page.waitForFunction(()=>__tron.state.mode==='running');
  await page.waitForTimeout(250);await page.keyboard.press('Escape');
- await page.screenshot({path:'test-results/cycle-tire-traces.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-tuning/cycle-tire-traces.png'});
  await page.keyboard.press('Tab');await panel.waitFor({state:'visible'});await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>__tron.state.mode),'paused','Opening while paused must not resume on close');
  await page.reload();await ready();
  assert.equal(await page.evaluate(()=>__tron.state.cycleRace.roadConfig.accelerationMetersPerSecondSquared),12);

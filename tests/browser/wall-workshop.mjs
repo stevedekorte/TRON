@@ -53,7 +53,7 @@ try{
  await page.locator('[data-restore="0"]').click();await page.waitForFunction(()=>wallStudy.state.current.id===2);assert.equal(await page.evaluate(()=>wallStudy.design.parts[0].position[0]),0);
  const downloadPromise=page.waitForEvent('download');await page.locator('#download').click();const download=await downloadPromise;assert.match(download.suggestedFilename(),/revision-2.glb/);const bytes=await readFile(await download.path());assert.equal(bytes.toString('ascii',0,4),'glTF');
  for(const view of ['front','side','top','detail','canyon','whole']){await page.locator(`[data-view="${view}"]`).click();await page.waitForTimeout(100);}
- await mkdir('test-results/wall-workshop',{recursive:true});await page.screenshot({path:'test-results/wall-workshop/desktop.png',fullPage:true});
- await page.setViewportSize({width:390,height:844});await page.waitForTimeout(200);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:'test-results/wall-workshop/mobile.png',fullPage:true});
+ await mkdir('test-results/outside-arena/wall-workshop',{recursive:true});await page.screenshot({path:'test-results/outside-arena/wall-workshop/desktop.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});await page.waitForTimeout(200);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:'test-results/outside-arena/wall-workshop/mobile.png',fullPage:true});
  assert.deepEqual(errors,[]);console.log('Wall workshop: image drop, visual references, part selection, Enter revision, persistent reload, failure/cancel, restoration, GLB export and responsive layout pass.');
 }finally{await browser.close();await server.close();await rm(storeDir,{recursive:true,force:true});}

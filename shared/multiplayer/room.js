@@ -47,7 +47,7 @@ export class CycleRoom{
    Object.assign(client,{disconnected:true,inputs:[],control:{turbo:false,brake:false}});
    return;
   }
-  if(bike&&this.race.phase==='countdown'){delete bike.human;delete bike.operator;}
+  if(bike&&this.race.phase==='countdown'){delete bike.human;delete bike.operator;delete bike.pattern;}
   this.clients.delete(id);
   if(this.race.phase==='countdown')this.fillSeats();
  }
@@ -68,8 +68,17 @@ export class CycleRoom{
    const seats=freeByTeam.get(team);
    client.seat=seats[Math.floor(this.random()*seats.length)];occupied.add(client.seat);humans.set(team,(humans.get(team)??0)+1);
    client.inputs=[];client.control={turbo:false,brake:false};client.lastTurnTick=-Infinity;
-   Object.assign(this.race.cycles[client.seat],{human:true,operator:client.label});
+   client.pattern=this.stripePattern(team,client.pattern);
+   Object.assign(this.race.cycles[client.seat],{human:true,operator:client.label,pattern:client.pattern});
   }
+ }
+ // Human stripe pattern (1–3; HUMAN_STRIPE_PATTERNS): unique among a team's humans,
+ // and a rider keeps theirs from round to round whenever it is free on the new team.
+ stripePattern(team,preferred){
+  const taken=new Set(this.race.cycles.filter(b=>b.team===team&&b.human).map(b=>b.pattern));
+  if(preferred&&!taken.has(preferred))return preferred;
+  for(let p=1;p<=MP.maxCyclesPerTeam;p++)if(!taken.has(p))return p;
+  return 1;
  }
  connectedCount(){let n=0;for(const c of this.clients.values())if(!c.disconnected)n++;return n;}
  nextRound(){

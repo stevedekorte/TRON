@@ -31,13 +31,13 @@ for(const name of names){
   await page.waitForTimeout(4000);
   const state=await page.evaluate(()=>{const gl=document.querySelector('#game').getContext('webgl2'),info=gl.getExtension('WEBGL_debug_renderer_info');
    return {gpu:info?gl.getParameter(info.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),mode:__tron.state.mode,renderer:__tron.state.cycleRendererMode,csg:__tron.state.csgCycleCount,lost:gl.isContextLost(),button:document.querySelector('#cycle-renderer')?.textContent};});
-  const shot=await page.screenshot({path:`test-results/platform-${name}.png`});
+  const shot=await page.screenshot({path:`test-results/rendering/platform-smoke/platform-${name}.png`});
   const {data,info}=await sharp(shot).raw().toBuffer({resolveWithObject:true});let lit=0;for(let i=0;i<data.length;i+=info.channels)if(data[i]+data[i+1]+data[i+2]>60)lit++;
   state.litPercent=+(100*lit/(info.width*info.height)).toFixed(1);state.mobile=mobile;
   const pass=state.renderer===platform.renderer&&!state.lost&&state.mode!=='error'&&state.litPercent>2&&!errors.length;failed||=!pass;
   console.log(`${pass?'PASS':'FAIL'} ${name}`,JSON.stringify(state),errors.length?errors.slice(0,5):'');
  }catch(error){failed=true;const page=browser.contexts()[0]?.pages()[0];let detail='';
-  if(page){await page.screenshot({path:`test-results/platform-${name}-fail.png`}).catch(()=>{});detail=await page.evaluate(()=>({ready:!!window.__tron,startDisabled:document.querySelector('#start')?.disabled,boot:document.querySelector('#boot-status')?.textContent,err:document.querySelector('#error-message')?.textContent,mode:(()=>{try{return __tron.state.mode}catch(e){return 'n/a'}})(),vehicle:(()=>{try{return __tron.state.playerVehicle+'/'+__tron.state.cycleRace?.phase}catch(e){return 'n/a'}})()})).catch(e=>e.message);}
+  if(page){await page.screenshot({path:`test-results/rendering/platform-smoke/platform-${name}-fail.png`}).catch(()=>{});detail=await page.evaluate(()=>({ready:!!window.__tron,startDisabled:document.querySelector('#start')?.disabled,boot:document.querySelector('#boot-status')?.textContent,err:document.querySelector('#error-message')?.textContent,mode:(()=>{try{return __tron.state.mode}catch(e){return 'n/a'}})(),vehicle:(()=>{try{return __tron.state.playerVehicle+'/'+__tron.state.cycleRace?.phase}catch(e){return 'n/a'}})()})).catch(e=>e.message);}
   console.log(`FAIL ${name}`,error.message.split('\n')[0],JSON.stringify(detail));}
  finally{await browser.close();}
 }

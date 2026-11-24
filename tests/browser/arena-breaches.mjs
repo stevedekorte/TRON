@@ -24,7 +24,7 @@ try{
   return {before,after,adjacent,ms};
  });
  assert(result.before>0);assert.equal(result.after,0);assert(result.adjacent>0);
- await page.screenshot({path:'test-results/arena-breach.png'});
+ await page.screenshot({path:'test-results/maze-arena/arena-breaches/arena-breach.png'});
  assert.equal(await page.evaluate(()=>nextMatch()),0);
  assert(await page.evaluate(()=>restore())>0);assert.deepEqual(errors,[]);console.log(result);
 }finally{await browser.close();}

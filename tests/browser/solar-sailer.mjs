@@ -55,7 +55,7 @@ try {
  assert(Math.abs(result.beamSegments[1].from-result.beamCenter-result.gap.max*result.scale)<1e-7);
  assert(result.beamSegments[1].from>result.beamSegments[0].to);
  assert.deepEqual(result.resources[0],result.resources[2]);assert(result.resources[0].textures>=7);
- await page.screenshot({path:'test-results/solar-sailer-adapted.png'});
+ await page.screenshot({path:'test-results/carrier/solar-sailer/solar-sailer-adapted.png'});
  const remaining=await page.evaluate(()=>{const f=window.fixture;f.disposeSceneResources(f.scene);f.renderer.render(f.scene,f.camera);return {...f.renderer.info.memory};});
  assert.equal(remaining.geometries,0);assert.equal(remaining.textures,1); // Renderer-owned DFG lighting LUT; all seven model textures released.assert.deepEqual(errors,[]);
  console.log({browser:await browser.version(),...result,remaining});

@@ -21,7 +21,7 @@ try{
  assert.deepEqual(await page.evaluate(()=>({yaw:__tron.state.turretYaw,shots:__tron.state.shots})),before);
  const label=await page.locator('#gunner-zoom').boundingBox(),sight=await page.locator('#gunner-sight').boundingBox();
  assert.ok(Math.abs(label.x+label.width/2-(sight.x+sight.width/2))<3);assert.ok(label.y<sight.height*.25);assert.ok(label.height>25);
- await page.screenshot({path:'test-results/gunner-zoom.png'});
+ await page.screenshot({path:'test-results/clu-tank/gunner-zoom/gunner-zoom.png'});
  await page.emulateMedia({reducedMotion:'reduce'});await page.reload();await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');await page.keyboard.press('KeyP');await page.keyboard.press('KeyO');await page.waitForTimeout(60);assert.equal(await fov(),18);
  assert.deepEqual(errors,[]);console.log('Zoom eases across 2×, 4× and 8× including wrap; larger label centered above sight; reduced motion snaps.');
 }finally{await browser.close();}

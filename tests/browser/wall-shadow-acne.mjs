@@ -19,4 +19,4 @@ await page.evaluate(async()=>{
   const i=(y*w+x)*4;if(Math.abs(before[i+2]-after[i+2])>2)artifacts++;
  }
  window.artifacts=artifacts;
-});const artifacts=await page.evaluate(()=>window.artifacts);assert.ok(artifacts<1000,`${artifacts} self-shadowed wall pixels`);console.log({artifacts});await page.screenshot({path:'test-results/wall-with-shadow.png'});await page.evaluate(()=>shot(0));await page.screenshot({path:'test-results/wall-without-shadow.png'});}finally{await browser.close();}
+});const artifacts=await page.evaluate(()=>window.artifacts);assert.ok(artifacts<1000,`${artifacts} self-shadowed wall pixels`);console.log({artifacts});await page.screenshot({path:'test-results/maze-arena/wall-shadow-acne/wall-with-shadow.png'});await page.evaluate(()=>shot(0));await page.screenshot({path:'test-results/maze-arena/wall-shadow-acne/wall-without-shadow.png'});}finally{await browser.close();}

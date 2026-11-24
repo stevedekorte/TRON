@@ -19,7 +19,7 @@ for(const name of (process.env.TRON_ENGINES||'chrome,webkit,firefox').split(',')
    await page.waitForTimeout(3000);
    const lost=await page.evaluate(()=>window.__lost||[...document.querySelectorAll('canvas')].some(c=>c.getContext('webgl2')?.isContextLost()));
    results.push(`${aa?'4x':'1x'}${shadows?'+shadows':''}:${lost?'LOST':'ok'}`);
-   await page.screenshot({path:`test-results/raycast-${name}-${aa?4:1}${shadows?'-shadows':''}.png`});
+   await page.screenshot({path:`test-results/cycle-rendering/raycast-study/raycast-${name}-${aa?4:1}${shadows?'-shadows':''}.png`});
    if(lost)break;
   }
   const pass=!results.some(r=>r.includes('LOST'))&&!errors.length;failed||=!pass;

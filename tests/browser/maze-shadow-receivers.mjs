@@ -21,5 +21,5 @@ try{
   vehicleShadows.forEach(o=>o.visible=false);const bare=pixels();vehicleShadows.forEach(o=>o.visible=true);const layered=pixels();let silhouette=0;
   for(let i=0;i<layered.length;i+=4)if(bare[i+2]>layered[i+2]+8) silhouette++;
   renderer.render(scene,camera);return {changed,silhouette,layerOrder:vehicleShadows.every(o=>o.renderOrder>floor.renderOrder)};
- });assert.ok(changed.changed>300,JSON.stringify(changed));assert.ok(changed.silhouette>100,JSON.stringify(changed));assert.ok(changed.layerOrder);await page.screenshot({path:'test-results/maze-shadow-on-tank.png'});assert.deepEqual(errors,[]);console.log({shadowedTankPixels:changed});
+ });assert.ok(changed.changed>300,JSON.stringify(changed));assert.ok(changed.silhouette>100,JSON.stringify(changed));assert.ok(changed.layerOrder);await page.screenshot({path:'test-results/maze-arena/maze-shadow-receivers/maze-shadow-on-tank.png'});assert.deepEqual(errors,[]);console.log({shadowedTankPixels:changed});
 }finally{await browser.close();}

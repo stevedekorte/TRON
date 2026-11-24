@@ -39,10 +39,10 @@ try {
   });
   assert.ok(result.muzzleError<1e-10);assert.ok(Math.abs(result.height-19.5)<1e-5);
   assert.ok(Math.abs(result.feetY)<.001);assert.ok(result.independentMaterials);assert.equal(result.source,'arabinowitz');
-  await page.screenshot({path:'test-results/imported-models.png'});
+  await page.screenshot({path:'test-results/rendering/models/imported-models.png'});
   for(const fold of [.5,1]) {
     await page.evaluate(f=>{const {craft,renderer,scene,camera}=window.inspection;craft.pose(f);renderer.render(scene,camera);},fold);
-    await page.screenshot({path:'test-results/recognizer-fold-'+fold+'.png'});
+    await page.screenshot({path:'test-results/rendering/models/recognizer-fold-'+fold+'.png'});
   }
   assert.deepEqual(errors,[]);console.log(result);
 } finally {await browser.close();}

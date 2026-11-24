@@ -23,7 +23,7 @@ try{
  assert(outline?.visible,'cockpit outline shown in first person');
  assert(Math.abs(outline.opacity-.5)<.01,`outline opacity ${outline.opacity}`);
  assert(outline.segments>50&&outline.segments<400,`sparse outline, ${outline.segments} segments`);
- await page.screenshot({path:'test-results/cycle-first-person.png'});
+ await page.screenshot({path:'test-results/cycle-rendering/cycle-first-person/cycle-first-person.png'});
  await page.keyboard.press('KeyP');await page.waitForFunction(()=>__tron.state.camera.cycleFirstPersonMix<.01);
  assert.equal(await page.evaluate(()=>__tron.state.camera.cycleFirstPerson),false);
  assert(Math.abs((await page.evaluate(()=>__tron.state.camera.fov))-63)<1,'chase field of view restored');

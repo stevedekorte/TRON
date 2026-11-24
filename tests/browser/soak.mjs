@@ -43,11 +43,11 @@ try {
     }
     await page.waitForTimeout(65);
   }
-  await page.screenshot({path:'test-results/simulation-1080p.png'});
+  await page.screenshot({path:'test-results/releases/soak/simulation-1080p.png'});
   // Survey the roofs and aircraft after traversing real junctions.
-  await page.keyboard.press('KeyV');await page.waitForTimeout(1000);await page.screenshot({path:'test-results/simulation-aerial-1080p.png'});
+  await page.keyboard.press('KeyV');await page.waitForTimeout(1000);await page.screenshot({path:'test-results/releases/soak/simulation-aerial-1080p.png'});
   const report={browser:await browser.version(),duration,waypointsReached:index,distance,snapshots,errors};
-  await writeFile('test-results/soak.json',JSON.stringify(report,null,2));
+  await writeFile('test-results/releases/soak/soak.json',JSON.stringify(report,null,2));
   assert.deepEqual(errors,[]);assert.ok(index>=8,`traversed ${index} waypoints`);
   assert.ok(snapshots.at(-1).memory.geometries<=snapshots[Math.min(2,snapshots.length-1)].memory.geometries+3);
   assert.ok(snapshots.at(-1).memory.textures<=snapshots[Math.min(2,snapshots.length-1)].memory.textures+2);

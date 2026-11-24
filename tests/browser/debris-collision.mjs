@@ -39,5 +39,5 @@ try{
   fx.clear();result.remaining=fx.bursts.length;result.bodies=fx.physics.world.bodies.len();fx.dispose();return result;
  });
  assert.ok(result.initial>=60&&result.initial<=160,JSON.stringify(result));assert.ok(result.minBottom>=-.05,JSON.stringify(result));assert.equal(result.remaining,0);assert.equal(result.bodies,0);assert.deepEqual(errors,[]);
- await page.screenshot({path:'test-results/debris-collision.png'});console.log(result);
+ await page.screenshot({path:'test-results/clu-tank/debris-collision/debris-collision.png'});console.log(result);
 }finally{await browser.close();}

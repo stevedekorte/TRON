@@ -3,13 +3,14 @@ import {CycleRoom,wireState} from './room.js';
 import {MP} from './config.js';
 
 export class ArenaHub{
- constructor(){this.peers=new Map();this.room=null;this.timer=null;this.previous=null;this.timing={pumps:0,maxPumpGapMs:0,latePumps:0,discardedMs:0,maxCatchupSteps:0,snapshots:0};}
+ /** `onPlayers(count)`: called whenever the number of connected humans changes (arena presence watchers). */
+ constructor({onPlayers=()=>{}}={}){this.onPlayers=onPlayers;this.reportedPlayers=0;this.peers=new Map();this.room=null;this.timer=null;this.previous=null;this.timing={pumps:0,maxPumpGapMs:0,latePumps:0,discardedMs:0,maxCatchupSteps:0,snapshots:0};}
  add(socket,protocol=MP.protocol){
   this.room??=new CycleRoom({seed:crypto.getRandomValues(new Uint32Array(1))[0]});
   const id=crypto.randomUUID();
   if(!this.room.join(id)){socket.close(1013,'Arena spectator limit reached');return;}
   const peer={id,socket,protocol,baseline:null,seen:Date.now(),window:Date.now(),messages:0};this.peers.set(id,peer);
-  this.send(peer,{type:'welcome',protocol,id});
+  this.send(peer,{type:'welcome',protocol,id});this.reportPlayers();
   const initial=this.room.state();
   if(protocol===MP.protocol){peer.baseline=projectState(initial);this.send(peer,compactSnapshot(peer.baseline,null));}
   else this.send(peer,{...initial,protocol,full:true});
@@ -23,10 +24,14 @@ export class ArenaHub{
    else if(message?.type==='restart')this.room.restart(id,message.round);
    else if(message?.type==='resync'&&peer.protocol===MP.protocol){peer.baseline=projectState(this.room.state());this.send(peer,compactSnapshot(peer.baseline,null));}
   });
-  const remove=()=>{this.peers.delete(id);this.room?.leave(id);if(!this.peers.size){clearInterval(this.timer);this.timer=null;this.room=null;this.previous=null;}};
+  const remove=()=>{if(!this.peers.delete(id))return;this.room?.leave(id);if(!this.peers.size){clearInterval(this.timer);this.timer=null;this.room=null;this.previous=null;}this.reportPlayers();};
   socket.addEventListener('close',remove);socket.addEventListener('error',()=>{socket.close();remove();});
   if(!this.timer){this.last=performance.now();this.accumulator=0;this.timer=setInterval(()=>this.pump(),1000/60);}
  }
+ /** Connected humans, seated or queued. A rider whose connection dropped mid-round is not counted. */
+ playerCount(){return this.room?[...this.room.clients.values()].filter(c=>!c.disconnected).length:0;}
+ status(){return {players:this.playerCount(),round:this.room?.race.round??0,phase:this.room?this.room.race.phase:'empty'};}
+ reportPlayers(){const n=this.playerCount();if(n!==this.reportedPlayers){this.reportedPlayers=n;try{this.onPlayers(n);}catch(e){console.warn('Arena presence update failed',e);}}}
  send(peer,data){
   try{if((peer.socket.bufferedAmount??0)>MP.maxBufferedBytes){peer.socket.close(1013,'Connection too slow');return;}peer.socket.send(typeof data==='string'?data:JSON.stringify(data));}catch{peer.socket.close();}
  }

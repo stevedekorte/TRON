@@ -37,7 +37,7 @@ try{
  assert.equal(await page.locator('#turbo span').textContent(),'W/T / TURBO');assert(await page.locator('#turbo').isVisible());
  const music=await page.evaluate(()=>__tron.state.music);assert.equal(music.paused,true);assert.equal(music.transition,null);
  await page.keyboard.press('Escape');const time=await page.evaluate(()=>__tron.state.cycleRace.time);await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>__tron.state.cycleRace.time),time);
- await page.screenshot({path:'test-results/cycle-player.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-player/cycle-player.png'});
  await page.evaluate(()=>__tron.place({time:31}));
  await page.keyboard.press('Enter');
  await page.waitForTimeout(300);

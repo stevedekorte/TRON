@@ -34,7 +34,7 @@ try{
   await page.waitForFunction(()=>getComputedStyle(document.querySelector('#answer')).opacity==='0');
  }
  assert.equal(requests,3);
- await page.waitForTimeout(1200);await page.screenshot({path:'test-results/bit-program.png'});
+ await page.waitForTimeout(1200);await page.screenshot({path:'test-results/startup/bit/bit-program.png'});
  assert.equal(await page.locator('.exit-hint').textContent(),'ESCAPE KEY TO EXIT');
  assert.equal(await page.locator('.exit-hint').evaluate(e=>getComputedStyle(e).fontSize),await page.locator('#instructions').evaluate(e=>getComputedStyle(e).fontSize));
  await page.evaluate(()=>{

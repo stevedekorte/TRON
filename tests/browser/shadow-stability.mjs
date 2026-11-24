@@ -23,5 +23,5 @@ try{
   return results;
  });
  for(const r of results){assert.ok(r.min>30);assert.ok((r.max-r.min)/r.min<.025,JSON.stringify(r));}
- await page.screenshot({path:'test-results/shadow-stability.png'});assert.deepEqual(errors,[]);console.log(results);
+ await page.screenshot({path:'test-results/maze-arena/shadow-stability/shadow-stability.png'});assert.deepEqual(errors,[]);console.log(results);
 }finally{await browser.close();}

@@ -17,6 +17,6 @@ const waveform=await model.generate({...await processor(text),...speaker,exagger
 const pcm=waveform.data,buffer=Buffer.alloc(44+pcm.length*2);
 buffer.write('RIFF');buffer.writeUInt32LE(buffer.length-8,4);buffer.write('WAVEfmt ',8);buffer.writeUInt32LE(16,16);buffer.writeUInt16LE(1,20);buffer.writeUInt16LE(1,22);buffer.writeUInt32LE(config.sampleRateHz,24);buffer.writeUInt32LE(config.sampleRateHz*2,28);buffer.writeUInt16LE(2,32);buffer.writeUInt16LE(16,34);buffer.write('data',36);buffer.writeUInt32LE(pcm.length*2,40);
 for(let i=0;i<pcm.length;i++)buffer.writeInt16LE(Math.round(Math.max(-1,Math.min(1,pcm[i]))*32767),44+i*2);
-await mkdir('test-results',{recursive:true});await writeFile('test-results/mcp-voice-clone.wav',buffer);
+await mkdir('test-results/mcp/mcp-voice-sample',{recursive:true});await writeFile('test-results/mcp/mcp-voice-sample/mcp-voice-clone.wav',buffer);
 const result={text,model:config.id,revision:config.revision,durationSeconds:pcm.length/config.sampleRateHz,generationSeconds:(performance.now()-start)/1000};
-await writeFile('test-results/mcp-voice-clone.json',JSON.stringify(result,null,2));console.log(result);await model.dispose();
+await writeFile('test-results/mcp/mcp-voice-sample/mcp-voice-clone.json',JSON.stringify(result,null,2));console.log(result);await model.dispose();

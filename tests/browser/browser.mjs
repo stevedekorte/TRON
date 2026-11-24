@@ -17,7 +17,7 @@ import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { cellCenter, SPAWN } from '../../src/levels/maze.js';
-await mkdir('test-results',{recursive:true});
+await mkdir('test-results/startup/browser',{recursive:true});
 if(process.argv.includes('--terminal')){await import('./terminal.mjs');process.exit(0);}
 if(process.argv.includes('--soak')){await import('./soak.mjs');process.exit(0);}
 if(process.argv.includes('--compat')){await import('./compat.mjs');process.exit(0);}
@@ -27,7 +27,7 @@ const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
 try {
   await page.goto(process.env.TRON_URL||'http://127.0.0.1:5173/?maze=authored');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
-  await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.screenshot({path:'test-results/intro.png'});
+  await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.screenshot({path:'test-results/startup/browser/intro.png'});
   await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
   let state=await page.evaluate(()=>window.__tron.state);assert.equal(state.weaponVisual.source,'arabinowitz');assert.equal(state.recognizers.length,3);assert.equal(state.audioSources,3);
   assert.equal(await page.locator('#instruments').count(),0);
@@ -37,7 +37,7 @@ try {
   const initial=await page.evaluate(()=>window.__tron.state.s);
   await page.keyboard.down('KeyW');await page.waitForTimeout(7000);await page.keyboard.up('KeyW');
   state=await page.evaluate(()=>window.__tron.state);assert.ok(state.s>initial+75);assert.equal(state.status,'running');
-  await page.screenshot({path:'test-results/maze-entry.png'});
+  await page.screenshot({path:'test-results/startup/browser/maze-entry.png'});
   await page.keyboard.press('Escape');const paused=await page.evaluate(()=>window.__tron.state);await page.waitForTimeout(300);
   assert.deepEqual((await page.evaluate(()=>window.__tron.state)).recognizers,paused.recognizers);
   await page.keyboard.press('Enter');
@@ -45,9 +45,9 @@ try {
   await page.keyboard.down('KeyD');await page.waitForTimeout(1400);await page.keyboard.up('KeyD');
   await page.keyboard.down('KeyW');await page.waitForTimeout(2200);await page.keyboard.up('KeyW');
   state=await page.evaluate(()=>window.__tron.state);assert.ok(state.x>cellCenter(12,3).x+15,'drive into a side branch');
-  await page.screenshot({path:'test-results/maze-junction.png'});
-  await page.keyboard.press('KeyV');await page.waitForTimeout(1500);await page.screenshot({path:'test-results/maze-aerial.png'});
-  await page.keyboard.press('Tab');await page.locator('#survey').waitFor({state:'visible'});await page.screenshot({path:'test-results/maze-survey.png'});
+  await page.screenshot({path:'test-results/startup/browser/maze-junction.png'});
+  await page.keyboard.press('KeyV');await page.waitForTimeout(1500);await page.screenshot({path:'test-results/startup/browser/maze-aerial.png'});
+  await page.keyboard.press('Tab');await page.locator('#survey').waitFor({state:'visible'});await page.screenshot({path:'test-results/startup/browser/maze-survey.png'});
   await page.keyboard.press('Tab');await page.keyboard.press('KeyV');
   await page.evaluate(()=>__tron.reset());await page.waitForTimeout(100);
   await page.evaluate(()=>{
@@ -66,7 +66,7 @@ try {
   await page.waitForTimeout(1200);
   const flock=await page.evaluate(()=>window.__tron.state.recognizers);
   for(let i=0;i<flock.length;i++)for(let j=i+1;j<flock.length;j++)assert.ok(Math.hypot(flock[i].x-flock[j].x,flock[i].s-flock[j].s)>=23.9);
-  await page.evaluate(()=>__tron.place({turretYaw:Math.PI}));await page.waitForTimeout(1000);await page.screenshot({path:'test-results/recognizer-scale.png'});await page.evaluate(()=>__tron.place({turretYaw:0}));
+  await page.evaluate(()=>__tron.place({turretYaw:Math.PI}));await page.waitForTimeout(1000);await page.screenshot({path:'test-results/startup/browser/recognizer-scale.png'});await page.evaluate(()=>__tron.place({turretYaw:0}));
   await page.evaluate(()=>__tron.reset());await page.waitForTimeout(100);
   await page.evaluate(async()=>{
     window.__tron.configure({enemySpeed:0});
@@ -79,7 +79,7 @@ try {
   await page.evaluate(()=>window.__tron.configure({enemySpeed:27}));
   for(let i=0;i<10;i++){await page.evaluate(()=>__tron.reset());await page.waitForTimeout(70);}
   state=await page.evaluate(()=>window.__tron.state);assert.equal(state.audioContexts,1);assert.equal(state.audioSources,3);assert.equal(state.recognizers.length,3);assert.ok(state.recognizers.every(e=>e.memory===null));
-  await page.setViewportSize({width:960,height:640});await page.keyboard.press('KeyH');await page.waitForTimeout(200);await page.screenshot({path:'test-results/resized.png'});
+  await page.setViewportSize({width:960,height:640});await page.keyboard.press('KeyH');await page.waitForTimeout(200);await page.screenshot({path:'test-results/startup/browser/resized.png'});
   assert.deepEqual(errors,[]);
   console.log(JSON.stringify({browser:await browser.version(),checks:'five agents/audio sources, J/L level turret, entry and branch driving, pause freezes AI, aerial/survey, sighting memory, shooting, 10 resets, resize',resources:state.renderer,performance:await page.evaluate(()=>window.__tron.performance),errors},null,2));
 }finally{await browser.close();}

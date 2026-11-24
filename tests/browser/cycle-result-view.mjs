@@ -14,7 +14,7 @@ try{
   await page.waitForTimeout(3200);
   console.log(await page.evaluate(()=>({phase:__tron.state.cycleRace.phase,vehicle:__tron.state.playerVehicle,mode:__tron.state.mode,text:document.querySelector('#cycle-result').textContent,hidden:document.querySelector('#cycle-result').hidden})),errors);
   assert.equal(await page.locator('#cycle-result').innerText(),winner==null?'TIED MATCH!':`${winner===0?'GOLD':'BLUE'} TEAM WINS`);
-  await page.screenshot({path:`test-results/cycle-result-${winner}.png`});
+  await page.screenshot({path:`test-results/cycles/cycle-result-view/cycle-result-${winner}.png`});
  }
  await page.keyboard.press('Enter');await page.waitForFunction(()=>document.querySelector('#cycle-result').hidden);
  assert.deepEqual(errors,[]);console.log('Gold, blue and tie result orbits render; Enter restarts and clears result.');

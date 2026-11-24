@@ -18,7 +18,7 @@ try{
  for(const seconds of [.2,.6,1.2,2.4]){
   await page.waitForFunction(t=>__tron.state.time>=t,start.time+seconds);
   samples.push(await page.evaluate(()=>({time:__tron.state.time,e:__tron.state.recognizers[0]})));
-  await page.screenshot({path:`test-results/recognizer-momentum-${seconds}.png`});
+  await page.screenshot({path:`test-results/recognizers/recognizer-momentum/recognizer-momentum-${seconds}.png`});
  }
  const early=samples[1].e;assert.ok(early.yaw>0&&early.yawVelocity>0,'rotation carries through the reversed heading request');assert.ok(early.y>start.e.y,'lift retains upward momentum');
  assert.ok(samples.at(-1).e.yawVelocity<0,'turn eventually reverses');

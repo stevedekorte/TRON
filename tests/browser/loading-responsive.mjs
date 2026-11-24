@@ -32,6 +32,6 @@ try{
   reports.push({navigation:i?'cached reload':'first navigation',...report});
  }
  await page.locator('#start-cycles').click();await page.waitForFunction(()=>__tron.state.mode==='running'&&__tron.state.playerVehicle==='cycle',null,{timeout:60000});
- assert.deepEqual(errors,[]);await writeFile('test-results/loading-responsive.json',JSON.stringify({reports,errors},null,2));
+ assert.deepEqual(errors,[]);await writeFile('test-results/startup/loading-responsive/loading-responsive.json',JSON.stringify({reports,errors},null,2));
  console.log(JSON.stringify(reports.map(({timings,...r})=>r)));
 }finally{await browser.close();}

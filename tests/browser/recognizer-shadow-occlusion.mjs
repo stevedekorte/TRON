@@ -56,5 +56,5 @@ try{
  assert(result.counts[0].masked>100,'exposed roof retains shadow');
  for(const i of [1,2]){assert(result.counts[i].leaked>100,'fixture reproduces shadow through wall');assert(result.counts[i].masked<5,'hidden receiver is protected');}
  assert(result.debris<5);assert(result.projectedLeak>100);assert(result.projectedMasked<5);
- assert.deepEqual(errors,[]);await page.screenshot({path:'test-results/recognizer-shadow-occlusion.png'});
+ assert.deepEqual(errors,[]);await page.screenshot({path:'test-results/recognizers/recognizer-shadow-occlusion/recognizer-shadow-occlusion.png'});
 }finally{await browser.close();}

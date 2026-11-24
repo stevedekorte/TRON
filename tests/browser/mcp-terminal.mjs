@@ -17,7 +17,7 @@ try{
  await page.waitForFunction(()=>document.querySelector('#reply').textContent.startsWith('MASTER CONTROL PROGRAM UNAVAILABLE\nAUDIO INPUT'));
  assert.match(await page.locator('#reply').textContent(),/MASTER CONTROL PROGRAM UNAVAILABLE\nAUDIO INPUT/);
  assert.equal(await page.locator('#reply').evaluate(e=>getComputedStyle(e,'::after').content),'none');
- await page.screenshot({path:'test-results/mcp-terminal.png'});
+ await page.screenshot({path:'test-results/mcp/mcp-terminal/mcp-terminal.png'});
  await page.keyboard.press('Escape');assert(await page.locator('#exit-confirm').isVisible());
  assert.deepEqual(errors,[]);
  console.log('MCP terminal access request, hidden UI/face, panel, and Escape confirmation passed.');

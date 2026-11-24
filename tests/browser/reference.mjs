@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 if(process.argv.includes('--audio')){await import('./audio.mjs');process.exit(0);}
 if(process.argv.includes('--camera')){await import('./camera.mjs');process.exit(0);}
 if(process.argv.includes('--attack')){await import('./attack.mjs');process.exit(0);}
-await mkdir('test-results/reference',{recursive:true});
+await mkdir('test-results/maze-arena/reference',{recursive:true});
 const browser=await chromium.launch({channel:process.env.TRON_BROWSER_CHANNEL||'chrome',headless:true,args:['--mute-audio']});
 try{
  const page=await browser.newPage({viewport:{width:2048,height:820}}),errors=[];
@@ -14,20 +14,20 @@ try{
  for(const shot of ['close','rear','maze','details','drive']){
   await page.evaluate(s=>window.__reference.select(s),shot);await page.waitForTimeout(200);
   assert.ok(await page.locator('#reference').evaluate(img=>img.complete&&img.naturalWidth>0));
-  await page.screenshot({path:'test-results/reference/'+shot+'.png'});
+  await page.screenshot({path:'test-results/maze-arena/reference/'+shot+'.png'});
  }
  await page.goto('http://127.0.0.1:5173/docs/index.html');
  const cards=page.locator('.card-grid a.card');assert.equal(await cards.count(),4);
  for(const href of await cards.evaluateAll(nodes=>nodes.map(n=>n.href))) {
    const response=await page.request.get(href);assert.equal(response.status(),200);
  }
- await page.locator('.card-grid').screenshot({path:'test-results/reference/docs-cards.png'});
+ await page.locator('.card-grid').screenshot({path:'test-results/maze-arena/reference/docs-cards.png'});
  await page.goto('http://127.0.0.1:5173/reference.html?maze=blueprint&shot=blueprint');
  await page.waitForFunction(()=>window.__reference?.shot==='blueprint');
  assert.ok(await page.locator('#reference').evaluate(img=>img.complete&&img.naturalWidth>0));
- await page.screenshot({path:'test-results/reference/blueprint.png'});
+ await page.screenshot({path:'test-results/maze-arena/reference/blueprint.png'});
  await page.locator('#mix').fill('0.5');await page.locator('#mix').dispatchEvent('input');
- await page.screenshot({path:'test-results/reference/blueprint-overlay.png'});
+ await page.screenshot({path:'test-results/maze-arena/reference/blueprint-overlay.png'});
  await page.goto('http://127.0.0.1:5173/');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
  await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
  assert.equal(await page.evaluate(()=>window.__tron.state.maze),'blueprint');
@@ -38,9 +38,9 @@ try{
   return {s:r.s,free:maze.freePosition(r.x,r.s,3.49),agents:r.recognizers.length};
  });
  assert.ok(result.s>start+60);assert.ok(result.s<start+160);assert.ok(result.free);assert.equal(result.agents,5);
- await page.screenshot({path:'test-results/reference/blueprint-driving.png'});
+ await page.screenshot({path:'test-results/maze-arena/reference/blueprint-driving.png'});
  await page.keyboard.press('KeyV');await page.waitForTimeout(1200);
- await page.screenshot({path:'test-results/reference/blueprint-aerial.png'});
+ await page.screenshot({path:'test-results/maze-arena/reference/blueprint-aerial.png'});
  await page.goto('http://127.0.0.1:5173/?maze=authored');await page.waitForFunction(()=>!document.querySelector('#start').disabled);
  await page.waitForFunction(()=>document.querySelector('.terminal-copy.complete'));await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('playing'));
  assert.equal(await page.evaluate(()=>window.__tron.state.maze),'authored');

@@ -2,6 +2,7 @@ import {CycleExitVoice} from './cycle-exit-voice.js';
 import {CycleSpeedVoice,CYCLE_SPEED_VOICE} from './cycle-speed-voice.js';
 import {CycleOpponentVoice,CYCLE_OPPONENT_VOICE} from './cycle-opponent-voice.js';
 import {CycleLossCue} from './cycle-loss-cue.js';
+import {ArenaArrivalVoice,ARENA_ARRIVAL_VOICE} from './arena-arrival-voice.js';
 import {publicAssetUrl} from '../assets/public-url.js';
 import {MultiplayerTeamVoice,MP_TEAM_VOICE} from './multiplayer-team-voice.js';
 import {MultiplayerCountdown} from './multiplayer-countdown.js';
@@ -71,6 +72,10 @@ export class Sound {
     primer.onended = () => primer.disconnect();
     primer.start();
     return resumed;
+  }
+  /** A human entered the multiplayer arena: play the announcer line when it can be heard. */
+  announceArenaArrival() {
+    this.arenaArrivalVoice?.request();
   }
   endOfLine() {
     const buffer = this.samples['end-of-line'];
@@ -165,6 +170,7 @@ export class Sound {
     this.cycleSpeedVoice = new CycleSpeedVoice(c,this.master,this.samples);
     this.cycleOpponentVoice = new CycleOpponentVoice(c,this.master,this.samples);
     this.cycleLossCue = new CycleLossCue(c,this.master);
+    this.arenaArrivalVoice = new ArenaArrivalVoice(c,this.master,this.samples);
     this.loading ??= this.loadSamples();
     this.startLoops();
     if (this.pendingMusic) { const args = this.pendingMusic; this.pendingMusic = null; this.startMusic(...args); }
@@ -210,9 +216,9 @@ export class Sound {
   }
 
   loadCycleSamples() {
-    return this.cycleLoading ??= Promise.all([...Object.values(MP_TEAM_VOICE.samplesByTeam).flat().map(sample=>sample.slice('cycle-'.length)),'illegal-exit',...CYCLE_SPEED_VOICE.milestones.map(m=>m.sample.slice('cycle-'.length)),CYCLE_OPPONENT_VOICE.sample.slice('cycle-'.length),'materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
+    return this.cycleLoading ??= Promise.all([...Object.values(MP_TEAM_VOICE.samplesByTeam).flat().map(sample=>sample.slice('cycle-'.length)),'illegal-exit',...CYCLE_SPEED_VOICE.milestones.map(m=>m.sample.slice('cycle-'.length)),CYCLE_OPPONENT_VOICE.sample.slice('cycle-'.length),ARENA_ARRIVAL_VOICE.sample.slice('cycle-'.length),'materialize','startup','launch','drive','drive-cabin','turn','explosion','wall-down',...CYCLE_ENTRY_CUES.map(cue=>cue.name)].map(async name=>{
       try {
-        const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+(Object.values(MP_TEAM_VOICE.samplesByTeam).flat().includes('cycle-'+name)?'.mp3':'.wav')));
+        const response=await fetch(publicAssetUrl('assets/audio/cycle-'+name+([...Object.values(MP_TEAM_VOICE.samplesByTeam).flat(),ARENA_ARRIVAL_VOICE.sample].includes('cycle-'+name)?'.mp3':'.wav')));
         if(!response.ok)throw new Error('HTTP '+response.status);
         const bytes=await response.arrayBuffer();if(this.disposed)return;
         const buffer=await this.decoder().decodeAudioData(bytes);if(!this.disposed)this.samples['cycle-'+name]=buffer;
@@ -313,8 +319,10 @@ export class Sound {
     }
     this.multiplayerTeamVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode);
     if(this.cycleExitVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode)){this.multiplayerTeamVoice.stopPlayback();this.cycleSpeedVoice.stopPlayback();this.cycleOpponentVoice.stopPlayback();}
-    if(this.cycleOpponentVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode,!!this.cycleExitVoice.voice)){this.multiplayerTeamVoice.stopPlayback();this.cycleSpeedVoice.stopPlayback();}
-    if(this.cycleSpeedVoice.update(run.cycleRace,run.multiplayer?run.multiplayer.connected:cycleMode,playing&&!this.muted,!!this.cycleExitVoice.voice||!!this.cycleOpponentVoice.voice))this.multiplayerTeamVoice.stopPlayback();
+    const arrivalVoice=!!this.arenaArrivalVoice.voice;
+    if(this.cycleOpponentVoice.update(run.cycleRace,run.multiplayer,playing&&!this.muted,cycleMode,!!this.cycleExitVoice.voice||arrivalVoice)){this.multiplayerTeamVoice.stopPlayback();this.cycleSpeedVoice.stopPlayback();}
+    if(this.cycleSpeedVoice.update(run.cycleRace,run.multiplayer?run.multiplayer.connected:cycleMode,playing&&!this.muted,!!this.cycleExitVoice.voice||!!this.cycleOpponentVoice.voice||arrivalVoice))this.multiplayerTeamVoice.stopPlayback();
+    if(this.arenaArrivalVoice.update(playing&&!this.muted,!!this.cycleExitVoice.voice||!!this.cycleOpponentVoice.voice||!!this.cycleSpeedVoice.voice))this.multiplayerTeamVoice.stopPlayback();
     this.cycleLossCue.update(run.cycleRace,run.multiplayer,playing&&!this.muted&&cycleMode,cycleMode);
     this.multiplayerCountdown.update(run.multiplayer?.connected?run.cycleRace:null,playing&&!this.muted);
     this.cycleVoices.update(run.cycleRace,playing,ear,this.cycleOpeningSeconds!==null&&this.cycleOpeningSeconds!==undefined);
@@ -620,6 +628,7 @@ export class Sound {
     this.cycleSpeedVoice?.reset();
     this.cycleOpponentVoice?.reset();
     this.cycleLossCue?.reset();
+    this.arenaArrivalVoice?.reset();
     this.musicDirector.reset();
     this.cycleVoices?.reset();
     this.turretServo?.reset();
@@ -635,6 +644,7 @@ export class Sound {
     this.cycleSpeedVoice?.stopPlayback();
     this.cycleOpponentVoice?.stopPlayback();
     this.cycleLossCue?.stopPlayback();
+    this.arenaArrivalVoice?.reset();
     this.musicDirector.silence();
     this.cycleVoices?.stopPlayback();
     if (this.context) this.master.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
@@ -651,6 +661,7 @@ export class Sound {
     this.cycleSpeedVoice?.reset();
     this.cycleOpponentVoice?.reset();
     this.cycleLossCue?.reset();
+    this.arenaArrivalVoice?.reset();
     this.cycleVoices?.dispose();
     this.musicDirector.dispose();
     this.context?.close();

@@ -38,5 +38,5 @@ const heldOut=evaluate(champion,Array.from({length:smoke?1:32},(_,i)=>90000+i),[
 const output={version:1,policy:{...champion,...(champion.network?{network:{version:1,weights:Array.from(champion.network.weights)}}:{})},training:{seed:44123,seconds,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,ranking:"timing, aggression-and-win fitness, then win rate",records},heldOut,
  promoted:false,eligibleForReview:!smoke&&heldOut.passesTiming&&heldOut.winRateLower95>.25,
  note:'Not auto-promoted. Requires scenario regressions, held-out matched baseline comparison, browser performance and human gameplay review. Draws are not wins.'};
-await mkdir('test-results',{recursive:true});
-await writeFile('test-results/cycle-ai-candidate.json',JSON.stringify(output,null,2)+'\n');console.log(JSON.stringify({artifact:'test-results/cycle-ai-candidate.json',heldOut,promoted:false}));
+await mkdir('test-results/cycle-ai/training',{recursive:true});
+await writeFile('test-results/cycle-ai/training/cycle-ai-candidate.json',JSON.stringify(output,null,2)+'\n');console.log(JSON.stringify({artifact:'test-results/cycle-ai/training/cycle-ai-candidate.json',heldOut,promoted:false}));

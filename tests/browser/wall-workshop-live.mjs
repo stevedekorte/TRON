@@ -18,6 +18,6 @@ try{
  await page.waitForFunction(()=>['ready','failed','cancelled'].includes(wallStudy.state?.job?.status),{},{timeout:270000});
  const result=await page.evaluate(()=>({job:wallStudy.state.job,revision:wallStudy.state.current.id,parts:wallStudy.design.parts.map(p=>p.id)}));
  console.log(JSON.stringify(result,null,2));assert.equal(result.job.status,'ready');assert.equal(result.revision,1);assert.equal(result.parts.length,11);assert(!result.parts.some(id=>id.includes('ledge')));assert.deepEqual(errors,[]);
- await mkdir('test-results/wall-workshop',{recursive:true});await page.screenshot({path:'test-results/wall-workshop/live-revision.png',fullPage:true});
+ await mkdir('test-results/outside-arena/wall-workshop',{recursive:true});await page.screenshot({path:'test-results/outside-arena/wall-workshop/live-revision.png',fullPage:true});
  console.log('One real Codex revision passed: removed eight ledges, retained eleven slab/panel parts. Temporary test workspace only.');
 }finally{await browser.close();await server.close();await rm(storeDir,{recursive:true,force:true});}

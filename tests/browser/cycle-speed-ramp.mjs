@@ -16,7 +16,7 @@ try{
  const notice=page.locator('#cycle-speed-notice');
  await page.waitForFunction(()=>document.querySelector('#cycle-speed-notice').textContent==='GRID SPEED: 112%');assert(await notice.isVisible());
  await page.waitForFunction(()=>document.querySelector('#cycle-speed-notice').textContent==='GRID SPEED: 113%');assert(await notice.isVisible());
- await page.screenshot({path:'test-results/cycle-speed-ramp.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-speed-ramp/cycle-speed-ramp.png'});
  await page.waitForFunction(()=>__tron.state.cycleRace.cycles[__tron.state.cycleRace.playerId].speedMultiplier>=1.13);
  assert.deepEqual(errors,[]);console.log('Solo HUD stays visible as speed rises by one percentage point per second, without page errors.');
 }finally{await browser.close();}

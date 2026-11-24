@@ -41,5 +41,5 @@ try{
  for(const value of Object.values(result)){assert(value.unmasked<value.lit*.995,'fixture reproduces shadow leaking through architecture');assert.equal(value.protectedFace,value.lit,'occluded wall face must not receive moving aircraft shadow');}
  assert(result['far-side'].exteriorShadow<result['far-side'].exteriorLit*.995,'directly lit exterior face still receives aircraft shadow');
  assert(result.overhang.roofRemoved<result.overhang.lit*.995,'removing roof exposes receiver to aircraft shadow');assert.equal(result.overhang.roofRestored,result.overhang.lit);
- assert.deepEqual(errors,[]);await mkdir('test-results/arena-aircraft-occlusion',{recursive:true});await writeFile('test-results/arena-aircraft-occlusion/report.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+ assert.deepEqual(errors,[]);await mkdir('test-results/maze-arena/arena-aircraft-occlusion',{recursive:true});await writeFile('test-results/maze-arena/arena-aircraft-occlusion/report.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));
 }finally{await browser.close();await server.close();await rm(cacheDir,{recursive:true,force:true});}

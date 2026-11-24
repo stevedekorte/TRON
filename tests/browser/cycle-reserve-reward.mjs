@@ -19,7 +19,7 @@ try{
  });
  assert.equal(values.start,'scaleX(0.2)');assert.equal(values.middle,'scaleX(0.9)');
  assert.equal(values.bright,'rgb(255, 255, 255)');
- await page.screenshot({path:'test-results/cycle-reserve-reward.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-reserve-reward/cycle-reserve-reward.png'});
  assert(await page.evaluate(()=>{
   rewardHud.updateReserveReward(rewardBike,1300);
   const ended=!document.querySelector('.reserve-reward');

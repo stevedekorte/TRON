@@ -25,6 +25,6 @@ try{
  });
  assert.ok(loaded.every(a=>a.duration>20&&Number.isFinite(a.duration)));
  await page.locator('audio').first().evaluate(a=>a.play());await page.waitForTimeout(100);assert.equal(await page.locator('audio').first().evaluate(a=>a.paused),false);await page.locator('audio').first().evaluate(a=>a.pause());
- await page.screenshot({path:'test-results/sound-library.png'});
+ await page.screenshot({path:'test-results/audio/sound-library/sound-library.png'});
  assert.deepEqual(errors,[]);console.log({resources:catalog.items.length,audioPlayers:catalog.items.filter(i=>i.playback).length,downloadedPreviews:loaded.length});
 }finally{await browser.close();}

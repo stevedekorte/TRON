@@ -26,7 +26,7 @@ try{
   slabs.visible=false;shadows.strengths.fill(0);const clearGround=pixels();shadows.strengths.fill(1);const ground=pixels();let groundPixels=0,visibleGridPixels=0;
   for(let i=0;i<ground.length;i+=4){if(clearGround[i+2]>ground[i+2]+8)groundPixels++;if(clearGround[i]>240&&ground[i]>70&&ground[i]<225)visibleGridPixels++;}
   slabs.visible=true;renderer.render(scene,camera);return {wall,groundPixels,visibleGridPixels};
- });assert.ok(result.wall>500,JSON.stringify(result));assert.ok(result.groundPixels>1000,JSON.stringify(result));assert.ok(result.visibleGridPixels>100,JSON.stringify(result));assert.deepEqual(errors,[]);await page.screenshot({path:'test-results/carrier-shadows.png'});console.log(result);
+ });assert.ok(result.wall>500,JSON.stringify(result));assert.ok(result.groundPixels>1000,JSON.stringify(result));assert.ok(result.visibleGridPixels>100,JSON.stringify(result));assert.deepEqual(errors,[]);await page.screenshot({path:'test-results/carrier/carrier-shadows/carrier-shadows.png'});console.log(result);
  const edges=[];
  for(const mode of ['old','filtered','smooth']){
   const samples=await page.evaluate(async mode=>{
@@ -68,7 +68,7 @@ try{
     results.push({shift,wrong,shadowed,partial,roughness,wrongFar});
    }
    shadows.dispose();target.dispose();return results;
-  },mode);edges.push({mode,samples});await page.screenshot({path:`test-results/carrier-edge-${mode}.png`});
+  },mode);edges.push({mode,samples});await page.screenshot({path:`test-results/carrier/carrier-shadows/carrier-edge-${mode}.png`});
  }
  for(let i=0;i<2;i++){
   assert.ok(edges[1].samples[i].wrong<edges[0].samples[i].wrong*.45,JSON.stringify(edges));

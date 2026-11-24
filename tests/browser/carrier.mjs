@@ -15,7 +15,7 @@ try{
  await page.keyboard.press('Escape');await page.waitForTimeout(100);
  const frozen=await page.evaluate(()=>window.__tron.state.carrier);
  await page.waitForTimeout(200);assert.deepEqual(await page.evaluate(()=>window.__tron.state.carrier),frozen);
- await page.screenshot({path:'test-results/carrier-game.png'});
+ await page.screenshot({path:'test-results/carrier/carrier/carrier-game.png'});
  // Check every anatomical section in both open and folded poses. A surface hit
  // must retain exactly two intact sections and conserve all source triangles.
  const sections=await page.evaluate(async()=>{

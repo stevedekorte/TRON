@@ -12,13 +12,13 @@ try{
  await page.waitForFunction(()=>__tron.state.camera.beamCinematic?.phase==='orbit');
  assert((await page.evaluate(()=>__tron.state.camera.y))>590);
  assert.equal(await page.evaluate(()=>__tron.state.turretYaw),0);
- await page.screenshot({path:'test-results/beam-camera-orbit.png'});
+ await page.screenshot({path:'test-results/carrier/beam-camera/beam-camera-orbit.png'});
  await page.keyboard.press('Escape');const paused=await page.evaluate(()=>__tron.state.camera);await page.waitForTimeout(300);
  assert.deepEqual(await page.evaluate(()=>__tron.state.camera),paused);
  await page.keyboard.press('Escape');
  await page.waitForFunction(()=>__tron.state.camera.beamCinematic?.phase==='return');
  await page.waitForFunction(()=>__tron.state.time-__tron.state.dataBeams[0].transferStartedAt>=12.6);
  assert((await page.evaluate(()=>__tron.state.camera.y))<15);
- await page.screenshot({path:'test-results/beam-camera-return.png'});
+ await page.screenshot({path:'test-results/carrier/beam-camera/beam-camera-return.png'});
  assert.deepEqual(errors,[]);console.log('Beam camera: half-speed rise, orbit, pause, return by ring opening; turret unchanged; no browser errors.');
 }finally{await browser.close();}

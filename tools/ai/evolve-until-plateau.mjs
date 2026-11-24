@@ -27,7 +27,7 @@ const initial=PLAYTESTED_POLICY,evaluationOpponent=evaluation==='current'?initia
 const opponentPaths=process.argv.filter(a=>a.startsWith('--opponent=')).map(a=>a.slice(11));
 const extraOpponents=await Promise.all(opponentPaths.map(async path=>validatePolicy(JSON.parse(await readFile(path,'utf8')).policy)));
 options.evaluationOpponent=evaluation;
-await mkdir('test-results',{recursive:true});
+await mkdir('test-results/cycle-ai/training',{recursive:true});
 let champion=validatePolicy(initial),rng=options.mutationSeed,stale=0,generation=0;
 const random=()=>((rng=(Math.imul(rng,1664525)+1013904223)>>>0)/4294967296);
 function mutate(parent,id,index){const p={...parent,id};for(const [key,[min,max]] of Object.entries(POLICY_BOUNDS))p[key]=Math.max(min,Math.min(max,parent[key]+(random()-.5)*(max-min)*scales[index%scales.length]));return validatePolicy(p);}
@@ -56,7 +56,7 @@ while(stale<options.patience){
  if(accepted){champion=chosen.policy;validation=challenger;history.push(champion);stale=0;}else stale++;
  records.push({generation,scores,challenger,timing:check,gate,gain,improvedSeeds,accepted,stale,champion:champion.id});
  console.log(JSON.stringify({generation,champion:champion.id,gain,improvedSeeds,accepted,stale,validation:{...validation,rows:undefined}}));
- await writeFile(`test-results/${artifact}-checkpoint.json`,JSON.stringify({options,opponentPaths,trainingOpponents,evaluationOpponent,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,initial,initialValidation,champion,validation,records,stale},null,2));
+ await writeFile(`test-results/cycle-ai/training/${artifact}-checkpoint.json`,JSON.stringify({options,opponentPaths,trainingOpponents,evaluationOpponent,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,initial,initialValidation,champion,validation,records,stale},null,2));
  generation++;
 }
 const finalSeeds=Array.from({length:options.finalSeeds},(_,i)=>options.seedOffset+100000+i);
@@ -71,9 +71,9 @@ const finalTiming=timing(champion),finalGate=judgePlateauChallenger(previousTria
 const trialUpdated=champion.id!==initial.id&&finalTiming.passes&&finalGate.passes;
 const output={version:1,options,opponentPaths,trainingOpponents,evaluationOpponent,fitnessWeights:AI_FITNESS,approachConfig:APPROACH,initial,initialValidation,policy:champion,validation,records,heldOut:{candidate,previousTrial,baseline,uniqueEvaluations:unique.length,gate:finalGate},timing:finalTiming,stale,generations:generation,trialUpdated,promoted:false,
  note:'Observed plateau under the configured patience, fitness/seed/offense gates and serial runtime limits. Fixed validation is selection data, not held-out proof. Final seeds are used once per distinct policy. No production promotion.'};
-await writeFile(`test-results/${artifact}.json`,JSON.stringify(output,null,2));
+await writeFile(`test-results/cycle-ai/training/${artifact}.json`,JSON.stringify(output,null,2));
 if(trialUpdated){
- try{await copyFile('test-results/cycle-ai-trained.json',`test-results/${artifact}-previous-trial.json`);}catch(error){if(error.code!=='ENOENT')throw error;}
- await writeFile('test-results/cycle-ai-trained.json',JSON.stringify(output,null,2));
+ try{await copyFile('test-results/cycle-ai/training/cycle-ai-trained.json',`test-results/cycle-ai/training/${artifact}-previous-trial.json`);}catch(error){if(error.code!=='ENOENT')throw error;}
+ await writeFile('test-results/cycle-ai/training/cycle-ai-trained.json',JSON.stringify(output,null,2));
 }
 console.log(JSON.stringify({complete:true,generations:generation,stale,champion:champion.id,trialUpdated,candidate:{...candidate,rows:undefined},previousTrial:{...previousTrial,rows:undefined},baseline:{...baseline,rows:undefined},timing:finalTiming}));

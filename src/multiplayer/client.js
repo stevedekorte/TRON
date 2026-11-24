@@ -27,12 +27,12 @@ export class MultiplayerClient{
   this.diagnostics=new MultiplayerDiagnostics();
   this.report=()=>this.diagnostics.report(this.remotePlayback);
   if(typeof window!=='undefined')window.tronMultiplayerReport=this.report;
-  this.remotePlayback=new RemotePlayback();this.onStatus=onStatus;this.seq=0;this.pending=[];this.rtt=0;this.closed=false;this.lastSent=0;this.control={turbo:false,brake:false};
+  this.remotePlayback=new RemotePlayback();this.onStatus=onStatus;this.seq=0;this.pending=[];this.rtt=0;this.closed=false;this.lastSent=0;this.control={turbo:false,brake:false};this.arrivals=0;this.knownClients=null;
  }
  async connect(options=CONNECTION){
   for(let attempt=0;attempt<options.attempts;attempt++){
    if(this.closed)throw Error('MULTIPLAYER CONNECTION CANCELLED');
-   this.disconnected=false;this.id=null;this.state=null;
+   this.disconnected=false;this.id=null;this.state=null;this.knownClients=null;
    try{return await this.connectAttempt(options.timeoutMs);}
    catch(error){
     clearInterval(this.heartbeat);
@@ -60,6 +60,9 @@ export class MultiplayerClient{
     this.resyncPending=false;
     const me=data.clients.find(c=>c.id===this.id);if(!me)return;
     if(this.state?.race.round!==data.race.round){this.pending=[];this.control={turbo:false,brake:false};this.lastSent=0;}
+    // Arrivals: every human who enters the arena (and its queue) after this client did.
+    const first=!this.knownClients;this.knownClients??=new Set();
+    for(const c of data.clients)if(!this.knownClients.has(c.id)){this.knownClients.add(c.id);if(!first&&c.id!==this.id)this.arrivals++;}
     this.pending=this.pending.filter(p=>p.seq>me.ack);this.state=data;this.me=me;this.received=performance.now();this.remotePlayback.push(data,this.received);
     // Background tabs stop animation frames and throttle timers, but socket messages
     // still arrive: keep the connection alive.
@@ -162,7 +165,7 @@ export class MultiplayerClient{
     const old=previous.cycles[b.id];
     // A serialized copy of the same reward is not a new HUD animation.
     if(b.reserveReward&&old?.reserveReward&&['revision','turboFrom','brakeFrom','target'].every(key=>b.reserveReward[key]===old.reserveReward[key]))b.reserveReward=old.reserveReward;
-    if(old)for(const key of ['human','operator','reserveReward','wallEliminations','trapAssists'])if(!(key in b))delete old[key];
+    if(old)for(const key of ['human','operator','pattern','reserveReward','wallEliminations','trapAssists'])if(!(key in b))delete old[key];
     return Object.assign(old??{},b);
    });
    Object.assign(previous,race);run.cycleRace=previous;
@@ -171,7 +174,7 @@ export class MultiplayerClient{
   run.won=false;run.crushed=false;run.speed=0;run.gunner=false;run.turretYaw=0;run.aimPitch=0;
   if(previous.round!==race.round){run.cycleFollowId=null;run.inspection=false;}
   run.cycleSpectating=waiting;
-  run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,unseatedWaiting:this.state.clients.filter(c=>c.seat===null&&c.queue>0).length,players:this.state.clients.length,canRestart:this.canRestart(),ping:Math.round(this.rtt),round:race.round};
+  run.multiplayer={connected:!this.disconnected&&!stale,seat:this.me.seat,queue:this.me.queue,waiting:this.state.waiting,unseatedWaiting:this.state.clients.filter(c=>c.seat===null&&c.queue>0).length,players:this.state.clients.length,arrivals:this.arrivals,canRestart:this.canRestart(),ping:Math.round(this.rtt),round:race.round};
   Object.assign(run,cyclePlayerPose(race));return true;
  }
  close(){if(typeof window!=='undefined'&&window.tronMultiplayerReport===this.report)delete window.tronMultiplayerReport;this.closed=true;this.cancelConnect?.();this.cancelConnect=null;clearInterval(this.heartbeat);this.socket?.close(1000,'Leaving arena');this.pending=[];this.remotePlayback?.reset();}

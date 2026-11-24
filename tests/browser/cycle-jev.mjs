@@ -17,7 +17,7 @@ try{
  await page.keyboard.press('Escape');
  await page.waitForTimeout(100);const count=requests.length;
  await page.waitForTimeout(1500);assert.equal(requests.length,count);
- await page.screenshot({path:'test-results/cycle-jev.png'});
+ await page.screenshot({path:'test-results/cycles/cycle-jev/cycle-jev.png'});
  assert.deepEqual(errors,[]);
  console.log('Cycle JEV: arena requests, accepted decisions, human exclusion and paused scheduling passed.');
 }finally{await browser.close();}

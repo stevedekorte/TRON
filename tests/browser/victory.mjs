@@ -8,7 +8,7 @@ try{
  await page.route('**/api/jev/decision',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"test"}'}));
  await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>window.__tron&&!document.querySelector('#start').disabled);
  assert.equal(await page.locator('.terminal-encom').isVisible(),true);
- await page.screenshot({path:'test-results/terminal-encom.png'});
+ await page.screenshot({path:'test-results/terminal-ui/victory/terminal-encom.png'});
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
  // Beam completion now wins Clu directly; the full session path is covered by home-menu.mjs.
  await page.keyboard.press('Shift+Digit8');
@@ -22,7 +22,7 @@ try{
  assert.equal(await page.locator('#end-tribute').isVisible(),false);
  const bounds=await page.locator('.terminal-copy').boundingBox();assert.ok(bounds.y+bounds.height<=1000);
  assert.equal(await page.locator('.terminal-encom').isVisible(),true);
- await page.screenshot({path:'test-results/victory-terminal.png'});
+ await page.screenshot({path:'test-results/terminal-ui/victory/victory-terminal.png'});
  await page.keyboard.press('Enter');await page.waitForFunction(()=>document.body.classList.contains('victory-credits'));
  await page.evaluate(()=>window.dispatchEvent(new KeyboardEvent('keydown',{code:'Enter',repeat:true,bubbles:true})));
  assert.equal(await page.evaluate(()=>document.body.classList.contains('victory-credits')),true);
@@ -31,7 +31,7 @@ try{
  assert.equal(await page.evaluate(()=>__tron.state.music.track),'terminal');
  await page.waitForFunction(()=>document.querySelector('#tribute-text').textContent.length>0);
  assert.equal(await page.locator('.terminal-encom').isVisible(),true);
- await page.screenshot({path:'test-results/victory-credits.png'});
+ await page.screenshot({path:'test-results/terminal-ui/victory/victory-credits.png'});
  await page.keyboard.press('Enter');await page.waitForFunction(()=>__tron.state.mode==='running');
  assert.equal(await page.evaluate(()=>document.body.classList.contains('victory-credits')),false);
  assert.equal(await page.evaluate(()=>__tron.state.won),false);
