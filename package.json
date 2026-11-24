@@ -22,7 +22,7 @@
     "errors:recent": "wrangler d1 execute tron-error-reports --remote --command \"SELECT id, datetime(received_at/1000, 'unixepoch') AS utc, kind, game, mode, build, substr(user_agent, 1, 60) AS browser, gpu, substr(message, 1, 160) AS message FROM error_reports ORDER BY id DESC LIMIT 25\""
   },
   "dependencies": {
-    "@dimforge/rapier3d-compat": "^0.20.0",
+    "@dimforge/rapier3d-compat": "^0.21.0",
     "@huggingface/transformers": "^4.3.1",
     "three": "^0.186.0",
     "vite": "^8.3.5",
