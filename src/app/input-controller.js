@@ -21,8 +21,9 @@ export class InputController {
     this.cycleReverseQueued = false;
     this.mouseTarget = null;
   }
-  queueCycleTurn(turn,pendingTurns=0){
-    if(this.cycleTurns.length+pendingTurns<2)this.cycleTurns.push(Math.sign(turn));
+  // force: a sidestep's return turn must never be dropped by the two-turn cap.
+  queueCycleTurn(turn,pendingTurns=0,force=false){
+    if(force||this.cycleTurns.length+pendingTurns<2)this.cycleTurns.push(Math.sign(turn));
   }
   release(key){
     this.keys.delete(key);

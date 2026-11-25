@@ -13,11 +13,11 @@ export class GamepadController {
   add('ArrowLeft',down(14)||x<-GAMEPAD.turnThreshold);add('ArrowRight',down(15)||x>GAMEPAD.turnThreshold);
   add('ArrowUp',down(12)||y<-GAMEPAD.turnThreshold);add('ArrowDown',down(13)||y>GAMEPAD.turnThreshold);
   if(playing){
-   if(cycle){add('KeyW',down(7));add('KeyS',down(6));}
+   if(cycle){add('KeyW',down(7));add('KeyS',down(6));add('KeyQ',down(4));add('KeyE',down(5));}
    else {add('Space',down(7)||down(0));add('ShiftLeft',down(4));}
   }
   const actions=new Set();
-  for(const [button,key] of [[0,playing?'Space':'Enter'],[1,'Escape'],[2,'KeyF'],[3,'KeyP'],[5,'KeyO'],[8,'KeyY'],[9,'Enter'],[10,'KeyV']])if(down(button))actions.add(key);
+  for(const [button,key] of [[0,playing?'Space':'Enter'],[1,'Escape'],[2,'KeyF'],[3,'KeyP'],...(playing&&cycle?[]:[[5,'KeyO']]),[8,'KeyY'],[9,'Enter'],[10,'KeyV']])if(down(button))actions.add(key);
   // Direction edges drive menus and discrete arena turns; continuous controls use held channels.
   for(const key of held)if(key.startsWith('Arrow'))actions.add(key);
   if(playing&&!cycle){for(const [key,button] of [['ArrowLeft',14],['ArrowRight',15],['ArrowUp',12],['ArrowDown',13]])if(!down(button))held.delete(key);}

@@ -115,6 +115,7 @@ export class CameraRig {
     this.cycleGlance = 0;
     this.cycleTurnLook = 0;
     this.cycleTrackingYaw = undefined;
+    this.cycleHeadingLock = null; // yaw (radians) held during an arena sidestep, else null
     this.cycleCockpit=false;
     this.cycleCockpitMix=0;
   }
@@ -256,11 +257,13 @@ export class CameraRig {
       // A distant observer watches a broad turn; a nearby rider needs fast tracking.
       const trackingDistance=Math.hypot(this.camera.position.x-pose.x,this.camera.position.y-CYCLE_CAMERA.lookHeightMeters,this.camera.position.z+pose.s);
       const trackingMix=THREE.MathUtils.smoothstep(trackingDistance,CYCLE_TURN_TRACKING.nearDistanceMeters,CYCLE_TURN_TRACKING.farDistanceMeters);
+      // A sidestep (Q/E held) keeps the view on the heading the cycle will return to.
+      const headingYaw=!escaped&&this.cycleHeadingLock!=null?this.cycleHeadingLock:pose.yaw;
       if(escaped||this.freshCamera||this.cycleOpening!==null||this.cycleSwitch||this.cycleTrackingYaw===undefined||trackingMix===0){
-        this.cycleTrackingYaw=pose.yaw;
+        this.cycleTrackingYaw=headingYaw;
       }else if(mode!=='paused'){
         const response=CYCLE_TURN_TRACKING.nearResponsePerSecond*Math.pow(CYCLE_TURN_TRACKING.farResponsePerSecond/CYCLE_TURN_TRACKING.nearResponsePerSecond,trackingMix);
-        const delta=Math.atan2(Math.sin(pose.yaw-this.cycleTrackingYaw),Math.cos(pose.yaw-this.cycleTrackingYaw));
+        const delta=Math.atan2(Math.sin(headingYaw-this.cycleTrackingYaw),Math.cos(headingYaw-this.cycleTrackingYaw));
         this.cycleTrackingYaw+=delta*(1-Math.exp(-dt*response));
       }
       const lookYaw=this.cycleTrackingYaw+this.cycleTurnLook*(1-glanceMix);
@@ -359,7 +362,7 @@ export class CameraRig {
         this.cycleFirstPersonMix=THREE.MathUtils.lerp(this.cycleFirstPersonMix,cameraTarget,1-Math.exp(-dt*CYCLE_FIRST_PERSON.responsePerSecond));
         if(firstPerson)this.cycleVisibility=Math.max(0,this.cycleVisibility-dt/CYCLE_FIRST_PERSON.fadeSeconds);
       }
-      const eyeYaw=this.firstPersonTurn(pose.yaw,mode==='paused'?0:dt);
+      const eyeYaw=this.firstPersonTurn(headingYaw,mode==='paused'?0:dt);
       const eye=new THREE.Vector3(pose.x-Math.sin(eyeYaw)*CYCLE_FIRST_PERSON.forwardMeters,CYCLE_FIRST_PERSON.eyeHeightMeters,-pose.s-Math.cos(eyeYaw)*CYCLE_FIRST_PERSON.forwardMeters);
       const eyeLook=eye.clone().add(new THREE.Vector3(-Math.sin(eyeYaw+this.cycleGlance),0,-Math.cos(eyeYaw+this.cycleGlance)).multiplyScalar(CYCLE_FIRST_PERSON.lookAheadMeters));
       this.camera.position.lerp(eye,this.cycleFirstPersonMix);

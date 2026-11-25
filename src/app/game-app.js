@@ -30,6 +30,7 @@ import { createDevelopmentTools } from './development-tools.js';
 import { HudPresenter } from '../ui/hud-presenter.js';
 import { GameLoop, simulationStepSeconds } from './game-loop.js';
 import { InputController } from './input-controller.js';
+import {CycleSidestep,headingAfter} from './cycle-sidestep.js';
 import { GameSession } from '../simulation/game-session.js';
 import { DebrisPhysics } from '../simulation/debris-physics.js';
 import { browserScenario, browserRunSeed } from '../game/browser-scenario.js';
@@ -84,7 +85,18 @@ export async function createGameApp() {
   const $ = (id) => document.getElementById(id);
   const inputController = new InputController();
   const gamepadController = new GamepadController();
-  let gamepadRoadBrakeHeld=false,gamepadTankTurboHeld=false;
+  let gamepadRoadBrakeHeld=false,gamepadTankTurboHeld=false,gamepadSidestepHeld=new Set();
+  const cycleSidestep=new CycleSidestep();
+  // Q/E arena sidestep: who may start one, and whether a held one still stands.
+  function sidestepContext(){
+    const r=run.cycleRace,b=r?.cycles[r.playerId];
+    const valid=run.playerVehicle==='cycle'&&!run.cycleSpectating&&r?.phase==='racing'&&!!b?.alive&&!b.escaped;
+    return {valid,eligible:valid&&mode==='running'&&!run.arenaWaiting&&view.cameraRig.cycleOpening===null,round:r?.round,dir:b?headingAfter(b.dir,[...r.pendingTurns,...inputController.cycleTurns]):0};
+  }
+  function beginSidestep(key){
+    const turn=cycleSidestep.press(key,sidestepContext());
+    if(turn)inputController.queueCycleTurn(turn,run.cycleRace?.pendingTurns.length??0,true);
+  }
   const loop = new GameLoop({ frame, backgroundAllowed: () => autoplay.enabled });
   const sound = new Sound(map);
   const jev = new JevClient();
@@ -385,7 +397,7 @@ export async function createGameApp() {
     onCancel:()=>{void resume();},
   });
   const touchControls=mobileTerminal?new CycleTouchControls({
-    onTurn:direction=>{idleTime=0;if(run.cycleSpectating)followCycle(direction);else inputController.queueCycleTurn(direction,run.cycleRace?.pendingTurns.length??0);},
+    onTurn:direction=>{idleTime=0;if(run.cycleSpectating)followCycle(direction);else if(!cycleSidestep.active)inputController.queueCycleTurn(direction,run.cycleRace?.pendingTurns.length??0);},
     onHeld:(turbo,brake)=>{for(const [key,held] of [['KeyW',turbo],['KeyS',brake]])held?inputController.touchKeys.add(key):inputController.touchKeys.delete(key);},
     onMenu:()=>{pause();$('paused').hidden=true;exitConfirm.show();},
     onHelp:()=>showControlsHelp(),
@@ -421,7 +433,7 @@ export async function createGameApp() {
   function showControlsHelp(){
     const cycle=run.playerVehicle==='cycle',road=cycle&&run.cycleRace.cycles[run.cycleRace.playerId].escaped;
     const groups=cycle?[
-      ['DRIVING',...(road?['W OR UP / ACCELERATE + TURBO','A/D OR ARROWS / STEER','S OR DOWN / BRAKE / REVERSE']:['A/D OR LEFT/RIGHT / TURN','W OR UP / TURBO','S OR DOWN / BRAKE'])],
+      ['DRIVING',...(road?['W OR UP / ACCELERATE + TURBO','A/D OR ARROWS / STEER','S OR DOWN / BRAKE / REVERSE']:['A/D OR LEFT/RIGHT / TURN','HOLD Q/E / SIDESTEP LEFT/RIGHT','W OR UP / TURBO','S OR DOWN / BRAKE'])],
       ['CAMERA','P / FIRST PERSON','J/L / GLANCE','U/O / HALF GLANCE','I/K / ZOOM','V / AERIAL'],
       ['AFTER DEATH','LEFT/RIGHT / FOLLOW CYCLES','ENTER / RESTART'],
       ['RENDERING','SHIFT-R / NORMAL OR POV-RAY CYCLES'],
@@ -435,7 +447,7 @@ export async function createGameApp() {
       ['HUMAN PLAYERS','BLACK + WHITE DIAGONAL SLASH / HUMAN PLAYER','MARKED ON BOTH THE CYCLE AND ITS ROSTER CIRCLE'],
     );
     if(cycle&&mobileTerminal)groups.unshift(['TOUCH CONTROLS','TAP LEFT / RIGHT EDGE / TURN OR FOLLOW','HOLD TOP EDGE / TURBO','HOLD BOTTOM EDGE / BRAKE','MENU / EXIT CONFIRMATION','NEW MATCH / RESTART WHEN AVAILABLE']);
-    groups.push(['CONTROLLER (STANDARD MAPPING)','LEFT STICK / D-PAD / DRIVE OR TURN',...(cycle?['RT / TURBO','LT / BRAKE']:['RIGHT STICK / TURRET + GUNNER AIM','A / CROSS OR RT / FIRE','LB / HOLD TURBO','X / SQUARE / CENTER TURRET','RB / GUNNER ZOOM']),'Y / TRIANGLE / FIRST PERSON','LEFT STICK CLICK / AERIAL','START / ENTER OR RESTART','B / CIRCLE / HOME','BACK / SHARE / HELP']);
+    groups.push(['CONTROLLER (STANDARD MAPPING)','LEFT STICK / D-PAD / DRIVE OR TURN',...(cycle?['RT / TURBO','LT / BRAKE','HOLD LB/RB / SIDESTEP']:['RIGHT STICK / TURRET + GUNNER AIM','A / CROSS OR RT / FIRE','LB / HOLD TURBO','X / SQUARE / CENTER TURRET','RB / GUNNER ZOOM']),'Y / TRIANGLE / FIRST PERSON','LEFT STICK CLICK / AERIAL','START / ENTER OR RESTART','B / CIRCLE / HOME','BACK / SHARE / HELP']);
     groups.push(['GAME',mobileTerminal?'MENU / HOME':'ESC / HOME']);
     $('controls-help-text').textContent=groups.map(group=>group.join('\n')).join('\n\n');
     pause();inputController.clear();releaseMouse();
@@ -612,8 +624,9 @@ export async function createGameApp() {
         }
         return;
       }
+      if(['KeyQ','KeyE'].includes(key)){event.preventDefault();keys.add(key);if(!event.repeat)beginSidestep(key);return;}
       if(['KeyA','ArrowLeft','KeyD','ArrowRight'].includes(key)){
-        event.preventDefault();keys.add(key);if(!event.repeat)inputController.queueCycleTurn(['KeyA','ArrowLeft'].includes(key)?-1:1,run.cycleRace?.pendingTurns.length??0);return;
+        event.preventDefault();keys.add(key);if(!event.repeat&&!cycleSidestep.active)inputController.queueCycleTurn(['KeyA','ArrowLeft'].includes(key)?-1:1,run.cycleRace?.pendingTurns.length??0);return;
       }
       if(key==='KeyP'){event.preventDefault();const riderId=run.cycleSpectating?run.cycleFollowId:run.cycleRace?.playerId;if(!event.repeat&&riderId!=null&&run.cycleRace?.cycles.find(b=>b.id===riderId)?.alive){view.cameraRig.cycleFirstPerson=!view.cameraRig.cycleFirstPerson;view.cameraRig.aerial=false;}return;}
       if(['KeyU','KeyO'].includes(key)){event.preventDefault();keys.add(key);return;}
@@ -1161,7 +1174,7 @@ export async function createGameApp() {
     for(const code of controller.pressed){
       if(controllerPlaying&&code.startsWith('Arrow')&&!run.cycleSpectating&&!(multiplayerOfferVisible()&&['ArrowUp','ArrowDown'].includes(code))){
         if(run.arenaWaiting||view.cameraRig.cycleOpening!==null)continue;
-        if(run.playerVehicle==='cycle'&&['ArrowLeft','ArrowRight'].includes(code))inputController.queueCycleTurn(code==='ArrowLeft'?-1:1,run.cycleRace?.pendingTurns.length??0);
+        if(run.playerVehicle==='cycle'&&['ArrowLeft','ArrowRight'].includes(code)&&!cycleSidestep.active)inputController.queueCycleTurn(code==='ArrowLeft'?-1:1,run.cycleRace?.pendingTurns.length??0);
         if(code==='ArrowUp')run.cruiseThrottle=false;
       }else {window.dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true}));window.dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true}));}
     }
@@ -1170,6 +1183,14 @@ export async function createGameApp() {
       if(player?.escaped&&controller.held.has('KeyS')&&!gamepadRoadBrakeHeld&&Math.abs(player.roadSpeed)<.01)inputController.cycleReverseQueued=true;
     }
     gamepadRoadBrakeHeld=controller.held.has('KeyS');
+    // Sidestep: LB/RB start one like Q/E; releasing whichever started it turns back.
+    if(controllerPlaying&&run.playerVehicle==='cycle')for(const k of ['KeyQ','KeyE'])if(controller.held.has(k)&&!gamepadSidestepHeld.has(k))beginSidestep(k);
+    gamepadSidestepHeld=new Set(['KeyQ','KeyE'].filter(k=>controllerPlaying&&controller.held.has(k)));
+    if(mode==='running'){
+      const back=cycleSidestep.update(new Set([...keys,...inputController.gamepadKeys]),sidestepContext());
+      if(back)inputController.queueCycleTurn(back,run.cycleRace?.pendingTurns.length??0,true);
+    }
+    view.cameraRig.cycleHeadingLock=cycleSidestep.lockYaw;
     if(controllerPlaying&&run.playerVehicle!=='cycle'){
       if(controller.axes.throttle)run.cruiseThrottle=false;
       if(controller.held.has('ShiftLeft'))boostTank(run);
